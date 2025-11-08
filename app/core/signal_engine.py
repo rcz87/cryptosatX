@@ -9,6 +9,7 @@ from typing import Dict, List
 from dataclasses import dataclass, asdict
 
 from app.services.coinapi_service import coinapi_service
+from app.services.coinapi_comprehensive_service import coinapi_comprehensive
 from app.services.coinglass_service import coinglass_service
 from app.services.coinglass_premium_service import coinglass_premium
 from app.services.coinglass_comprehensive_service import coinglass_comprehensive
@@ -73,10 +74,21 @@ class EnhancedSignalContext:
     social_momentum_score: float = 50.0
     social_momentum_level: str = "neutral"
     
+    # CoinAPI Comprehensive metrics
+    orderbook_imbalance: float = 0.0  # -100 to +100: negative=sell pressure, positive=buy pressure
+    spread_percent: float = 0.0
+    whale_bids_count: int = 0
+    whale_asks_count: int = 0
+    buy_pressure_pct: float = 50.0  # From recent trades
+    sell_pressure_pct: float = 50.0
+    avg_trade_size: float = 0.0
+    volatility_7d: float = 0.0
+    
     # Data quality flags
     premium_data_available: bool = False
     comprehensive_data_available: bool = False
     lunarcrush_comprehensive_available: bool = False
+    coinapi_comprehensive_available: bool = False
     
 
 class SignalEngine:
@@ -186,6 +198,23 @@ class SignalEngine:
                 }
             }
         
+        # Add CoinAPI comprehensive metrics if available
+        if context.coinapi_comprehensive_available:
+            response["coinAPIMetrics"] = {
+                "orderbook": {
+                    "imbalance": context.orderbook_imbalance,  # -100 to +100
+                    "spreadPercent": context.spread_percent,
+                    "whaleBids": context.whale_bids_count,
+                    "whaleAsks": context.whale_asks_count
+                },
+                "trades": {
+                    "buyPressure": context.buy_pressure_pct,
+                    "sellPressure": context.sell_pressure_pct,
+                    "avgTradeSize": context.avg_trade_size
+                },
+                "volatility7d": context.volatility_7d
+            }
+        
         # Add premium metrics if available
         if context.premium_data_available:
             response["premiumMetrics"] = {
@@ -225,11 +254,15 @@ class SignalEngine:
             coinglass_premium.get_oi_trend(symbol),
             coinglass_premium.get_top_trader_ratio(symbol),
             coinglass_premium.get_fear_greed_index(),
+            # CoinAPI comprehensive endpoints
+            coinapi_comprehensive.get_orderbook_depth(symbol, "BINANCE", 20),
+            coinapi_comprehensive.get_recent_trades(symbol, "BINANCE", 100),
+            coinapi_comprehensive.get_ohlcv_historical(symbol, "1DAY", 7, "BINANCE"),
             return_exceptions=True  # Don't fail if one endpoint fails
         )
         
         # Unpack results
-        price_data, cg_data, comp_markets, social_data, lc_comp, lc_change, lc_momentum, candles_data, liq_data, ls_data, oi_trend_data, trader_data, fg_data = results
+        price_data, cg_data, comp_markets, social_data, lc_comp, lc_change, lc_momentum, candles_data, liq_data, ls_data, oi_trend_data, trader_data, fg_data, ca_orderbook, ca_trades, ca_ohlcv = results
         
         # Handle potential exceptions
         price_data = price_data if not isinstance(price_data, Exception) else {}
@@ -245,6 +278,9 @@ class SignalEngine:
         oi_trend_data = oi_trend_data if not isinstance(oi_trend_data, Exception) else {}
         trader_data = trader_data if not isinstance(trader_data, Exception) else {}
         fg_data = fg_data if not isinstance(fg_data, Exception) else {}
+        ca_orderbook = ca_orderbook if not isinstance(ca_orderbook, Exception) else {}
+        ca_trades = ca_trades if not isinstance(ca_trades, Exception) else {}
+        ca_ohlcv = ca_ohlcv if not isinstance(ca_ohlcv, Exception) else {}
         
         # Calculate price trend from OKX candles
         price_trend = self._calculate_price_trend(candles_data.get("candles", []))
@@ -261,6 +297,12 @@ class SignalEngine:
         
         comprehensive_available = comp_markets.get("success", False)
         lunarcrush_comp_available = lc_comp.get("success", False)
+        # CoinAPI: Accept if any endpoint succeeds (not requiring all)
+        coinapi_comp_available = (
+            ca_orderbook.get("success", False) or
+            ca_trades.get("success", False) or
+            ca_ohlcv.get("success", False)
+        )
         
         # Log comprehensive data availability
         if not comprehensive_available:
@@ -270,6 +312,9 @@ class SignalEngine:
         if not lunarcrush_comp_available:
             error_msg = lc_comp.get("error", "unknown error")
             print(f"⚠️  Comprehensive LunarCrush data unavailable for {symbol}: {error_msg}. Falling back to basic social score.")
+        
+        if not coinapi_comp_available:
+            print(f"⚠️  CoinAPI comprehensive data unavailable for {symbol}. Order book/trades analysis will use defaults.")
         
         # Prefer comprehensive markets data for funding/OI if available, fallback to basic
         funding = comp_markets.get("fundingRateByOI", cg_data.get("fundingRate", 0.0)) if comprehensive_available else cg_data.get("fundingRate", 0.0)
@@ -320,10 +365,20 @@ class SignalEngine:
             social_spike_level=lc_change.get("spikeLevel", "normal"),
             social_momentum_score=lc_momentum.get("momentumScore", 50.0),
             social_momentum_level=lc_momentum.get("momentumLevel", "neutral"),
+            # CoinAPI Comprehensive data
+            orderbook_imbalance=ca_orderbook.get("metrics", {}).get("imbalance", 0.0) if coinapi_comp_available else 0.0,
+            spread_percent=ca_orderbook.get("spread", {}).get("spreadPercent", 0.0) if coinapi_comp_available else 0.0,
+            whale_bids_count=ca_orderbook.get("whaleWalls", {}).get("largeBids", 0) if coinapi_comp_available else 0,
+            whale_asks_count=ca_orderbook.get("whaleWalls", {}).get("largeAsks", 0) if coinapi_comp_available else 0,
+            buy_pressure_pct=ca_trades.get("volume", {}).get("buyPressure", 50.0) if coinapi_comp_available else 50.0,
+            sell_pressure_pct=ca_trades.get("volume", {}).get("sellPressure", 50.0) if coinapi_comp_available else 50.0,
+            avg_trade_size=ca_trades.get("volume", {}).get("avgTradeSize", 0.0) if coinapi_comp_available else 0.0,
+            volatility_7d=ca_ohlcv.get("analysis", {}).get("volatility", 0.0) if ca_ohlcv.get("success", False) else 0.0,
             # Data quality flags
             premium_data_available=premium_available,
             comprehensive_data_available=comprehensive_available,
-            lunarcrush_comprehensive_available=lunarcrush_comp_available
+            lunarcrush_comprehensive_available=lunarcrush_comp_available,
+            coinapi_comprehensive_available=coinapi_comp_available
         )
     
     def _calculate_price_trend(self, candles: list) -> str:
