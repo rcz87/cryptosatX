@@ -1,0 +1,523 @@
+"""
+Coinglass Comprehensive Service
+Maximizes usage of Coinglass Standard plan ($300/mo) with 90+ endpoints
+Includes: Market Data, Liquidations, Long/Short Ratios, Funding Rates, OI Analytics
+"""
+import os
+import httpx
+from typing import Dict, Optional, List
+from datetime import datetime
+
+
+class CoinglassComprehensiveService:
+    """Comprehensive service maximizing all Coinglass Standard plan endpoints"""
+    
+    def __init__(self):
+        self.api_key = os.getenv("COINGLASS_API_KEY", "")
+        self.base_url = "https://open-api-v4.coinglass.com"
+        self.headers = {
+            "CG-API-KEY": self.api_key,
+            "accept": "application/json"
+        }
+        self._client: Optional[httpx.AsyncClient] = None
+    
+    async def _get_client(self) -> httpx.AsyncClient:
+        """Get or create shared async HTTP client"""
+        if self._client is None or self._client.is_closed:
+            self._client = httpx.AsyncClient(timeout=15.0)
+        return self._client
+    
+    async def close(self):
+        """Close the HTTP client"""
+        if self._client and not self._client.is_closed:
+            await self._client.aclose()
+    
+    # ==================== MARKET DATA ENDPOINTS ====================
+    
+    async def get_coins_markets(self, symbol: Optional[str] = None) -> Dict:
+        """
+        Get comprehensive market data for futures coins
+        Endpoint: /api/futures/coins-markets
+        
+        Returns:
+        - Current price
+        - Market cap
+        - Open interest (USD & quantity)
+        - Funding rates (OI-weighted & volume-weighted)
+        - Price changes (5m, 15m, 30m, 1h, 4h, 12h, 24h)
+        - OI/Market Cap ratio
+        - OI/Volume ratio
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/api/futures/coins-markets"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                markets = data["data"]
+                
+                if symbol:
+                    symbol_upper = symbol.upper()
+                    symbol_data = next((m for m in markets if m.get("symbol") == symbol_upper), None)
+                    
+                    if symbol_data:
+                        return {
+                            "success": True,
+                            "symbol": symbol_upper,
+                            "price": symbol_data.get("current_price", 0),
+                            "marketCap": symbol_data.get("market_cap_usd", 0),
+                            "openInterestUsd": symbol_data.get("open_interest_usd", 0),
+                            "openInterestQty": symbol_data.get("open_interest_quantity", 0),
+                            "fundingRateByOI": symbol_data.get("avg_funding_rate_by_oi", 0),
+                            "fundingRateByVol": symbol_data.get("avg_funding_rate_by_vol", 0),
+                            "oiMarketCapRatio": symbol_data.get("open_interest_market_cap_ratio", 0),
+                            "oiVolumeRatio": symbol_data.get("open_interest_volume_ratio", 0),
+                            "priceChange5m": symbol_data.get("price_change_percent_5m", 0),
+                            "priceChange15m": symbol_data.get("price_change_percent_15m", 0),
+                            "priceChange30m": symbol_data.get("price_change_percent_30m", 0),
+                            "priceChange1h": symbol_data.get("price_change_percent_1h", 0),
+                            "priceChange4h": symbol_data.get("price_change_percent_4h", 0),
+                            "priceChange12h": symbol_data.get("price_change_percent_12h", 0),
+                            "priceChange24h": symbol_data.get("price_change_percent_24h", 0),
+                            "source": "coinglass_markets"
+                        }
+                
+                return {"success": True, "data": markets, "count": len(markets)}
+            
+            return {"success": False, "error": "Invalid response structure"}
+            
+        except Exception as e:
+            print(f"[CoinsMarkets] Error: {str(e)}")
+            return {"success": False, "error": str(e)}
+    
+    async def get_perpetual_market(self, symbol: str) -> Dict:
+        """
+        Get perpetual futures market data for a symbol
+        Endpoint: /api/futures/perpetual-market
+        
+        Returns current perpetual market metrics
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/api/futures/perpetual-market"
+            params = {"symbol": symbol.upper()}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                return {
+                    "success": True,
+                    "data": data["data"],
+                    "source": "coinglass_perpetual"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    # ==================== LIQUIDATION ENDPOINTS ====================
+    
+    async def get_liquidation_orders(self, symbol: str = "BTC") -> Dict:
+        """
+        Get recent liquidation orders (past 7 days)
+        Endpoint: /api/futures/liquidation/order
+        
+        Returns detailed liquidation orders with exchange, pair, amount
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/api/futures/liquidation/order"
+            params = {"symbol": symbol.upper()}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                orders = data["data"]
+                
+                long_total = sum(o.get("amount_usd", 0) for o in orders if o.get("side") == "long")
+                short_total = sum(o.get("amount_usd", 0) for o in orders if o.get("side") == "short")
+                
+                return {
+                    "success": True,
+                    "symbol": symbol.upper(),
+                    "orders": orders,
+                    "longLiquidations": long_total,
+                    "shortLiquidations": short_total,
+                    "totalLiquidations": long_total + short_total,
+                    "orderCount": len(orders),
+                    "source": "coinglass_liq_orders"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_liquidation_map(self, symbol: str = "BTC") -> Dict:
+        """
+        Get liquidation heatmap data
+        Endpoint: /api/futures/liquidation/map
+        
+        Returns liquidation clusters at different price levels
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/api/futures/liquidation/map"
+            params = {"symbol": symbol.upper()}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                map_data = data["data"]
+                
+                total_clusters = len(map_data)
+                
+                largest_cluster = None
+                max_volume = 0
+                
+                for price_level, cluster_info in map_data.items():
+                    if cluster_info and len(cluster_info) > 0:
+                        volume = cluster_info[0][1] if len(cluster_info[0]) > 1 else 0
+                        if volume > max_volume:
+                            max_volume = volume
+                            largest_cluster = {
+                                "price": float(price_level),
+                                "volume": volume,
+                                "leverage": cluster_info[0][2] if len(cluster_info[0]) > 2 else None
+                            }
+                
+                return {
+                    "success": True,
+                    "symbol": symbol.upper(),
+                    "clusterCount": total_clusters,
+                    "largestCluster": largest_cluster,
+                    "mapData": map_data,
+                    "source": "coinglass_liq_map"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_liquidation_coin_list(self, exchange: str = "Binance", symbol: str = "BTC") -> Dict:
+        """
+        Get liquidation data for all coins on an exchange
+        Endpoint: /api/futures/liquidation/coin-list
+        
+        Returns 24h, 12h, 4h, 1h liquidation breakdowns
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/api/futures/liquidation/coin-list"
+            params = {"exchange": exchange}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                coin_list = data["data"]
+                
+                symbol_upper = symbol.upper()
+                symbol_data = next((c for c in coin_list if c.get("symbol") == symbol_upper), None)
+                
+                if symbol_data:
+                    return {
+                        "success": True,
+                        "symbol": symbol_upper,
+                        "exchange": exchange,
+                        "liquidation24h": symbol_data.get("liquidation_usd_24h", 0),
+                        "longLiq24h": symbol_data.get("long_liquidation_usd_24h", 0),
+                        "shortLiq24h": symbol_data.get("short_liquidation_usd_24h", 0),
+                        "liquidation12h": symbol_data.get("liquidation_usd_12h", 0),
+                        "liquidation4h": symbol_data.get("liquidation_usd_4h", 0),
+                        "liquidation1h": symbol_data.get("liquidation_usd_1h", 0),
+                        "source": "coinglass_liq_coinlist"
+                    }
+                
+                return {"success": True, "data": coin_list, "count": len(coin_list)}
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    # ==================== LONG/SHORT RATIO ENDPOINTS ====================
+    
+    async def get_long_short_ratio(self, symbol: str = "BTC", interval: str = "h4") -> Dict:
+        """
+        Get long/short position ratios for a symbol
+        Endpoint: /api/futures/long-short/symbol
+        
+        Returns historical long/short ratio data
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/api/futures/long-short/symbol"
+            params = {
+                "symbol": symbol.upper(),
+                "interval": interval
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                ratio_data = data["data"]
+                
+                if isinstance(ratio_data, list) and len(ratio_data) > 0:
+                    latest = ratio_data[-1]
+                    
+                    long_pct = latest.get("long_account", 0) * 100
+                    short_pct = latest.get("short_account", 0) * 100
+                    
+                    return {
+                        "success": True,
+                        "symbol": symbol.upper(),
+                        "longAccountPct": long_pct,
+                        "shortAccountPct": short_pct,
+                        "ratio": long_pct / short_pct if short_pct > 0 else 0,
+                        "timestamp": latest.get("t", 0),
+                        "historicalData": ratio_data,
+                        "source": "coinglass_ls_ratio"
+                    }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    # ==================== FUNDING RATE ENDPOINTS ====================
+    
+    async def get_funding_rate_average(self, symbol: str = "BTC", interval: str = "h8") -> Dict:
+        """
+        Get average funding rate across all exchanges
+        Endpoint: /api/futures/funding-rate/average
+        
+        Returns multi-exchange aggregated funding rate
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/api/futures/funding-rate/average"
+            params = {
+                "symbol": symbol.upper(),
+                "interval": interval
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                rate_data = data["data"]
+                
+                if isinstance(rate_data, list) and len(rate_data) > 0:
+                    latest = rate_data[-1]
+                    
+                    return {
+                        "success": True,
+                        "symbol": symbol.upper(),
+                        "avgFundingRate": latest.get("rate", 0),
+                        "timestamp": latest.get("t", 0),
+                        "historicalData": rate_data,
+                        "source": "coinglass_funding_avg"
+                    }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_funding_rate_ohlc(self, exchange: str = "Binance", pair: str = "BTCUSDT", interval: str = "h8") -> Dict:
+        """
+        Get OHLC data for funding rates
+        Endpoint: /api/futures/funding-rate/ohlc
+        
+        Returns funding rate OHLC candles
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/api/futures/funding-rate/ohlc"
+            params = {
+                "ex": exchange,
+                "pair": pair,
+                "interval": interval
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "pair": pair,
+                    "data": data["data"],
+                    "source": "coinglass_funding_ohlc"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    # ==================== OPEN INTEREST ENDPOINTS ====================
+    
+    async def get_oi_ohlc_aggregated(self, symbol: str = "BTC", interval: str = "h4") -> Dict:
+        """
+        Get aggregated OI OHLC data across exchanges
+        Endpoint: /api/futures/open-interest/ohlc-aggregated
+        
+        Returns OI candles aggregated from all exchanges
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/api/futures/open-interest/ohlc-aggregated"
+            params = {
+                "symbol": symbol.upper(),
+                "interval": interval
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                ohlc_data = data["data"]
+                
+                if isinstance(ohlc_data, list) and len(ohlc_data) >= 2:
+                    latest = ohlc_data[-1]
+                    previous = ohlc_data[-2]
+                    
+                    current_oi = latest.get("c", 0)
+                    previous_oi = previous.get("c", 0)
+                    oi_change = ((current_oi - previous_oi) / previous_oi * 100) if previous_oi > 0 else 0
+                    
+                    return {
+                        "success": True,
+                        "symbol": symbol.upper(),
+                        "currentOI": current_oi,
+                        "previousOI": previous_oi,
+                        "oiChangePct": oi_change,
+                        "high": latest.get("h", 0),
+                        "low": latest.get("l", 0),
+                        "open": latest.get("o", 0),
+                        "timestamp": latest.get("t", 0),
+                        "historicalData": ohlc_data,
+                        "source": "coinglass_oi_ohlc"
+                    }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    # ==================== UTILITY ENDPOINTS ====================
+    
+    async def get_supported_coins(self) -> Dict:
+        """
+        Get list of all supported cryptocurrency symbols
+        Endpoint: /api/futures/supported-coins
+        
+        Returns array of supported coins
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/api/futures/supported-coins"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                return {
+                    "success": True,
+                    "coins": data["data"],
+                    "count": len(data["data"]),
+                    "source": "coinglass_supported"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_supported_exchange_pairs(self) -> Dict:
+        """
+        Get all supported exchanges and their trading pairs
+        Endpoint: /api/futures/supported-exchange-pairs
+        
+        Returns dict of exchanges and their available pairs
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/api/futures/supported-exchange-pairs"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                pairs_data = data["data"]
+                
+                exchange_count = len(pairs_data)
+                total_pairs = sum(len(pairs) for pairs in pairs_data.values())
+                
+                return {
+                    "success": True,
+                    "data": pairs_data,
+                    "exchangeCount": exchange_count,
+                    "totalPairs": total_pairs,
+                    "source": "coinglass_exchanges"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
