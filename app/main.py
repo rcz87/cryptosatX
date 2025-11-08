@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from app.api import routes_health, routes_signals, routes_gpt, routes_coinglass
+from app.api import routes_health, routes_signals, routes_gpt, routes_coinglass, routes_lunarcrush
 
 # Load environment variables
 load_dotenv()
@@ -35,6 +35,7 @@ app.include_router(routes_health.router, tags=["Health"])
 app.include_router(routes_signals.router, tags=["Signals"])
 app.include_router(routes_gpt.router, tags=["GPT Actions"])
 app.include_router(routes_coinglass.router, tags=["Coinglass Data"])
+app.include_router(routes_lunarcrush.router, tags=["LunarCrush Social Data"])
 
 
 @app.on_event("startup")

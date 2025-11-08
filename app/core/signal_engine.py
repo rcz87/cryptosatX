@@ -13,6 +13,7 @@ from app.services.coinglass_service import coinglass_service
 from app.services.coinglass_premium_service import coinglass_premium
 from app.services.coinglass_comprehensive_service import coinglass_comprehensive
 from app.services.lunarcrush_service import lunarcrush_service
+from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
 from app.services.okx_service import okx_service
 
 
@@ -57,9 +58,25 @@ class EnhancedSignalContext:
     fear_greed_value: int = 50
     fear_greed_sentiment: str = "neutral"
     
+    # Comprehensive LunarCrush metrics
+    alt_rank: int = 0
+    social_volume: int = 0
+    social_engagement: int = 0
+    social_dominance: float = 0.0
+    average_sentiment: float = 3.0
+    tweet_volume: int = 0
+    reddit_volume: int = 0
+    url_shares: int = 0
+    correlation_rank: float = 0.0
+    social_volume_change_24h: float = 0.0
+    social_spike_level: str = "normal"
+    social_momentum_score: float = 50.0
+    social_momentum_level: str = "neutral"
+    
     # Data quality flags
     premium_data_available: bool = False
     comprehensive_data_available: bool = False
+    lunarcrush_comprehensive_available: bool = False
     
 
 class SignalEngine:
@@ -145,6 +162,30 @@ class SignalEngine:
                 }
             }
         
+        # Add comprehensive LunarCrush metrics if available
+        if context.lunarcrush_comprehensive_available:
+            response["lunarCrushMetrics"] = {
+                "altRank": context.alt_rank,
+                "socialMetrics": {
+                    "volume": context.social_volume,
+                    "engagement": context.social_engagement,
+                    "dominance": context.social_dominance,
+                    "tweetVolume": context.tweet_volume,
+                    "redditVolume": context.reddit_volume,
+                    "urlShares": context.url_shares
+                },
+                "sentiment": {
+                    "averageSentiment": context.average_sentiment,
+                    "correlationRank": context.correlation_rank
+                },
+                "momentum": {
+                    "momentumScore": context.social_momentum_score,
+                    "momentumLevel": context.social_momentum_level,
+                    "volumeChange24h": context.social_volume_change_24h,
+                    "spikeLevel": context.social_spike_level
+                }
+            }
+        
         # Add premium metrics if available
         if context.premium_data_available:
             response["premiumMetrics"] = {
@@ -172,8 +213,11 @@ class SignalEngine:
         results = await asyncio.gather(
             coinapi_service.get_spot_price(symbol),
             coinglass_service.get_funding_and_oi(symbol),
-            coinglass_comprehensive.get_coins_markets(symbol=symbol),  # NEW: 7 timeframes + ratios
-            lunarcrush_service.get_social_score(symbol),
+            coinglass_comprehensive.get_coins_markets(symbol=symbol),  # Comprehensive markets
+            lunarcrush_service.get_social_score(symbol),  # Basic social score
+            lunarcrush_comprehensive.get_coin_comprehensive(symbol),  # Comprehensive LunarCrush
+            lunarcrush_comprehensive.get_social_change(symbol, "24h"),  # 24h change detection
+            lunarcrush_comprehensive.analyze_social_momentum(symbol),  # Social momentum analysis
             okx_service.get_candles(symbol, "15m", 20),
             # Premium endpoints
             coinglass_premium.get_liquidation_data(symbol),
@@ -185,13 +229,16 @@ class SignalEngine:
         )
         
         # Unpack results
-        price_data, cg_data, comp_markets, social_data, candles_data, liq_data, ls_data, oi_trend_data, trader_data, fg_data = results
+        price_data, cg_data, comp_markets, social_data, lc_comp, lc_change, lc_momentum, candles_data, liq_data, ls_data, oi_trend_data, trader_data, fg_data = results
         
         # Handle potential exceptions
         price_data = price_data if not isinstance(price_data, Exception) else {}
         cg_data = cg_data if not isinstance(cg_data, Exception) else {}
         comp_markets = comp_markets if not isinstance(comp_markets, Exception) else {}
         social_data = social_data if not isinstance(social_data, Exception) else {}
+        lc_comp = lc_comp if not isinstance(lc_comp, Exception) else {}
+        lc_change = lc_change if not isinstance(lc_change, Exception) else {}
+        lc_momentum = lc_momentum if not isinstance(lc_momentum, Exception) else {}
         candles_data = candles_data if not isinstance(candles_data, Exception) else {}
         liq_data = liq_data if not isinstance(liq_data, Exception) else {}
         ls_data = ls_data if not isinstance(ls_data, Exception) else {}
@@ -213,11 +260,16 @@ class SignalEngine:
         )
         
         comprehensive_available = comp_markets.get("success", False)
+        lunarcrush_comp_available = lc_comp.get("success", False)
         
         # Log comprehensive data availability
         if not comprehensive_available:
             error_msg = comp_markets.get("error", "unknown error")
             print(f"⚠️  Comprehensive markets data unavailable for {symbol}: {error_msg}. Falling back to basic Coinglass data.")
+        
+        if not lunarcrush_comp_available:
+            error_msg = lc_comp.get("error", "unknown error")
+            print(f"⚠️  Comprehensive LunarCrush data unavailable for {symbol}: {error_msg}. Falling back to basic social score.")
         
         # Prefer comprehensive markets data for funding/OI if available, fallback to basic
         funding = comp_markets.get("fundingRateByOI", cg_data.get("fundingRate", 0.0)) if comprehensive_available else cg_data.get("fundingRate", 0.0)
@@ -254,8 +306,24 @@ class SignalEngine:
             smart_money_bias=trader_data.get("smartMoneyBias", "neutral"),
             fear_greed_value=fg_data.get("value", 50),
             fear_greed_sentiment=fg_data.get("sentiment", "neutral"),
+            # Comprehensive LunarCrush data
+            alt_rank=lc_comp.get("altRank", 0),
+            social_volume=lc_comp.get("socialVolume", 0),
+            social_engagement=lc_comp.get("socialEngagement", 0),
+            social_dominance=lc_comp.get("socialDominance", 0.0),
+            average_sentiment=lc_comp.get("averageSentiment", 3.0),
+            tweet_volume=lc_comp.get("tweetVolume", 0),
+            reddit_volume=lc_comp.get("redditVolume", 0),
+            url_shares=lc_comp.get("urlShares", 0),
+            correlation_rank=lc_comp.get("correlationRank", 0.0),
+            social_volume_change_24h=lc_change.get("socialVolumeChange", 0.0),
+            social_spike_level=lc_change.get("spikeLevel", "normal"),
+            social_momentum_score=lc_momentum.get("momentumScore", 50.0),
+            social_momentum_level=lc_momentum.get("momentumLevel", "neutral"),
+            # Data quality flags
             premium_data_available=premium_available,
-            comprehensive_data_available=comprehensive_available
+            comprehensive_data_available=comprehensive_available,
+            lunarcrush_comprehensive_available=lunarcrush_comp_available
         )
     
     def _calculate_price_trend(self, candles: list) -> str:
