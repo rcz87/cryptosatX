@@ -14,7 +14,8 @@ class CoinglassComprehensiveService:
     
     def __init__(self):
         self.api_key = os.getenv("COINGLASS_API_KEY", "")
-        self.base_url = "https://open-api-v4.coinglass.com"
+        self.base_url_v4 = "https://open-api-v4.coinglass.com"
+        self.base_url_pro = "https://open-api.coinglass.com"
         self.headers = {
             "CG-API-KEY": self.api_key,
             "accept": "application/json"
@@ -50,7 +51,7 @@ class CoinglassComprehensiveService:
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url}/api/futures/coins-markets"
+            url = f"{self.base_url_v4}/api/futures/coins-markets"
             
             response = await client.get(url, headers=self.headers)
             
@@ -105,7 +106,7 @@ class CoinglassComprehensiveService:
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url}/api/futures/perpetual-market"
+            url = f"{self.base_url_v4}/api/futures/perpetual-market"
             params = {"symbol": symbol.upper()}
             
             response = await client.get(url, headers=self.headers, params=params)
@@ -138,7 +139,7 @@ class CoinglassComprehensiveService:
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url}/api/futures/liquidation/order"
+            url = f"{self.base_url_v4}/api/futures/liquidation/order"
             params = {"symbol": symbol.upper()}
             
             response = await client.get(url, headers=self.headers, params=params)
@@ -179,7 +180,7 @@ class CoinglassComprehensiveService:
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url}/api/futures/liquidation/map"
+            url = f"{self.base_url_v4}/api/futures/liquidation/map"
             params = {"symbol": symbol.upper()}
             
             response = await client.get(url, headers=self.headers, params=params)
@@ -231,7 +232,7 @@ class CoinglassComprehensiveService:
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url}/api/futures/liquidation/coin-list"
+            url = f"{self.base_url_v4}/api/futures/liquidation/coin-list"
             params = {"exchange": exchange}
             
             response = await client.get(url, headers=self.headers, params=params)
@@ -270,19 +271,19 @@ class CoinglassComprehensiveService:
     
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
-    async def get_long_short_ratio(self, symbol: str = "BTC", interval: str = "h4") -> Dict:
+    async def get_long_short_ratio(self, symbol: str = "BTC", exchange: str = "Binance") -> Dict:
         """
-        Get long/short position ratios for a symbol
-        Endpoint: /api/futures/long-short/symbol
+        Get long/short account ratio for a symbol
+        Endpoint: /api/pro/v1/futures/longShort/accounts (PRO API)
         
-        Returns historical long/short ratio data
+        Returns historical long/short account ratio data
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url}/api/futures/long-short/symbol"
+            url = f"{self.base_url_pro}/api/pro/v1/futures/longShort/accounts"
             params = {
                 "symbol": symbol.upper(),
-                "interval": interval
+                "exchange": exchange
             }
             
             response = await client.get(url, headers=self.headers, params=params)
@@ -319,19 +320,19 @@ class CoinglassComprehensiveService:
     
     # ==================== FUNDING RATE ENDPOINTS ====================
     
-    async def get_funding_rate_average(self, symbol: str = "BTC", interval: str = "h8") -> Dict:
+    async def get_funding_rate_average(self, symbol: str = "BTC", exchange: str = "Binance") -> Dict:
         """
-        Get average funding rate across all exchanges
-        Endpoint: /api/futures/funding-rate/average
+        Get funding rate for a specific exchange
+        Endpoint: /api/pro/v1/futures/fundingRate/history (PRO API)
         
-        Returns multi-exchange aggregated funding rate
+        Returns funding rate data for specific exchange
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url}/api/futures/funding-rate/average"
+            url = f"{self.base_url_pro}/api/pro/v1/futures/fundingRate/history"
             params = {
                 "symbol": symbol.upper(),
-                "interval": interval
+                "exchange": exchange
             }
             
             response = await client.get(url, headers=self.headers, params=params)
@@ -370,7 +371,7 @@ class CoinglassComprehensiveService:
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url}/api/futures/funding-rate/ohlc"
+            url = f"{self.base_url_v4}/api/futures/funding-rate/ohlc"
             params = {
                 "ex": exchange,
                 "pair": pair,
@@ -409,7 +410,7 @@ class CoinglassComprehensiveService:
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url}/api/futures/open-interest/ohlc-aggregated"
+            url = f"{self.base_url_v4}/api/futures/open-interest/ohlc-aggregated-history"
             params = {
                 "symbol": symbol.upper(),
                 "interval": interval
@@ -463,7 +464,7 @@ class CoinglassComprehensiveService:
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url}/api/futures/supported-coins"
+            url = f"{self.base_url_v4}/api/futures/supported-coins"
             
             response = await client.get(url, headers=self.headers)
             
@@ -494,7 +495,7 @@ class CoinglassComprehensiveService:
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url}/api/futures/supported-exchange-pairs"
+            url = f"{self.base_url_v4}/api/futures/supported-exchange-pairs"
             
             response = await client.get(url, headers=self.headers)
             
