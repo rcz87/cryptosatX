@@ -286,9 +286,7 @@ class CoinglassComprehensiveService:
                 "interval": "h1"
             }
             
-            print(f"[LSRatio] URL: {url}, Params: {params}")
             response = await client.get(url, headers=self.headers, params=params)
-            print(f"[LSRatio] Status: {response.status_code}, Response: {response.text[:500]}")
             
             if response.status_code != 200:
                 return {"success": False, "error": f"HTTP {response.status_code}"}
@@ -338,9 +336,7 @@ class CoinglassComprehensiveService:
                 "interval": interval
             }
             
-            print(f"[FundingRate] URL: {url}, Params: {params}")
             response = await client.get(url, headers=self.headers, params=params)
-            print(f"[FundingRate] Status: {response.status_code}, Response: {response.text[:200]}")
             
             if response.status_code != 200:
                 return {"success": False, "error": f"HTTP {response.status_code}"}
@@ -424,9 +420,7 @@ class CoinglassComprehensiveService:
                 "interval": interval
             }
             
-            print(f"[OI_OHLC] URL: {url}, Params: {params}")
             response = await client.get(url, headers=self.headers, params=params)
-            print(f"[OI_OHLC] Status: {response.status_code}, Response: {response.text[:200]}")
             
             if response.status_code != 200:
                 return {"success": False, "error": f"HTTP {response.status_code}"}
@@ -532,3 +526,7 @@ class CoinglassComprehensiveService:
             
         except Exception as e:
             return {"success": False, "error": str(e)}
+
+
+# Global instance for easy import
+coinglass_comprehensive = CoinglassComprehensiveService()

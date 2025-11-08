@@ -98,82 +98,6 @@ async def get_liquidation_heatmap(symbol: str):
         await service.close()
 
 
-@router.get("/long-short-ratio/{symbol}")
-async def get_long_short_ratio(symbol: str):
-    """
-    Get global long/short account ratio for a symbol (aggregated across all exchanges)
-    
-    Shows trader sentiment and potential contrarian signals
-    - High long ratio = Crowded longs (potential reversal risk)
-    - High short ratio = Crowded shorts (potential short squeeze)
-    """
-    service = CoinglassComprehensiveService()
-    try:
-        result = await service.get_long_short_ratio(symbol=symbol)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail="Failed to fetch long/short ratio")
-        
-        return result
-    finally:
-        await service.close()
-
-
-@router.get("/funding-rate/{symbol}")
-async def get_funding_rate(
-    symbol: str,
-    interval: str = Query("h8", description="Time interval: h1, h4, h8, h12, 1d")
-):
-    """
-    Get OI-weighted funding rate OHLC for a symbol
-    
-    Funding rate indicates market sentiment:
-    - Positive = Longs paying shorts (bullish leverage)
-    - Negative = Shorts paying longs (bearish leverage)
-    - Very high positive = Overleveraged longs (risk of liquidation cascade)
-    """
-    service = CoinglassComprehensiveService()
-    try:
-        result = await service.get_funding_rate_average(symbol=symbol, interval=interval)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail="Failed to fetch funding rate")
-        
-        return result
-    finally:
-        await service.close()
-
-
-@router.get("/open-interest/{symbol}")
-async def get_open_interest(
-    symbol: str,
-    interval: str = Query("h4", description="Time interval: h1, h4, h8, h12, d1")
-):
-    """
-    Get open interest OHLC data aggregated across exchanges
-    
-    Shows:
-    - Current OI level
-    - OI change percentage
-    - OI high/low/open
-    - Historical OI candles
-    
-    Rising OI + Rising Price = Strong uptrend
-    Rising OI + Falling Price = Strong downtrend
-    Falling OI = Trend weakening
-    """
-    service = CoinglassComprehensiveService()
-    try:
-        result = await service.get_oi_ohlc_aggregated(symbol=symbol, interval=interval)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail="Failed to fetch open interest data")
-        
-        return result
-    finally:
-        await service.close()
-
-
 @router.get("/perpetual-market/{symbol}")
 async def get_perpetual_market(symbol: str):
     """Get perpetual futures market data for a symbol"""
@@ -228,36 +152,32 @@ async def get_trading_dashboard(symbol: str):
     """
     Get comprehensive trading dashboard data for a symbol
     
-    Combines:
-    - Market data (price, OI, funding)
-    - Liquidations (24h breakdown)
-    - Long/Short ratio
-    - OI trend
-    - All in one call for dashboard/UI
+    Combines all WORKING Coinglass endpoints:
+    - Comprehensive market data (price, OI, funding rates, 7 timeframes)
+    - Multi-timeframe liquidations (24h/12h/4h/1h)
+    - All in one call for dashboard/UI integration
+    
+    Note: Only includes verified working endpoints from Standard plan
     """
     service = CoinglassComprehensiveService()
     try:
-        # Fetch all data concurrently
+        # Fetch only working endpoints concurrently
         import asyncio
         
         market_task = service.get_coins_markets(symbol=symbol)
         liq_task = service.get_liquidation_coin_list(symbol=symbol)
-        ls_ratio_task = service.get_long_short_ratio(symbol=symbol)
-        oi_task = service.get_oi_ohlc_aggregated(symbol=symbol)
-        funding_task = service.get_funding_rate_average(symbol=symbol)
         
-        market, liquidations, ls_ratio, oi_data, funding = await asyncio.gather(
-            market_task, liq_task, ls_ratio_task, oi_task, funding_task
-        )
+        market, liquidations = await asyncio.gather(market_task, liq_task)
         
         return {
             "symbol": symbol.upper(),
             "timestamp": None,
             "market": market,
             "liquidations": liquidations,
-            "longShortRatio": ls_ratio,
-            "openInterest": oi_data,
-            "fundingRate": funding
+            "status": {
+                "workingEndpoints": ["market", "liquidations"],
+                "note": "Dashboard includes only verified working endpoints from Coinglass Standard plan"
+            }
         }
     finally:
         await service.close()

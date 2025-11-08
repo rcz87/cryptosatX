@@ -11,6 +11,7 @@ from dataclasses import dataclass, asdict
 from app.services.coinapi_service import coinapi_service
 from app.services.coinglass_service import coinglass_service
 from app.services.coinglass_premium_service import coinglass_premium
+from app.services.coinglass_comprehensive_service import coinglass_comprehensive
 from app.services.lunarcrush_service import lunarcrush_service
 from app.services.okx_service import okx_service
 
@@ -25,6 +26,18 @@ class EnhancedSignalContext:
     open_interest: float
     social_score: float
     price_trend: str
+    
+    # Comprehensive Coinglass metrics
+    funding_rate_oi_weighted: float = 0.0
+    funding_rate_vol_weighted: float = 0.0
+    oi_market_cap_ratio: float = 0.0
+    oi_volume_ratio: float = 0.0
+    price_change_5m: float = 0.0
+    price_change_15m: float = 0.0
+    price_change_1h: float = 0.0
+    price_change_4h: float = 0.0
+    price_change_24h: float = 0.0
+    multi_timeframe_trend: str = "neutral"
     
     # Premium metrics
     long_liquidations: float = 0.0
@@ -46,6 +59,7 @@ class EnhancedSignalContext:
     
     # Data quality flags
     premium_data_available: bool = False
+    comprehensive_data_available: bool = False
     
 
 class SignalEngine:
@@ -110,6 +124,27 @@ class SignalEngine:
             }
         }
         
+        # Add comprehensive Coinglass metrics if available
+        if context.comprehensive_data_available:
+            response["comprehensiveMetrics"] = {
+                "multiTimeframeTrend": context.multi_timeframe_trend,
+                "priceChanges": {
+                    "5m": context.price_change_5m,
+                    "15m": context.price_change_15m,
+                    "1h": context.price_change_1h,
+                    "4h": context.price_change_4h,
+                    "24h": context.price_change_24h
+                },
+                "advancedRatios": {
+                    "oiMarketCapRatio": context.oi_market_cap_ratio,
+                    "oiVolumeRatio": context.oi_volume_ratio
+                },
+                "fundingRates": {
+                    "oiWeighted": context.funding_rate_oi_weighted,
+                    "volumeWeighted": context.funding_rate_vol_weighted
+                }
+            }
+        
         # Add premium metrics if available
         if context.premium_data_available:
             response["premiumMetrics"] = {
@@ -137,6 +172,7 @@ class SignalEngine:
         results = await asyncio.gather(
             coinapi_service.get_spot_price(symbol),
             coinglass_service.get_funding_and_oi(symbol),
+            coinglass_comprehensive.get_coins_markets(symbol=symbol),  # NEW: 7 timeframes + ratios
             lunarcrush_service.get_social_score(symbol),
             okx_service.get_candles(symbol, "15m", 20),
             # Premium endpoints
@@ -149,11 +185,12 @@ class SignalEngine:
         )
         
         # Unpack results
-        price_data, cg_data, social_data, candles_data, liq_data, ls_data, oi_trend_data, trader_data, fg_data = results
+        price_data, cg_data, comp_markets, social_data, candles_data, liq_data, ls_data, oi_trend_data, trader_data, fg_data = results
         
         # Handle potential exceptions
         price_data = price_data if not isinstance(price_data, Exception) else {}
         cg_data = cg_data if not isinstance(cg_data, Exception) else {}
+        comp_markets = comp_markets if not isinstance(comp_markets, Exception) else {}
         social_data = social_data if not isinstance(social_data, Exception) else {}
         candles_data = candles_data if not isinstance(candles_data, Exception) else {}
         liq_data = liq_data if not isinstance(liq_data, Exception) else {}
@@ -162,8 +199,11 @@ class SignalEngine:
         trader_data = trader_data if not isinstance(trader_data, Exception) else {}
         fg_data = fg_data if not isinstance(fg_data, Exception) else {}
         
-        # Calculate price trend
+        # Calculate price trend from OKX candles
         price_trend = self._calculate_price_trend(candles_data.get("candles", []))
+        
+        # Calculate multi-timeframe trend from comprehensive markets data
+        multi_tf_trend = self._calculate_multi_timeframe_trend(comp_markets)
         
         # Build context
         premium_available = (
@@ -172,13 +212,35 @@ class SignalEngine:
             oi_trend_data.get("success", False)
         )
         
+        comprehensive_available = comp_markets.get("success", False)
+        
+        # Log comprehensive data availability
+        if not comprehensive_available:
+            error_msg = comp_markets.get("error", "unknown error")
+            print(f"⚠️  Comprehensive markets data unavailable for {symbol}: {error_msg}. Falling back to basic Coinglass data.")
+        
+        # Prefer comprehensive markets data for funding/OI if available, fallback to basic
+        funding = comp_markets.get("fundingRateByOI", cg_data.get("fundingRate", 0.0)) if comprehensive_available else cg_data.get("fundingRate", 0.0)
+        oi = comp_markets.get("openInterestUsd", cg_data.get("openInterest", 0.0)) if comprehensive_available else cg_data.get("openInterest", 0.0)
+        
         return EnhancedSignalContext(
             symbol=symbol,
-            price=price_data.get("price", 0.0),
-            funding_rate=cg_data.get("fundingRate", 0.0),
-            open_interest=cg_data.get("openInterest", 0.0),
+            price=comp_markets.get("price", price_data.get("price", 0.0)) if comprehensive_available else price_data.get("price", 0.0),
+            funding_rate=funding,
+            open_interest=oi,
             social_score=social_data.get("socialScore", 50.0),
             price_trend=price_trend,
+            # Comprehensive Coinglass data
+            funding_rate_oi_weighted=comp_markets.get("fundingRateByOI", 0.0),
+            funding_rate_vol_weighted=comp_markets.get("fundingRateByVol", 0.0),
+            oi_market_cap_ratio=comp_markets.get("oiMarketCapRatio", 0.0),
+            oi_volume_ratio=comp_markets.get("oiVolumeRatio", 0.0),
+            price_change_5m=comp_markets.get("priceChange5m", 0.0),
+            price_change_15m=comp_markets.get("priceChange15m", 0.0),
+            price_change_1h=comp_markets.get("priceChange1h", 0.0),
+            price_change_4h=comp_markets.get("priceChange4h", 0.0),
+            price_change_24h=comp_markets.get("priceChange24h", 0.0),
+            multi_timeframe_trend=multi_tf_trend,
             # Premium data
             long_liquidations=liq_data.get("longLiquidations", 0.0),
             short_liquidations=liq_data.get("shortLiquidations", 0.0),
@@ -192,7 +254,8 @@ class SignalEngine:
             smart_money_bias=trader_data.get("smartMoneyBias", "neutral"),
             fear_greed_value=fg_data.get("value", 50),
             fear_greed_sentiment=fg_data.get("sentiment", "neutral"),
-            premium_data_available=premium_available
+            premium_data_available=premium_available,
+            comprehensive_data_available=comprehensive_available
         )
     
     def _calculate_price_trend(self, candles: list) -> str:
@@ -227,6 +290,56 @@ class SignalEngine:
                 return "neutral"
         except Exception as e:
             print(f"Error calculating price trend: {e}")
+            return "neutral"
+    
+    def _calculate_multi_timeframe_trend(self, comp_markets: dict) -> str:
+        """
+        Calculate overall trend from 7 timeframes (5m to 24h)
+        
+        Args:
+            comp_markets: Comprehensive markets data with price changes
+            
+        Returns:
+            'strongly_bullish', 'bullish', 'neutral', 'bearish', or 'strongly_bearish'
+        """
+        if not comp_markets.get("success", False):
+            return "neutral"
+        
+        try:
+            # Get all timeframe changes
+            changes = {
+                '5m': comp_markets.get("priceChange5m", 0.0),
+                '15m': comp_markets.get("priceChange15m", 0.0),
+                '30m': comp_markets.get("priceChange30m", 0.0),
+                '1h': comp_markets.get("priceChange1h", 0.0),
+                '4h': comp_markets.get("priceChange4h", 0.0),
+                '12h': comp_markets.get("priceChange12h", 0.0),
+                '24h': comp_markets.get("priceChange24h", 0.0)
+            }
+            
+            # Count bullish vs bearish timeframes
+            bullish_count = sum(1 for change in changes.values() if change > 0)
+            bearish_count = sum(1 for change in changes.values() if change < 0)
+            
+            # Weighted score (longer timeframes = more weight)
+            weights = {'5m': 1, '15m': 1, '30m': 1, '1h': 2, '4h': 3, '12h': 4, '24h': 5}
+            weighted_sum = sum(changes[tf] * weights[tf] for tf in changes)
+            total_weight = sum(weights.values())
+            avg_weighted_change = weighted_sum / total_weight if total_weight > 0 else 0
+            
+            # Determine trend strength
+            if bullish_count >= 6 and avg_weighted_change > 1.0:
+                return "strongly_bullish"
+            elif bullish_count >= 5:
+                return "bullish"
+            elif bearish_count >= 6 and avg_weighted_change < -1.0:
+                return "strongly_bearish"
+            elif bearish_count >= 5:
+                return "bearish"
+            else:
+                return "neutral"
+        except Exception as e:
+            print(f"Error calculating multi-timeframe trend: {e}")
             return "neutral"
     
     def _calculate_weighted_score(self, context: EnhancedSignalContext) -> tuple[float, Dict]:
