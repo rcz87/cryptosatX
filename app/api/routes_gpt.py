@@ -27,7 +27,7 @@ async def get_gpt_action_schema():
         base_url = f"https://{replit_domain.split(',')[0]}"
     
     schema = {
-        "openapi": "3.0.0",
+        "openapi": "3.1.0",
         "info": {
             "title": "Crypto Futures Signal API",
             "description": "Get real-time crypto trading signals based on price, funding rate, open interest, and social sentiment",
