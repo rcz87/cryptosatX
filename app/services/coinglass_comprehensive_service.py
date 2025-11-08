@@ -271,22 +271,24 @@ class CoinglassComprehensiveService:
     
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
-    async def get_long_short_ratio(self, symbol: str = "BTC", exchange: str = "Binance") -> Dict:
+    async def get_long_short_ratio(self, symbol: str = "BTC") -> Dict:
         """
-        Get long/short account ratio for a symbol
-        Endpoint: /api/pro/v1/futures/longShort/accounts (PRO API)
+        Get global long/short account ratio for a symbol
+        Endpoint: /public/v2/indicator/global_long_short_account_ratio
         
-        Returns historical long/short account ratio data
+        Returns historical global long/short account ratio data
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url_pro}/api/pro/v1/futures/longShort/accounts"
+            url = f"{self.base_url_pro}/public/v2/long_short_accounts"
             params = {
                 "symbol": symbol.upper(),
-                "exchange": exchange
+                "interval": "h1"
             }
             
+            print(f"[LSRatio] URL: {url}, Params: {params}")
             response = await client.get(url, headers=self.headers, params=params)
+            print(f"[LSRatio] Status: {response.status_code}, Response: {response.text[:500]}")
             
             if response.status_code != 200:
                 return {"success": False, "error": f"HTTP {response.status_code}"}
@@ -299,18 +301,19 @@ class CoinglassComprehensiveService:
                 if isinstance(ratio_data, list) and len(ratio_data) > 0:
                     latest = ratio_data[-1]
                     
-                    long_pct = latest.get("long_account", 0) * 100
-                    short_pct = latest.get("short_account", 0) * 100
+                    long_pct = latest.get("global_account_long_percent", 0)
+                    short_pct = latest.get("global_account_short_percent", 0)
+                    ratio = latest.get("global_account_long_short_ratio", 0)
                     
                     return {
                         "success": True,
                         "symbol": symbol.upper(),
                         "longAccountPct": long_pct,
                         "shortAccountPct": short_pct,
-                        "ratio": long_pct / short_pct if short_pct > 0 else 0,
-                        "timestamp": latest.get("t", 0),
+                        "ratio": ratio,
+                        "timestamp": latest.get("time", 0),
                         "historicalData": ratio_data,
-                        "source": "coinglass_ls_ratio"
+                        "source": "coinglass_global_ls_ratio"
                     }
             
             return {"success": False, "error": "No data"}
@@ -320,22 +323,24 @@ class CoinglassComprehensiveService:
     
     # ==================== FUNDING RATE ENDPOINTS ====================
     
-    async def get_funding_rate_average(self, symbol: str = "BTC", exchange: str = "Binance") -> Dict:
+    async def get_funding_rate_average(self, symbol: str = "BTC", interval: str = "h8") -> Dict:
         """
-        Get funding rate for a specific exchange
-        Endpoint: /api/pro/v1/futures/fundingRate/history (PRO API)
+        Get OI-weighted funding rate OHLC data
+        Endpoint: /public/v2/indicator/funding_rate_oi_weight_ohlc
         
-        Returns funding rate data for specific exchange
+        Returns OI-weighted funding rate historical data
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url_pro}/api/pro/v1/futures/fundingRate/history"
+            url = f"{self.base_url_pro}/public/v2/indicator/funding_rate_oi_weight_ohlc"
             params = {
                 "symbol": symbol.upper(),
-                "exchange": exchange
+                "interval": interval
             }
             
+            print(f"[FundingRate] URL: {url}, Params: {params}")
             response = await client.get(url, headers=self.headers, params=params)
+            print(f"[FundingRate] Status: {response.status_code}, Response: {response.text[:200]}")
             
             if response.status_code != 200:
                 return {"success": False, "error": f"HTTP {response.status_code}"}
@@ -351,10 +356,13 @@ class CoinglassComprehensiveService:
                     return {
                         "success": True,
                         "symbol": symbol.upper(),
-                        "avgFundingRate": latest.get("rate", 0),
+                        "avgFundingRate": latest.get("c", 0),
+                        "high": latest.get("h", 0),
+                        "low": latest.get("l", 0),
+                        "open": latest.get("o", 0),
                         "timestamp": latest.get("t", 0),
                         "historicalData": rate_data,
-                        "source": "coinglass_funding_avg"
+                        "source": "coinglass_funding_oi_weight"
                     }
             
             return {"success": False, "error": "No data"}
@@ -404,19 +412,21 @@ class CoinglassComprehensiveService:
     async def get_oi_ohlc_aggregated(self, symbol: str = "BTC", interval: str = "h4") -> Dict:
         """
         Get aggregated OI OHLC data across exchanges
-        Endpoint: /api/futures/open-interest/ohlc-aggregated
+        Endpoint: /public/v2/indicator/open_interest_aggregated_ohlc
         
         Returns OI candles aggregated from all exchanges
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url_v4}/api/futures/open-interest/ohlc-aggregated-history"
+            url = f"{self.base_url_pro}/public/v2/indicator/open_interest_aggregated_ohlc"
             params = {
                 "symbol": symbol.upper(),
                 "interval": interval
             }
             
+            print(f"[OI_OHLC] URL: {url}, Params: {params}")
             response = await client.get(url, headers=self.headers, params=params)
+            print(f"[OI_OHLC] Status: {response.status_code}, Response: {response.text[:200]}")
             
             if response.status_code != 200:
                 return {"success": False, "error": f"HTTP {response.status_code}"}

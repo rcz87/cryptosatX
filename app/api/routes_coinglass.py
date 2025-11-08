@@ -99,12 +99,9 @@ async def get_liquidation_heatmap(symbol: str):
 
 
 @router.get("/long-short-ratio/{symbol}")
-async def get_long_short_ratio(
-    symbol: str,
-    exchange: str = Query("Binance", description="Exchange name: Binance, OKX, Bybit, etc")
-):
+async def get_long_short_ratio(symbol: str):
     """
-    Get long/short account ratio for a symbol on specific exchange
+    Get global long/short account ratio for a symbol (aggregated across all exchanges)
     
     Shows trader sentiment and potential contrarian signals
     - High long ratio = Crowded longs (potential reversal risk)
@@ -112,7 +109,7 @@ async def get_long_short_ratio(
     """
     service = CoinglassComprehensiveService()
     try:
-        result = await service.get_long_short_ratio(symbol=symbol, exchange=exchange)
+        result = await service.get_long_short_ratio(symbol=symbol)
         
         if not result.get("success"):
             raise HTTPException(status_code=500, detail="Failed to fetch long/short ratio")
@@ -125,10 +122,10 @@ async def get_long_short_ratio(
 @router.get("/funding-rate/{symbol}")
 async def get_funding_rate(
     symbol: str,
-    exchange: str = Query("Binance", description="Exchange name: Binance, OKX, Bybit, etc")
+    interval: str = Query("h8", description="Time interval: h1, h4, h8, h12, 1d")
 ):
     """
-    Get funding rate for a specific exchange
+    Get OI-weighted funding rate OHLC for a symbol
     
     Funding rate indicates market sentiment:
     - Positive = Longs paying shorts (bullish leverage)
@@ -137,7 +134,7 @@ async def get_funding_rate(
     """
     service = CoinglassComprehensiveService()
     try:
-        result = await service.get_funding_rate_average(symbol=symbol, exchange=exchange)
+        result = await service.get_funding_rate_average(symbol=symbol, interval=interval)
         
         if not result.get("success"):
             raise HTTPException(status_code=500, detail="Failed to fetch funding rate")
