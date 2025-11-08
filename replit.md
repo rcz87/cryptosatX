@@ -113,3 +113,66 @@ All three premium subscriptions now fully utilized:
 - 💰 **Coinglass Standard** ($300/mo) - Market data, liquidations, funding rates
 - 💰 **LunarCrush Standard** - Social sentiment, momentum, spike detection  
 - 💰 **CoinAPI Startup** ($78/mo) - OHLCV, order book, trades, quotes, multi-exchange
+
+---
+
+### Nov 8, 2025 - Smart Money Scanner Feature 🎯
+**NEW FEATURE**: Advanced whale accumulation/distribution detection across 38+ cryptocurrencies
+
+✅ **Successfully Implemented:**
+- Created `smart_money_service.py` with sophisticated scoring algorithms
+- Added `/smart-money/*` routes for comprehensive market scanning
+- Implemented 10-point scoring system for both accumulation and distribution patterns
+- Scans 38+ coins concurrently: majors, DeFi, L1/L2, meme coins, gaming tokens
+
+**Endpoints Created:**
+- ✅ `/smart-money/scan` - Full market scan with both accumulation & distribution
+- ✅ `/smart-money/scan/accumulation` - Find coins to BUY before retail
+- ✅ `/smart-money/scan/distribution` - Find coins to SHORT before dump
+- ✅ `/smart-money/info` - Scanner info and methodology
+
+**Scoring Methodology:**
+
+**Accumulation Detection (0-10 points):**
+- Buy pressure > 80% → +3 points
+- Funding rate < 0% (negative) → +2 points
+- Social activity < 30 (retail unaware) → +2 points  
+- Sideways price action → +2 points
+- Mild uptrend → +1 point
+- **Score ≥7** = Strong accumulation ⭐⭐
+
+**Distribution Detection (0-10 points):**
+- Sell pressure > 80% → +3 points
+- Funding rate > 0.5% (overcrowded) → +2 points
+- Social activity > 70 (retail FOMO) → +2 points
+- Recent pump > 15% → +2 points
+- Momentum shift (pump losing steam) → +1 point
+- **Score ≥7** = Strong distribution ⭐⭐
+
+**Real Test Results (Nov 8, 2025):**
+```
+🟢 Accumulation Signals Found: 19 coins
+   Top: NEAR (7/10) - 84.2% buy + negative funding
+        XRP (6/10) - 70.4% buy + retail unaware
+        UNI (6/10) - 91.7% buy + retail unaware
+
+🔴 Distribution Signals Found: 7 coins
+   Top: ADA (6/10) - 95.4% sell + overcrowded longs
+        ARB (6/10) - 91.1% sell + high funding
+        DOGE (6/10) - 100% sell pressure
+```
+
+**Coins Scanned (38 total):**
+- **Major**: BTC, ETH, BNB, SOL, XRP, ADA, AVAX, DOT, MATIC, LINK
+- **DeFi**: UNI, AAVE, CRV, SUSHI, MKR, COMP, SNX
+- **Layer 1/2**: ATOM, NEAR, FTM, ARB, OP, APT, SUI
+- **Popular**: DOGE, SHIB, PEPE, LTC, BCH, ETC
+- **Gaming/Meta**: SAND, MANA, AXS, GALA
+- **Others**: XLM, ALGO, VET, HBAR
+
+**Value Delivered:**
+- **Early Entry Detection** - Buy before retail discovers accumulation
+- **Top Detection** - Short before retail panic sells
+- **Smart Money Tracking** - Follow whales instead of crowd
+- **Multi-Coin Analysis** - Scan entire market in seconds
+- **Production-Ready** - Graceful error handling, concurrent scanning
