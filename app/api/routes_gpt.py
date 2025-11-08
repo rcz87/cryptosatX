@@ -111,6 +111,130 @@ async def get_gpt_action_schema():
                         }
                     }
                 }
+            },
+            "/smart-money/scan": {
+                "get": {
+                    "summary": "Scan Smart Money Activity",
+                    "description": "Scan 38+ cryptocurrencies for whale accumulation/distribution patterns. Detects coins being accumulated or distributed by smart money before retail traders enter/exit. Returns coins with accumulation score (buy-before-retail signals) and distribution score (short-before-dump signals).",
+                    "operationId": "scanSmartMoney",
+                    "parameters": [
+                        {
+                            "name": "min_accumulation_score",
+                            "in": "query",
+                            "required": False,
+                            "description": "Minimum accumulation score (0-10). Default 5. Higher = stronger buy signal.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 5,
+                                "minimum": 0,
+                                "maximum": 10
+                            }
+                        },
+                        {
+                            "name": "min_distribution_score",
+                            "in": "query",
+                            "required": False,
+                            "description": "Minimum distribution score (0-10). Default 5. Higher = stronger short signal.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 5,
+                                "minimum": 0,
+                                "maximum": 10
+                            }
+                        },
+                        {
+                            "name": "coins",
+                            "in": "query",
+                            "required": False,
+                            "description": "Comma-separated list of specific coins to scan (e.g., 'BTC,ETH,SOL'). If not provided, scans all 38 default coins.",
+                            "schema": {
+                                "type": "string",
+                                "example": "BTC,ETH,SOL"
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Smart money scan results with accumulation and distribution signals",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "accumulation": {
+                                                "type": "array",
+                                                "description": "Coins showing whale accumulation patterns (buy signals)"
+                                            },
+                                            "distribution": {
+                                                "type": "array",
+                                                "description": "Coins showing whale distribution patterns (short signals)"
+                                            },
+                                            "summary": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "accumulationSignals": {"type": "integer"},
+                                                    "distributionSignals": {"type": "integer"}
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "/smart-money/scan/accumulation": {
+                "get": {
+                    "summary": "Find Accumulation Opportunities",
+                    "description": "Find coins being accumulated by whales (buy-before-retail signals). Returns only coins with strong accumulation patterns: high buy pressure, negative funding, low social activity, sideways price action.",
+                    "operationId": "scanAccumulation",
+                    "parameters": [
+                        {
+                            "name": "min_score",
+                            "in": "query",
+                            "required": False,
+                            "description": "Minimum accumulation score (0-10). Default 6. Score ≥7 = strong accumulation.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 6,
+                                "minimum": 0,
+                                "maximum": 10
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Coins with whale accumulation patterns"
+                        }
+                    }
+                }
+            },
+            "/smart-money/scan/distribution": {
+                "get": {
+                    "summary": "Find Distribution Opportunities",
+                    "description": "Find coins being distributed by whales (short-before-dump signals). Returns only coins with strong distribution patterns: high sell pressure, overcrowded longs, social FOMO, recent pumps.",
+                    "operationId": "scanDistribution",
+                    "parameters": [
+                        {
+                            "name": "min_score",
+                            "in": "query",
+                            "required": False,
+                            "description": "Minimum distribution score (0-10). Default 6. Score ≥7 = strong distribution.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 6,
+                                "minimum": 0,
+                                "maximum": 10
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Coins with whale distribution patterns"
+                        }
+                    }
+                }
             }
         }
     }
