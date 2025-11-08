@@ -33,14 +33,14 @@ class CoinglassPremiumService:
         if self._client and not self._client.is_closed:
             await self._client.aclose()
     
-    async def get_liquidation_data(self, symbol: str, interval: str = "h4") -> Dict:
+    async def get_liquidation_data(self, symbol: str, exchange: str = "Binance") -> Dict:
         """
         Get liquidation volume data (longs vs shorts liquidated)
-        Endpoint: /api/futures/liquidation/symbol
+        Endpoint: /api/futures/liquidation/coin-list
         
         Args:
             symbol: Cryptocurrency symbol (e.g., 'BTC')
-            interval: Time interval (h1, h4, h12, h24)
+            exchange: Exchange name (default: Binance)
             
         Returns:
             Dict with liquidation volumes for longs and shorts
@@ -49,10 +49,9 @@ class CoinglassPremiumService:
             symbol = symbol.upper()
             client = await self._get_client()
             
-            url = f"{self.base_url}/api/futures/liquidation/symbol"
+            url = f"{self.base_url}/api/futures/liquidation/coin-list"
             params = {
-                "symbol": symbol,
-                "interval": interval
+                "exchange": exchange
             }
             
             response = await client.get(url, headers=self.headers, params=params)
@@ -63,18 +62,25 @@ class CoinglassPremiumService:
             
             data = response.json()
             
-            if data.get("code") == "0" and data.get("data"):
+            # Debug logging
+            code = data.get("code")
+            msg = data.get("msg", "")
+            print(f"[Liquidation] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
+            
+            # Coinglass returns integer 0 for success, not string "0"
+            if str(code) == "0" and data.get("data"):
                 liq_data = data["data"]
                 
-                # Calculate total liquidations (24h)
+                # Find the specific symbol's liquidation data
                 total_long_liq = 0.0
                 total_short_liq = 0.0
                 
                 if isinstance(liq_data, list):
-                    # Sum recent liquidations
-                    for entry in liq_data[-24:]:  # Last 24 periods
-                        total_long_liq += float(entry.get("buyVolUsd", 0))
-                        total_short_liq += float(entry.get("sellVolUsd", 0))
+                    for coin_data in liq_data:
+                        if coin_data.get("symbol") == symbol:
+                            total_long_liq = float(coin_data.get("long_liquidation_usd_24h", 0))
+                            total_short_liq = float(coin_data.get("short_liquidation_usd_24h", 0))
+                            break
                 
                 # Calculate liquidation imbalance
                 total_liq = total_long_liq + total_short_liq
@@ -97,13 +103,14 @@ class CoinglassPremiumService:
             print(f"Liquidation error for {symbol}: {e}")
             return self._default_liquidation_response(symbol)
     
-    async def get_long_short_ratio(self, symbol: str) -> Dict:
+    async def get_long_short_ratio(self, symbol: str, exchange: str = "Binance") -> Dict:
         """
-        Get long/short ratio from account positions
-        Endpoint: /api/futures/long-short-accounts
+        Get long/short ratio from global accounts
+        Endpoint: /api/futures/global-longshort-account-ratio
         
         Args:
             symbol: Cryptocurrency symbol
+            exchange: Exchange name (default: Binance)
             
         Returns:
             Dict with long/short ratios
@@ -112,24 +119,37 @@ class CoinglassPremiumService:
             symbol = symbol.upper()
             client = await self._get_client()
             
-            url = f"{self.base_url}/api/futures/long-short-accounts"
-            params = {"symbol": symbol}
+            symbol_pair = f"{symbol}USDT"  # Convert BTC -> BTCUSDT
+            url = f"{self.base_url}/api/futures/global-long-short-account-ratio/history"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol_pair,
+                "interval": "h1",
+                "limit": 1
+            }
             
             response = await client.get(url, headers=self.headers, params=params)
             
             if response.status_code != 200:
+                print(f"[LongShortRatio] HTTP ERROR {symbol} - Status: {response.status_code}, Body: {response.text[:500]}")
                 return self._default_ls_ratio_response(symbol)
             
             data = response.json()
             
-            if data.get("code") == "0" and data.get("data"):
+            # Debug logging
+            code = data.get("code")
+            msg = data.get("msg", "")
+            print(f"[LongShortRatio] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
+            
+            # Coinglass returns integer 0 for success
+            if str(code) == "0" and data.get("data"):
                 ls_data = data["data"]
                 
                 # Get latest long/short percentages
                 if isinstance(ls_data, list) and len(ls_data) > 0:
                     latest = ls_data[-1]  # Most recent
-                    long_pct = float(latest.get("longRate", 50.0))
-                    short_pct = float(latest.get("shortRate", 50.0))
+                    long_pct = float(latest.get("global_account_long_percent", 50.0))
+                    short_pct = float(latest.get("global_account_short_percent", 50.0))
                     
                     # Determine sentiment
                     if long_pct > 60:
@@ -175,7 +195,7 @@ class CoinglassPremiumService:
             symbol = symbol.upper()
             client = await self._get_client()
             
-            url = f"{self.base_url}/api/futures/ohlc-aggregated-history"
+            url = f"{self.base_url}/api/futures/open-interest/ohlc-aggregated-history"
             params = {
                 "symbol": symbol,
                 "interval": "h1",
@@ -185,11 +205,18 @@ class CoinglassPremiumService:
             response = await client.get(url, headers=self.headers, params=params)
             
             if response.status_code != 200:
+                print(f"[OITrend] HTTP ERROR {symbol} - Status: {response.status_code}, Body: {response.text[:500]}")
                 return self._default_oi_trend_response(symbol)
             
             data = response.json()
             
-            if data.get("code") == "0" and data.get("data"):
+            # Debug logging
+            code = data.get("code")
+            msg = data.get("msg", "")
+            print(f"[OITrend] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
+            
+            # Coinglass returns integer 0 for success
+            if str(code) == "0" and data.get("data"):
                 oi_history = data["data"]
                 
                 if isinstance(oi_history, list) and len(oi_history) >= 2:
@@ -229,13 +256,14 @@ class CoinglassPremiumService:
             print(f"OI trend error for {symbol}: {e}")
             return self._default_oi_trend_response(symbol)
     
-    async def get_top_trader_ratio(self, symbol: str) -> Dict:
+    async def get_top_trader_ratio(self, symbol: str, exchange: str = "Binance") -> Dict:
         """
         Get top trader long/short positioning
-        Endpoint: /api/futures/top-long-short-position-ratio
+        Endpoint: /api/futures/top-longshort-position-ratio
         
         Args:
             symbol: Cryptocurrency symbol
+            exchange: Exchange name (default: Binance)
             
         Returns:
             Dict with top trader positioning
@@ -244,24 +272,37 @@ class CoinglassPremiumService:
             symbol = symbol.upper()
             client = await self._get_client()
             
-            url = f"{self.base_url}/api/futures/top-long-short-position-ratio"
-            params = {"symbol": symbol}
+            symbol_pair = f"{symbol}USDT"  # Convert BTC -> BTCUSDT
+            url = f"{self.base_url}/api/futures/top-long-short-position-ratio/history"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol_pair,
+                "interval": "h1",
+                "limit": 1
+            }
             
             response = await client.get(url, headers=self.headers, params=params)
             
             if response.status_code != 200:
+                print(f"[TopTrader] HTTP ERROR {symbol} - Status: {response.status_code}, Body: {response.text[:500]}")
                 return self._default_top_trader_response(symbol)
             
             data = response.json()
             
-            if data.get("code") == "0" and data.get("data"):
+            # Debug logging
+            code = data.get("code")
+            msg = data.get("msg", "")
+            print(f"[TopTrader] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
+            
+            # Coinglass returns integer 0 for success
+            if str(code) == "0" and data.get("data"):
                 trader_data = data["data"]
                 
                 if isinstance(trader_data, list) and len(trader_data) > 0:
                     latest = trader_data[-1]
                     
-                    long_pct = float(latest.get("longRate", 50.0))
-                    short_pct = float(latest.get("shortRate", 50.0))
+                    long_pct = float(latest.get("top_position_long_percent", 50.0))
+                    short_pct = float(latest.get("top_position_short_percent", 50.0))
                     
                     # Smart money bias
                     if long_pct > 55:
@@ -298,20 +339,29 @@ class CoinglassPremiumService:
         try:
             client = await self._get_client()
             
-            url = f"{self.base_url}/api/index/fear-greed"
+            url = f"{self.base_url}/api/index/fear-greed-history"
             
             response = await client.get(url, headers=self.headers)
             
             if response.status_code != 200:
+                print(f"[FearGreed] HTTP ERROR - Status: {response.status_code}, Body: {response.text[:500]}")
                 return self._default_fear_greed_response()
             
             data = response.json()
             
-            if data.get("code") == "0" and data.get("data"):
+            # Debug logging
+            code = data.get("code")
+            msg = data.get("msg", "")
+            print(f"[FearGreed] Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
+            
+            # Coinglass returns integer 0 for success
+            if str(code) == "0" and data.get("data"):
                 fg_data = data["data"]
+                print(f"[FearGreed] DEBUG - Data type: {type(fg_data)}, Length: {len(fg_data) if isinstance(fg_data, list) else 'N/A'}, First entry: {fg_data[0] if isinstance(fg_data, list) and len(fg_data) > 0 else fg_data}")
                 
                 if isinstance(fg_data, list) and len(fg_data) > 0:
                     latest = fg_data[0]
+                    print(f"[FearGreed] DEBUG - Latest entry fields: {latest.keys() if isinstance(latest, dict) else 'not a dict'}")
                     
                     value = int(latest.get("value", 50))
                     

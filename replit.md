@@ -10,9 +10,13 @@ Production-ready FastAPI backend for crypto futures trading signals. This API in
 - Expose GPT Actions-compatible OpenAPI schema for OpenAI integration
 
 ## Current State
-✅ Fully implemented and ready to run
+✅ **Enhanced Signal Engine** with premium Coinglass v4 endpoints and weighted scoring
+✅ **Concurrent data fetching** using asyncio.gather for optimal performance
+✅ **3/5 Premium endpoints operational**: Liquidation, Long/Short Ratio, Top Trader
+✅ **Weighted scoring system** (0-100) with 8 factors and configurable thresholds
+✅ **Debug mode** available via `?debug=true` parameter for detailed metrics
 ✅ Modular architecture with clean separation of concerns
-✅ Error handling with safe defaults for all API integrations
+✅ Error handling with safe defaults for all API integrations  
 ✅ OpenAPI documentation available at /docs
 ✅ GPT Actions schema endpoint for seamless OpenAI integration
 
@@ -22,49 +26,90 @@ Production-ready FastAPI backend for crypto futures trading signals. This API in
 ```
 /app
   /api            - API route handlers
-    routes_health.py      - Health check endpoints
-    routes_signals.py     - Signal and market data endpoints
-    routes_gpt.py         - GPT Actions schema endpoint
+    routes_health.py           - Health check endpoints
+    routes_signals.py          - Signal and market data endpoints (with debug mode)
+    routes_gpt.py              - GPT Actions schema endpoint
   /core           - Core business logic
-    signal_engine.py      - Signal generation engine
+    signal_engine.py           - Enhanced signal engine with weighted scoring
   /services       - External API integrations
-    coinapi_service.py    - CoinAPI integration (spot prices)
-    coinglass_service.py  - Coinglass v4 (funding rate & OI)
-    lunarcrush_service.py - LunarCrush (social sentiment)
-    okx_service.py        - OKX public API (candlestick data)
+    coinapi_service.py         - CoinAPI integration (spot prices)
+    coinglass_service.py       - Coinglass v4 (funding rate & OI)
+    coinglass_premium_service.py - **NEW** Coinglass premium endpoints
+    lunarcrush_service.py      - LunarCrush (social sentiment)
+    okx_service.py             - OKX public API (candlestick data)
   main.py         - FastAPI application entry point
 ```
 
 ### Data Sources
 1. **CoinAPI** - Real-time spot prices for cryptocurrencies
-2. **Coinglass v4** - Funding rates and open interest data
-3. **LunarCrush** - Social sentiment and community engagement metrics
-4. **OKX Public API** - Candlestick/OHLCV data (no auth required)
+2. **Coinglass v4 Base** - Funding rates and open interest data
+3. **Coinglass v4 Premium** - Advanced metrics (liquidations, L/S ratios, smart money)
+4. **LunarCrush** - Social sentiment and community engagement metrics
+5. **OKX Public API** - Candlestick/OHLCV data (no auth required)
 
-### Signal Generation Logic
-The Signal Engine combines multiple factors:
-- **Funding Rate**: Indicates market sentiment (positive = longs paying shorts)
-- **Open Interest**: Shows total market exposure
-- **Social Sentiment**: Community engagement and buzz (0-100 scale)
-- **Price Trend**: Recent price action from candlestick analysis
+### Enhanced Signal Generation Logic (Weighted Scoring System)
+The Enhanced Signal Engine uses an 8-factor weighted scoring system (0-100 scale):
 
-**Signal Output**: LONG, SHORT, or NEUTRAL with detailed reasoning
+**Factor Weights:**
+- Liquidations (20%) - Tracks long vs short liquidation imbalance
+- Funding Rate (15%) - Overleveraged positions indicator
+- Price Momentum (15%) - Short-term trend direction
+- Long/Short Ratio (15%) - Crowd sentiment (contrarian indicator)
+- Smart Money (10%) - Top trader positioning
+- OI Trend (10%) - Open interest 24h change
+- Social Sentiment (10%) - Community engagement
+- Fear & Greed (5%) - Market-wide sentiment index
+
+**Signal Thresholds:**
+- Score ≥65: **LONG** signal
+- Score ≤35: **SHORT** signal  
+- Score 35-65: **NEUTRAL** signal
+
+**Output Includes:**
+- Signal recommendation (LONG/SHORT/NEUTRAL)
+- Composite score (0-100)
+- Confidence level (high/medium/low)
+- Top 3 contributing factors with human-readable explanations
+- All raw metrics (in debug mode)
 
 ## Recent Changes
-- **Nov 8, 2025**: Initial project creation
-  - Implemented all 4 data provider services
-  - Created signal engine with multi-factor analysis
-  - Set up FastAPI with CORS and route organization
-  - Added GPT Actions OpenAPI schema endpoint
-  - Configured environment variable management
+
+### Nov 8, 2025 - Premium Signal Engine Upgrade
+**Major Enhancement**: Upgraded signal engine with Coinglass Premium endpoints and weighted scoring
+
+✅ **Successfully Implemented:**
+- Created `coinglass_premium_service.py` with 5 premium endpoints
+- Implemented `EnhancedSignalContext` dataclass for structured metrics
+- Refactored signal engine with `asyncio.gather` for concurrent data fetching
+- Implemented weighted scoring system (0-100) with 8 configurable factors
+- Added debug mode to `/signals` endpoint (`?debug=true`)
+- Added `/debug/premium/{symbol}` endpoint for testing premium APIs
+
+**Premium Endpoints Status:**
+- ✅ **Liquidation Data** - Working ($7.7M longs vs $9.2M shorts, 24h)
+- ✅ **Long/Short Ratio** - Working (71.6% longs - very bullish sentiment)
+- ✅ **Top Trader Positioning** - Working (68.7% long bias - smart money)
+- ⚠️ **OI Trend** - Debugging needed (404 error on endpoint)
+- ⚠️ **Fear & Greed Index** - Debugging needed (parsing issue)
+
+**Result**: Signal engine now uses premium data in reasoning. Example output includes "Overcrowded longs (71.6%) - contrarian bearish" based on real-time L/S ratio data.
+
+### Nov 8, 2025 (Initial)
+- Implemented all 4 data provider services
+- Created signal engine with multi-factor analysis
+- Set up FastAPI with CORS and route organization
+- Added GPT Actions OpenAPI schema endpoint
+- Configured environment variable management
 
 ## API Endpoints
 
 ### Core Endpoints
 - `GET /` - API information and endpoint list
 - `GET /health` - Health check
-- `GET /signals/{symbol}` - Get trading signal for a crypto (e.g., /signals/BTC)
+- `GET /signals/{symbol}` - **Enhanced** trading signal with weighted scoring
+  - Optional: `?debug=true` - Include full metrics breakdown and score details
 - `GET /market/{symbol}` - Get raw market data from all providers
+- `GET /debug/premium/{symbol}` - **NEW** Test all premium endpoints individually
 - `GET /gpt/action-schema` - OpenAPI schema for GPT Actions integration
 
 ### Documentation

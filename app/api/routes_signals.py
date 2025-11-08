@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 from app.core.signal_engine import signal_engine
 from app.services.coinapi_service import coinapi_service
 from app.services.coinglass_service import coinglass_service
+from app.services.coinglass_premium_service import coinglass_premium
 from app.services.lunarcrush_service import lunarcrush_service
 from app.services.okx_service import okx_service
 
@@ -33,6 +34,22 @@ async def get_signal(symbol: str, debug: bool = False):
         return signal
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating signal: {str(e)}")
+
+
+@router.get("/debug/premium/{symbol}")
+async def debug_premium_endpoints(symbol: str):
+    """Debug endpoint to test all premium endpoints individually"""
+    try:
+        results = {
+            "liquidation": await coinglass_premium.get_liquidation_data(symbol),
+            "longShortRatio": await coinglass_premium.get_long_short_ratio(symbol),
+            "oiTrend": await coinglass_premium.get_oi_trend(symbol),
+            "topTrader": await coinglass_premium.get_top_trader_ratio(symbol),
+            "fearGreed": await coinglass_premium.get_fear_greed_index()
+        }
+        return results
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Debug error: {str(e)}")
 
 
 @router.get("/market/{symbol}")
