@@ -176,3 +176,38 @@ All three premium subscriptions now fully utilized:
 - **Smart Money Tracking** - Follow whales instead of crowd
 - **Multi-Coin Analysis** - Scan entire market in seconds
 - **Production-Ready** - Graceful error handling, concurrent scanning
+
+---
+
+### Nov 8, 2025 - Custom Domain Configuration 🌐
+**ENHANCEMENT**: API configured for custom domain guardiansofthetoken.com
+
+✅ **Successfully Configured:**
+- Updated GPT Actions schema to support BASE_URL environment variable
+- Auto-detection of Replit domain in development
+- Custom domain support via environment variable
+- Production environment template created
+
+**Custom Domain Setup:**
+- Production URL: `https://guardiansofthetoken.com`
+- GPT Schema: `https://guardiansofthetoken.com/gpt/action-schema`
+- API Docs: `https://guardiansofthetoken.com/docs`
+
+**Deployment Process:**
+1. Deploy to Replit production (Autoscale)
+2. Link custom domain in Replit dashboard
+3. Configure DNS CNAME records
+4. Set BASE_URL environment variable
+5. Redeploy and verify
+
+**Documentation Created:**
+- `CUSTOM_DOMAIN_SETUP.md` - Complete custom domain setup guide
+- `DEPLOYMENT_GUIDE.md` - Production deployment instructions
+- `GPT_ACTIONS_SETUP.md` - GPT Actions integration guide
+- `.env.production.example` - Production environment template
+
+**Value Delivered:**
+- Professional branded API URL
+- Custom domain for GPT Actions
+- Automatic SSL/HTTPS certificate
+- Production-ready configuration

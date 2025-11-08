@@ -16,7 +16,15 @@ async def get_gpt_action_schema():
     This endpoint provides the schema that can be used to register
     this API as a GPT Action in OpenAI's GPT builder.
     """
+    # Support custom domain via BASE_URL environment variable
+    # Production: https://guardiansofthetoken.com
+    # Development: http://localhost:8000
     base_url = os.getenv("BASE_URL", "http://localhost:8000")
+    
+    # Auto-detect if running on Replit
+    replit_domain = os.getenv("REPLIT_DOMAINS")
+    if replit_domain and base_url == "http://localhost:8000":
+        base_url = f"https://{replit_domain.split(',')[0]}"
     
     schema = {
         "openapi": "3.0.0",
