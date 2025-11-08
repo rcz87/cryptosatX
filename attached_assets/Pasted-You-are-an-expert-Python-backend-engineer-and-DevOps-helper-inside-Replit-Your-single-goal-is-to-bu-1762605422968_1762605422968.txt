@@ -1,0 +1,112 @@
+You are an expert Python backend engineer and DevOps helper inside Replit. Your single goal is to build a production-ready crypto futures signal API that can be later connected to OpenAI GPT Actions via an OpenAPI/JSON schema.
+
+=== GOAL ===
+Build a FastAPI (preferred) or Flask backend with:
+1. Structured folders
+2. Multiple crypto data integrations (CoinAPI, Coinglass v4, LunarCrush, OKX/public)
+3. A simple SignalEngine that merges price, OI/funding, and sentiment into 1 signal object
+4. REST endpoints to expose signals
+5. An OpenAPI-style schema/route that can be used by GPT Actions (OpenAI)
+6. Replit-ready run configuration
+
+=== CONSTRAINTS ===
+- Code must be complete, runnable, and self-contained.
+- Use environment variables for all API keys.
+- Create `.env.example` automatically.
+- Write clean, commented code.
+- Prefer FastAPI.
+- Every service must be in its own module.
+
+=== PHASE 1 – PROJECT SCAFFOLDING ===
+1. Create project structure:
+   /app
+     /api
+       __init__.py
+       routes_signals.py
+       routes_health.py
+       routes_gpt.py
+     /core
+       __init__.py
+       signal_engine.py
+     /services
+       __init__.py
+       coinapi_service.py
+       coinglass_service.py
+       lunarcrush_service.py
+       okx_service.py
+     main.py
+   requirements.txt
+   .env.example
+2. Fill requirements.txt with: fastapi, uvicorn, httpx, python-dotenv, pydantic
+3. In main.py create FastAPI app and include routers.
+4. Add /health endpoint.
+
+=== PHASE 2 – DATA SERVICES ===
+Create service modules:
+
+(1) CoinAPI
+- Function: get_spot_price(symbol: str) -> dict
+- Use header "X-CoinAPI-Key" from env
+- Base URL: https://rest.coinapi.io/v1/exchangerate/{symbol}/USDT or suitable endpoint
+- Return normalized dict: { "symbol": "...", "price": float, "source": "coinapi" }
+
+(2) Coinglass v4
+- Function: get_funding_rate(symbol: str) -> dict
+- Function: get_open_interest(symbol: str) -> dict
+- Use header "CG-API-KEY"
+- Base URL: https://open-api-v4.coinglass.com
+- Normalize output into: { "symbol": "...", "fundingRate": float, "openInterest": float }
+
+(3) Lunarcrush
+- Function: get_social_score(symbol: str) -> dict
+- Use provided API key
+- Normalize to: { "symbol": "...", "socialScore": float }
+
+(4) OKX/public
+- Function: get_candles(symbol: str, timeframe: str="15m")
+- Normalize to OHLCV list
+
+All services must handle HTTP errors and return safe defaults.
+
+=== PHASE 3 – SIGNAL ENGINE ===
+Create /app/core/signal_engine.py with:
+- function build_signal(symbol: str) -> dict
+- inside it, call the service layer:
+    price = coinapi.get_spot_price(symbol)
+    cg = coinglass.get_funding_rate(symbol) + get_open_interest
+    social = lunarcrush.get_social_score(symbol)
+- merge into 1 object:
+  {
+    "symbol": symbol,
+    "price": ...,
+    "fundingRate": ...,
+    "openInterest": ...,
+    "socialScore": ...,
+    "signal": "LONG" | "SHORT" | "NEUTRAL",
+    "reason": "...short explanation...",
+    "timestamp": ...
+  }
+- very simple logic:
+    if fundingRate > 0 and socialScore high -> LONG
+    if fundingRate < 0 and OI dropping -> SHORT
+    else NEUTRAL
+- make the logic easy to extend later for SMC.
+
+=== PHASE 4 – API ROUTES ===
+Create routes:
+- GET /signals/{symbol}
+  - calls SignalEngine
+  - returns JSON
+- GET /market/{symbol}
+  - returns raw data from all providers
+- GET /gpt/action-schema
+  - returns JSON describing available endpoints so this backend can be registered as GPT Action.
+  - include baseUrl from env if available.
+
+=== PHASE 5 – REPLIT RUN ===
+- create a main entrypoint with: uvicorn app.main:app --host 0.0.0.0 --port 8000
+- ensure Replit can run it
+- if needed, create replit.nix or .replit
+
+=== OUTPUT STYLE ===
+Always show the full files with code blocks. Do not omit sections. If something is unclear, make a reasonable assumption and continue.
