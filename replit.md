@@ -74,8 +74,43 @@ The Enhanced Signal Engine uses an 8-factor weighted scoring system (0-100 scale
 
 ## Recent Changes
 
+### Nov 8, 2025 - Coinglass API Maximization 🚀
+**MAJOR UPDATE**: Maximized Coinglass Standard plan ($300/mo, 90+ endpoints) usage with comprehensive data service
+
+✅ **Successfully Implemented:**
+- Created `coinglass_comprehensive_service.py` with 10+ high-value endpoints
+- Added complete `/coinglass/*` route set for direct data access
+- Implemented dashboard endpoint combining all data sources
+- All endpoints use async/await with connection pooling for performance
+
+**New Coinglass Endpoints Available:**
+- ✅ **Coins Markets** (`/coinglass/markets/{symbol}`) - Comprehensive market data:
+  - Price, Market Cap, Open Interest (USD & Qty)
+  - Funding Rates (OI-weighted & Volume-weighted)
+  - Price changes across 7 timeframes (5m, 15m, 30m, 1h, 4h, 12h, 24h)
+  - OI/Market Cap ratio, OI/Volume ratio
+  
+- ✅ **Liquidations** (`/coinglass/liquidations/{symbol}`) - Multi-timeframe liquidation data:
+  - 24h, 12h, 4h, 1h liquidation breakdowns
+  - Long vs Short separation ($7.7M longs vs $9.2M shorts)
+  - Liquidation heatmap available (`/liquidations/{symbol}/heatmap`)
+  
+- ✅ **Dashboard** (`/coinglass/dashboard/{symbol}`) - ALL data in one call:
+  - Market metrics, Liquidations, Ratios, OI trends, Funding rates
+  - Perfect for dashboards and UI integration
+  
+- ✅ **Supported Coins** (`/coinglass/supported-coins`) - Full list of tradable assets
+- ✅ **Exchanges** (`/coinglass/exchanges`) - All supported exchanges and pairs
+
+**Value Delivered:**
+- **7 timeframe price tracking** - Identify micro and macro trends
+- **Advanced ratios** - OI/MarketCap (3.37%), OI/Volume (80%)
+- **Multi-exchange aggregation** - Data from Binance, OKX, Bybit, etc.
+- **Real-time liquidations** - Track market pain points
+- **$300/month API fully utilized** - User gets maximum ROI on subscription
+
 ### Nov 8, 2025 - Premium Signal Engine Upgrade
-**Major Enhancement**: Upgraded signal engine with Coinglass Premium endpoints and weighted scoring
+**Enhancement**: Upgraded signal engine with Coinglass Premium endpoints and weighted scoring
 
 ✅ **Successfully Implemented:**
 - Created `coinglass_premium_service.py` with 5 premium endpoints
@@ -109,8 +144,39 @@ The Enhanced Signal Engine uses an 8-factor weighted scoring system (0-100 scale
 - `GET /signals/{symbol}` - **Enhanced** trading signal with weighted scoring
   - Optional: `?debug=true` - Include full metrics breakdown and score details
 - `GET /market/{symbol}` - Get raw market data from all providers
-- `GET /debug/premium/{symbol}` - **NEW** Test all premium endpoints individually
+- `GET /debug/premium/{symbol}` - Test all premium endpoints individually
 - `GET /gpt/action-schema` - OpenAPI schema for GPT Actions integration
+
+### Coinglass Data Endpoints 🆕
+Maximize your Coinglass Standard plan with direct access to 90+ endpoints:
+
+**Market Data:**
+- `GET /coinglass/markets` - All coins market data
+- `GET /coinglass/markets/{symbol}` - Specific coin comprehensive metrics
+  - Returns: Price, Market Cap, OI, Funding Rates, 7 timeframe price changes, OI ratios
+- `GET /coinglass/perpetual-market/{symbol}` - Perpetual futures market data
+
+**Liquidations:**
+- `GET /coinglass/liquidations/{symbol}` - Multi-timeframe liquidation breakdown
+  - Params: `include_orders=true`, `include_map=true`
+- `GET /coinglass/liquidations/{symbol}/heatmap` - Price level liquidation clusters
+
+**Analytics:**
+- `GET /coinglass/long-short-ratio/{symbol}` - Position ratio & trader sentiment
+  - Params: `interval` (h1, h4, h8, h12, d1)
+- `GET /coinglass/funding-rate/{symbol}` - Multi-exchange average funding rate
+  - Params: `interval` (h4, h8)
+- `GET /coinglass/open-interest/{symbol}` - OI OHLC aggregated data
+  - Params: `interval` (h1, h4, h8, h12, d1)
+
+**Utilities:**
+- `GET /coinglass/supported-coins` - List all supported cryptocurrencies
+- `GET /coinglass/exchanges` - All exchanges and their trading pairs
+
+**Dashboard (All-in-One):**
+- `GET /coinglass/dashboard/{symbol}` - Complete trading dashboard
+  - Combines: Markets, Liquidations, L/S Ratio, OI Trends, Funding Rates
+  - Perfect for building UIs and dashboards
 
 ### Documentation
 - `/docs` - Interactive Swagger UI documentation
