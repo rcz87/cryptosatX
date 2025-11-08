@@ -12,18 +12,24 @@ router = APIRouter()
 
 
 @router.get("/signals/{symbol}")
-async def get_signal(symbol: str):
+async def get_signal(symbol: str, debug: bool = False):
     """
-    Get comprehensive trading signal for a cryptocurrency
+    Get enhanced trading signal with premium data and weighted scoring
     
     Args:
         symbol: Cryptocurrency symbol (e.g., BTC, ETH, SOL)
+        debug: Include detailed score breakdown and all raw metrics (default: False)
         
     Returns:
-        Complete signal object with price, funding, OI, sentiment, and recommendation
+        Enhanced signal with:
+        - LONG/SHORT/NEUTRAL recommendation
+        - Score (0-100) with weighted multi-factor analysis
+        - Top 3 reasons for the signal
+        - Premium metrics (liquidations, L/S ratio, smart money, etc.)
+        - Debug info if requested
     """
     try:
-        signal = await signal_engine.build_signal(symbol)
+        signal = await signal_engine.build_signal(symbol, debug=debug)
         return signal
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating signal: {str(e)}")

@@ -1,76 +1,199 @@
 """
-Signal Engine
-Combines data from multiple sources to generate trading signals
+Enhanced Signal Engine
+Combines data from multiple sources to generate advanced trading signals
+Uses premium Coinglass endpoints and weighted scoring system
 """
+import asyncio
 from datetime import datetime
-from typing import Dict
+from typing import Dict, List
+from dataclasses import dataclass, asdict
+
 from app.services.coinapi_service import coinapi_service
 from app.services.coinglass_service import coinglass_service
+from app.services.coinglass_premium_service import coinglass_premium
 from app.services.lunarcrush_service import lunarcrush_service
 from app.services.okx_service import okx_service
 
 
+@dataclass
+class EnhancedSignalContext:
+    """Structured container for all market metrics"""
+    # Basic metrics
+    symbol: str
+    price: float
+    funding_rate: float
+    open_interest: float
+    social_score: float
+    price_trend: str
+    
+    # Premium metrics
+    long_liquidations: float = 0.0
+    short_liquidations: float = 0.0
+    liquidation_imbalance: str = "unknown"
+    
+    long_account_pct: float = 50.0
+    short_account_pct: float = 50.0
+    ls_sentiment: str = "neutral"
+    
+    oi_change_pct: float = 0.0
+    oi_trend: str = "unknown"
+    
+    top_trader_long_pct: float = 50.0
+    smart_money_bias: str = "neutral"
+    
+    fear_greed_value: int = 50
+    fear_greed_sentiment: str = "neutral"
+    
+    # Data quality flags
+    premium_data_available: bool = False
+    
+
 class SignalEngine:
     """
-    Core engine that merges price, funding rate, open interest,
-    and social sentiment to generate trading signals
+    Enhanced trading signal engine with premium data integration
+    Features:
+    - Concurrent data fetching for speed
+    - Weighted scoring system (0-100)
+    - Multi-factor analysis
+    - Smart money tracking
     """
     
-    async def build_signal(self, symbol: str) -> Dict:
+    # Scoring weights (total = 100)
+    WEIGHTS = {
+        "funding_rate": 15,
+        "social_sentiment": 10,
+        "price_momentum": 15,
+        "liquidations": 20,
+        "long_short_ratio": 15,
+        "oi_trend": 10,
+        "smart_money": 10,
+        "fear_greed": 5
+    }
+    
+    async def build_signal(self, symbol: str, debug: bool = False) -> Dict:
         """
-        Build a comprehensive trading signal for a given symbol
+        Build enhanced trading signal using all data sources concurrently
         
         Args:
             symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH')
+            debug: If True, include all raw metrics in response
             
         Returns:
-            Dict containing all metrics and signal recommendation
+            Dict with signal, score, and comprehensive analysis
         """
-        # Normalize symbol
         symbol = symbol.upper()
         
-        # Fetch data from all sources concurrently would be ideal,
-        # but for simplicity we'll do sequential calls
-        price_data = await coinapi_service.get_spot_price(symbol)
-        cg_data = await coinglass_service.get_funding_and_oi(symbol)
-        social_data = await lunarcrush_service.get_social_score(symbol)
-        candles_data = await okx_service.get_candles(symbol, "15m", 20)
+        # PHASE 1: Concurrent data collection
+        context = await self._collect_market_data(symbol)
         
-        # Extract metrics
-        price = price_data.get("price", 0.0)
-        funding_rate = cg_data.get("fundingRate", 0.0)
-        open_interest = cg_data.get("openInterest", 0.0)
-        social_score = social_data.get("socialScore", 50.0)
+        # PHASE 2: Calculate weighted score
+        score, breakdown = self._calculate_weighted_score(context)
         
-        # Calculate price trend from candles
-        price_trend = self._calculate_price_trend(candles_data.get("candles", []))
+        # PHASE 3: Generate signal and reasoning
+        signal = self._determine_signal(score)
+        top_reasons = self._generate_top_reasons(breakdown, context)
         
-        # Generate signal based on simple logic
-        signal, reason = self._generate_signal(
-            funding_rate=funding_rate,
-            open_interest=open_interest,
-            social_score=social_score,
-            price_trend=price_trend
-        )
-        
-        # Build comprehensive signal object
-        return {
+        # Build response
+        response = {
             "symbol": symbol,
             "timestamp": datetime.utcnow().isoformat(),
-            "price": price,
-            "fundingRate": funding_rate,
-            "openInterest": open_interest,
-            "socialScore": social_score,
-            "priceTrend": price_trend,
             "signal": signal,
-            "reason": reason,
-            "dataQuality": {
-                "priceAvailable": price_data.get("success", False),
-                "fundingAvailable": cg_data.get("success", False),
-                "socialAvailable": social_data.get("success", False),
-                "candlesAvailable": candles_data.get("success", False)
+            "score": round(score, 1),  # 0-100
+            "confidence": self._calculate_confidence(breakdown),
+            "price": context.price,
+            "reasons": top_reasons,
+            "metrics": {
+                "fundingRate": context.funding_rate,
+                "openInterest": context.open_interest,
+                "socialScore": context.social_score,
+                "priceTrend": context.price_trend
             }
         }
+        
+        # Add premium metrics if available
+        if context.premium_data_available:
+            response["premiumMetrics"] = {
+                "liquidationImbalance": context.liquidation_imbalance,
+                "longShortSentiment": context.ls_sentiment,
+                "oiTrend": context.oi_trend,
+                "smartMoneyBias": context.smart_money_bias,
+                "fearGreedIndex": context.fear_greed_value
+            }
+        
+        # Debug mode: include all raw data
+        if debug:
+            response["debug"] = {
+                "scoreBreakdown": breakdown,
+                "allMetrics": asdict(context)
+            }
+        
+        return response
+    
+    async def _collect_market_data(self, symbol: str) -> EnhancedSignalContext:
+        """
+        Fetch all market data concurrently using asyncio.gather
+        """
+        # Fetch all data sources in parallel
+        results = await asyncio.gather(
+            coinapi_service.get_spot_price(symbol),
+            coinglass_service.get_funding_and_oi(symbol),
+            lunarcrush_service.get_social_score(symbol),
+            okx_service.get_candles(symbol, "15m", 20),
+            # Premium endpoints
+            coinglass_premium.get_liquidation_data(symbol),
+            coinglass_premium.get_long_short_ratio(symbol),
+            coinglass_premium.get_oi_trend(symbol),
+            coinglass_premium.get_top_trader_ratio(symbol),
+            coinglass_premium.get_fear_greed_index(),
+            return_exceptions=True  # Don't fail if one endpoint fails
+        )
+        
+        # Unpack results
+        price_data, cg_data, social_data, candles_data, liq_data, ls_data, oi_trend_data, trader_data, fg_data = results
+        
+        # Handle potential exceptions
+        price_data = price_data if not isinstance(price_data, Exception) else {}
+        cg_data = cg_data if not isinstance(cg_data, Exception) else {}
+        social_data = social_data if not isinstance(social_data, Exception) else {}
+        candles_data = candles_data if not isinstance(candles_data, Exception) else {}
+        liq_data = liq_data if not isinstance(liq_data, Exception) else {}
+        ls_data = ls_data if not isinstance(ls_data, Exception) else {}
+        oi_trend_data = oi_trend_data if not isinstance(oi_trend_data, Exception) else {}
+        trader_data = trader_data if not isinstance(trader_data, Exception) else {}
+        fg_data = fg_data if not isinstance(fg_data, Exception) else {}
+        
+        # Calculate price trend
+        price_trend = self._calculate_price_trend(candles_data.get("candles", []))
+        
+        # Build context
+        premium_available = (
+            liq_data.get("success", False) and
+            ls_data.get("success", False) and
+            oi_trend_data.get("success", False)
+        )
+        
+        return EnhancedSignalContext(
+            symbol=symbol,
+            price=price_data.get("price", 0.0),
+            funding_rate=cg_data.get("fundingRate", 0.0),
+            open_interest=cg_data.get("openInterest", 0.0),
+            social_score=social_data.get("socialScore", 50.0),
+            price_trend=price_trend,
+            # Premium data
+            long_liquidations=liq_data.get("longLiquidations", 0.0),
+            short_liquidations=liq_data.get("shortLiquidations", 0.0),
+            liquidation_imbalance=liq_data.get("imbalance", "unknown"),
+            long_account_pct=ls_data.get("longAccountPct", 50.0),
+            short_account_pct=ls_data.get("shortAccountPct", 50.0),
+            ls_sentiment=ls_data.get("sentiment", "neutral"),
+            oi_change_pct=oi_trend_data.get("oiChangePct", 0.0),
+            oi_trend=oi_trend_data.get("trend", "unknown"),
+            top_trader_long_pct=trader_data.get("topTraderLongPct", 50.0),
+            smart_money_bias=trader_data.get("smartMoneyBias", "neutral"),
+            fear_greed_value=fg_data.get("value", 50),
+            fear_greed_sentiment=fg_data.get("sentiment", "neutral"),
+            premium_data_available=premium_available
+        )
     
     def _calculate_price_trend(self, candles: list) -> str:
         """
@@ -106,82 +229,273 @@ class SignalEngine:
             print(f"Error calculating price trend: {e}")
             return "neutral"
     
-    def _generate_signal(
-        self, 
-        funding_rate: float,
-        open_interest: float,
-        social_score: float,
-        price_trend: str
-    ) -> tuple:
+    def _calculate_weighted_score(self, context: EnhancedSignalContext) -> tuple[float, Dict]:
         """
-        Generate trading signal based on multiple factors
+        Calculate weighted score (0-100) from all metrics
         
-        Simple logic (can be extended with SMC later):
-        - LONG: Positive funding + high social score + bullish trend
-        - SHORT: Negative funding + falling OI + bearish trend
-        - NEUTRAL: Otherwise
-        
-        Args:
-            funding_rate: Current funding rate (positive = longs paying shorts)
-            open_interest: Current open interest value
-            social_score: Social sentiment score (0-100)
-            price_trend: Price trend direction
-            
         Returns:
-            Tuple of (signal, reason)
+            Tuple of (total_score, score_breakdown)
+        """
+        breakdown = {}
+        
+        # 1. Funding Rate Score (15%)
+        funding_score = self._score_funding_rate(context.funding_rate)
+        breakdown["funding_rate"] = {
+            "score": funding_score,
+            "weight": self.WEIGHTS["funding_rate"],
+            "weighted": funding_score * self.WEIGHTS["funding_rate"] / 100
+        }
+        
+        # 2. Social Sentiment Score (10%)
+        social_score = context.social_score  # Already 0-100
+        breakdown["social_sentiment"] = {
+            "score": social_score,
+            "weight": self.WEIGHTS["social_sentiment"],
+            "weighted": social_score * self.WEIGHTS["social_sentiment"] / 100
+        }
+        
+        # 3. Price Momentum Score (15%)
+        momentum_score = self._score_price_momentum(context.price_trend)
+        breakdown["price_momentum"] = {
+            "score": momentum_score,
+            "weight": self.WEIGHTS["price_momentum"],
+            "weighted": momentum_score * self.WEIGHTS["price_momentum"] / 100
+        }
+        
+        # 4. Liquidation Score (20%)
+        liq_score = self._score_liquidations(context)
+        breakdown["liquidations"] = {
+            "score": liq_score,
+            "weight": self.WEIGHTS["liquidations"],
+            "weighted": liq_score * self.WEIGHTS["liquidations"] / 100
+        }
+        
+        # 5. Long/Short Ratio Score (15%)
+        ls_score = self._score_long_short_ratio(context.long_account_pct)
+        breakdown["long_short_ratio"] = {
+            "score": ls_score,
+            "weight": self.WEIGHTS["long_short_ratio"],
+            "weighted": ls_score * self.WEIGHTS["long_short_ratio"] / 100
+        }
+        
+        # 6. OI Trend Score (10%)
+        oi_score = self._score_oi_trend(context.oi_change_pct)
+        breakdown["oi_trend"] = {
+            "score": oi_score,
+            "weight": self.WEIGHTS["oi_trend"],
+            "weighted": oi_score * self.WEIGHTS["oi_trend"] / 100
+        }
+        
+        # 7. Smart Money Score (10%)
+        smart_score = self._score_smart_money(context.top_trader_long_pct)
+        breakdown["smart_money"] = {
+            "score": smart_score,
+            "weight": self.WEIGHTS["smart_money"],
+            "weighted": smart_score * self.WEIGHTS["smart_money"] / 100
+        }
+        
+        # 8. Fear & Greed Score (5%)
+        fg_score = context.fear_greed_value  # Already 0-100
+        breakdown["fear_greed"] = {
+            "score": fg_score,
+            "weight": self.WEIGHTS["fear_greed"],
+            "weighted": fg_score * self.WEIGHTS["fear_greed"] / 100
+        }
+        
+        # Calculate total weighted score
+        total_score = sum(item["weighted"] for item in breakdown.values())
+        
+        return total_score, breakdown
+    
+    def _score_funding_rate(self, rate: float) -> float:
+        """
+        Score funding rate on 0-100 scale
+        Negative funding = bullish (shorts pay longs) = high score
+        Positive funding = bearish (longs pay shorts) = low score
+        """
+        # Normalize to percentage
+        rate_pct = rate * 100
+        
+        if rate_pct < -0.2:  # Very negative = very bullish
+            return 85
+        elif rate_pct < -0.05:
+            return 70
+        elif rate_pct < 0:
+            return 60
+        elif rate_pct < 0.05:
+            return 45
+        elif rate_pct < 0.2:
+            return 30
+        else:  # > 0.2% = very bearish
+            return 15
+    
+    def _score_price_momentum(self, trend: str) -> float:
+        """Score price momentum based on trend"""
+        if trend == "bullish":
+            return 75
+        elif trend == "bearish":
+            return 25
+        else:
+            return 50
+    
+    def _score_liquidations(self, context: EnhancedSignalContext) -> float:
+        """
+        Score based on liquidation imbalance
+        More longs liquidated = bearish pressure cleared = bullish
+        """
+        if not context.premium_data_available:
+            return 50  # Neutral if no data
+        
+        if context.liquidation_imbalance == "long":
+            # Longs getting liquidated = potential reversal up
+            return 65
+        elif context.liquidation_imbalance == "short":
+            # Shorts getting liquidated = potential reversal down
+            return 35
+        else:
+            return 50
+    
+    def _score_long_short_ratio(self, long_pct: float) -> float:
+        """
+        Score based on long/short ratio (contrarian indicator)
+        Too many longs = bearish, too many shorts = bullish
+        """
+        if long_pct > 65:  # Overcrowded longs = bearish
+            return 25
+        elif long_pct > 55:
+            return 40
+        elif long_pct < 35:  # Overcrowded shorts = bullish
+            return 75
+        elif long_pct < 45:
+            return 60
+        else:
+            return 50
+    
+    def _score_oi_trend(self, change_pct: float) -> float:
+        """
+        Score based on OI change
+        Rising OI = confirmation of trend
+        """
+        if change_pct > 5:  # Strong increase
+            return 70
+        elif change_pct > 1:
+            return 60
+        elif change_pct < -5:  # Strong decrease
+            return 30
+        elif change_pct < -1:
+            return 40
+        else:
+            return 50
+    
+    def _score_smart_money(self, top_trader_long_pct: float) -> float:
+        """
+        Score based on what smart money is doing
+        Follow the whales
+        """
+        if top_trader_long_pct > 60:
+            return 70
+        elif top_trader_long_pct > 52:
+            return 60
+        elif top_trader_long_pct < 40:
+            return 30
+        elif top_trader_long_pct < 48:
+            return 40
+        else:
+            return 50
+    
+    def _determine_signal(self, score: float) -> str:
+        """
+        Determine LONG/SHORT/NEUTRAL based on score
+        
+        Score ranges:
+        - 0-35: SHORT
+        - 35-65: NEUTRAL
+        - 65-100: LONG
+        """
+        if score >= 65:
+            return "LONG"
+        elif score <= 35:
+            return "SHORT"
+        else:
+            return "NEUTRAL"
+    
+    def _calculate_confidence(self, breakdown: Dict) -> str:
+        """
+        Calculate confidence level based on score distribution
+        """
+        weighted_scores = [item["weighted"] for item in breakdown.values()]
+        avg_score = sum(weighted_scores) / len(weighted_scores)
+        
+        # Check if scores are aligned or divergent
+        variance = sum((s - avg_score) ** 2 for s in weighted_scores) / len(weighted_scores)
+        
+        if variance < 5:
+            return "high"
+        elif variance < 15:
+            return "medium"
+        else:
+            return "low"
+    
+    def _generate_top_reasons(self, breakdown: Dict, context: EnhancedSignalContext) -> List[str]:
+        """
+        Generate top 3 reasons for the signal based on highest weighted contributions
         """
         reasons = []
-        score = 0
         
-        # Funding rate analysis
-        if funding_rate > 0.01:  # > 1% funding (extremely high)
-            score -= 2
-            reasons.append("Very high funding rate (overleveraged longs)")
-        elif funding_rate > 0:
-            score -= 1
-            reasons.append("Positive funding rate")
-        elif funding_rate < -0.01:  # < -1% funding
-            score += 2
-            reasons.append("Very negative funding rate (overleveraged shorts)")
-        elif funding_rate < 0:
-            score += 1
-            reasons.append("Negative funding rate")
+        # Sort by weighted score contribution
+        sorted_factors = sorted(
+            breakdown.items(),
+            key=lambda x: abs(x[1]["weighted"] - 50),  # Distance from neutral
+            reverse=True
+        )
         
-        # Social sentiment analysis
-        if social_score > 70:
-            score += 1
-            reasons.append(f"High social sentiment ({social_score:.0f}/100)")
-        elif social_score < 30:
-            score -= 1
-            reasons.append(f"Low social sentiment ({social_score:.0f}/100)")
-        else:
-            reasons.append(f"Neutral social sentiment ({social_score:.0f}/100)")
+        # Generate human-readable reasons for top 3 factors
+        for factor_name, factor_data in sorted_factors[:3]:
+            score = factor_data["score"]
+            
+            if factor_name == "liquidations":
+                if context.liquidation_imbalance == "long":
+                    reasons.append(f"Heavy long liquidations (${context.long_liquidations/1e6:.1f}M) - bearish pressure clearing")
+                elif context.liquidation_imbalance == "short":
+                    reasons.append(f"Heavy short liquidations (${context.short_liquidations/1e6:.1f}M) - bullish pressure clearing")
+            
+            elif factor_name == "long_short_ratio":
+                if context.long_account_pct > 60:
+                    reasons.append(f"Overcrowded longs ({context.long_account_pct:.1f}%) - contrarian bearish")
+                elif context.long_account_pct < 40:
+                    reasons.append(f"Overcrowded shorts ({context.short_account_pct:.1f}%) - contrarian bullish")
+            
+            elif factor_name == "smart_money":
+                if context.top_trader_long_pct > 55:
+                    reasons.append(f"Smart money long-biased ({context.top_trader_long_pct:.1f}%)")
+                elif context.top_trader_long_pct < 45:
+                    reasons.append(f"Smart money short-biased ({context.top_trader_long_pct:.1f}%)")
+            
+            elif factor_name == "oi_trend":
+                if context.oi_change_pct > 3:
+                    reasons.append(f"OI rising strongly (+{context.oi_change_pct:.1f}%) - trend confirmation")
+                elif context.oi_change_pct < -3:
+                    reasons.append(f"OI falling ({context.oi_change_pct:.1f}%) - trend weakening")
+            
+            elif factor_name == "funding_rate":
+                rate_pct = context.funding_rate * 100
+                if rate_pct > 0.1:
+                    reasons.append(f"High funding rate ({rate_pct:.3f}%) - longs overleveraged")
+                elif rate_pct < -0.1:
+                    reasons.append(f"Negative funding ({rate_pct:.3f}%) - shorts overleveraged")
+            
+            elif factor_name == "fear_greed":
+                if context.fear_greed_value < 25:
+                    reasons.append(f"Extreme fear ({context.fear_greed_value}/100) - buy opportunity")
+                elif context.fear_greed_value > 75:
+                    reasons.append(f"Extreme greed ({context.fear_greed_value}/100) - sell signal")
         
-        # Price trend analysis
-        if price_trend == "bullish":
-            score += 1
-            reasons.append("Bullish price action")
-        elif price_trend == "bearish":
-            score -= 1
-            reasons.append("Bearish price action")
-        else:
-            reasons.append("Neutral price action")
+        # If we don't have 3 reasons yet, add basic ones
+        if len(reasons) < 3:
+            reasons.append(f"Price trend: {context.price_trend}")
+            reasons.append(f"Social sentiment: {context.social_score:.0f}/100")
         
-        # Open interest note (for context, not directly influencing signal yet)
-        if open_interest > 0:
-            reasons.append(f"OI: ${open_interest:,.0f}")
-        
-        # Determine final signal
-        if score >= 2:
-            signal = "LONG"
-        elif score <= -2:
-            signal = "SHORT"
-        else:
-            signal = "NEUTRAL"
-        
-        reason = " | ".join(reasons)
-        
-        return signal, reason
+        return reasons[:3]  # Return top 3
 
 
 # Singleton instance
