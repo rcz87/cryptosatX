@@ -27,7 +27,7 @@ def main():
         "uvicorn", 
         "httpx",
         "pydantic",
-        "python_dotenv"
+        "dotenv"
     ]
     
     core_ok = all(test_import(dep) for dep in core_deps)

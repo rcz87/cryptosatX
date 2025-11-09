@@ -6135,5 +6135,27 @@
         "volatility7d": 11.93
       }
     }
+  },
+  {
+    "id": "sig_20251109141610947573",
+    "saved_at": "2025-11-09T14:16:10.947612",
+    "data": {
+      "symbol": "SOLUSDT",
+      "timestamp": "2025-11-09T14:16:10.946442",
+      "signal": "NEUTRAL",
+      "score": 49.2,
+      "confidence": "high",
+      "price": 0.0,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 50/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 0.0,
+        "socialScore": 50.0,
+        "priceTrend": "neutral"
+      }
+    }
   }
 ]

@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from app.api import routes_health, routes_signals, routes_gpt, routes_coinglass, routes_lunarcrush, routes_coinapi, routes_smart_money
 
 # ADDED FOR CRYPTOSATX ENHANCEMENT - Import new routes
-from app.api import routes_smc, routes_history, routes_enhanced_gpt
+from app.api import routes_smc, routes_history, routes_enhanced_gpt, routes_monitoring
 
 # Load environment variables
 load_dotenv()
@@ -71,6 +71,7 @@ app.include_router(routes_smart_money.router, tags=["Smart Money Scanner"])
 app.include_router(routes_smc.router, tags=["Smart Money Concept (SMC)"])
 app.include_router(routes_history.router, tags=["Signal History"])
 app.include_router(routes_enhanced_gpt.router, tags=["Enhanced GPT Integration"])
+app.include_router(routes_monitoring.router, tags=["Automated Monitoring"])
 
 
 if __name__ == "__main__":

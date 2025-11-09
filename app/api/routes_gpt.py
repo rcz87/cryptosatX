@@ -53,7 +53,7 @@ async def get_gpt_action_schema():
                             "name": "symbol",
                             "in": "path",
                             "required": True,
-                            "description": "Cryptocurrency symbol (e.g., BTC, ETH, SOL, AVAX)",
+                            "description": "Cryptocurrency symbol. Supports ALL major cryptocurrencies: BTC, ETH, SOL, BNB, ADA, DOGE, MATIC, DOT, AVAX, LINK, UNI, ATOM, XRP, LTC, BCH, ETC, FIL, TRX, VET, THETA, FTM, SAND, MANA, APE, SHIB, LUNA, GALA, AXS, ENJ, CHZ, BAT, ZIL, COMP, MKR, SUSHI, AAVE, YFI, CRV, 1INCH, SNX, REN, KNC, BAL, LRC, and many more.",
                             "schema": {
                                 "type": "string",
                                 "example": "BTC"
@@ -97,7 +97,7 @@ async def get_gpt_action_schema():
                             "name": "symbol",
                             "in": "path",
                             "required": True,
-                            "description": "Cryptocurrency symbol",
+                            "description": "Cryptocurrency symbol. Supports ALL major cryptocurrencies: BTC, ETH, SOL, BNB, ADA, DOGE, MATIC, DOT, AVAX, LINK, UNI, ATOM, XRP, LTC, BCH, ETC, FIL, TRX, VET, THETA, FTM, SAND, MANA, APE, SHIB, LUNA, GALA, AXS, ENJ, CHZ, BAT, ZIL, COMP, MKR, SUSHI, AAVE, YFI, CRV, 1INCH, SNX, REN, KNC, BAL, LRC, and many more.",
                             "schema": {
                                 "type": "string",
                                 "example": "BTC"
@@ -126,7 +126,7 @@ async def get_gpt_action_schema():
             "/smart-money/scan": {
                 "get": {
                     "summary": "Scan Smart Money Activity",
-                    "description": "Scan 38+ cryptocurrencies for whale accumulation/distribution patterns. Detects coins being accumulated or distributed by smart money before retail traders enter/exit. Returns coins with accumulation score (buy-before-retail signals) and distribution score (short-before-dump signals).",
+                    "description": "Scan 50+ cryptocurrencies for whale accumulation/distribution patterns. Detects coins being accumulated or distributed by smart money before retail traders enter/exit. Returns coins with accumulation score (buy-before-retail signals) and distribution score (short-before-dump signals). Supports ALL major cryptocurrencies: BTC, ETH, SOL, BNB, ADA, DOGE, MATIC, DOT, AVAX, LINK, UNI, ATOM, XRP, LTC, BCH, ETC, FIL, TRX, VET, THETA, FTM, SAND, MANA, APE, SHIB, LUNA, GALA, AXS, ENJ, CHZ, BAT, ZIL, COMP, MKR, SUSHI, AAVE, YFI, CRV, 1INCH, SNX, REN, KNC, BAL, LRC, and many more.",
                     "operationId": "scanSmartMoney",
                     "parameters": [
                         {
@@ -157,10 +157,10 @@ async def get_gpt_action_schema():
                             "name": "coins",
                             "in": "query",
                             "required": False,
-                            "description": "Comma-separated list of specific coins to scan (e.g., 'BTC,ETH,SOL'). If not provided, scans all 38 default coins.",
+                            "description": "Comma-separated list of specific coins to scan (e.g., 'BTC,ETH,SOL,AVAX,DOGE,SHIB'). Supports ALL major cryptocurrencies. If not provided, scans all 50+ default coins including BTC, ETH, SOL, BNB, ADA, DOGE, MATIC, DOT, AVAX, LINK, UNI, ATOM, XRP, LTC, BCH, ETC, FIL, TRX, VET, THETA, FTM, SAND, MANA, APE, SHIB, LUNA, GALA, AXS, ENJ, CHZ, BAT, ZIL, COMP, MKR, SUSHI, AAVE, YFI, CRV, 1INCH, SNX, REN, KNC, BAL, LRC, and more.",
                             "schema": {
                                 "type": "string",
-                                "example": "BTC,ETH,SOL"
+                                "example": "BTC,ETH,SOL,AVAX,DOGE,SHIB"
                             }
                         }
                     ],
