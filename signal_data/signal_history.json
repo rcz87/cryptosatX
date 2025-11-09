@@ -751,5 +751,81 @@
         }
       }
     }
+  },
+  {
+    "id": "sig_20251109100401474437",
+    "saved_at": "2025-11-09T10:04:01.474459",
+    "data": {
+      "symbol": "BTC",
+      "timestamp": "2025-11-09T10:04:01.473914",
+      "signal": "NEUTRAL",
+      "score": 41.6,
+      "confidence": "medium",
+      "price": 101526.7,
+      "reasons": [
+        "High funding rate (0.439%) - longs overleveraged",
+        "Price trend: neutral",
+        "Social sentiment: 36/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.004389,
+        "openInterest": 66824392379.2882,
+        "socialScore": 35.6,
+        "priceTrend": "neutral"
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "bearish",
+        "priceChanges": {
+          "5m": -0.11,
+          "15m": -0.23,
+          "1h": -0.44,
+          "4h": -0.33,
+          "24h": -0.74
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0329,
+          "oiVolumeRatio": 1.243
+        },
+        "fundingRates": {
+          "oiWeighted": 0.004389,
+          "volumeWeighted": 0.003802
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 48,
+        "socialMetrics": {
+          "volume": 0,
+          "engagement": 0,
+          "dominance": 0.0,
+          "tweetVolume": 0,
+          "redditVolume": 0,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 0.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 23.2,
+          "momentumLevel": "very_weak",
+          "volumeChange24h": 0.0,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 71.25,
+          "sellPressure": 28.75,
+          "avgTradeSize": 0.0
+        },
+        "volatility7d": 11.93
+      }
+    }
   }
 ]
