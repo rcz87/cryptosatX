@@ -1,5 +1,5 @@
 [run]
-command = "python main.py"
+command = "python3 main.py"
 
 [packager]
 language = "python3"
@@ -10,7 +10,8 @@ language = "python3"
 version = "3.11"
 
 [deployment]
-run = ["python", "main.py"]
+run = ["python3", "main.py"]
+deploymentTarget = "cloudrun"
 healthcheckPath = "/health"
 healthcheckTimeout = 100
 restartPolicyType = "on_failure"
