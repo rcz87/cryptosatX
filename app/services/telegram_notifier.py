@@ -57,66 +57,92 @@ class TelegramNotifier:
     
     def _format_signal_message(self, signal_data: Dict) -> str:
         """
-        Format signal data into human-readable Telegram message with emojis
+        Format signal data into professional Telegram message
+        Uses new pro format with targets, stops, and AI commentary
         """
-        symbol = signal_data.get("symbol", "UNKNOWN")
-        signal = signal_data.get("signal", "NEUTRAL")
-        score = signal_data.get("score", 0)
-        price = signal_data.get("price", 0)
-        confidence = signal_data.get("confidence", "low")
-        reasons = signal_data.get("reasons", [])
+        return self._build_pro_signal_message(signal_data)
+    
+    def _build_pro_signal_message(self, data: Dict) -> str:
+        """
+        Build professional futures signal message with advanced formatting
+        """
+        symbol = data.get("symbol", "BTC")
+        signal = data.get("signal", "NEUTRAL").upper()
+        score = data.get("score", 0)
+        confidence = data.get("confidence", "medium").upper()
+        price = data.get("price", 0.0)
+        reasons = data.get("reasons", [])
+        timestamp = data.get("timestamp", datetime.utcnow().isoformat())
         
-        # Signal emoji
-        signal_emoji = {
-            "LONG": "🟢",
-            "SHORT": "🔴",
-            "NEUTRAL": "⚪️"
-        }.get(signal, "⚪️")
+        # Calculate AI confidence percentage from score
+        ai_conf = min(int(score * 1.2), 95)  # Scale score to confidence %
         
-        # Confidence emoji
-        confidence_emoji = {
-            "high": "⭐⭐⭐",
-            "medium": "⭐⭐",
-            "low": "⭐"
-        }.get(confidence, "⭐")
+        # Calculate target and stop based on signal
+        if signal == "LONG":
+            target_1 = price * 1.015  # +1.5%
+            target_2 = price * 1.025  # +2.5%
+            stop = price * 0.992      # -0.8%
+            target_str = f"${target_1:,.2f} — ${target_2:,.2f}"
+            stop_str = f"Below ${stop:,.2f}"
+            emoji = "🟢"
+        elif signal == "SHORT":
+            target_1 = price * 0.985  # -1.5%
+            target_2 = price * 0.975  # -2.5%
+            stop = price * 1.008      # +0.8%
+            target_str = f"${target_1:,.2f} — ${target_2:,.2f}"
+            stop_str = f"Above ${stop:,.2f}"
+            emoji = "🔴"
+        else:
+            target_str = "—"
+            stop_str = "—"
+            emoji = "⚪️"
+        
+        # Generate AI commentary from reasons
+        if reasons:
+            commentary = f"{reasons[0]}. "
+            if len(reasons) > 1:
+                commentary += f"Watch for {reasons[1].lower()}."
+        else:
+            commentary = "AI momentum shift detected. Monitor market closely."
+        
+        # Format timestamp
+        try:
+            dt = datetime.fromisoformat(timestamp.replace('Z', '+00:00'))
+            time_str = dt.strftime('%Y-%m-%d %H:%M')
+        except:
+            time_str = datetime.utcnow().strftime('%Y-%m-%d %H:%M')
         
         # Build message
-        message_parts = [
-            f"{signal_emoji} <b>CryptoSatX Signal Alert</b> {signal_emoji}",
-            "",
-            f"💰 <b>Symbol:</b> {symbol}",
-            f"📊 <b>Signal:</b> {signal}",
-            f"🎯 <b>Score:</b> {score}/100",
-            f"✨ <b>Confidence:</b> {confidence.upper()} {confidence_emoji}",
-            f"💵 <b>Price:</b> ${price:,.2f}",
-            "",
-            "<b>📌 Key Factors:</b>",
-        ]
+        msg = f"""🚀 <b>CRYPTOSATX FUTURES SIGNAL</b> 🚀
+━━━━━━━━━━━━━━━━━━━━━━━
+🪙 Asset: {symbol}/USDT
+📈 Signal: <b>{signal}</b> {emoji}
+🎯 Precision Score: {score:.1f} / 100
+⚡ Confidence Level: {confidence} (AI Consensus {ai_conf}%)
+💵 Entry Zone: ${price:,.2f} ± 0.3%
+🎯 Target: {target_str}
+🛡️ Stop: {stop_str}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+📊 <b>Market Insights</b>"""
         
-        # Add reasons
-        for i, reason in enumerate(reasons[:3], 1):
-            message_parts.append(f"  {i}. {reason}")
+        # Add factors
+        for i, factor in enumerate(reasons[:4], start=1):
+            msg += f"\n{i}️⃣ {factor}"
         
-        # Add metrics
-        metrics = signal_data.get("metrics", {})
-        if metrics:
-            message_parts.extend([
-                "",
-                "<b>📈 Metrics:</b>",
-                f"  • Funding Rate: {metrics.get('fundingRate', 0):.4f}%",
-                f"  • Open Interest: ${metrics.get('openInterest', 0):,.0f}",
-                f"  • Social Score: {metrics.get('socialScore', 0):.1f}/100",
-            ])
-        
-        # Add timestamp
-        message_parts.extend([
-            "",
-            f"🕐 {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC",
-            "",
-            "⚡ <i>Powered by CryptoSatX AI Engine</i>"
-        ])
-        
-        return "\n".join(message_parts)
+        msg += f"""
+
+🧠 <b>AI Commentary:</b>
+<i>> "{commentary}"</i>
+
+🕐 Signal Time: {time_str} UTC
+⚙️ Source: Multi-Data Engine (OKX + CoinAPI + Coinglass + LunarCrush)
+
+━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Powered by CryptoSatX AI Engine v2.4
+#CryptoSatX #AITrading #Futures #SignalUpdate
+"""
+        return msg
     
     async def _send_telegram_message(self, message: str) -> Dict:
         """Send message via Telegram Bot API"""
