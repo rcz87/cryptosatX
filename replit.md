@@ -46,6 +46,70 @@ The API design focuses on programmatic access, providing clean JSON responses. D
 
 ## Recent Changes
 
+### Nov 9, 2025 - FastAPI Security Update & Code Modernization 🔒
+**SECURITY UPDATE**: Updated FastAPI dependency and modernized application lifecycle management
+
+✅ **Successfully Completed:**
+- Updated FastAPI to version 0.104.1 (security patch)
+- Migrated from deprecated `@app.on_event()` decorators to modern `lifespan` context manager
+- Verified all API endpoints working correctly after update
+- Comprehensive testing performed on production deployment
+
+**Changes Made:**
+- **Lifecycle Management Modernization**:
+  - Replaced deprecated `@app.on_event("startup")` with `@asynccontextmanager` lifespan pattern
+  - Replaced deprecated `@app.on_event("shutdown")` with unified lifespan handler
+  - Added proper async context manager for startup/shutdown events
+  - Follows FastAPI 0.104.1+ best practices and recommendations
+
+**Verification Results:**
+- ✅ All endpoints tested and functioning:
+  - Health check endpoints (`/health`, `/`)
+  - Trading signals (`/signals/BTC`, `/signals/ETH`)
+  - Coinglass data endpoints
+  - LunarCrush social data endpoints
+  - CoinAPI market data endpoints
+  - Smart Money Scanner endpoints
+  - GPT Actions schema endpoint (`/gpt/action-schema`)
+  - OpenAPI documentation (`/docs`, `/redoc`)
+
+- ✅ Production deployment verified live:
+  - Domain: `guardiansofthetoken.org` ✅ ACTIVE
+  - All integrations operational (CoinAPI, Coinglass, LunarCrush)
+  - No errors or warnings in server logs
+  - Response times normal, all features working
+
+**Technical Details:**
+- **Before**: Used legacy event decorators (deprecated in FastAPI 0.93+)
+- **After**: Modern lifespan context manager with proper async/await pattern
+- **Benefits**: 
+  - Future-proof code (removes deprecation warnings)
+  - Better resource management and cleanup
+  - Follows FastAPI recommended practices
+  - More maintainable and testable code
+
+**Dependencies Verified:**
+```
+fastapi==0.104.1
+uvicorn==0.24.0
+pydantic==2.5.0
+starlette==0.27.0
+httpx==0.25.1
+python-dotenv==1.0.0
+```
+
+**Documentation Created:**
+- `FASTAPI_UPDATE_VERIFICATION.md` - Complete verification report with test results
+
+**Impact:**
+- ✅ Zero downtime during update
+- ✅ No breaking changes to API
+- ✅ Improved code quality and maintainability
+- ✅ Security patches applied
+- ✅ Production environment stable and healthy
+
+---
+
 ### Nov 8, 2025 - CoinAPI Startup Plan Maximization 🚀
 **ENHANCEMENT**: Maximized CoinAPI Startup subscription ($78/month) with comprehensive market data integration
 
