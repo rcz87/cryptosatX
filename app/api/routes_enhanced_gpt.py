@@ -114,6 +114,100 @@ async def get_comprehensive_gpt_schema():
                     "description": "Scan for whale accumulation/distribution across markets",
                     "operationId": "scanSmartMoney"
                 }
+            },
+            "/history/signals": {
+                "get": {
+                    "summary": "Get Signal History",
+                    "description": "Retrieve historical trading signals with filtering",
+                    "operationId": "getSignalHistory",
+                    "parameters": [
+                        {
+                            "name": "symbol",
+                            "in": "query",
+                            "schema": {"type": "string", "example": "BTC"}
+                        },
+                        {
+                            "name": "signal_type",
+                            "in": "query",
+                            "schema": {"type": "string", "enum": ["LONG", "SHORT", "NEUTRAL"]}
+                        },
+                        {
+                            "name": "limit",
+                            "in": "query",
+                            "schema": {"type": "integer", "default": 50, "maximum": 500}
+                        }
+                    ]
+                }
+            },
+            "/smc/info": {
+                "get": {
+                    "summary": "SMC Methodology Info",
+                    "description": "Get detailed explanation of Smart Money Concepts",
+                    "operationId": "getSMCInfo"
+                }
+            },
+            "/history/info": {
+                "get": {
+                    "summary": "Signal History Info",
+                    "description": "Get information about signal history system",
+                    "operationId": "getHistoryInfo"
+                }
+            },
+            "/gpt/actions/signal-with-context/{symbol}": {
+                "get": {
+                    "summary": "Comprehensive Signal with Full Context",
+                    "description": "All-in-one endpoint: AI signal + SMC analysis + recent history",
+                    "operationId": "getSignalWithContext",
+                    "parameters": [
+                        {
+                            "name": "symbol",
+                            "in": "path",
+                            "required": True,
+                            "schema": {"type": "string", "example": "BTC"}
+                        },
+                        {
+                            "name": "include_smc",
+                            "in": "query",
+                            "schema": {"type": "boolean", "default": True}
+                        },
+                        {
+                            "name": "include_history",
+                            "in": "query",
+                            "schema": {"type": "boolean", "default": True}
+                        },
+                        {
+                            "name": "timeframe",
+                            "in": "query",
+                            "schema": {"type": "string", "default": "1HRS", "enum": ["1MIN", "5MIN", "1HRS", "1DAY"]}
+                        }
+                    ]
+                }
+            },
+            "/gpt/actions/send-alert/{symbol}": {
+                "post": {
+                    "summary": "Generate Signal & Send to Telegram",
+                    "description": "Generate trading signal and send professional alert to Telegram",
+                    "operationId": "sendTelegramAlert",
+                    "parameters": [
+                        {
+                            "name": "symbol",
+                            "in": "path",
+                            "required": True,
+                            "schema": {"type": "string", "example": "ETH"}
+                        }
+                    ],
+                    "security": [{"apiKey": []}]
+                }
+            }
+        },
+        "components": {
+            "securitySchemes": {
+                "apiKey": {
+                    "type": "apiKey",
+                    "in": "header",
+                    "name": "X-API-Key",
+                    "description": "API key for protected endpoints (optional for most endpoints)"
+                }
             }
         }
     }
