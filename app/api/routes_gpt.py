@@ -16,20 +16,17 @@ async def get_gpt_action_schema():
     This endpoint provides the schema that can be used to register
     this API as a GPT Action in OpenAI's GPT builder.
     """
-    # TEMPORARY FIX: Use Replit domain until custom domain SSL is ready
-    # Custom domain guardiansofthetoken.com waiting for SSL certificate
-    # Once SSL is ready, set BASE_URL=https://guardiansofthetoken.com in production
+    # Production custom domain with SSL certificate ready
+    # guardiansofthetoken.org is linked, verified, and SSL provisioned
+    base_url = os.getenv("BASE_URL", "https://guardiansofthetoken.org")
     
-    base_url = os.getenv("BASE_URL", "")
-    
-    # Auto-detect Replit domain (has working SSL)
+    # Auto-detect if running on Replit (for development/testing)
     replit_domain = os.getenv("REPLIT_DOMAINS")
-    if not base_url and replit_domain:
-        # Use first domain from REPLIT_DOMAINS
+    if replit_domain and "localhost" in base_url:
+        # Development environment - use Replit domain
         base_url = f"https://{replit_domain.split(',')[0]}"
-    
-    # Fallback for local development
-    if not base_url:
+    elif not base_url or base_url == "http://localhost:8000":
+        # Fallback for local development
         base_url = "http://localhost:8000"
     
     schema = {
