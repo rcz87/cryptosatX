@@ -201,6 +201,7 @@ async def get_comprehensive_gpt_schema():
             }
         },
         "components": {
+            "schemas": {},
             "securitySchemes": {
                 "apiKey": {
                     "type": "apiKey",
