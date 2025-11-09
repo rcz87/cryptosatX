@@ -17,8 +17,8 @@ async def get_gpt_action_schema():
     this API as a GPT Action in OpenAI's GPT builder.
     """
     # Production custom domain with SSL certificate ready
-    # guardiansofthetoken.org is linked, verified, and SSL provisioned
-    base_url = os.getenv("BASE_URL", "https://guardiansofthetoken.org")
+    # guardiansofthetoken.com is the primary custom domain
+    base_url = os.getenv("BASE_URL", "https://guardiansofthetoken.com")
     
     # Auto-detect if running on Replit (for development/testing)
     replit_domain = os.getenv("REPLIT_DOMAINS")
