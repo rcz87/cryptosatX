@@ -1,13 +1,8 @@
-[run]
-command = "python3 main.py"
+run = "python3 main.py"
+modules = ["python-3.11"]
 
-[packager]
-language = "python3"
-version = "3.11"
-
-[unitTest]
-language = "python3"
-version = "3.11"
+[nix]
+channel = "stable-24_05"
 
 [deployment]
 run = ["python3", "main.py"]
@@ -43,3 +38,14 @@ waitForPort = 8000
 
 [workflows.workflow.metadata]
 outputType = "console"
+
+[agent]
+expertMode = true
+
+[[ports]]
+localPort = 8000
+externalPort = 80
+
+[[ports]]
+localPort = 36523
+externalPort = 3000
