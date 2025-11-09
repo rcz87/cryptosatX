@@ -64,7 +64,12 @@ async def get_comprehensive_gpt_schema():
                             "in": "query",
                             "schema": {"type": "boolean", "default": False}
                         }
-                    ]
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Successful signal generation"
+                        }
+                    }
                 }
             },
             "/smc/analyze/{symbol}": {
@@ -84,7 +89,12 @@ async def get_comprehensive_gpt_schema():
                             "in": "query",
                             "schema": {"type": "string", "default": "1HRS", "enum": ["1MIN", "5MIN", "1HRS", "1DAY"]}
                         }
-                    ]
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Successful SMC analysis"
+                        }
+                    }
                 }
             },
             "/history/statistics": {
@@ -98,21 +108,36 @@ async def get_comprehensive_gpt_schema():
                             "in": "query",
                             "schema": {"type": "string"}
                         }
-                    ]
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Successful statistics retrieval"
+                        }
+                    }
                 }
             },
             "/coinglass/markets": {
                 "get": {
                     "summary": "Market Data Overview",
                     "description": "Get comprehensive market data from Coinglass",
-                    "operationId": "getMarkets"
+                    "operationId": "getMarkets",
+                    "responses": {
+                        "200": {
+                            "description": "Successful market data retrieval"
+                        }
+                    }
                 }
             },
             "/smart-money/scan": {
                 "get": {
                     "summary": "Smart Money Scanner",
                     "description": "Scan for whale accumulation/distribution across markets",
-                    "operationId": "scanSmartMoney"
+                    "operationId": "scanSmartMoney",
+                    "responses": {
+                        "200": {
+                            "description": "Successful smart money scan"
+                        }
+                    }
                 }
             },
             "/history/signals": {
@@ -136,21 +161,36 @@ async def get_comprehensive_gpt_schema():
                             "in": "query",
                             "schema": {"type": "integer", "default": 50, "maximum": 500}
                         }
-                    ]
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Successful signal history retrieval"
+                        }
+                    }
                 }
             },
             "/smc/info": {
                 "get": {
                     "summary": "SMC Methodology Info",
                     "description": "Get detailed explanation of Smart Money Concepts",
-                    "operationId": "getSMCInfo"
+                    "operationId": "getSMCInfo",
+                    "responses": {
+                        "200": {
+                            "description": "Successful SMC info retrieval"
+                        }
+                    }
                 }
             },
             "/history/info": {
                 "get": {
                     "summary": "Signal History Info",
                     "description": "Get information about signal history system",
-                    "operationId": "getHistoryInfo"
+                    "operationId": "getHistoryInfo",
+                    "responses": {
+                        "200": {
+                            "description": "Successful history info retrieval"
+                        }
+                    }
                 }
             },
             "/gpt/actions/signal-with-context/{symbol}": {
@@ -180,7 +220,12 @@ async def get_comprehensive_gpt_schema():
                             "in": "query",
                             "schema": {"type": "string", "default": "1HRS", "enum": ["1MIN", "5MIN", "1HRS", "1DAY"]}
                         }
-                    ]
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Successful signal with context retrieval"
+                        }
+                    }
                 }
             },
             "/gpt/actions/send-alert/{symbol}": {
@@ -196,7 +241,12 @@ async def get_comprehensive_gpt_schema():
                             "schema": {"type": "string", "example": "ETH"}
                         }
                     ],
-                    "security": [{"apiKey": []}]
+                    "security": [{"apiKey": []}],
+                    "responses": {
+                        "200": {
+                            "description": "Successful alert sent to Telegram"
+                        }
+                    }
                 }
             }
         },
