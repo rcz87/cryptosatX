@@ -68,8 +68,8 @@ class CoinglassService:
             # Normalize symbol
             symbol = symbol.upper()
             
-            # Coinglass expects format like 'BTC' without USDT
-            url = f"{self.base_url}/funding"
+            # Coinglass v4 API endpoint
+            url = f"{self.base_url}/api/futures/funding-rates"
             params = {"symbol": symbol}
             
             async with httpx.AsyncClient(timeout=10.0) as client:
@@ -78,16 +78,16 @@ class CoinglassService:
                 
                 data = response.json()
                 
-                # Extract funding rate from response
-                # Coinglass v4 structure may vary, adapting to common format
+                # Extract funding rate from v4 response
                 funding_rate = 0.0
-                if data.get("success") and data.get("data"):
-                    # Try to extract the weighted average funding rate
+                if data.get("code") == "0" and data.get("data"):
                     funding_data = data["data"]
                     if isinstance(funding_data, list) and len(funding_data) > 0:
-                        funding_rate = float(funding_data[0].get("rate", 0))
+                        # Get average funding rate across exchanges
+                        rates = [float(item.get("rate", 0)) for item in funding_data if item.get("rate")]
+                        funding_rate = sum(rates) / len(rates) if rates else 0.0
                     elif isinstance(funding_data, dict):
-                        funding_rate = float(funding_data.get("uMarginList", [{}])[0].get("rate", 0) if funding_data.get("uMarginList") else 0)
+                        funding_rate = float(funding_data.get("rate", 0))
                 
                 return {
                     "symbol": symbol,
@@ -120,8 +120,9 @@ class CoinglassService:
             # Normalize symbol
             symbol = symbol.upper()
             
-            url = f"{self.base_url}/open_interest"
-            params = {"symbol": symbol}
+            # Coinglass v4 API endpoint
+            url = f"{self.base_url}/api/futures/open-interest-aggregated-ohlc"
+            params = {"symbol": symbol, "interval": "0"}
             
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.get(url, headers=self.headers, params=params)
@@ -129,15 +130,16 @@ class CoinglassService:
                 
                 data = response.json()
                 
-                # Extract open interest from response
+                # Extract open interest from v4 response
                 open_interest = 0.0
-                if data.get("success") and data.get("data"):
+                if data.get("code") == "0" and data.get("data"):
                     oi_data = data["data"]
-                    if isinstance(oi_data, dict):
-                        # Sum up open interest across exchanges
+                    if isinstance(oi_data, list) and len(oi_data) > 0:
+                        # Get the latest OI value
+                        latest = oi_data[-1]
+                        open_interest = float(latest.get("c", 0)) if isinstance(latest, dict) else 0.0
+                    elif isinstance(oi_data, dict):
                         open_interest = float(oi_data.get("openInterest", 0))
-                    elif isinstance(oi_data, list) and len(oi_data) > 0:
-                        open_interest = float(oi_data[0].get("openInterest", 0))
                 
                 return {
                     "symbol": symbol,
