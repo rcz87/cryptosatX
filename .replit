@@ -28,23 +28,11 @@ outputType = "console"
 
 [[ports]]
 localPort = 8000
-externalPort = 8000
-
-[[ports]]
-localPort = 32833
-externalPort = 3000
+externalPort = 80
 
 [[ports]]
 localPort = 42985
-externalPort = 3002
-
-[[ports]]
-localPort = 43885
-externalPort = 3001
-
-[[ports]]
-localPort = 46475
-externalPort = 80
+externalPort = 3000
 
 [deployment]
 deploymentTarget = "autoscale"
