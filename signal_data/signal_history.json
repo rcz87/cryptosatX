@@ -150,5 +150,81 @@
         "volatility7d": 11.93
       }
     }
+  },
+  {
+    "id": "sig_20251109094224378876",
+    "saved_at": "2025-11-09T09:42:24.378901",
+    "data": {
+      "symbol": "BTC",
+      "timestamp": "2025-11-09T09:42:24.377944",
+      "signal": "NEUTRAL",
+      "score": 43.0,
+      "confidence": "medium",
+      "price": 101932.8,
+      "reasons": [
+        "High funding rate (0.488%) - longs overleveraged",
+        "Overcrowded longs (72.3%) - contrarian bearish",
+        "Price trend: neutral"
+      ],
+      "metrics": {
+        "fundingRate": 0.00488,
+        "openInterest": 67206205829.5794,
+        "socialScore": 49.9,
+        "priceTrend": "neutral"
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": -0.04,
+          "1h": 0.06,
+          "4h": 0.09,
+          "24h": -0.61
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0331,
+          "oiVolumeRatio": 1.2572
+        },
+        "fundingRates": {
+          "oiWeighted": 0.00488,
+          "volumeWeighted": 0.004139
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 48,
+        "socialMetrics": {
+          "volume": 0,
+          "engagement": 0,
+          "dominance": 0.0,
+          "tweetVolume": 0,
+          "redditVolume": 0,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 0.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 27.5,
+          "momentumLevel": "very_weak",
+          "volumeChange24h": 0.0,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 93.92,
+          "sellPressure": 6.08,
+          "avgTradeSize": 0.0
+        },
+        "volatility7d": 11.93
+      }
+    }
   }
 ]
