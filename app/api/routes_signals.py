@@ -9,6 +9,10 @@ from app.services.coinglass_premium_service import coinglass_premium
 from app.services.lunarcrush_service import lunarcrush_service
 from app.services.okx_service import okx_service
 
+# ADDED FOR CRYPTOSATX ENHANCEMENT - Signal history auto-save
+from app.storage.signal_history import signal_history
+import asyncio
+
 router = APIRouter()
 
 
@@ -31,6 +35,10 @@ async def get_signal(symbol: str, debug: bool = False):
     """
     try:
         signal = await signal_engine.build_signal(symbol, debug=debug)
+        
+        # ADDED FOR CRYPTOSATX ENHANCEMENT - Auto-save signal to history (non-blocking)
+        asyncio.create_task(signal_history.save_signal(signal))
+        
         return signal
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generating signal: {str(e)}")

@@ -1,0 +1,54 @@
+# 🧠 REPLIT AGENT PROMPT: CryptoSatX Enhancement (Do Not Break Existing System)
+
+## 📌 Context
+
+Proyek bernama **CryptoSatX**, dibangun di **FastAPI (Python)** dan dijalankan di **Replit**.  
+Sistem ini sudah berfungsi penuh sebagai AI-driven Crypto Signal Engine dengan integrasi:
+
+- ✅ **CoinAPI** – data OHLCV, candles, harga real-time  
+- ✅ **Coinglass API v4** – open interest, funding rate, liquidation  
+- ✅ **LunarCrush API** – sentimen sosial dan analitik komunitas  
+- ✅ Endpoint utama: `/signals/{symbol}`, `/market/{symbol}`  
+- ✅ Skor sinyal berbasis 8 faktor dengan output LONG/SHORT/NEUTRAL  
+- ✅ Sudah ada dokumentasi deployment dan integrasi GPT Actions
+
+Tugas kamu adalah **melengkapi kekurangannya** tanpa merusak fungsi existing.
+
+---
+
+## 🎯 Primary Objective
+
+Tingkatkan sistem CryptoSatX dengan fitur-fitur berikut, **tanpa memodifikasi atau merusak endpoint dan fungsi yang sudah jalan.**
+
+### Fitur yang harus ditambahkan
+
+| No | Fitur Baru | Tujuan |
+|----|-------------|--------|
+| 1 | **SMC Analyzer (Smart Money Concept)** | Menambahkan layer BOS/CHoCH, FVG, Swing High/Low |
+| 2 | **Telegram Notifier** | Kirim alert sinyal ke Telegram dengan format manusiawi |
+| 3 | **API Key Auth** | Lindungi endpoint sensitif |
+| 4 | **Structured Logging** | Logging JSON untuk debug dan audit |
+| 5 | **Signal History Hook** | Simpan sinyal yang dihasilkan untuk evaluasi & pembelajaran |
+| 6 | **GPT Integration Endpoint** | Supaya GPT bisa panggil API dengan schema & action descriptor |
+
+---
+
+## ⚙️ Existing Context (Harus Dipertahankan)
+
+- FastAPI structure sudah berjalan → jangan hapus, rename, atau ubah fungsionalitas utama.
+- Sudah ada integrasi data premium (Coinglass, LunarCrush, CoinAPI).
+- Beberapa route sudah memakai async function → lanjutkan gaya itu.
+- File utama `main.py` atau `app/main.py` sudah ada → gunakan route include untuk modul baru.
+- Environment `.env` sudah digunakan.
+
+---
+
+## ⚠️ Aturan Penting
+
+1. ❌ **Jangan ubah atau hapus endpoint lama** seperti `/signals/{symbol}`, `/market/{symbol}`.
+2. ❌ **Jangan ganti nama file/fungsi** existing — hanya boleh menambah.
+3. ✅ Semua tambahan harus dibuat dalam **file baru**, modul baru, atau `services/`.
+4. ✅ Kompatibel dengan Python Replit (hindari dependensi berat).
+5. ✅ Setiap tambahan diberi komentar:  
+   ```python
+   # ADDED FOR SMC / TELEGRAM / GPT INTEGRATION

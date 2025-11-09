@@ -10,6 +10,9 @@ from dotenv import load_dotenv
 
 from app.api import routes_health, routes_signals, routes_gpt, routes_coinglass, routes_lunarcrush, routes_coinapi, routes_smart_money
 
+# ADDED FOR CRYPTOSATX ENHANCEMENT - Import new routes
+from app.api import routes_smc, routes_history, routes_enhanced_gpt
+
 # Load environment variables
 load_dotenv()
 
@@ -18,25 +21,29 @@ load_dotenv()
 async def lifespan(app: FastAPI):
     """Application lifespan manager for startup and shutdown events"""
     print("=" * 50)
-    print("Crypto Futures Signal API Starting...")
+    print("CryptoSatX - Enhanced Crypto Signal API Starting...")
     print("=" * 50)
     print(f"Environment variables loaded:")
     print(f"  - COINAPI_KEY: {'✓' if os.getenv('COINAPI_KEY') else '✗'}")
     print(f"  - COINGLASS_API_KEY: {'✓' if os.getenv('COINGLASS_API_KEY') else '✗'}")
     print(f"  - LUNARCRUSH_API_KEY: {'✓' if os.getenv('LUNARCRUSH_API_KEY') else '✗'}")
+    print(f"  - TELEGRAM_BOT_TOKEN: {'✓' if os.getenv('TELEGRAM_BOT_TOKEN') else '✗'}")  # ADDED
+    print(f"  - API_KEYS: {'✓' if os.getenv('API_KEYS') else '✗ (public mode)'}")  # ADDED
     print(f"  - BASE_URL: {os.getenv('BASE_URL', 'Not set')}")
+    print("=" * 50)
+    print("🚀 Enhanced Features: SMC Analysis | Signal History | Telegram Alerts")  # ADDED
     print("=" * 50)
     
     yield
     
-    print("Shutting down Crypto Futures Signal API...")
+    print("Shutting down CryptoSatX API...")
 
 
 # Create FastAPI app
 app = FastAPI(
-    title="Crypto Futures Signal API",
-    description="Production-ready API for crypto trading signals with multi-provider data integration",
-    version="1.0.0",
+    title="CryptoSatX - Enhanced Crypto Signal API",  # UPDATED
+    description="AI-powered crypto trading signals with Smart Money Concept, signal history, and Telegram alerts",  # UPDATED
+    version="2.0.0",  # UPDATED VERSION
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan
@@ -51,7 +58,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
+# Include routers (EXISTING - DO NOT MODIFY)
 app.include_router(routes_health.router, tags=["Health"])
 app.include_router(routes_signals.router, tags=["Signals"])
 app.include_router(routes_gpt.router, tags=["GPT Actions"])
@@ -59,6 +66,11 @@ app.include_router(routes_coinglass.router, tags=["Coinglass Data"])
 app.include_router(routes_lunarcrush.router, tags=["LunarCrush Social Data"])
 app.include_router(routes_coinapi.router, tags=["CoinAPI Market Data"])
 app.include_router(routes_smart_money.router, tags=["Smart Money Scanner"])
+
+# ADDED FOR CRYPTOSATX ENHANCEMENT - New feature routes
+app.include_router(routes_smc.router, tags=["Smart Money Concept (SMC)"])
+app.include_router(routes_history.router, tags=["Signal History"])
+app.include_router(routes_enhanced_gpt.router, tags=["Enhanced GPT Integration"])
 
 
 if __name__ == "__main__":

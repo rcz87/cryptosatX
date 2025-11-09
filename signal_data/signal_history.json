@@ -1,0 +1,78 @@
+[
+  {
+    "id": "sig_20251109074941671484",
+    "saved_at": "2025-11-09T07:49:41.671508",
+    "data": {
+      "symbol": "BTC",
+      "timestamp": "2025-11-09T07:49:41.670752",
+      "signal": "NEUTRAL",
+      "score": 43.0,
+      "confidence": "medium",
+      "price": 101879.9,
+      "reasons": [
+        "High funding rate (0.363%) - longs overleveraged",
+        "Overcrowded longs (72.1%) - contrarian bearish",
+        "Price trend: neutral"
+      ],
+      "metrics": {
+        "fundingRate": 0.003629,
+        "openInterest": 67464031304.3181,
+        "socialScore": 50.5,
+        "priceTrend": "neutral"
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "bullish",
+        "priceChanges": {
+          "5m": 0.06,
+          "15m": 0.1,
+          "1h": 0.1,
+          "4h": 0.25,
+          "24h": -0.37
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0332,
+          "oiVolumeRatio": 1.2584
+        },
+        "fundingRates": {
+          "oiWeighted": 0.003629,
+          "volumeWeighted": 0.002349
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 67,
+        "socialMetrics": {
+          "volume": 0,
+          "engagement": 0,
+          "dominance": 0.0,
+          "tweetVolume": 0,
+          "redditVolume": 0,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 0.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 27.6,
+          "momentumLevel": "very_weak",
+          "volumeChange24h": 0.0,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 23.86,
+          "sellPressure": 76.14,
+          "avgTradeSize": 0.0
+        },
+        "volatility7d": 11.93
+      }
+    }
+  }
+]
