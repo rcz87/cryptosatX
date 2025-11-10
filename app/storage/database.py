@@ -78,6 +78,10 @@ class Database:
                 CREATE INDEX IF NOT EXISTS idx_signals_signal ON signals(signal);
                 CREATE INDEX IF NOT EXISTS idx_signals_created_at ON signals(created_at DESC);
                 CREATE INDEX IF NOT EXISTS idx_signals_symbol_timestamp ON signals(symbol, timestamp DESC);
+                
+                -- MSS-specific indexes for optimal query performance (Nov 2025)
+                CREATE INDEX IF NOT EXISTS idx_signals_mss_timestamp ON signals(signal, timestamp DESC) WHERE signal LIKE 'MSS_%';
+                CREATE INDEX IF NOT EXISTS idx_signals_mss_score ON signals(score DESC) WHERE signal LIKE 'MSS_%';
             """)
             print("✅ Database schema initialized")
     
