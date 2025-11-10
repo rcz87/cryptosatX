@@ -32,9 +32,9 @@ async def get_gpt_action_schema():
     schema = {
         "openapi": "3.1.0",
         "info": {
-            "title": "Crypto Futures Signal API",
-            "description": "Get real-time crypto trading signals based on price, funding rate, open interest, and social sentiment",
-            "version": "1.0.0"
+            "title": "CryptoSatX - Crypto Futures Signal & Discovery API",
+            "description": "Get real-time crypto trading signals, discover high-potential cryptocurrencies before retail adoption using MSS (Multi-Modal Signal Score) system, and track smart money movements",
+            "version": "2.0.0"
         },
         "servers": [
             {
@@ -243,6 +243,285 @@ async def get_gpt_action_schema():
                     "responses": {
                         "200": {
                             "description": "Coins with whale distribution patterns"
+                        }
+                    }
+                }
+            },
+            "/mss/analyze/{symbol}": {
+                "get": {
+                    "summary": "MSS Analysis - Discover High-Potential Cryptocurrencies",
+                    "description": "Analyze any cryptocurrency using Multi-Modal Signal Score (MSS) system with 3-phase validation: Discovery (tokenomics), Social Confirmation (community momentum), and Institutional Validation (whale positioning). Returns MSS score 0-100 with signal strength (STRONG_LONG, MODERATE_LONG, LONG, WEAK_LONG, NEUTRAL). MSS ≥80 = Diamond tier (rare gems), MSS 65-79 = Gold tier (strong potential), MSS 50-64 = Silver tier (moderate potential). Perfect for finding hidden gems before retail adoption.",
+                    "operationId": "analyzeMSS",
+                    "parameters": [
+                        {
+                            "name": "symbol",
+                            "in": "path",
+                            "required": True,
+                            "description": "Cryptocurrency symbol to analyze (e.g., BTC, PEPE, SHIB, DOGE, etc.). Works with ANY cryptocurrency listed on Binance Futures.",
+                            "schema": {
+                                "type": "string",
+                                "example": "PEPE"
+                            }
+                        },
+                        {
+                            "name": "include_raw",
+                            "in": "query",
+                            "required": False,
+                            "description": "Include complete phase breakdown details. Default false for cleaner output.",
+                            "schema": {
+                                "type": "boolean",
+                                "default": False
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "MSS analysis result with score, signal, confidence, and phase breakdown",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "symbol": {"type": "string"},
+                                            "mss_score": {
+                                                "type": "number",
+                                                "description": "Multi-Modal Signal Score (0-100)"
+                                            },
+                                            "signal": {
+                                                "type": "string",
+                                                "enum": ["STRONG_LONG", "MODERATE_LONG", "LONG", "WEAK_LONG", "NEUTRAL"],
+                                                "description": "Signal strength based on MSS score"
+                                            },
+                                            "confidence": {
+                                                "type": "string",
+                                                "enum": ["very_high", "high", "medium", "low", "insufficient"],
+                                                "description": "Confidence level based on phase validation"
+                                            },
+                                            "warnings": {
+                                                "type": "array",
+                                                "description": "Risk warnings (high FDV, negative funding, etc.)"
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "/mss/scan": {
+                "get": {
+                    "summary": "MSS Auto-Scan - Find New Crypto Gems",
+                    "description": "Auto-discover and rank new cryptocurrencies by MSS score. Scans for coins under specified FDV and age thresholds, validates through 3-phase MSS system, and returns top-ranked opportunities. Perfect for finding early-stage gems with institutional backing before retail FOMO.",
+                    "operationId": "scanMSS",
+                    "parameters": [
+                        {
+                            "name": "max_fdv_usd",
+                            "in": "query",
+                            "required": False,
+                            "description": "Maximum Fully Diluted Valuation in USD. Default 50M. Lower values = earlier stage coins.",
+                            "schema": {
+                                "type": "number",
+                                "default": 50000000,
+                                "example": 20000000
+                            }
+                        },
+                        {
+                            "name": "max_age_hours",
+                            "in": "query",
+                            "required": False,
+                            "description": "Maximum coin age in hours since listing. Default 72h (3 days).",
+                            "schema": {
+                                "type": "number",
+                                "default": 72,
+                                "example": 48
+                            }
+                        },
+                        {
+                            "name": "min_mss_score",
+                            "in": "query",
+                            "required": False,
+                            "description": "Minimum MSS score threshold. Default 65 (Gold tier+). Use 80 for Diamond tier only.",
+                            "schema": {
+                                "type": "number",
+                                "default": 65,
+                                "minimum": 0,
+                                "maximum": 100
+                            }
+                        },
+                        {
+                            "name": "limit",
+                            "in": "query",
+                            "required": False,
+                            "description": "Maximum results to return. Default 10.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 10,
+                                "minimum": 1,
+                                "maximum": 50
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Ranked list of high-potential cryptocurrencies by MSS score",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "results": {
+                                                "type": "array",
+                                                "description": "Coins ranked by MSS score (highest first)"
+                                            },
+                                            "summary": {
+                                                "type": "object",
+                                                "properties": {
+                                                    "discovered": {"type": "integer"},
+                                                    "analyzed": {"type": "integer"},
+                                                    "qualified": {"type": "integer"}
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "/mss/top-scores": {
+                "get": {
+                    "summary": "MSS Top Scores - Best Opportunities",
+                    "description": "Get highest-scoring MSS discoveries from database history. Shows Diamond (≥80), Gold (65-79), and Silver (50-64) tier opportunities with complete phase breakdown. Perfect for reviewing previously discovered gems and tracking performance over time.",
+                    "operationId": "getTopMSSScores",
+                    "parameters": [
+                        {
+                            "name": "min_score",
+                            "in": "query",
+                            "required": False,
+                            "description": "Minimum MSS score. Default 75. Use 80 for Diamond tier only.",
+                            "schema": {
+                                "type": "number",
+                                "default": 75,
+                                "minimum": 0,
+                                "maximum": 100
+                            }
+                        },
+                        {
+                            "name": "limit",
+                            "in": "query",
+                            "required": False,
+                            "description": "Maximum results. Default 50.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 50,
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Highest-scoring MSS signals with tier distribution"
+                        }
+                    }
+                }
+            },
+            "/mss/history": {
+                "get": {
+                    "summary": "MSS Signal History",
+                    "description": "Get recent MSS signal history across all cryptocurrencies. Shows chronological discovery timeline with scores, signals, and phase breakdowns. Useful for tracking discovery patterns and reviewing past opportunities.",
+                    "operationId": "getMSSHistory",
+                    "parameters": [
+                        {
+                            "name": "limit",
+                            "in": "query",
+                            "required": False,
+                            "description": "Maximum signals to return. Default 100.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 100,
+                                "minimum": 1,
+                                "maximum": 500
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Recent MSS signals sorted by timestamp (most recent first)"
+                        }
+                    }
+                }
+            },
+            "/mss/history/{symbol}": {
+                "get": {
+                    "summary": "MSS Symbol History",
+                    "description": "Get MSS signal history for a specific cryptocurrency. Track how a coin's MSS score evolved over time, see phase score changes, and identify accumulation patterns.",
+                    "operationId": "getMSSSymbolHistory",
+                    "parameters": [
+                        {
+                            "name": "symbol",
+                            "in": "path",
+                            "required": True,
+                            "description": "Cryptocurrency symbol (e.g., PEPE, SHIB, DOGE)",
+                            "schema": {
+                                "type": "string",
+                                "example": "PEPE"
+                            }
+                        },
+                        {
+                            "name": "limit",
+                            "in": "query",
+                            "required": False,
+                            "description": "Maximum signals. Default 50.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 50,
+                                "minimum": 1,
+                                "maximum": 200
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Symbol-specific MSS signal history"
+                        }
+                    }
+                }
+            },
+            "/mss/analytics": {
+                "get": {
+                    "summary": "MSS Analytics Summary",
+                    "description": "Get comprehensive MSS analytics: signal distribution, tier performance, score statistics, and trend analysis. Optionally filter by specific cryptocurrency and time period.",
+                    "operationId": "getMSSAnalytics",
+                    "parameters": [
+                        {
+                            "name": "symbol",
+                            "in": "query",
+                            "required": False,
+                            "description": "Optional symbol filter (e.g., PEPE). If not provided, shows analytics for all cryptocurrencies.",
+                            "schema": {
+                                "type": "string",
+                                "example": "PEPE"
+                            }
+                        },
+                        {
+                            "name": "days",
+                            "in": "query",
+                            "required": False,
+                            "description": "Number of days to analyze. Default 7.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 7,
+                                "minimum": 1,
+                                "maximum": 90
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Analytics summary with tier distribution and score stats"
                         }
                     }
                 }
