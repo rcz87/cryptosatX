@@ -7,10 +7,15 @@ Endpoints for high-potential crypto asset discovery and analysis.
 from fastapi import APIRouter, Query, HTTPException
 from typing import Optional
 import logging
+import os
 
 from app.services.mss_service import MSSService
+from app.services.telegram_mss_notifier import telegram_mss_notifier
 
 logger = logging.getLogger(__name__)
+
+# MSS notification threshold (configurable via environment)
+MSS_NOTIFICATION_THRESHOLD = float(os.getenv("MSS_NOTIFICATION_THRESHOLD", "75.0"))
 
 router = APIRouter()
 
@@ -103,6 +108,10 @@ async def analyze_coin(
     include_raw: bool = Query(
         False,
         description="Include raw phase breakdowns"
+    ),
+    send_alert: bool = Query(
+        True,
+        description="Send Telegram alert if MSS score is high (>= threshold)"
     )
 ):
     """
@@ -123,19 +132,59 @@ async def analyze_coin(
     - Confidence level
     - Phase breakdowns
     - Risk warnings
+    - Telegram alert status (if high-scoring)
     """
     try:
         service = get_mss_service()
         result = await service.calculate_mss_score(symbol.upper())
 
+        # Send Telegram alert for high-scoring discoveries
+        telegram_sent = False
+        if send_alert and result.get("mss_score", 0) >= MSS_NOTIFICATION_THRESHOLD:
+            try:
+                phases = result.get("phases", {})
+                
+                # Extract market data from phases
+                phase1 = phases.get("phase1_discovery", {})
+                p1_breakdown = phase1.get("breakdown", {})
+                
+                notification_result = await telegram_mss_notifier.send_mss_discovery_alert(
+                    symbol=symbol.upper(),
+                    mss_score=result.get("mss_score", 0),
+                    signal=result.get("signal", "NEUTRAL"),
+                    confidence=result.get("confidence", "medium"),
+                    phases=phases,
+                    price=p1_breakdown.get("current_price"),
+                    market_cap=p1_breakdown.get("market_cap_usd"),
+                    fdv=p1_breakdown.get("fdv_usd")
+                )
+                
+                telegram_sent = notification_result.get("success", False)
+                
+                if telegram_sent:
+                    logger.info(f"✅ Telegram alert sent for {symbol} (MSS: {result.get('mss_score'):.1f})")
+                
+            except Exception as notify_err:
+                logger.warning(f"Failed to send Telegram alert for {symbol}: {notify_err}")
+
         if not include_raw:
             # Simplified response
             result.pop("phases", None)
 
-        return {
+        response = {
             "success": True,
             **result
         }
+        
+        # Add Telegram alert status if sent
+        if telegram_sent:
+            response["telegram_alert"] = {
+                "sent": True,
+                "threshold": MSS_NOTIFICATION_THRESHOLD,
+                "message": f"High MSS score alert sent to Telegram"
+            }
+
+        return response
 
     except Exception as e:
         logger.error(f"Analysis error for {symbol}: {e}")
@@ -163,6 +212,10 @@ async def scan_market(
         description="Maximum results",
         ge=1,
         le=50
+    ),
+    send_alerts: bool = Query(
+        True,
+        description="Send Telegram alerts for coins exceeding notification threshold"
     )
 ):
     """
@@ -173,6 +226,7 @@ async def scan_market(
     2. Confirm social momentum
     3. Validate whale activity
     4. Rank by MSS score
+    5. Send Telegram alerts for high-scoring discoveries
 
     **Use Case:** Daily alpha hunting - find best opportunities automatically
 
@@ -182,6 +236,7 @@ async def scan_market(
     - Top coins ranked by MSS score
     - Complete analysis for each
     - Ready-to-trade signals
+    - Telegram alert summary
     """
     try:
         service = get_mss_service()
@@ -194,7 +249,35 @@ async def scan_market(
 
         from datetime import datetime
         
-        return {
+        # Send Telegram alerts for high-scoring coins
+        alerts_sent = 0
+        if send_alerts and results:
+            for coin in results:
+                if coin.get("mss_score", 0) >= MSS_NOTIFICATION_THRESHOLD:
+                    try:
+                        phases = coin.get("phases", {})
+                        phase1 = phases.get("phase1_discovery", {})
+                        p1_breakdown = phase1.get("breakdown", {})
+                        
+                        notification_result = await telegram_mss_notifier.send_mss_discovery_alert(
+                            symbol=coin.get("symbol", "UNKNOWN"),
+                            mss_score=coin.get("mss_score", 0),
+                            signal=coin.get("signal", "NEUTRAL"),
+                            confidence=coin.get("confidence", "medium"),
+                            phases=phases,
+                            price=p1_breakdown.get("current_price"),
+                            market_cap=p1_breakdown.get("market_cap_usd"),
+                            fdv=p1_breakdown.get("fdv_usd")
+                        )
+                        
+                        if notification_result.get("success"):
+                            alerts_sent += 1
+                            logger.info(f"✅ Alert sent for {coin.get('symbol')} (MSS: {coin.get('mss_score'):.1f})")
+                            
+                    except Exception as notify_err:
+                        logger.warning(f"Failed to send alert for {coin.get('symbol')}: {notify_err}")
+        
+        response = {
             "success": True,
             "timestamp": datetime.utcnow().isoformat() + "Z",
             "scan_parameters": {
@@ -210,6 +293,16 @@ async def scan_market(
                 "long_signals": len([c for c in results if c.get("signal") in ["LONG", "MODERATE_LONG"]])
             }
         }
+        
+        # Add Telegram alert summary
+        if send_alerts:
+            response["telegram_alerts"] = {
+                "sent": alerts_sent,
+                "threshold": MSS_NOTIFICATION_THRESHOLD,
+                "eligible_coins": len([c for c in results if c.get("mss_score", 0) >= MSS_NOTIFICATION_THRESHOLD])
+            }
+        
+        return response
 
     except Exception as e:
         logger.error(f"Scan error: {e}")
@@ -289,6 +382,7 @@ async def get_system_info():
     - Phase weights
     - Thresholds
     - Data sources
+    - Telegram notification configuration
 
     **Example:** `GET /mss/info`
 
@@ -296,6 +390,7 @@ async def get_system_info():
     - System configuration
     - Scoring formula
     - API endpoints list
+    - Notification settings
     """
     return {
         "success": True,
@@ -303,6 +398,11 @@ async def get_system_info():
             "name": "MSS (Multimodal Signal Score) Alpha System",
             "version": "1.0.0",
             "description": "3-phase analysis for high-potential crypto discovery"
+        },
+        "telegram_notifications": {
+            "enabled": telegram_mss_notifier.enabled,
+            "threshold": MSS_NOTIFICATION_THRESHOLD,
+            "description": f"Auto-alert when MSS score >= {MSS_NOTIFICATION_THRESHOLD}"
         },
         "methodology": {
             "phase1_discovery": {
@@ -374,3 +474,33 @@ async def get_system_info():
             ]
         }
     }
+
+
+@router.get("/telegram/test")
+async def test_telegram():
+    """
+    **Test Telegram MSS Notifications**
+    
+    Send a test message to verify Telegram bot configuration for MSS alerts.
+    
+    **Example:** `GET /mss/telegram/test`
+    
+    Returns:
+    - Success status
+    - Telegram API response
+    - Configuration details
+    """
+    try:
+        result = await telegram_mss_notifier.send_test_message()
+        
+        return {
+            "success": result.get("success", False),
+            "message": result.get("message", "Unknown error"),
+            "telegram_enabled": telegram_mss_notifier.enabled,
+            "notification_threshold": MSS_NOTIFICATION_THRESHOLD,
+            "telegram_response": result.get("telegram_response")
+        }
+    
+    except Exception as e:
+        logger.error(f"Telegram test error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
