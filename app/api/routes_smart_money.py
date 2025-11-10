@@ -263,3 +263,270 @@ async def smart_money_info():
             "Follow smart money instead of retail crowd"
         ]
     }
+
+
+# ==================== NEW ENDPOINTS - EXTENDED FUNCTIONALITY ====================
+
+
+@router.get("/analyze/{symbol}")
+async def analyze_coin(symbol: str):
+    """
+    🔍 **Analyze ANY Coin** - Dynamic Smart Money Analysis
+    
+    Analyze any cryptocurrency symbol, not limited to the default scan list.
+    Perfect for when you want to check a specific coin that's trending or mentioned.
+    
+    ## **What This Analyzes**:
+    - Accumulation vs Distribution score
+    - Whale buying/selling pressure
+    - Funding rates and open interest
+    - Social sentiment vs price action
+    - Clear interpretation and recommendation
+    
+    ## **Use Cases**:
+    - "What's happening with PEPE right now?"
+    - "Is WIF being accumulated or distributed?"
+    - "Should I buy this new coin that's trending?"
+    
+    ## **Example**:
+    ```
+    GET /smart-money/analyze/PEPE
+    GET /smart-money/analyze/WIF
+    GET /smart-money/analyze/BONK
+    ```
+    
+    ## **Returns**:
+    - Complete analysis with scores
+    - Dominant pattern (accumulation/distribution/neutral)
+    - Human-readable interpretation
+    - Key metrics (funding rate, OI, volume)
+    
+    **Perfect for:** Quick analysis of any coin you're curious about
+    """
+    result = await smart_money_service.analyze_any_coin(symbol)
+    return result
+
+
+@router.get("/discover")
+async def discover_coins(
+    max_market_cap: float = Query(
+        default=100000000,
+        description="Maximum market cap in USD (default $100M for small caps)"
+    ),
+    min_volume: float = Query(
+        default=500000,
+        description="Minimum 24h volume in USD (default $500K)"
+    ),
+    source: str = Query(
+        default="all",
+        description="Data source: 'binance', 'coingecko', or 'all'"
+    ),
+    limit: int = Query(
+        default=30,
+        ge=1,
+        le=100,
+        description="Maximum number of results"
+    )
+):
+    """
+    🆕 **Coin Discovery** - Find New & Small Cap Opportunities
+    
+    Discover new or small market cap coins from Binance Futures and CoinGecko.
+    Perfect for finding early opportunities before they pump.
+    
+    ## **What This Finds**:
+    - Small cap coins with real volume (not dead coins)
+    - New listings on Binance Futures
+    - Trending coins from CoinGecko
+    - Coins with futures trading available
+    
+    ## **Filters**:
+    - Market cap (find coins under $100M, $50M, etc.)
+    - Volume (ensure liquidity)
+    - Source (Binance, CoinGecko, or both)
+    
+    ## **Examples**:
+    ```
+    # Find all small caps with decent volume
+    GET /smart-money/discover
+    
+    # Find micro caps under $50M
+    GET /smart-money/discover?max_market_cap=50000000
+    
+    # Only Binance Futures coins
+    GET /smart-money/discover?source=binance
+    
+    # High volume small caps
+    GET /smart-money/discover?min_volume=1000000&limit=20
+    ```
+    
+    ## **Returns**:
+    - List of discovered coins
+    - Price, market cap, volume data
+    - Whether coin has futures trading
+    - Data source for each coin
+    
+    **Perfect for:** Finding hidden gems before retail discovers them
+    """
+    result = await smart_money_service.discover_new_coins(
+        max_market_cap=max_market_cap,
+        min_volume=min_volume,
+        source=source,
+        limit=limit
+    )
+    return result
+
+
+@router.get("/futures/list")
+async def list_futures_coins(
+    min_volume: float = Query(
+        default=1000000,
+        description="Minimum 24h volume in USDT (default $1M)"
+    )
+):
+    """
+    📊 **Binance Futures Coin List**
+    
+    Get complete list of all coins available on Binance Futures
+    with volume and price change data.
+    
+    ## **What This Provides**:
+    - All perpetual futures symbols
+    - 24h volume in USDT
+    - Price changes
+    - High/Low prices
+    
+    ## **Use Case**:
+    "Show me all coins trading on Binance Futures with volume"
+    
+    ## **Example**:
+    ```
+    # All futures coins with $1M+ volume
+    GET /smart-money/futures/list
+    
+    # High volume coins only
+    GET /smart-money/futures/list?min_volume=10000000
+    ```
+    
+    **Perfect for:** Knowing which coins have futures trading available
+    """
+    result = await smart_money_service.get_futures_coins_list(min_volume=min_volume)
+    return result
+
+
+@router.get("/scan/auto")
+async def auto_scan(
+    criteria: str = Query(
+        default="volume",
+        description="Selection criteria: 'volume', 'gainers', 'losers', 'small_cap'"
+    ),
+    limit: int = Query(
+        default=20,
+        ge=5,
+        le=50,
+        description="Number of coins to scan"
+    ),
+    min_accumulation_score: int = Query(
+        default=5,
+        ge=0,
+        le=10,
+        description="Minimum accumulation score"
+    ),
+    min_distribution_score: int = Query(
+        default=5,
+        ge=0,
+        le=10,
+        description="Minimum distribution score"
+    )
+):
+    """
+    🤖 **Auto Smart Money Scan** - Intelligent Coin Selection
+    
+    Automatically select and scan coins based on smart criteria,
+    then analyze them for accumulation/distribution patterns.
+    
+    ## **Selection Criteria**:
+    
+    ### **volume** (Default)
+    - Scans highest volume coins
+    - Most liquid and reliable signals
+    - Best for mainstream opportunities
+    
+    ### **gainers**
+    - Scans top gainers (24h)
+    - Find momentum before continuation
+    - Detect if pump is accumulation or distribution
+    
+    ### **losers**
+    - Scans top losers (24h)
+    - Find capitulation bottoms (accumulation)
+    - Spot distribution dumps early
+    
+    ### **small_cap**
+    - Scans small market cap coins
+    - Early opportunities before mainstream
+    - Higher risk but bigger potential
+    
+    ## **Examples**:
+    ```
+    # Scan top volume coins
+    GET /smart-money/scan/auto?criteria=volume
+    
+    # Find accumulation in top gainers
+    GET /smart-money/scan/auto?criteria=gainers&min_accumulation_score=6
+    
+    # Find distribution in losers
+    GET /smart-money/scan/auto?criteria=losers&min_distribution_score=6
+    
+    # Scan small caps for hidden gems
+    GET /smart-money/scan/auto?criteria=small_cap&limit=30
+    ```
+    
+    ## **Returns**:
+    - Selected coins based on criteria
+    - Full accumulation/distribution analysis
+    - Ranked by signal strength
+    
+    **Perfect for:** "Just find me the best opportunities right now"
+    """
+    # Auto-select coins
+    selection = await smart_money_service.auto_select_coins(
+        criteria=criteria,
+        limit=limit
+    )
+    
+    if not selection.get("success"):
+        return selection
+    
+    # Scan selected coins
+    selected_coins = selection.get("selectedCoins", [])
+    
+    if not selected_coins:
+        return {
+            "success": True,
+            "criteria": criteria,
+            "message": "No coins matched the criteria",
+            "accumulation": [],
+            "distribution": []
+        }
+    
+    # Perform smart money scan on selected coins
+    scan_result = await smart_money_service.scan_markets(
+        min_accumulation_score=min_accumulation_score,
+        min_distribution_score=min_distribution_score,
+        coins=selected_coins
+    )
+    
+    if not scan_result.get("success"):
+        return scan_result
+    
+    return {
+        "success": True,
+        "criteria": criteria,
+        "coinsSelected": selected_coins,
+        "coinsScanned": scan_result.get("coinsScanned", 0),
+        "summary": scan_result.get("summary", {}),
+        "accumulation": scan_result.get("accumulation", []),
+        "distribution": scan_result.get("distribution", []),
+        "timestamp": scan_result.get("timestamp", "")
+    }
