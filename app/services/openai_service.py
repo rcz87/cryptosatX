@@ -477,3 +477,105 @@ async def close_openai_service():
     global openai_service
     if openai_service:
         await openai_service.close()
+
+
+# Legacy compatibility methods for existing code
+async def analyze_signal_with_validation(signal_data: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Legacy compatibility method for signal analysis with validation
+
+    Args:
+        signal_data: Signal data dictionary
+
+    Returns:
+        Analysis result with validation
+    """
+    try:
+        service = await get_openai_service()
+        symbol = signal_data.get("symbol", "UNKNOWN")
+
+        # Use the validation method
+        result = await service.validate_signal_with_gpt(symbol, signal_data)
+
+        if result.get("success"):
+            return {
+                "success": True,
+                "gpt_analysis": {
+                    "recommendation": result.get("validated_signal", "NEUTRAL"),
+                    "confidence_level": result.get("confidence", "medium"),
+                    "reasoning": result.get("reasoning", "No reasoning provided"),
+                },
+                "validation": result,
+            }
+        else:
+            return result
+
+    except Exception as e:
+        return {"success": False, "error": f"OpenAI service not available: {str(e)}"}
+
+
+async def analyze_market_sentiment(symbols: List[str]) -> Dict[str, Any]:
+    """
+    Legacy compatibility method for market sentiment analysis
+
+    Args:
+        symbols: List of cryptocurrency symbols
+
+    Returns:
+        Market sentiment analysis
+    """
+    try:
+        service = await get_openai_service()
+
+        # Create basic market data (can be enhanced with real data)
+        market_data = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "symbols": symbols,
+            "analysis_type": "sentiment",
+        }
+
+        result = await service.generate_market_sentiment_analysis(symbols, market_data)
+
+        if result.get("success"):
+            sentiment_text = result.get("sentiment_analysis", "")
+
+            # Simple sentiment extraction
+            overall_sentiment = "neutral"
+            if "bullish" in sentiment_text.lower():
+                overall_sentiment = "bullish"
+            elif "bearish" in sentiment_text.lower():
+                overall_sentiment = "bearish"
+
+            return {
+                "success": True,
+                "overall_sentiment": overall_sentiment,
+                "detailed_analysis": sentiment_text,
+                "symbols": symbols,
+            }
+        else:
+            return result
+
+    except Exception as e:
+        return {"success": False, "error": f"OpenAI service not available: {str(e)}"}
+
+
+# Create a simple instance for backward compatibility
+class SimpleOpenAIService:
+    """Simple OpenAI service wrapper for backward compatibility"""
+
+    def __init__(self):
+        self.client = None
+
+    async def analyze_signal_with_validation(
+        self, signal_data: Dict[str, Any]
+    ) -> Dict[str, Any]:
+        """Wrapper for legacy compatibility"""
+        return await analyze_signal_with_validation(signal_data)
+
+    async def analyze_market_sentiment(self, symbols: List[str]) -> Dict[str, Any]:
+        """Wrapper for legacy compatibility"""
+        return await analyze_market_sentiment(symbols)
+
+
+# Create singleton instance for backward compatibility
+openai_service_legacy = SimpleOpenAIService()

@@ -1,0 +1,121 @@
+{
+  "test_summary": {
+    "total_tests": 18,
+    "passed_tests": 14,
+    "failed_tests": 4,
+    "success_rate": 77.77777777777779,
+    "duration_seconds": 83.84773755073547,
+    "timestamp": "2025-11-10T08:03:27.725956"
+  },
+  "test_results": [
+    {
+      "test": "Signal BTC",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:02:17.548744"
+    },
+    {
+      "test": "Signal ETH",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:02:29.347154"
+    },
+    {
+      "test": "Signal SOL",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:02:42.565091"
+    },
+    {
+      "test": "Signal AVAX",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:02:54.460973"
+    },
+    {
+      "test": "Signal DOGE",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:03:06.325430"
+    },
+    {
+      "test": "\ud83e\udde0 OpenAI GPT-4 Integration",
+      "success": false,
+      "details": "'NoneType' object has no attribute 'client'",
+      "timestamp": "2025-11-10T08:03:06.325430"
+    },
+    {
+      "test": "SMC 1HRS",
+      "success": false,
+      "details": "SMC analysis failed: No candle data available",
+      "timestamp": "2025-11-10T08:03:07.143270"
+    },
+    {
+      "test": "SMC 4HRS",
+      "success": false,
+      "details": "SMC analysis failed: No candle data available",
+      "timestamp": "2025-11-10T08:03:07.910260"
+    },
+    {
+      "test": "SMC 1DAY",
+      "success": false,
+      "details": "SMC analysis failed: No candle data available",
+      "timestamp": "2025-11-10T08:03:08.735172"
+    },
+    {
+      "test": "Whale Scanner",
+      "success": true,
+      "details": "Found 0 signals",
+      "timestamp": "2025-11-10T08:03:11.007865"
+    },
+    {
+      "test": "Accumulation Finder",
+      "success": true,
+      "details": "Found 0 coins",
+      "timestamp": "2025-11-10T08:03:13.333054"
+    },
+    {
+      "test": "CoinAPI Data",
+      "success": true,
+      "details": "Data received",
+      "timestamp": "2025-11-10T08:03:14.295507"
+    },
+    {
+      "test": "Coinglass Data",
+      "success": true,
+      "details": "Data received",
+      "timestamp": "2025-11-10T08:03:15.208284"
+    },
+    {
+      "test": "LunarCrush Data",
+      "success": true,
+      "details": "Data received",
+      "timestamp": "2025-11-10T08:03:15.808425"
+    },
+    {
+      "test": "Portfolio Optimization",
+      "success": true,
+      "details": "100.0% allocated",
+      "timestamp": "2025-11-10T08:03:15.809364"
+    },
+    {
+      "test": "Risk Assessment",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:03:27.679962"
+    },
+    {
+      "test": "Signal History",
+      "success": true,
+      "details": "10 signals",
+      "timestamp": "2025-11-10T08:03:27.699558"
+    },
+    {
+      "test": "Signal Statistics",
+      "success": true,
+      "details": "0 total",
+      "timestamp": "2025-11-10T08:03:27.719662"
+    }
+  ],
+  "version": "3.0.0-MAXIMAL"
+}

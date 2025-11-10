@@ -1,0 +1,109 @@
+{
+  "test_summary": {
+    "total_tests": 16,
+    "passed_tests": 11,
+    "failed_tests": 5,
+    "success_rate": 68.75,
+    "duration_seconds": 81.38568639755249,
+    "timestamp": "2025-11-10T07:59:23.750392"
+  },
+  "test_results": [
+    {
+      "test": "Signal BTC",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T07:58:17.394602"
+    },
+    {
+      "test": "Signal ETH",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T07:58:29.173989"
+    },
+    {
+      "test": "Signal SOL",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T07:58:40.934538"
+    },
+    {
+      "test": "Signal AVAX",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T07:58:52.734294"
+    },
+    {
+      "test": "Signal DOGE",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T07:59:04.615535"
+    },
+    {
+      "test": "\ud83e\udde0 OpenAI GPT-4 Integration",
+      "success": false,
+      "details": "'NoneType' object has no attribute 'client'",
+      "timestamp": "2025-11-10T07:59:04.615535"
+    },
+    {
+      "test": "SMC 1HRS",
+      "success": false,
+      "details": "SMC analysis failed: No candle data available",
+      "timestamp": "2025-11-10T07:59:05.399992"
+    },
+    {
+      "test": "SMC 4HRS",
+      "success": false,
+      "details": "SMC analysis failed: No candle data available",
+      "timestamp": "2025-11-10T07:59:06.160360"
+    },
+    {
+      "test": "SMC 1DAY",
+      "success": false,
+      "details": "SMC analysis failed: No candle data available",
+      "timestamp": "2025-11-10T07:59:06.901787"
+    },
+    {
+      "test": "Whale Scanner",
+      "success": true,
+      "details": "Found 0 signals",
+      "timestamp": "2025-11-10T07:59:09.330131"
+    },
+    {
+      "test": "Accumulation Finder",
+      "success": true,
+      "details": "Found 0 coins",
+      "timestamp": "2025-11-10T07:59:11.815101"
+    },
+    {
+      "test": "\ud83d\udcca Market Data Aggregation",
+      "success": false,
+      "details": "'CoinglassService' object has no attribute 'get_market_data'",
+      "timestamp": "2025-11-10T07:59:11.818095"
+    },
+    {
+      "test": "Portfolio Optimization",
+      "success": true,
+      "details": "100.0% allocated",
+      "timestamp": "2025-11-10T07:59:11.819059"
+    },
+    {
+      "test": "Risk Assessment",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T07:59:23.714084"
+    },
+    {
+      "test": "Signal History",
+      "success": true,
+      "details": "10 signals",
+      "timestamp": "2025-11-10T07:59:23.714084"
+    },
+    {
+      "test": "Signal Statistics",
+      "success": true,
+      "details": "0 total",
+      "timestamp": "2025-11-10T07:59:23.735342"
+    }
+  ],
+  "version": "3.0.0-MAXIMAL"
+}

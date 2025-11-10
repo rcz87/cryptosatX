@@ -1,0 +1,109 @@
+{
+  "test_summary": {
+    "total_tests": 16,
+    "passed_tests": 11,
+    "failed_tests": 5,
+    "success_rate": 68.75,
+    "duration_seconds": 81.2759301662445,
+    "timestamp": "2025-11-10T08:01:28.478701"
+  },
+  "test_results": [
+    {
+      "test": "Signal BTC",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:00:20.839382"
+    },
+    {
+      "test": "Signal ETH",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:00:32.596500"
+    },
+    {
+      "test": "Signal SOL",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:00:44.508243"
+    },
+    {
+      "test": "Signal AVAX",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:00:56.304913"
+    },
+    {
+      "test": "Signal DOGE",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:01:08.082272"
+    },
+    {
+      "test": "\ud83e\udde0 OpenAI GPT-4 Integration",
+      "success": false,
+      "details": "'NoneType' object has no attribute 'client'",
+      "timestamp": "2025-11-10T08:01:08.089711"
+    },
+    {
+      "test": "SMC 1HRS",
+      "success": false,
+      "details": "SMC analysis failed: No candle data available",
+      "timestamp": "2025-11-10T08:01:08.906960"
+    },
+    {
+      "test": "SMC 4HRS",
+      "success": false,
+      "details": "SMC analysis failed: No candle data available",
+      "timestamp": "2025-11-10T08:01:09.703060"
+    },
+    {
+      "test": "SMC 1DAY",
+      "success": false,
+      "details": "SMC analysis failed: No candle data available",
+      "timestamp": "2025-11-10T08:01:10.521986"
+    },
+    {
+      "test": "Whale Scanner",
+      "success": true,
+      "details": "Found 0 signals",
+      "timestamp": "2025-11-10T08:01:12.805552"
+    },
+    {
+      "test": "Accumulation Finder",
+      "success": true,
+      "details": "Found 0 coins",
+      "timestamp": "2025-11-10T08:01:15.177637"
+    },
+    {
+      "test": "\ud83d\udcca Market Data Aggregation",
+      "success": false,
+      "details": "'LunarCrushService' object has no attribute 'get_market_data'",
+      "timestamp": "2025-11-10T08:01:15.178219"
+    },
+    {
+      "test": "Portfolio Optimization",
+      "success": true,
+      "details": "100.0% allocated",
+      "timestamp": "2025-11-10T08:01:15.178219"
+    },
+    {
+      "test": "Risk Assessment",
+      "success": true,
+      "details": "Score: 54.1",
+      "timestamp": "2025-11-10T08:01:28.439016"
+    },
+    {
+      "test": "Signal History",
+      "success": true,
+      "details": "10 signals",
+      "timestamp": "2025-11-10T08:01:28.458822"
+    },
+    {
+      "test": "Signal Statistics",
+      "success": true,
+      "details": "0 total",
+      "timestamp": "2025-11-10T08:01:28.476057"
+    }
+  ],
+  "version": "3.0.0-MAXIMAL"
+}

@@ -26,6 +26,7 @@ from app.api import (
     routes_enhanced_gpt,
     routes_monitoring,
     routes_openai,
+    routes_optimized_gpt,
 )
 
 # Load environment variables
@@ -95,6 +96,9 @@ app.include_router(routes_history.router, tags=["Signal History"])
 app.include_router(routes_enhanced_gpt.router, tags=["Enhanced GPT Integration"])
 app.include_router(routes_monitoring.router, tags=["Automated Monitoring"])
 app.include_router(routes_openai.router, tags=["OpenAI GPT-4 Integration"])
+app.include_router(
+    routes_optimized_gpt.router, tags=["Optimized GPT Actions - MAXIMAL"]
+)
 
 
 if __name__ == "__main__":
