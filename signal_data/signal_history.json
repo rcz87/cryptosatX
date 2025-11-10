@@ -29340,5 +29340,81 @@
         "volatility7d": 15.82
       }
     }
+  },
+  {
+    "id": "sig_20251110060243735144",
+    "saved_at": "2025-11-10T06:02:43.735169",
+    "data": {
+      "symbol": "BTC",
+      "timestamp": "2025-11-10T06:02:43.727572",
+      "signal": "NEUTRAL",
+      "score": 50.3,
+      "confidence": "medium",
+      "price": 106061.2,
+      "reasons": [
+        "High funding rate (0.590%) - longs overleveraged",
+        "Price trend: neutral",
+        "Social sentiment: 56/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.005903,
+        "openInterest": 69714776438.4161,
+        "socialScore": 55.5,
+        "priceTrend": "neutral"
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.03,
+          "15m": -0.01,
+          "1h": -0.08,
+          "4h": 0.43,
+          "24h": 4.11
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0329,
+          "oiVolumeRatio": 0.7615
+        },
+        "fundingRates": {
+          "oiWeighted": 0.005903,
+          "volumeWeighted": 0.005694
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 222,
+        "socialMetrics": {
+          "volume": 0,
+          "engagement": 0,
+          "dominance": 0.0,
+          "tweetVolume": 0,
+          "redditVolume": 0,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 0.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 29.1,
+          "momentumLevel": "very_weak",
+          "volumeChange24h": 0.0,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 29.88,
+          "sellPressure": 70.12,
+          "avgTradeSize": 0.0
+        },
+        "volatility7d": 8.44
+      }
+    }
   }
 ]
