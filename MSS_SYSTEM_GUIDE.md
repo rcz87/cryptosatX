@@ -320,7 +320,7 @@ Currently returns placeholder response. Future enhancement will track discovered
 3. **Logging Enhancements** - Add structured logging for detailed phase-by-phase analysis
 
 ### Medium-term:
-1. **Telegram Notifications** - Auto-alert for high MSS scores (>75) with actionable signals
+1. ✅ **Telegram Notifications** - COMPLETED (Nov 10, 2025) - Auto-alert for high MSS scores (>75) with 3-phase breakdown
 2. **Database Storage** - Save MSS signal history to PostgreSQL with full phase breakdowns
 3. **Watchlist Feature** - Track discovered coins over time (implement `/mss/watch` endpoint)
 4. **Historical Trending** - Analyze MSS score evolution and predict momentum shifts
@@ -332,6 +332,85 @@ Currently returns placeholder response. Future enhancement will track discovered
 3. **Custom Scoring Weights** - User-configurable phase weights and thresholds
 4. **Backtesting Framework** - Historical MSS performance validation with ROI tracking
 5. **Portfolio Integration** - Auto-execute trades on high MSS signals
+
+---
+
+## 📱 Telegram Notifications (NEW - Nov 10, 2025)
+
+MSS now includes **automatic Telegram alerts** for high-potential coin discoveries!
+
+### Features
+- **Auto-Alert**: Automatically sends notifications when MSS score ≥ 75 (configurable)
+- **Rich Formatting**: Beautiful HTML-formatted messages with emojis and tier classification
+- **3-Phase Breakdown**: Complete visibility into Discovery, Social, and Whale validation scores
+- **Market Data**: Includes price, market cap, FDV, and key metrics
+- **AI Insights**: Contextual commentary based on phase scores
+
+### Setup
+1. **Environment Variables** (already configured):
+   ```bash
+   TELEGRAM_BOT_TOKEN=your_bot_token
+   TELEGRAM_CHAT_ID=your_chat_id
+   MSS_NOTIFICATION_THRESHOLD=75.0  # Optional, defaults to 75
+   ```
+
+2. **Test Your Setup**:
+   ```bash
+   GET /mss/telegram/test
+   ```
+
+3. **Automatic Alerts**:
+   - `/mss/analyze/{symbol}` - Sends alert if MSS ≥ 75
+   - `/mss/scan` - Sends alerts for all discovered coins ≥ 75
+   - Use `send_alert=false` parameter to disable per-request
+
+### Alert Format Example
+
+```
+🔍 MSS ALPHA DISCOVERY 💎💎💎
+━━━━━━━━━━━━━━━━━━━━━━━
+🪙 PEPE
+📊 MSS Score: 82.5/100
+🎯 Signal: STRONG_LONG 🟢🚀
+⚡ Tier: 💎 DIAMOND
+🔒 Confidence: VERY_HIGH
+
+💰 Market Data
+💵 Price: $0.000001
+📈 Market Cap: $29.25M
+💎 FDV: $45.00M
+
+━━━━━━━━━━━━━━━━━━━━━━━
+📋 3-Phase Analysis
+
+Phase 1: Discovery (28.0/30)
+████████████░░░░░░░░ 93%
+└ FDV: $45.00M • Age: 36h (NEW!) • Circ: 65%
+
+Phase 2: Social Momentum (29.5/35)
+████████████░░░░░░░░ 84%
+└ AltRank: 45 • Galaxy: 78 • Vol Spike: 145% 🔥
+
+Phase 3: Whale Validation (25.0/35)
+█████████░░░░░░░░░░░ 71%
+└ Whale Activity: YES 🐋 • Trader Ratio: 2.10 • OI: Increasing ↗️
+
+━━━━━━━━━━━━━━━━━━━━━━━
+🧠 AI Insight:
+> "Exceptional early-stage opportunity detected. All phases 
+   show strong alignment with accumulation patterns."
+
+🕐 2025-11-10 16:23 UTC
+⚙️ MSS Alpha System v1.0
+
+#CryptoSatX #MSS #EarlyGems #Discovery
+```
+
+### Notification Tiers
+- **💎 DIAMOND** (MSS 80-100): Exceptional opportunities
+- **🥇 GOLD** (MSS 65-79): Strong fundamentals
+- **🥈 SILVER** (MSS 50-64): Viable opportunities
+- **🥉 BRONZE** (MSS <50): Mixed signals
 
 ---
 

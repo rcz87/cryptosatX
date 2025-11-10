@@ -177,12 +177,23 @@ Unlike traditional signals that analyze established coins, MSS focuses on **emer
 - Analyze any coin for early accumulation signals (e.g., "Check if whales are buying PEPE")
 - Auto-scan new listings for institutional interest (e.g., "Scan today's new listings for strong fundamentals")
 
+**Telegram Integration (NEW - Nov 10, 2025):**
+- ✅ **TelegramMSSNotifier** service created with rich HTML formatting
+- ✅ Auto-alerts for MSS scores ≥ 75 (configurable via `MSS_NOTIFICATION_THRESHOLD`)
+- ✅ 3-phase breakdown visualization with progress bars
+- ✅ Tier classification (Diamond, Gold, Silver, Bronze)
+- ✅ AI-generated insights based on phase scores
+- ✅ Integrated into `/mss/analyze` and `/mss/scan` endpoints
+- ✅ Test endpoint: `/mss/telegram/test`
+- ✅ Includes market data (price, market cap, FDV)
+- ✅ Whale activity and institutional positioning indicators
+
 **Next Steps (Future Enhancement):**
-- Add Telegram notification integration for high MSS scores (>75)
 - Add database storage for MSS signal history with phase breakdowns
 - Extend GPT Actions schema with MSS endpoints
 - Add integration tests for all 3 phases
 - Implement watchlist feature for tracking discovered coins
+- Add performance optimization with caching
 
 **Documentation:**
 - Comprehensive guide: `MSS_SYSTEM_GUIDE.md` (architecture, endpoints, scoring details, known limitations)
