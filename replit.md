@@ -124,3 +124,62 @@ The PostgreSQL database includes a `signals` table with the following structure:
 - Complete upgrade summary: `SMART_MONEY_UPGRADE_SUMMARY.md`
 - Whale detection features: `WHALE_DETECTION_FEATURES.md`
 - All endpoints documented in OpenAPI schema at `/docs`
+
+---
+
+### MSS Alpha System - Multi-Modal Signal Score (November 10, 2025) 🚀
+
+**Major Feature**: Implemented 3-phase analytical framework for discovering high-potential cryptocurrencies before retail adoption.
+
+**Core Philosophy:**
+Unlike traditional signals that analyze established coins, MSS focuses on **emerging assets** through phased filtering:
+1. **Phase 1: Discovery (0-30pts)** - Tokenomics filtering (FDV, age, supply)
+2. **Phase 2: Social Confirmation (0-35pts)** - Community momentum validation
+3. **Phase 3: Institutional Validation (0-35pts)** - Whale/smart money positioning
+
+**New Files Created:**
+1. **app/core/mss_engine.py** - 3-phase weighted scoring algorithm with configurable thresholds
+2. **app/services/mss_service.py** - Service orchestrator reusing existing CoinGecko, Binance, LunarCrush, Coinglass, CoinAPI services
+3. **app/api/routes_mss.py** - 5 new REST endpoints for MSS functionality
+
+**New API Endpoints:**
+1. `GET /mss/info` - System information and configuration
+2. `GET /mss/discover` - Discover new coins by FDV, age, volume filters
+3. `GET /mss/analyze/{symbol}` - Full 3-phase MSS analysis for any coin
+4. `GET /mss/scan` - Auto-scan for high-potential opportunities
+5. `GET /mss/watch` - Watchlist management (placeholder for future enhancement)
+
+**Current Status: 🟡 Beta (Operational with Limitations)**
+
+**Fully Functional:**
+- ✅ All 5 endpoints operational with error handling
+- ✅ Phase 1: CoinGecko + Binance coin discovery (FDV, age, volume filtering)
+- ✅ Phase 2: LunarCrush social metrics (AltRank, Galaxy Score, sentiment)
+- ✅ 100% backward compatible (no breaking changes to existing system)
+
+**Known Limitations (Documented):**
+- 🟡 Phase 2: Volume spike detection unavailable (always 0) - requires CoinAPI trades integration
+- 🔴 Phase 3: Whale detection degraded (always false) - requires Coinglass Premium top trader ratios
+- 🔴 Current max realistic MSS score: ~70/100 (instead of full 100) due to Phase 2/3 limitations
+
+**Architecture:**
+- **Service Reuse**: 100% additive module - reuses all existing service infrastructure without modification
+- **Scoring Formula**: Weighted composite across 3 phases with configurable pass thresholds
+- **Error Handling**: Graceful degradation with safe defaults and comprehensive logging
+- **Future-Ready**: Designed for Telegram alerts and database storage (not yet integrated)
+
+**Target Use Cases:**
+- Discover small cap gems under $50M FDV before retail (e.g., "Find new DeFi coins under $20M")
+- Analyze any coin for early accumulation signals (e.g., "Check if whales are buying PEPE")
+- Auto-scan new listings for institutional interest (e.g., "Scan today's new listings for strong fundamentals")
+
+**Next Phase (Future Enhancement):**
+- Fix Phase 2: Integrate CoinAPI Comprehensive for actual volume spike detection
+- Fix Phase 3: Integrate Coinglass Premium for top trader ratio analysis
+- Add Telegram notification integration for high MSS scores
+- Add database storage for MSS signal history
+- Extend GPT Actions schema with MSS endpoints
+
+**Documentation:**
+- Comprehensive guide: `MSS_SYSTEM_GUIDE.md` (architecture, endpoints, scoring details, known limitations)
+- All endpoints in OpenAPI schema at `/docs`
