@@ -9,6 +9,7 @@ modules = ["python-3.11"]
 
 [nix]
 channel = "stable-24_05"
+packages = ["cargo", "glibcLocales", "libiconv", "libxcrypt", "openssl", "pkg-config", "postgresql", "rustc"]
 
 [deployment]
 run = ["python3", "main.py"]
@@ -40,6 +41,7 @@ waitForPort = 8000
 
 [agent]
 expertMode = true
+integrations = ["python_database:1.0.0"]
 
 [[ports]]
 localPort = 8000
