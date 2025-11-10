@@ -13,17 +13,21 @@ from app.services.okx_service import okx_service
 from app.storage.signal_history import signal_history
 import asyncio
 
+# ADDED FOR AI VALIDATION - OpenAI integration
+from app.services.openai_service import get_openai_service
+
 router = APIRouter()
 
 
 @router.get("/signals/{symbol}")
-async def get_signal(symbol: str, debug: bool = False):
+async def get_signal(symbol: str, debug: bool = False, include_ai_validation: bool = False):
     """
     Get enhanced trading signal with premium data and weighted scoring
     
     Args:
         symbol: Cryptocurrency symbol (e.g., BTC, ETH, SOL)
         debug: Include detailed score breakdown and all raw metrics (default: False)
+        include_ai_validation: Include OpenAI GPT-4 validation and reasoning (default: False)
         
     Returns:
         Enhanced signal with:
@@ -31,6 +35,7 @@ async def get_signal(symbol: str, debug: bool = False):
         - Score (0-100) with weighted multi-factor analysis
         - Top 3 reasons for the signal
         - Premium metrics (liquidations, L/S ratio, smart money, etc.)
+        - AI validation (if requested)
         - Debug info if requested
     """
     try:
@@ -38,6 +43,27 @@ async def get_signal(symbol: str, debug: bool = False):
         
         # ADDED FOR CRYPTOSATX ENHANCEMENT - Auto-save signal to history (non-blocking)
         asyncio.create_task(signal_history.save_signal(signal))
+        
+        # ADDED FOR AI VALIDATION - Get OpenAI GPT-4 validation if requested
+        if include_ai_validation:
+            try:
+                openai_svc = await get_openai_service()
+                validation = await openai_svc.validate_signal_with_gpt(symbol, signal)
+                
+                if validation.get("success"):
+                    signal["ai_validation"] = {
+                        "original_signal": validation.get("original_signal"),
+                        "validated_signal": validation.get("validated_signal"),
+                        "confidence": validation.get("confidence"),
+                        "reasoning": validation.get("reasoning"),
+                        "model_used": validation.get("model_used"),
+                    }
+            except Exception as ai_error:
+                # Don't fail the entire request if AI validation fails
+                signal["ai_validation"] = {
+                    "success": False,
+                    "error": f"AI validation unavailable: {str(ai_error)}"
+                }
         
         return signal
     except Exception as e:
