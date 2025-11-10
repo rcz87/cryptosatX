@@ -643,14 +643,14 @@ class SignalEngine:
         """
         Determine LONG/SHORT/NEUTRAL based on score
         
-        Score ranges:
-        - 0-35: SHORT
-        - 35-65: NEUTRAL
-        - 65-100: LONG
+        Score ranges (ADJUSTED FOR HIGHER SENSITIVITY):
+        - 0-45: SHORT
+        - 45-55: NEUTRAL
+        - 55-100: LONG
         """
-        if score >= 65:
+        if score >= 55:
             return "LONG"
-        elif score <= 35:
+        elif score <= 45:
             return "SHORT"
         else:
             return "NEUTRAL"
