@@ -17,6 +17,7 @@ from app.services.coinglass_comprehensive_service import coinglass_comprehensive
 from app.services.lunarcrush_service import lunarcrush_service
 from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
 from app.services.okx_service import okx_service
+from app.services.telegram_notifier import telegram_notifier
 
 
 @dataclass
@@ -128,6 +129,7 @@ class SignalEngine:
         Returns:
             Dict with signal, score, and comprehensive analysis
         """
+        print(f"🔵 BUILD_SIGNAL STARTED for {symbol} - Code reload test!")
         symbol = symbol.upper()
 
         # PHASE 1: Concurrent data collection
@@ -235,6 +237,17 @@ class SignalEngine:
                 "scoreBreakdown": breakdown,
                 "allMetrics": asdict(context),
             }
+
+        # Auto-send Telegram alert for actionable signals (LONG/SHORT only)
+        print(f"🟢 Signal={signal}, Telegram enabled={telegram_notifier.enabled}")
+        if signal in ["LONG", "SHORT"] and telegram_notifier.enabled:
+            print(f"🟡 Attempting to send Telegram alert for {symbol} {signal}")
+            try:
+                result = await telegram_notifier.send_signal_alert(response)
+                print(f"✅ Telegram alert sent successfully: {result}")
+            except Exception as e:
+                # Don't fail signal generation if Telegram fails
+                print(f"⚠️ Telegram notification failed: {e}")
 
         return response
 
