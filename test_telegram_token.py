@@ -4,10 +4,16 @@ Simple test to verify Telegram bot token
 """
 import requests
 import json
+import os
 
 
 def test_token():
-    token = "8333304167:AAEzgHOUfAnU_f8CZuZN2VNnfiJ0JR4Evrc"
+    token = os.environ.get("TELEGRAM_BOT_TOKEN")
+    if not token:
+        print("❌ Error: TELEGRAM_BOT_TOKEN environment variable not set")
+        print("Please add your Telegram bot token to Replit Secrets")
+        return False
+    
     url = f"https://api.telegram.org/bot{token}/getMe"
 
     print(f"Testing token: {token[:20]}...")
