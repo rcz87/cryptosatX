@@ -14,7 +14,7 @@ logger = default_logger
 # Replit specific setup
 if __name__ == "__main__":
     # Get port from Replit environment
-    port = int(os.environ.get("PORT", 8000))
+    port = int(os.environ.get("PORT", 5000))
     
     # Log startup information
     logger.info(f"Starting CryptoSatX on Replit")

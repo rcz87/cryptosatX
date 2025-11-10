@@ -12,8 +12,8 @@ channel = "stable-24_05"
 packages = ["cargo", "glibcLocales", "libiconv", "libxcrypt", "openssl", "pkg-config", "postgresql", "rustc"]
 
 [deployment]
-run = ["python3", "main.py"]
-deploymentTarget = "gce"
+run = ["sh", "-c", "PORT=5000 python3 main.py"]
+deploymentTarget = "autoscale"
 
 [env]
 PYTHONPATH = "$PYTHONPATH:."
@@ -34,10 +34,13 @@ args = "api-server"
 name = "api-server"
 author = "agent"
 
+[workflows.workflow.metadata]
+outputType = "webview"
+
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "python3 main.py"
-waitForPort = 8000
+args = "PORT=5000 python3 main.py"
+waitForPort = 5000
 
 [agent]
 expertMode = true
@@ -45,4 +48,12 @@ integrations = ["python_database:1.0.0"]
 
 [[ports]]
 localPort = 8000
+externalPort = 80
+
+[[ports]]
+localPort = 39773
+externalPort = 3000
+
+[[ports]]
+localPort = 5000
 externalPort = 80
