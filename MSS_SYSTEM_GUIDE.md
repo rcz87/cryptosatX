@@ -358,6 +358,20 @@ MSS now includes **automatic Telegram alerts** for high-potential coin discoveri
    ```bash
    GET /mss/telegram/test
    ```
+   
+   **Response:**
+   ```json
+   {
+     "success": true,
+     "message": "Test message sent successfully",
+     "telegram_enabled": true,
+     "notification_threshold": 75.0,
+     "telegram_response": {
+       "ok": true,
+       "result": { "message_id": 148, ... }
+     }
+   }
+   ```
 
 3. **Automatic Alerts**:
    - `/mss/analyze/{symbol}` - Sends alert if MSS ≥ 75
@@ -411,6 +425,20 @@ Phase 3: Whale Validation (25.0/35)
 - **🥇 GOLD** (MSS 65-79): Strong fundamentals
 - **🥈 SILVER** (MSS 50-64): Viable opportunities
 - **🥉 BRONZE** (MSS <50): Mixed signals
+
+### Endpoints with Telegram Integration
+| Endpoint | Auto-Alert | Description |
+|----------|------------|-------------|
+| `GET /mss/telegram/test` | - | Send test message to verify bot setup |
+| `GET /mss/analyze/{symbol}?send_alert=true` | ✅ | Analyze coin, send alert if MSS ≥ threshold |
+| `GET /mss/scan?send_alerts=true` | ✅ | Scan market, send alerts for high-scoring discoveries |
+| `GET /mss/info` | - | Show Telegram configuration status |
+
+### Error Handling
+- Notifications **gracefully fail** without breaking MSS analysis
+- Missing `TELEGRAM_BOT_TOKEN` or `TELEGRAM_CHAT_ID` disables notifications automatically
+- Failed alerts are logged but don't prevent API responses
+- Use `send_alert=false` parameter to disable notifications per-request
 
 ---
 
