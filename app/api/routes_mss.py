@@ -8,9 +8,11 @@ from fastapi import APIRouter, Query, HTTPException
 from typing import Optional
 import logging
 import os
+from datetime import datetime, timedelta
 
 from app.services.mss_service import MSSService
 from app.services.telegram_mss_notifier import telegram_mss_notifier
+from app.storage.mss_db import mss_db
 
 logger = logging.getLogger(__name__)
 
@@ -166,6 +168,16 @@ async def analyze_coin(
                 
             except Exception as notify_err:
                 logger.warning(f"Failed to send Telegram alert for {symbol}: {notify_err}")
+        
+        # Save MSS signal to database (for high-scoring signals only)
+        signal_saved = False
+        if result.get("mss_score", 0) >= MSS_NOTIFICATION_THRESHOLD:
+            try:
+                signal_id = await mss_db.save_mss_signal(result)
+                signal_saved = True
+                logger.info(f"✅ MSS signal saved to database: {symbol} (ID: {signal_id})")
+            except Exception as db_err:
+                logger.warning(f"Failed to save MSS signal to database for {symbol}: {db_err}")
 
         if not include_raw:
             # Simplified response
@@ -182,6 +194,13 @@ async def analyze_coin(
                 "sent": True,
                 "threshold": MSS_NOTIFICATION_THRESHOLD,
                 "message": f"High MSS score alert sent to Telegram"
+            }
+        
+        # Add database storage status if saved
+        if signal_saved:
+            response["database"] = {
+                "saved": True,
+                "message": "MSS signal saved to database for future analytics"
             }
 
         return response
@@ -249,8 +268,9 @@ async def scan_market(
 
         from datetime import datetime
         
-        # Send Telegram alerts for high-scoring coins
+        # Send Telegram alerts and save to database for high-scoring coins
         alerts_sent = 0
+        signals_saved = 0
         if send_alerts and results:
             for coin in results:
                 if coin.get("mss_score", 0) >= MSS_NOTIFICATION_THRESHOLD:
@@ -259,6 +279,7 @@ async def scan_market(
                         phase1 = phases.get("phase1_discovery", {})
                         p1_breakdown = phase1.get("breakdown", {})
                         
+                        # Send Telegram alert
                         notification_result = await telegram_mss_notifier.send_mss_discovery_alert(
                             symbol=coin.get("symbol", "UNKNOWN"),
                             mss_score=coin.get("mss_score", 0),
@@ -273,6 +294,14 @@ async def scan_market(
                         if notification_result.get("success"):
                             alerts_sent += 1
                             logger.info(f"✅ Alert sent for {coin.get('symbol')} (MSS: {coin.get('mss_score'):.1f})")
+                        
+                        # Save to database
+                        try:
+                            signal_id = await mss_db.save_mss_signal(coin)
+                            signals_saved += 1
+                            logger.info(f"✅ MSS signal saved: {coin.get('symbol')} (ID: {signal_id})")
+                        except Exception as db_err:
+                            logger.warning(f"Failed to save {coin.get('symbol')} to database: {db_err}")
                             
                     except Exception as notify_err:
                         logger.warning(f"Failed to send alert for {coin.get('symbol')}: {notify_err}")
@@ -300,6 +329,10 @@ async def scan_market(
                 "sent": alerts_sent,
                 "threshold": MSS_NOTIFICATION_THRESHOLD,
                 "eligible_coins": len([c for c in results if c.get("mss_score", 0) >= MSS_NOTIFICATION_THRESHOLD])
+            }
+            response["database"] = {
+                "saved": signals_saved,
+                "message": f"{signals_saved} MSS signals saved for future analytics"
             }
         
         return response
@@ -503,4 +536,199 @@ async def test_telegram():
     
     except Exception as e:
         logger.error(f"Telegram test error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/history")
+async def get_mss_history(
+    limit: int = Query(
+        100,
+        description="Maximum number of signals to return",
+        ge=1,
+        le=500
+    )
+):
+    """
+    **MSS Signal History**
+    
+    Retrieve latest MSS signals from database.
+    Shows high-scoring discoveries over time for analytics and tracking.
+    
+    **Example:** `GET /mss/history?limit=50`
+    
+    Returns:
+    - List of MSS signals with complete phase breakdown
+    - Sorted by timestamp (most recent first)
+    """
+    try:
+        signals = await mss_db.get_latest_mss_signals(limit=limit)
+        
+        return {
+            "success": True,
+            "total_retrieved": len(signals),
+            "limit": limit,
+            "signals": signals
+        }
+    
+    except Exception as e:
+        logger.error(f"History query error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/history/{symbol}")
+async def get_mss_history_by_symbol(
+    symbol: str,
+    limit: int = Query(
+        50,
+        description="Maximum number of signals to return",
+        ge=1,
+        le=200
+    ),
+    offset: int = Query(
+        0,
+        description="Pagination offset",
+        ge=0
+    )
+):
+    """
+    **MSS Signal History for Specific Symbol**
+    
+    Retrieve MSS signal history for a specific cryptocurrency.
+    Useful for tracking a coin's MSS score evolution over time.
+    
+    **Example:** `GET /mss/history/PEPE?limit=20`
+    
+    Returns:
+    - Symbol-specific MSS signals
+    - Chronological order (most recent first)
+    - Pagination support
+    """
+    try:
+        signals = await mss_db.get_mss_signals_by_symbol(
+            symbol=symbol.upper(),
+            limit=limit,
+            offset=offset
+        )
+        
+        return {
+            "success": True,
+            "symbol": symbol.upper(),
+            "total_retrieved": len(signals),
+            "limit": limit,
+            "offset": offset,
+            "signals": signals
+        }
+    
+    except Exception as e:
+        logger.error(f"Symbol history query error for {symbol}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/top-scores")
+async def get_top_mss_scores(
+    min_score: float = Query(
+        75.0,
+        description="Minimum MSS score threshold",
+        ge=0,
+        le=100
+    ),
+    limit: int = Query(
+        50,
+        description="Maximum number of signals to return",
+        ge=1,
+        le=100
+    )
+):
+    """
+    **Top MSS Scores**
+    
+    Retrieve highest-scoring MSS signals.
+    Discover the best opportunities identified by the MSS system.
+    
+    **Example:** `GET /mss/top-scores?min_score=80&limit=20`
+    
+    Returns:
+    - High-scoring MSS signals
+    - Sorted by MSS score (highest first)
+    - Diamond, Gold, and Silver tier discoveries
+    """
+    try:
+        signals = await mss_db.get_high_score_mss_signals(
+            min_score=min_score,
+            limit=limit
+        )
+        
+        # Categorize by tier
+        diamond = [s for s in signals if s.get("mss_score", 0) >= 80]
+        gold = [s for s in signals if 65 <= s.get("mss_score", 0) < 80]
+        silver = [s for s in signals if 50 <= s.get("mss_score", 0) < 65]
+        
+        return {
+            "success": True,
+            "min_score": min_score,
+            "total_retrieved": len(signals),
+            "tier_distribution": {
+                "diamond": len(diamond),
+                "gold": len(gold),
+                "silver": len(silver)
+            },
+            "signals": signals
+        }
+    
+    except Exception as e:
+        logger.error(f"Top scores query error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/analytics")
+async def get_mss_analytics(
+    symbol: Optional[str] = Query(
+        None,
+        description="Optional symbol filter"
+    ),
+    days: int = Query(
+        7,
+        description="Number of days to analyze",
+        ge=1,
+        le=90
+    )
+):
+    """
+    **MSS Analytics Summary**
+    
+    Get comprehensive analytics for MSS signals.
+    Track signal distribution, tier performance, and scoring trends.
+    
+    **Example:** `GET /mss/analytics?days=30`
+    **Example:** `GET /mss/analytics?symbol=PEPE&days=14`
+    
+    Returns:
+    - Signal distribution (STRONG_LONG, MODERATE_LONG, etc.)
+    - Tier distribution (Diamond, Gold, Silver)
+    - MSS score statistics (avg, min, max)
+    - Period summary
+    """
+    try:
+        analytics = await mss_db.get_mss_analytics_summary(
+            symbol=symbol.upper() if symbol else None,
+            days=days
+        )
+        
+        # Add total count
+        total_count = await mss_db.get_mss_signal_count(
+            symbol=symbol.upper() if symbol else None
+        )
+        
+        return {
+            "success": True,
+            "analytics": analytics,
+            "total_all_time": total_count,
+            "query_parameters": {
+                "symbol": symbol.upper() if symbol else "ALL",
+                "period_days": days
+            }
+        }
+    
+    except Exception as e:
+        logger.error(f"Analytics query error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
