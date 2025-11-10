@@ -2,6 +2,7 @@
 """
 Signal History Storage
 Stores all generated signals for tracking, analysis, and backtesting
+UPDATED: Now uses PostgreSQL as primary storage with JSON backup
 """
 import json
 import os
@@ -13,7 +14,7 @@ from pathlib import Path
 class SignalHistory:
     """
     Store and retrieve signal history
-    Uses JSON file storage for simplicity (can be upgraded to database later)
+    Uses PostgreSQL as primary storage with JSON file as backup
     """
     
     def __init__(self, storage_dir: str = "signal_data"):
@@ -21,13 +22,17 @@ class SignalHistory:
         self.storage_dir.mkdir(exist_ok=True)
         self.history_file = self.storage_dir / "signal_history.json"
         
+        # Import database service (lazy import to avoid circular dependencies)
+        from app.storage.signal_db import signal_db
+        self.db = signal_db
+        
         # Create file if it doesn't exist
         if not self.history_file.exists():
             self._save_data([])
     
     async def save_signal(self, signal_data: Dict) -> Dict:
         """
-        Save a signal to history
+        Save a signal to history (PostgreSQL + JSON backup)
         
         Args:
             signal_data: Signal dict from /signals/{symbol} endpoint
@@ -36,43 +41,76 @@ class SignalHistory:
             Dict with save status and signal ID
         """
         try:
-            # Add metadata
-            signal_entry = {
-                "id": self._generate_id(),
-                "saved_at": datetime.utcnow().isoformat(),
-                "data": signal_data
-            }
+            # PRIMARY: Save to PostgreSQL
+            signal_id = await self.db.save_signal(signal_data)
             
-            # Load existing history
-            history = self._load_data()
+            # BACKUP: Also save to JSON file for redundancy
+            try:
+                signal_entry = {
+                    "id": self._generate_id(),
+                    "saved_at": datetime.utcnow().isoformat(),
+                    "data": signal_data
+                }
+                
+                history = self._load_data()
+                history.append(signal_entry)
+                
+                # Keep only last 1000 signals in JSON (prevent file from growing too large)
+                if len(history) > 1000:
+                    history = history[-1000:]
+                
+                self._save_data(history)
+            except Exception as backup_error:
+                # Don't fail if backup fails
+                print(f"⚠️ JSON backup failed: {backup_error}")
             
-            # Add new signal
-            history.append(signal_entry)
-            
-            # Keep only last 1000 signals (prevent file from growing too large)
-            if len(history) > 1000:
-                history = history[-1000:]
-            
-            # Save back to file
-            self._save_data(history)
+            # Get total count from database
+            total_count = await self.db.get_signal_count()
             
             return {
                 "success": True,
-                "message": "Signal saved to history",
-                "signal_id": signal_entry["id"],
-                "total_signals": len(history)
+                "message": "Signal saved to database",
+                "signal_id": signal_id,
+                "total_signals": total_count,
+                "storage": "postgresql"
             }
         
         except Exception as e:
-            return {
-                "success": False,
-                "message": f"Failed to save signal: {str(e)}"
-            }
+            # Fallback to JSON-only if database fails
+            print(f"⚠️ Database save failed, using JSON fallback: {e}")
+            
+            try:
+                signal_entry = {
+                    "id": self._generate_id(),
+                    "saved_at": datetime.utcnow().isoformat(),
+                    "data": signal_data
+                }
+                
+                history = self._load_data()
+                history.append(signal_entry)
+                
+                if len(history) > 1000:
+                    history = history[-1000:]
+                
+                self._save_data(history)
+                
+                return {
+                    "success": True,
+                    "message": "Signal saved to JSON (database unavailable)",
+                    "signal_id": signal_entry["id"],
+                    "total_signals": len(history),
+                    "storage": "json_fallback"
+                }
+            except Exception as fallback_error:
+                return {
+                    "success": False,
+                    "message": f"Failed to save signal: {str(fallback_error)}"
+                }
     
     async def get_history(self, symbol: Optional[str] = None, limit: int = 50, 
                          signal_type: Optional[str] = None) -> Dict:
         """
-        Retrieve signal history
+        Retrieve signal history from PostgreSQL
         
         Args:
             symbol: Filter by symbol (e.g., 'BTC')
@@ -83,101 +121,142 @@ class SignalHistory:
             Dict with signals list and metadata
         """
         try:
-            history = self._load_data()
-            
-            # Apply filters
-            filtered = history
-            
+            # PRIMARY: Get from PostgreSQL
             if symbol:
-                filtered = [s for s in filtered if s["data"].get("symbol") == symbol.upper()]
+                signals = await self.db.get_signals_by_symbol(symbol, limit=limit)
+            else:
+                signals = await self.db.get_latest_signals(limit=limit)
             
+            # Apply signal type filter if specified
             if signal_type:
-                filtered = [s for s in filtered if s["data"].get("signal") == signal_type.upper()]
+                signals = [s for s in signals if s.get("signal") == signal_type.upper()]
             
-            # Sort by newest first
-            filtered = sorted(filtered, key=lambda x: x["saved_at"], reverse=True)
-            
-            # Apply limit
-            filtered = filtered[:limit]
+            total_count = await self.db.get_signal_count(symbol=symbol if symbol else None)
             
             return {
                 "success": True,
-                "total": len(history),
-                "filtered": len(filtered),
-                "signals": filtered
+                "total": total_count,
+                "filtered": len(signals),
+                "signals": signals,
+                "storage": "postgresql"
             }
         
         except Exception as e:
-            return {
-                "success": False,
-                "message": f"Failed to retrieve history: {str(e)}",
-                "signals": []
-            }
+            # Fallback to JSON if database fails
+            print(f"⚠️ Database query failed, using JSON fallback: {e}")
+            
+            try:
+                history = self._load_data()
+                
+                # Apply filters
+                filtered = history
+                
+                if symbol:
+                    filtered = [s for s in filtered if s["data"].get("symbol") == symbol.upper()]
+                
+                if signal_type:
+                    filtered = [s for s in filtered if s["data"].get("signal") == signal_type.upper()]
+                
+                # Sort by newest first
+                filtered = sorted(filtered, key=lambda x: x["saved_at"], reverse=True)
+                
+                # Apply limit
+                filtered = filtered[:limit]
+                
+                return {
+                    "success": True,
+                    "total": len(history),
+                    "filtered": len(filtered),
+                    "signals": filtered,
+                    "storage": "json_fallback"
+                }
+            except Exception as fallback_error:
+                return {
+                    "success": False,
+                    "message": f"Failed to retrieve history: {str(fallback_error)}",
+                    "signals": []
+                }
     
-    async def get_statistics(self, symbol: Optional[str] = None) -> Dict:
+    async def get_statistics(self, symbol: Optional[str] = None, days: int = 7) -> Dict:
         """
-        Get signal statistics
+        Get signal statistics from PostgreSQL
         
         Args:
             symbol: Filter by symbol (optional)
+            days: Number of days to analyze (default: 7)
         
         Returns:
             Dict with statistics about signals
         """
         try:
-            history = self._load_data()
-            
-            if symbol:
-                history = [s for s in history if s["data"].get("symbol") == symbol.upper()]
-            
-            if not history:
-                return {
-                    "success": True,
-                    "total": 0,
-                    "message": "No signals in history"
-                }
-            
-            # Calculate statistics
-            total = len(history)
-            long_count = sum(1 for s in history if s["data"].get("signal") == "LONG")
-            short_count = sum(1 for s in history if s["data"].get("signal") == "SHORT")
-            neutral_count = sum(1 for s in history if s["data"].get("signal") == "NEUTRAL")
-            
-            scores = [s["data"].get("score", 0) for s in history]
-            avg_score = sum(scores) / len(scores) if scores else 0
-            
-            # Symbol distribution
-            symbols = {}
-            for s in history:
-                sym = s["data"].get("symbol", "UNKNOWN")
-                symbols[sym] = symbols.get(sym, 0) + 1
+            # PRIMARY: Get analytics from PostgreSQL
+            stats = await self.db.get_analytics_summary(symbol=symbol, days=days)
             
             return {
                 "success": True,
-                "total": total,
-                "signals": {
-                    "LONG": long_count,
-                    "SHORT": short_count,
-                    "NEUTRAL": neutral_count
-                },
-                "percentages": {
-                    "LONG": round(long_count / total * 100, 1) if total > 0 else 0,
-                    "SHORT": round(short_count / total * 100, 1) if total > 0 else 0,
-                    "NEUTRAL": round(neutral_count / total * 100, 1) if total > 0 else 0
-                },
-                "averageScore": round(avg_score, 1),
-                "symbolDistribution": symbols,
-                "dateRange": {
-                    "oldest": history[-1]["saved_at"] if history else None,
-                    "newest": history[0]["saved_at"] if history else None
-                }
+                **stats,
+                "storage": "postgresql"
             }
         
         except Exception as e:
-            return {
-                "success": False,
-                "message": f"Failed to get statistics: {str(e)}"
-            }
+            # Fallback to JSON statistics
+            print(f"⚠️ Database stats failed, using JSON fallback: {e}")
+            
+            try:
+                history = self._load_data()
+                
+                if symbol:
+                    history = [s for s in history if s["data"].get("symbol") == symbol.upper()]
+                
+                if not history:
+                    return {
+                        "success": True,
+                        "total": 0,
+                        "message": "No signals in history",
+                        "storage": "json_fallback"
+                    }
+                
+                # Calculate statistics
+                total = len(history)
+                long_count = sum(1 for s in history if s["data"].get("signal") == "LONG")
+                short_count = sum(1 for s in history if s["data"].get("signal") == "SHORT")
+                neutral_count = sum(1 for s in history if s["data"].get("signal") == "NEUTRAL")
+                
+                scores = [s["data"].get("score", 0) for s in history]
+                avg_score = sum(scores) / len(scores) if scores else 0
+                
+                # Symbol distribution
+                symbols = {}
+                for s in history:
+                    sym = s["data"].get("symbol", "UNKNOWN")
+                    symbols[sym] = symbols.get(sym, 0) + 1
+                
+                return {
+                    "success": True,
+                    "total": total,
+                    "signals": {
+                        "LONG": long_count,
+                        "SHORT": short_count,
+                        "NEUTRAL": neutral_count
+                    },
+                    "percentages": {
+                        "LONG": round(long_count / total * 100, 1) if total > 0 else 0,
+                        "SHORT": round(short_count / total * 100, 1) if total > 0 else 0,
+                        "NEUTRAL": round(neutral_count / total * 100, 1) if total > 0 else 0
+                    },
+                    "averageScore": round(avg_score, 1),
+                    "symbolDistribution": symbols,
+                    "dateRange": {
+                        "oldest": history[-1]["saved_at"] if history else None,
+                        "newest": history[0]["saved_at"] if history else None
+                    },
+                    "storage": "json_fallback"
+                }
+            except Exception as fallback_error:
+                return {
+                    "success": False,
+                    "message": f"Failed to get statistics: {str(fallback_error)}"
+                }
     
     async def clear_history(self, confirm: bool = False) -> Dict:
         """

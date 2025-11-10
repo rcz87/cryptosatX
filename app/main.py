@@ -27,6 +27,7 @@ from app.api import (
     routes_monitoring,
     routes_openai,
     routes_optimized_gpt,
+    routes_analytics,  # ADDED FOR DATABASE ANALYTICS
 )
 
 # Load environment variables
@@ -36,6 +37,9 @@ load_dotenv()
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan manager for startup and shutdown events"""
+    # Import database here to avoid circular imports
+    from app.storage.database import db
+    
     print("=" * 50)
     print("CryptoSatX - Enhanced Crypto Signal API Starting...")
     print("=" * 50)
@@ -50,16 +54,22 @@ async def lifespan(app: FastAPI):
         f"  - API_KEYS: {'✓' if os.getenv('API_KEYS') else '✗ (public mode)'}"
     )  # ADDED
     print(f"  - OPENAI_API_KEY: {'✓' if os.getenv('OPENAI_API_KEY') else '✗'}")  # ADDED
+    print(f"  - DATABASE_URL: {'✓' if os.getenv('DATABASE_URL') else '✗'}")  # ADDED FOR DATABASE
     print(f"  - BASE_URL: {os.getenv('BASE_URL', 'Not set')}")
     print("=" * 50)
     print(
-        "🚀 Enhanced Features: SMC Analysis | Signal History | Telegram Alerts | OpenAI GPT-4"
-    )  # ADDED
+        "🚀 Enhanced Features: SMC Analysis | Signal History | Telegram Alerts | OpenAI GPT-4 | PostgreSQL Database"
+    )  # UPDATED
     print("=" * 50)
+    
+    # Initialize database connection
+    await db.connect()
 
     yield
 
+    # Shutdown: close database connection
     print("Shutting down CryptoSatX API...")
+    await db.disconnect()
 
 
 # Create FastAPI app
@@ -99,6 +109,7 @@ app.include_router(routes_openai.router, tags=["OpenAI GPT-4 Integration"])
 app.include_router(
     routes_optimized_gpt.router, tags=["Optimized GPT Actions - MAXIMAL"]
 )
+app.include_router(routes_analytics.router, tags=["Analytics & Insights"])  # ADDED FOR DATABASE ANALYTICS
 
 
 if __name__ == "__main__":
