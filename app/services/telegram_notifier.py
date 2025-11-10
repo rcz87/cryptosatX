@@ -2,6 +2,7 @@
 """
 Telegram Notifier Service
 Sends trading signal alerts to Telegram with human-friendly formatting
+UPDATED: Automatically saves signals to database after successful Telegram send
 """
 import os
 import httpx
@@ -13,6 +14,7 @@ class TelegramNotifier:
     """
     Send formatted trading alerts to Telegram
     Requires TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID in environment
+    Auto-saves signals to database when Telegram alert succeeds
     """
     
     def __init__(self):
@@ -26,6 +28,8 @@ class TelegramNotifier:
     async def send_signal_alert(self, signal_data: Dict) -> Dict:
         """
         Send trading signal alert to Telegram
+        IMPORTANT: Only LONG/SHORT signals are sent (NEUTRAL signals are filtered out)
+        Auto-saves to database after successful Telegram delivery
         
         Args:
             signal_data: Signal dict from /signals/{symbol} endpoint
@@ -40,12 +44,23 @@ class TelegramNotifier:
             }
         
         try:
+            # Format and send Telegram message
             message = self._format_signal_message(signal_data)
             result = await self._send_telegram_message(message)
             
+            # IMPORTANT: Save to database ONLY after successful Telegram send
+            # This ensures database contains only signals that were actually sent
+            try:
+                from app.storage.signal_history import signal_history
+                save_result = await signal_history.save_signal(signal_data)
+                print(f"✅ Signal saved to database: {save_result.get('message', 'success')}")
+            except Exception as save_error:
+                # Don't fail Telegram send if database save fails
+                print(f"⚠️ Failed to save signal to database: {save_error}")
+            
             return {
                 "success": True,
-                "message": "Alert sent to Telegram",
+                "message": "Alert sent to Telegram and saved to database",
                 "telegram_response": result
             }
         
