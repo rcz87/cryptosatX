@@ -2,16 +2,31 @@
 Main FastAPI application
 Crypto Futures Signal API with multi-provider integration
 """
+
 import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
 
-from app.api import routes_health, routes_signals, routes_gpt, routes_coinglass, routes_lunarcrush, routes_coinapi, routes_smart_money
+from app.api import (
+    routes_health,
+    routes_signals,
+    routes_gpt,
+    routes_coinglass,
+    routes_lunarcrush,
+    routes_coinapi,
+    routes_smart_money,
+)
 
 # ADDED FOR CRYPTOSATX ENHANCEMENT - Import new routes
-from app.api import routes_smc, routes_history, routes_enhanced_gpt, routes_monitoring
+from app.api import (
+    routes_smc,
+    routes_history,
+    routes_enhanced_gpt,
+    routes_monitoring,
+    routes_openai,
+)
 
 # Load environment variables
 load_dotenv()
@@ -27,15 +42,22 @@ async def lifespan(app: FastAPI):
     print(f"  - COINAPI_KEY: {'✓' if os.getenv('COINAPI_KEY') else '✗'}")
     print(f"  - COINGLASS_API_KEY: {'✓' if os.getenv('COINGLASS_API_KEY') else '✗'}")
     print(f"  - LUNARCRUSH_API_KEY: {'✓' if os.getenv('LUNARCRUSH_API_KEY') else '✗'}")
-    print(f"  - TELEGRAM_BOT_TOKEN: {'✓' if os.getenv('TELEGRAM_BOT_TOKEN') else '✗'}")  # ADDED
-    print(f"  - API_KEYS: {'✓' if os.getenv('API_KEYS') else '✗ (public mode)'}")  # ADDED
+    print(
+        f"  - TELEGRAM_BOT_TOKEN: {'✓' if os.getenv('TELEGRAM_BOT_TOKEN') else '✗'}"
+    )  # ADDED
+    print(
+        f"  - API_KEYS: {'✓' if os.getenv('API_KEYS') else '✗ (public mode)'}"
+    )  # ADDED
+    print(f"  - OPENAI_API_KEY: {'✓' if os.getenv('OPENAI_API_KEY') else '✗'}")  # ADDED
     print(f"  - BASE_URL: {os.getenv('BASE_URL', 'Not set')}")
     print("=" * 50)
-    print("🚀 Enhanced Features: SMC Analysis | Signal History | Telegram Alerts")  # ADDED
+    print(
+        "🚀 Enhanced Features: SMC Analysis | Signal History | Telegram Alerts | OpenAI GPT-4"
+    )  # ADDED
     print("=" * 50)
-    
+
     yield
-    
+
     print("Shutting down CryptoSatX API...")
 
 
@@ -46,7 +68,7 @@ app = FastAPI(
     version="2.0.0",  # UPDATED VERSION
     docs_url="/docs",
     redoc_url="/redoc",
-    lifespan=lifespan
+    lifespan=lifespan,
 )
 
 # Add CORS middleware
@@ -72,14 +94,11 @@ app.include_router(routes_smc.router, tags=["Smart Money Concept (SMC)"])
 app.include_router(routes_history.router, tags=["Signal History"])
 app.include_router(routes_enhanced_gpt.router, tags=["Enhanced GPT Integration"])
 app.include_router(routes_monitoring.router, tags=["Automated Monitoring"])
+app.include_router(routes_openai.router, tags=["OpenAI GPT-4 Integration"])
 
 
 if __name__ == "__main__":
     import uvicorn
+
     port = int(os.getenv("PORT", 8000))
-    uvicorn.run(
-        "app.main:app",
-        host="0.0.0.0",
-        port=port,
-        reload=True
-    )
+    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)
