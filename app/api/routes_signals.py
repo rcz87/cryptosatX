@@ -42,7 +42,9 @@ async def get_signal(symbol: str, debug: bool = False, include_ai_validation: bo
         signal = await signal_engine.build_signal(symbol, debug=debug)
         
         # ADDED FOR CRYPTOSATX ENHANCEMENT - Auto-save signal to history (non-blocking)
-        asyncio.create_task(signal_history.save_signal(signal))
+        # Only save actionable signals (LONG/SHORT) that would be sent to Telegram
+        if signal.get("signal") in ["LONG", "SHORT"]:
+            asyncio.create_task(signal_history.save_signal(signal))
         
         # ADDED FOR AI VALIDATION - Get OpenAI GPT-4 validation if requested
         if include_ai_validation:

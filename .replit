@@ -46,3 +46,7 @@ integrations = ["python_database:1.0.0"]
 [[ports]]
 localPort = 8000
 externalPort = 80
+
+[[ports]]
+localPort = 40015
+externalPort = 3000
