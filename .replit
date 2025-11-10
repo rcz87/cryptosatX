@@ -12,8 +12,8 @@ channel = "stable-24_05"
 packages = ["cargo", "glibcLocales", "libiconv", "libxcrypt", "openssl", "pkg-config", "postgresql", "rustc"]
 
 [deployment]
-run = ["sh", "-c", "PORT=5000 python3 main.py"]
-deploymentTarget = "autoscale"
+run = ["sh", "-c", "PORT=8000 python3 main.py"]
+deploymentTarget = "vm"
 
 [env]
 PYTHONPATH = "$PYTHONPATH:."
@@ -35,12 +35,12 @@ name = "api-server"
 author = "agent"
 
 [workflows.workflow.metadata]
-outputType = "webview"
+outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=5000 python3 main.py"
-waitForPort = 5000
+args = "PORT=8000 python3 main.py"
+waitForPort = 8000
 
 [agent]
 expertMode = true
@@ -48,11 +48,7 @@ integrations = ["python_database:1.0.0"]
 
 [[ports]]
 localPort = 8000
-externalPort = 80
-
-[[ports]]
-localPort = 39773
-externalPort = 3000
+externalPort = 8000
 
 [[ports]]
 localPort = 5000
