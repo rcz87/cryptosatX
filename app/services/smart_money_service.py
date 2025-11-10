@@ -353,7 +353,7 @@ class SmartMoneyService:
 
     async def scan_smart_money(
         self,
-        coins: str = None,
+        coins: Optional[str] = None,
         min_accumulation_score: int = 5,
         min_distribution_score: int = 5,
     ) -> Dict:
