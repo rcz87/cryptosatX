@@ -29,9 +29,6 @@ passlib[bcrypt]==1.7.4
 aiohttp==3.9.1
 aiosmtplib==3.0.1
 
-# Replit specific
-replit==3.2.7
-
 # Additional utilities
 structlog==23.2.0
 colorama==0.4.6
