@@ -22,7 +22,7 @@ The API design focuses on programmatic access, providing clean JSON responses. D
 - **Error Handling**: Implements robust error handling with safe defaults.
 - **API Endpoints**: Includes endpoints for enhanced trading signals (`/signals/{symbol}`), aggregated raw market data (`/market/{symbol}`), and a GPT Actions schema (`/gpt/action-schema`), alongside dedicated endpoints for direct Coinglass and LunarCrush data access.
 - **Smart Money Concept (SMC) Analyzer**: Detects institutional trading patterns like BOS, CHoCH, FVG, swing points, and liquidity zones across multiple timeframes.
-- **Signal History Storage**: Dual-storage system using PostgreSQL as primary database with JSON file backup. Supports full CRUD operations, advanced analytics, and automatic signal persistence.
+- **Signal History Storage**: Dual-storage system using PostgreSQL as primary database with JSON file backup. **IMPORTANT**: Only LONG/SHORT signals (sent to Telegram) are saved to database - NEUTRAL signals are NOT stored. This ensures database contains only actionable trading signals.
 - **Database Architecture**: PostgreSQL (Neon) with asyncpg driver for high-performance async operations. Schema includes comprehensive signal tracking with JSONB fields for flexible metrics storage and optimized indexes for fast queries.
 - **Analytics & Insights**: Advanced analytics endpoints (`/analytics/*`) providing signal performance metrics, trend analysis, symbol-specific insights, and date-range queries with pagination support.
 - **API Key Authentication**: Optional protection for sensitive endpoints using header-based API keys.
