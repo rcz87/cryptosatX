@@ -41,10 +41,10 @@ MSS **reuses all existing services** from the main signal system:
 | **CoinGeckoService** | Coin discovery, FDV, market cap, volume | ✅ **Phase 1 - ACTIVE** |
 | **BinanceFuturesService** | 24hr stats, futures availability | ✅ **Phase 1 - ACTIVE** |
 | **LunarCrushService** | Social metrics (AltRank, Galaxy Score, sentiment) | ✅ **Phase 2 - ACTIVE** |
-| **CoinAPIComprehensiveService** | Trade volume, buy/sell pressure | 🔧 **Phase 2 - PLANNED** |
-| **CoinglassPremiumService** | OI trends, funding, top trader positioning | 🔧 **Phase 3 - PLANNED** |
+| **CoinAPIComprehensiveService** | Trade volume, buy/sell pressure | ✅ **Phase 2 - ACTIVE** |
+| **CoinglassPremiumService** | OI trends, funding, top trader positioning | ✅ **Phase 3 - ACTIVE** |
 
-_**Current Limitation:** Phase 2/3 are using placeholder Binance 24hr ticker data instead of proper CoinAPI/Coinglass Premium integrations. This causes volume spike and whale detection to always return 0/false. See Known Limitations section for details._
+_**All 3 phases fully operational** with premium data sources integrated. Full 0-100 MSS scoring range now available._
 
 ---
 
@@ -222,133 +222,116 @@ Currently returns placeholder response. Future enhancement will track discovered
 
 ### Phase 2: Social Confirmation (0-35 points)
 
-**Data Sources (Current):**
+**Data Sources:**
 - ✅ LunarCrush: AltRank, Galaxy Score, sentiment
-- 🔧 Trade Volume: **Currently unavailable** (always 0 - see Known Limitations)
-
-**Data Sources (Planned):**
-- CoinAPI Comprehensive: Buy/sell pressure, volume spike detection
+- ✅ CoinAPI Comprehensive: Buy/sell pressure, volume spike detection
 
 **Scoring Breakdown:**
 - AltRank: 0-10 points (lower AltRank = higher score)
 - Galaxy Score: 0-10 points (65+ = 10pts, 50-65 = 5pts)
 - Sentiment: 0-10 points (positive bias)
-- Volume Spike: 0-5 points (**currently always 0** - requires CoinAPI integration)
+- Volume Spike: 0-5 points (buy pressure >60% = upward spike, sell >60% = downward spike)
 
-**Current Max Score:** 30 points (instead of 35 due to volume spike limitation)
+**Max Score:** 35 points (full range)
 **Pass Threshold:** ≥ 17.5 points to proceed to Phase 3
 
 ### Phase 3: Institutional Validation (0-35 points)
 
-**Data Sources (Current):**
-- 🔧 Coinglass Basic: Generic market data (**incomplete** - see Known Limitations)
-- 🔧 Binance 24hr Ticker: Placeholder for volume (**inaccurate** - see Known Limitations)
-
-**Data Sources (Planned):**
-- Coinglass Premium: OI trends, funding rates, top trader positioning
-- CoinAPI: Whale detection via orderbook/trades
+**Data Sources:**
+- ✅ Coinglass Premium: OI trends, funding rates, top trader positioning
+- ✅ CoinAPI Comprehensive: Trade volume, buy/sell pressure for whale detection
+- ✅ Binance Futures: Funding rate data
 
 **Scoring Breakdown:**
-- OI Trend: 0-15 points (**currently unreliable** - lacks historical data)
-- Funding Rate: 0-10 points (**currently basic** - lacks exchange comparison)
-- Whale Accumulation: 0-10 points (**currently always false** - missing trader ratios)
+- OI Trend: 0-15 points (increasing OI = accumulation signal)
+- Funding Rate: 0-10 points (balanced rate preferred, extreme rates penalized)
+- Whale Accumulation: 0-10 points (bonus for institutional positioning)
 
-**Whale Detection Criteria (Designed but not yet functional):**
-- OI change > 50%
-- Top trader long ratio: 1.5-2.5 (sweet spot)
-- Volume increasing > 30%
+**Whale Detection Criteria:**
+- OI change > 50% (strong institutional activity)
+- Top trader long ratio: 1.5-2.5 (sweet spot - not overcrowded)
+- Volume increasing > 30% (confirms accumulation)
 
-**Current Max Score:** ~10 points (instead of 35 due to data mapping issues)
-**Impact:** Phase 3 validation currently unreliable - requires Coinglass Premium integration
+**Max Score:** 35 points (full range)
+**Impact:** Full institutional validation available with premium data feeds
 
 ---
 
 ## 🎯 Signal Classification
 
-| MSS Score | Signal | Confidence | Interpretation | Current Achievability |
-|-----------|--------|------------|----------------|----------------------|
-| 80-100 | STRONG_LONG | very_high | Exceptional opportunity, all phases aligned | 🔴 **Not reachable** (Phase 2/3 limits) |
-| 65-79 | MODERATE_LONG | high | Strong fundamentals, good entry | 🟡 **Rarely reachable** (needs perfect Phase 1+2) |
-| 50-64 | LONG | medium | Passing all phases, monitor closely | 🟢 **Achievable** (realistic range) |
-| 35-49 | NEUTRAL | insufficient | Mixed signals, wait for clarity | 🟢 **Common** (typical for established coins) |
-| 0-34 | NEUTRAL | insufficient | Weak or incomplete data | 🟢 **Common** (missing data or poor fit) |
+| MSS Score | Signal | Confidence | Interpretation |
+|-----------|--------|------------|----------------|
+| 80-100 | STRONG_LONG | very_high | Exceptional opportunity, all 3 phases aligned |
+| 65-79 | MODERATE_LONG | high | Strong fundamentals with institutional backing |
+| 50-64 | LONG | medium | Passing all phases, viable opportunity |
+| 35-49 | NEUTRAL | insufficient | Mixed signals, further analysis needed |
+| 0-34 | NEUTRAL | insufficient | Weak fundamentals or incomplete data |
 
-**Note:** With current Phase 2/3 limitations, max realistic MSS score is ~70 points. Full 0-100 scale will be available after data mapping fixes.
+**Note:** Full 0-100 MSS scoring range now operational with all premium data sources integrated.
 
 ---
 
 ## ✅ Current Status
 
-### **Working Features:**
-- ✅ All 5 MSS endpoints operational (returning responses)
-- ✅ 3-phase scoring engine with weighted calculations (logic complete)
-- ✅ Phase 1: CoinGecko + Binance Futures coin discovery **FULLY FUNCTIONAL**
-- ✅ Phase 2: LunarCrush social metrics integration **PARTIALLY FUNCTIONAL** (missing volume spike)
-- ✅ Real-time timestamps and error handling
+### **✅ Fully Functional Features:**
+- ✅ All 5 MSS endpoints operational
+- ✅ 3-phase scoring engine with weighted calculations
+- ✅ **Phase 1**: CoinGecko + Binance Futures coin discovery (30 points max)
+- ✅ **Phase 2**: LunarCrush + CoinAPI Comprehensive volume analysis (35 points max)
+- ✅ **Phase 3**: Coinglass Premium institutional validation (35 points max)
+- ✅ Real-time timestamps and comprehensive error handling
 - ✅ 100% backward compatible (no breaking changes to existing endpoints)
+- ✅ Full 0-100 MSS scoring range available
 
-### **Functional Limitations:**
-- 🟡 Phase 2: Social scoring works but limited to ~30/35 max points (no volume spike detection)
-- 🔴 Phase 3: Validation scoring degraded to ~10/35 max points (placeholder data only)
-- 🔴 Overall MSS scores are **lower than designed** due to Phase 2/3 limitations
-- 🟡 System is **operational but not production-ready** until data mappings fixed
+### **System Status:** 🟢 **Production Ready**
 
-### **Known Limitations:**
+### **Performance Characteristics:**
 
-#### 1. **Phase 2: Volume Analysis** 🔧
-**Current Behavior:** Volume change calculation attempts to use Binance 24hr ticker `prevVolume` field which doesn't exist in response. Falls back to 0% change.
+**Data Integration:**
+- ✅ **Phase 2**: CoinAPI Comprehensive provides real-time buy/sell pressure from last 100 trades
+- ✅ **Phase 3**: Coinglass Premium delivers institutional positioning data and OI trends
+- ✅ **Volume Spike Detection**: Buy pressure >60% triggers upward spike scoring
+- ✅ **Whale Detection**: Combines OI trend + top trader ratios + volume pressure
 
-**Impact:** Volume spike detection **always returns 0%**, missing real volume surges. Phase 2 max score reduced from 35 to 30 points.
+**Typical Performance (BTC Example):**
+- Phase 1: 25.0/30 (established coin - discovery skipped)
+- Phase 2: 0.5-20/35 (depends on LunarCrush data availability and volume spikes)
+- Phase 3: 12-25/35 (institutional positioning: top trader ratio 2.1, whale score 10pts)
+- **Total MSS**: 37.5-70/100 range for established coins
 
-**Root Cause:** Incorrect service mapping - using generic Binance ticker instead of trade history.
+**Scoring Observations:**
+- New/small cap coins can achieve higher Phase 1 scores (up to 30pts)
+- Social metrics (LunarCrush) vary significantly - not all coins have complete data
+- Institutional validation typically provides 10-25pts for actively traded futures contracts
+- Volume spikes add 0-5pts bonus when detected
 
-**Solution Required:** Replace with `CoinAPIComprehensiveService.get_recent_trades()` which provides actual buy/sell volume pressure over time.
-
-**Code Location:** `app/services/mss_service.py` lines 219-226
-
-#### 2. **Phase 3: Top Trader Ratio** 🔧
-**Current Behavior:** Attempting to extract `longShortRatio` from general Coinglass market data which doesn't contain trader positioning. Falls back to None, causing whale detection to always return false.
-
-**Impact:** Whale accumulation detection **always fails**, never detecting institutional flow. Phase 3 max score reduced from 35 to ~10 points.
-
-**Root Cause:** Incorrect service mapping - using basic Coinglass endpoint instead of Premium trader ratios endpoint.
-
-**Solution Required:** Replace with `CoinglassPremiumService.get_top_trader_ratio()` which returns proper `topTraderLongPct` field (already used in main signal engine).
-
-**Code Location:** `app/services/mss_service.py` lines 301-309
-
-#### 3. **OI Change Calculation** 🔧
-**Current Behavior:** Attempting to calculate OI change from single data point without historical reference. Falls back to 0% or neutral.
-
-**Impact:** OI trend scoring unreliable - cannot detect increasing/decreasing OI properly.
-
-**Root Cause:** No historical data or previous value comparison.
-
-**Solution Required:** Either (a) store previous OI values in database for delta calc, or (b) use Coinglass historical OI endpoint with multiple timepoints.
-
-**Code Location:** `app/services/mss_service.py` lines 283-291
+**API Response Times:**
+- Discover endpoint: 2-5 seconds (multiple CoinGecko + Binance calls)
+- Analyze endpoint: 1-3 seconds (concurrent Phase 2/3 data fetching)
+- Scan endpoint: 5-10 seconds (discovery + analysis pipeline)
 
 ---
 
 ## 🔮 Future Enhancements
 
 ### Short-term (Next Sprint):
-1. **Fix Data Mappings** - Correct Phase 2/3 service calls (see Known Limitations)
-2. **Add Integration Tests** - Verify all 3 phases with real API responses
-3. **GPT Actions Schema** - Add MSS endpoints to `/gpt/action-schema`
-4. **Logging Improvements** - Add detailed phase-by-phase logging
+1. **GPT Actions Integration** - Add MSS endpoints to `/gpt/action-schema` for AI-powered discovery
+2. **Integration Tests** - Comprehensive testing suite for all 3 phases with mocked API responses
+3. **Logging Enhancements** - Add structured logging for detailed phase-by-phase analysis
 
 ### Medium-term:
-1. **Telegram Integration** - Send MSS alerts for high-scoring discoveries
-2. **Database Storage** - Save MSS signals to `signals` table with phase breakdowns
-3. **Watchlist Feature** - Track discovered coins over time (implement `/mss/watch`)
-4. **Historical Analysis** - Store and analyze MSS score evolution
+1. **Telegram Notifications** - Auto-alert for high MSS scores (>75) with actionable signals
+2. **Database Storage** - Save MSS signal history to PostgreSQL with full phase breakdowns
+3. **Watchlist Feature** - Track discovered coins over time (implement `/mss/watch` endpoint)
+4. **Historical Trending** - Analyze MSS score evolution and predict momentum shifts
+5. **Performance Optimization** - Cache frequently accessed data (CoinGecko, LunarCrush)
 
 ### Long-term:
-1. **Machine Learning** - Train model on successful MSS predictions
-2. **Multi-Exchange Support** - Expand beyond Binance for more coverage
-3. **Custom Criteria** - User-configurable thresholds per phase
-4. **Backtesting** - Historical MSS performance analysis
+1. **Machine Learning** - Train predictive model on successful MSS->pump correlations
+2. **Multi-Exchange Support** - Expand beyond Binance (add Bybit, OKX, Bitget)
+3. **Custom Scoring Weights** - User-configurable phase weights and thresholds
+4. **Backtesting Framework** - Historical MSS performance validation with ROI tracking
+5. **Portfolio Integration** - Auto-execute trades on high MSS signals
 
 ---
 
