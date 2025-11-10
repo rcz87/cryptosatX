@@ -17,6 +17,7 @@ from app.api import (
     routes_lunarcrush,
     routes_coinapi,
     routes_smart_money,
+    routes_mss,
 )
 
 # ADDED FOR CRYPTOSATX ENHANCEMENT - Import new routes
@@ -110,6 +111,7 @@ app.include_router(
     routes_optimized_gpt.router, tags=["Optimized GPT Actions - MAXIMAL"]
 )
 app.include_router(routes_analytics.router, tags=["Analytics & Insights"])  # ADDED FOR DATABASE ANALYTICS
+app.include_router(routes_mss.router, prefix="/mss", tags=["MSS Alpha System"])  # ADDED FOR MSS SYSTEM
 
 
 if __name__ == "__main__":

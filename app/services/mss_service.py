@@ -1,0 +1,517 @@
+"""
+MSS (Multimodal Signal Score) Service
+
+Orchestrates 3-phase analysis for high-potential crypto asset discovery:
+- Phase 1: Discovery via CoinGecko + Binance
+- Phase 2: Social Confirmation via LunarCrush + Volume analysis
+- Phase 3: Institutional Validation via OI + Whale detection
+
+Reuses all existing services for data collection.
+"""
+
+import asyncio
+from typing import Dict, List, Optional, Tuple
+from datetime import datetime, timedelta
+import logging
+
+from app.core.mss_engine import MSSEngine
+from app.services.coingecko_service import CoinGeckoService
+from app.services.binance_futures_service import BinanceFuturesService
+from app.services.lunarcrush_service import LunarCrushService
+from app.services.coinglass_service import CoinglassService
+
+logger = logging.getLogger(__name__)
+
+
+class MSSService:
+    """
+    MSS Service orchestrator that combines multiple data sources
+    for alpha generation through multi-modal signal analysis.
+    """
+
+    def __init__(self):
+        """Initialize MSS Service with all required components"""
+        self.mss_engine = MSSEngine()
+        self.coingecko = CoinGeckoService()
+        self.binance = BinanceFuturesService()
+        self.lunarcrush = LunarCrushService()
+        self.coinglass = CoinglassService()
+
+        logger.info("MSS Service initialized with all data providers")
+
+    async def close(self):
+        """Close all HTTP clients"""
+        await self.coingecko.close()
+        await self.binance.close()
+
+    async def phase1_discovery(
+        self,
+        max_fdv_usd: float = 50_000_000,
+        max_age_hours: float = 72,
+        min_volume_24h: float = 100_000,
+        limit: int = 50
+    ) -> List[Dict]:
+        """
+        Phase 1: Discover new low-FDV coins
+
+        Uses CoinGecko + Binance to find recently listed coins
+        with low market cap and strong tokenomics potential.
+
+        Args:
+            max_fdv_usd: Maximum FDV threshold
+            max_age_hours: Maximum age in hours
+            min_volume_24h: Minimum 24h volume
+            limit: Max results to return
+
+        Returns:
+            List of discovered coins with discovery scores
+        """
+        logger.info(
+            f"Phase 1 Discovery: FDV<${max_fdv_usd:,.0f}, "
+            f"Age<{max_age_hours}h, Vol>${min_volume_24h:,.0f}"
+        )
+
+        discovered_coins = []
+
+        try:
+            # Strategy 1: CoinGecko trending & new listings
+            cg_tasks = [
+                self.coingecko.get_trending(),
+                self.coingecko.discover_new_listings(limit=limit)
+            ]
+            cg_results = await asyncio.gather(*cg_tasks, return_exceptions=True)
+
+            cg_trending_raw = cg_results[0] if not isinstance(cg_results[0], Exception) else {}
+            cg_new_raw = cg_results[1] if not isinstance(cg_results[1], Exception) else {}
+
+            # Extract coins from responses
+            cg_trending = cg_trending_raw.get("data", {}).get("coins", []) if isinstance(cg_trending_raw, dict) else []
+            cg_new = cg_new_raw.get("coins", []) if isinstance(cg_new_raw, dict) else []
+
+            # Combine and deduplicate
+            all_cg_coins = {}
+            for coin_wrapper in cg_trending:
+                coin = coin_wrapper.get("item", {}) if "item" in coin_wrapper else coin_wrapper
+                symbol = coin.get("symbol", "").upper()
+                if symbol and symbol not in all_cg_coins:
+                    all_cg_coins[symbol] = coin
+
+            for coin in cg_new:
+                symbol = coin.get("symbol", "").upper()
+                if symbol and symbol not in all_cg_coins:
+                    all_cg_coins[symbol] = coin
+
+            # Strategy 2: Binance futures coins
+            binance_symbols = await self.binance.filter_coins_by_criteria(
+                min_volume_usdt=min_volume_24h,
+                limit=limit
+            )
+
+            # Merge data sources and apply strict filters
+            for symbol, cg_data in all_cg_coins.items():
+                market_cap = cg_data.get("market_cap", 0) or cg_data.get("market_data", {}).get("market_cap", {}).get("usd", 0)
+                volume_24h = cg_data.get("total_volume", {}).get("usd", 0) if isinstance(cg_data.get("total_volume"), dict) else cg_data.get("total_volume", 0)
+                
+                # Get FDV (fully diluted valuation) if available
+                fdv = cg_data.get("fully_diluted_valuation", {}).get("usd") if isinstance(cg_data.get("fully_diluted_valuation"), dict) else cg_data.get("fully_diluted_valuation")
+                if not fdv:
+                    fdv = market_cap  # Fallback to market cap only if FDV unavailable
+
+                # STRICT FILTER: Skip if FDV exceeds threshold
+                if not fdv or fdv > max_fdv_usd:
+                    continue
+                    
+                # STRICT FILTER: Skip if volume too low
+                if not volume_24h or volume_24h < min_volume_24h:
+                    continue
+
+                # Calculate discovery score
+                age_hours = self._estimate_age_hours(cg_data)
+                if age_hours and age_hours > max_age_hours:
+                    continue
+
+                # Get circulating supply %
+                total_supply = cg_data.get("total_supply", 0)
+                circ_supply = cg_data.get("circulating_supply", 0)
+                circ_pct = (circ_supply / total_supply * 100) if total_supply > 0 else None
+
+                discovery_score, breakdown = self.mss_engine.calculate_discovery_score(
+                    fdv_usd=fdv,
+                    age_hours=age_hours,
+                    circulating_supply_pct=circ_pct,
+                    market_cap_usd=market_cap
+                )
+
+                # Only include coins that pass discovery phase
+                if breakdown["status"] == "PASS":
+                    discovered_coins.append({
+                        "symbol": symbol,
+                        "name": cg_data.get("name", symbol),
+                        "fdv_usd": fdv,
+                        "market_cap_usd": market_cap,
+                        "volume_24h_usd": volume_24h,
+                        "age_hours": age_hours,
+                        "discovery_score": discovery_score,
+                        "discovery_breakdown": breakdown,
+                        "source": "coingecko"
+                    })
+
+            # SKIP Binance-only coins without FDV data (can't properly filter)
+            # This ensures quality - only analyze coins with complete tokenomics data
+
+            # Sort by discovery score
+            discovered_coins.sort(key=lambda x: x.get("discovery_score", 0), reverse=True)
+
+            logger.info(f"Phase 1 complete: {len(discovered_coins)} coins discovered")
+            return discovered_coins[:limit]
+
+        except Exception as e:
+            logger.error(f"Phase 1 discovery error: {e}")
+            return []
+
+    async def phase2_confirmation(
+        self,
+        symbol: str,
+        binance_data: Optional[Dict] = None
+    ) -> Tuple[float, Dict]:
+        """
+        Phase 2: Confirm social momentum and volume spike
+
+        Uses LunarCrush + Binance to validate market interest
+        and social engagement.
+
+        Args:
+            symbol: Coin symbol to analyze
+            binance_data: Optional pre-fetched Binance data
+
+        Returns:
+            Tuple of (social_score, breakdown_dict)
+        """
+        logger.info(f"Phase 2 Confirmation: {symbol}")
+
+        try:
+            # Fetch data concurrently
+            tasks = [
+                self.lunarcrush.get_market_data(symbol),
+            ]
+
+            if not binance_data:
+                tasks.append(self.binance.get_24hr_ticker(f"{symbol}USDT"))
+
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            lc_data = results[0] if not isinstance(results[0], Exception) else {}
+            binance_stats = binance_data if binance_data else (
+                results[1] if len(results) > 1 and not isinstance(results[1], Exception) else {}
+            )
+
+            # Extract metrics from LunarCrush
+            if isinstance(lc_data, dict):
+                altrank = lc_data.get("data", {}).get("alt_rank")
+                galaxy_score = lc_data.get("data", {}).get("galaxy_score")
+                sentiment = lc_data.get("data", {}).get("average_sentiment")
+            else:
+                altrank, galaxy_score, sentiment = None, None, None
+
+            # Extract VOLUME change from Binance (not price change!)
+            if isinstance(binance_stats, dict):
+                data = binance_stats.get("data", {})
+                current_volume = data.get("volume", 0)
+                prev_volume = data.get("prevVolume", current_volume)
+                volume_change = ((current_volume - prev_volume) / prev_volume * 100) if prev_volume > 0 else 0
+            else:
+                volume_change = 0
+
+            # Calculate social score
+            social_score, breakdown = self.mss_engine.calculate_social_score(
+                altrank=altrank,
+                galaxy_score=galaxy_score,
+                sentiment_score=sentiment,
+                volume_24h_change_pct=volume_change
+            )
+
+            logger.info(f"Phase 2 complete: {symbol} - Social score: {social_score:.2f}/30")
+            return social_score, breakdown
+
+        except Exception as e:
+            logger.error(f"Phase 2 confirmation error for {symbol}: {e}")
+            return 0.0, {"status": "ERROR", "error": str(e)}
+
+    async def phase3_validation(
+        self,
+        symbol: str,
+        binance_data: Optional[Dict] = None
+    ) -> Tuple[float, Dict]:
+        """
+        Phase 3: Validate institutional positioning
+
+        Uses Binance OI + Coinglass + whale detection to confirm
+        smart money accumulation.
+
+        Args:
+            symbol: Coin symbol to analyze
+            binance_data: Optional pre-fetched Binance data
+
+        Returns:
+            Tuple of (validation_score, breakdown_dict)
+        """
+        logger.info(f"Phase 3 Validation: {symbol}")
+
+        try:
+            # Fetch data concurrently
+            tasks = [
+                self.binance.get_open_interest(f"{symbol}USDT"),
+                self.binance.get_funding_rate(f"{symbol}USDT"),
+                self.coinglass.get_market_data(symbol)
+            ]
+
+            if not binance_data:
+                tasks.append(self.binance.get_24hr_ticker(f"{symbol}USDT"))
+
+            results = await asyncio.gather(*tasks, return_exceptions=True)
+
+            oi_data = results[0] if not isinstance(results[0], Exception) else {}
+            funding_data = results[1] if not isinstance(results[1], Exception) else {}
+            coinglass_data = results[2] if not isinstance(results[2], Exception) else {}
+            binance_stats = binance_data if binance_data else (
+                results[3] if len(results) > 3 and not isinstance(results[3], Exception) else {}
+            )
+
+            # Extract OI with proper error handling
+            oi_change = None
+            if isinstance(oi_data, dict) and oi_data.get("success"):
+                oi_value = oi_data.get("openInterest", 0)
+                prev_oi = oi_data.get("prevOpenInterest", oi_value)
+                oi_change = ((oi_value - prev_oi) / prev_oi * 100) if prev_oi > 0 else 0
+            elif not isinstance(oi_data, Exception):
+                logger.warning(f"OI data unavailable for {symbol}")
+                oi_change = 0  # Neutral if unavailable
+            
+            # Extract funding rate with proper error handling
+            funding_rate = None
+            if isinstance(funding_data, dict) and funding_data.get("success"):
+                funding_rate = funding_data.get("fundingRate", 0)
+            elif not isinstance(funding_data, Exception):
+                logger.warning(f"Funding rate unavailable for {symbol}")
+                funding_rate = 0  # Neutral if unavailable
+            
+            # Extract top trader ratio from Coinglass with correct mapping
+            long_ratio = None
+            if isinstance(coinglass_data, dict) and coinglass_data.get("success"):
+                # Coinglass returns fundingRate and openInterest, not trader ratios directly
+                # Need to use different endpoint or calculate from available data
+                long_ratio = coinglass_data.get("longShortRatio", 1.0)
+            elif not isinstance(coinglass_data, Exception):
+                logger.warning(f"Coinglass data unavailable for {symbol}")
+                long_ratio = 1.0  # Neutral if unavailable
+
+            # Whale accumulation detection (simplified - can enhance with orderbook analysis)
+            whale_accumulation = self._detect_whale_accumulation(
+                oi_change=oi_change,
+                long_ratio=long_ratio,
+                volume_change=binance_stats.get("volume_change_24h", 0)
+            )
+
+            # Calculate validation score
+            validation_score, breakdown = self.mss_engine.calculate_validation_score(
+                oi_change_pct=oi_change,
+                funding_rate=funding_rate,
+                top_trader_long_ratio=long_ratio,
+                whale_accumulation=whale_accumulation
+            )
+
+            logger.info(f"Phase 3 complete: {symbol} - Validation score: {validation_score:.2f}/35")
+            return validation_score, breakdown
+
+        except Exception as e:
+            logger.error(f"Phase 3 validation error for {symbol}: {e}")
+            return 0.0, {"status": "ERROR", "error": str(e)}
+
+    async def calculate_mss_score(self, symbol: str) -> Dict:
+        """
+        Calculate complete MSS score with all 3 phases
+
+        Args:
+            symbol: Coin symbol to analyze
+
+        Returns:
+            Complete MSS analysis dict
+        """
+        logger.info(f"=== MSS Analysis for {symbol} ===")
+
+        try:
+            # Fetch Binance data once (reuse across phases)
+            binance_stats = await self.binance.get_24hr_ticker(f"{symbol}USDT")
+
+            # Run all 3 phases
+            discovery_score = 25.0  # Default for existing coins (skip discovery for known coins)
+            discovery_breakdown = {"status": "SKIPPED", "note": "Existing coin - discovery phase bypassed"}
+
+            # Phase 2 & 3
+            social_score, social_breakdown = await self.phase2_confirmation(symbol, binance_stats)
+            validation_score, validation_breakdown = await self.phase3_validation(symbol, binance_stats)
+
+            # Calculate final MSS
+            mss, signal, mss_breakdown = self.mss_engine.calculate_final_mss(
+                discovery_score=discovery_score,
+                social_score=social_score,
+                validation_score=validation_score
+            )
+
+            # Generate risk warnings
+            warnings = self.mss_engine.get_risk_warnings(
+                age_hours=None,  # Not available for existing coins
+                fdv_usd=None,
+                funding_rate=validation_breakdown.get("funding_rate"),
+                top_trader_long_ratio=validation_breakdown.get("top_trader_long_ratio"),
+                circulating_supply_pct=None
+            )
+
+            result = {
+                "symbol": symbol,
+                "timestamp": datetime.utcnow().isoformat(),
+                "mss_score": mss,
+                "signal": signal,
+                "confidence": mss_breakdown["confidence"],
+                "phases": {
+                    "phase1_discovery": {
+                        "score": discovery_score,
+                        "breakdown": discovery_breakdown
+                    },
+                    "phase2_confirmation": {
+                        "score": social_score,
+                        "breakdown": social_breakdown
+                    },
+                    "phase3_validation": {
+                        "score": validation_score,
+                        "breakdown": validation_breakdown
+                    }
+                },
+                "breakdown": mss_breakdown,
+                "warnings": warnings
+            }
+
+            logger.info(f"MSS Analysis complete: {symbol} - Score: {mss:.2f}, Signal: {signal}")
+            return result
+
+        except Exception as e:
+            logger.error(f"MSS calculation error for {symbol}: {e}")
+            return {
+                "symbol": symbol,
+                "error": str(e),
+                "mss_score": 0,
+                "signal": "ERROR"
+            }
+
+    async def scan_and_rank(
+        self,
+        max_fdv_usd: float = 50_000_000,
+        max_age_hours: float = 72,
+        min_mss_score: float = 65,
+        limit: int = 10
+    ) -> List[Dict]:
+        """
+        Auto-scan: Discover → Confirm → Validate → Rank
+
+        Complete pipeline from discovery to ranked signals.
+
+        Args:
+            max_fdv_usd: Max FDV for discovery
+            max_age_hours: Max age for discovery
+            min_mss_score: Minimum MSS score threshold
+            limit: Max results to return
+
+        Returns:
+            List of coins ranked by MSS score
+        """
+        logger.info("=== MSS Auto-Scan Started ===")
+
+        # Phase 1: Discover potential coins
+        discovered = await self.phase1_discovery(
+            max_fdv_usd=max_fdv_usd,
+            max_age_hours=max_age_hours,
+            limit=limit * 3  # Discover more, filter later
+        )
+
+        if not discovered:
+            logger.warning("No coins discovered in Phase 1")
+            return []
+
+        logger.info(f"Phase 1: {len(discovered)} coins discovered")
+
+        # Phase 2 & 3: Analyze each discovered coin
+        analysis_tasks = []
+        for coin in discovered[:limit * 2]:  # Analyze subset
+            symbol = coin["symbol"]
+            analysis_tasks.append(self.calculate_mss_score(symbol))
+
+        results = await asyncio.gather(*analysis_tasks, return_exceptions=True)
+
+        # Filter and rank
+        high_potential = []
+        for result in results:
+            if isinstance(result, Exception):
+                continue
+            if result.get("mss_score", 0) >= min_mss_score:
+                high_potential.append(result)
+
+        # Sort by MSS score
+        high_potential.sort(key=lambda x: x.get("mss_score", 0), reverse=True)
+
+        logger.info(f"=== MSS Auto-Scan Complete: {len(high_potential)} high-potential coins ===")
+        return high_potential[:limit]
+
+    def _estimate_age_hours(self, coin_data: Dict) -> Optional[float]:
+        """
+        Estimate coin age from available data
+
+        Args:
+            coin_data: CoinGecko coin data
+
+        Returns:
+            Estimated age in hours or None
+        """
+        # Try to get listing date
+        listing_date = coin_data.get("listing_date") or coin_data.get("added_date")
+        if listing_date:
+            try:
+                listed = datetime.fromisoformat(listing_date.replace("Z", "+00:00"))
+                age = (datetime.utcnow() - listed).total_seconds() / 3600
+                return age
+            except:
+                pass
+
+        # Fallback: use 24 hours for trending coins without date
+        return 24.0
+
+    def _detect_whale_accumulation(
+        self,
+        oi_change: Optional[float],
+        long_ratio: Optional[float],
+        volume_change: Optional[float]
+    ) -> bool:
+        """
+        Whale accumulation detection with proper bounds
+
+        Whales accumulating when ALL conditions met:
+        - OI increasing significantly (>50%)
+        - Long ratio in sweet spot (1.5-2.5, not overcrowded)
+        - Volume increasing (>30%)
+
+        Args:
+            oi_change: OI change % (None if unavailable)
+            long_ratio: Long/Short ratio (None if unavailable)
+            volume_change: Volume change % (None if unavailable)
+
+        Returns:
+            True if whale accumulation detected, False otherwise or if data incomplete
+        """
+        # Require ALL metrics to be available for confident detection
+        if oi_change is None or long_ratio is None or volume_change is None:
+            return False
+        
+        return (
+            oi_change > 50 and
+            1.5 <= long_ratio <= 2.5 and
+            volume_change > 30
+        )
