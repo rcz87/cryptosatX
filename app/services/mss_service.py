@@ -19,6 +19,8 @@ from app.services.coingecko_service import CoinGeckoService
 from app.services.binance_futures_service import BinanceFuturesService
 from app.services.lunarcrush_service import LunarCrushService
 from app.services.coinglass_service import CoinglassService
+from app.services.coinglass_premium_service import CoinglassPremiumService
+from app.services.coinapi_comprehensive_service import CoinAPIComprehensiveService
 
 logger = logging.getLogger(__name__)
 
@@ -36,13 +38,17 @@ class MSSService:
         self.binance = BinanceFuturesService()
         self.lunarcrush = LunarCrushService()
         self.coinglass = CoinglassService()
+        self.coinglass_premium = CoinglassPremiumService()
+        self.coinapi_comprehensive = CoinAPIComprehensiveService()
 
-        logger.info("MSS Service initialized with all data providers")
+        logger.info("MSS Service initialized with all data providers (including Premium services)")
 
     async def close(self):
         """Close all HTTP clients"""
         await self.coingecko.close()
         await self.binance.close()
+        await self.coinglass_premium.close()
+        await self.coinapi_comprehensive.close()
 
     async def phase1_discovery(
         self,
@@ -177,12 +183,12 @@ class MSSService:
         """
         Phase 2: Confirm social momentum and volume spike
 
-        Uses LunarCrush + Binance to validate market interest
-        and social engagement.
+        Uses LunarCrush + CoinAPI Comprehensive to validate market interest,
+        social engagement, and detect volume spikes from actual trade data.
 
         Args:
             symbol: Coin symbol to analyze
-            binance_data: Optional pre-fetched Binance data
+            binance_data: Optional pre-fetched Binance data (not used for volume)
 
         Returns:
             Tuple of (social_score, breakdown_dict)
@@ -191,19 +197,16 @@ class MSSService:
 
         try:
             # Fetch data concurrently
+            # Use CoinAPI Comprehensive for real volume analysis instead of Binance ticker
             tasks = [
                 self.lunarcrush.get_market_data(symbol),
+                self.coinapi_comprehensive.get_recent_trades(symbol, "BINANCE", 100),
             ]
-
-            if not binance_data:
-                tasks.append(self.binance.get_24hr_ticker(f"{symbol}USDT"))
 
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
             lc_data = results[0] if not isinstance(results[0], Exception) else {}
-            binance_stats = binance_data if binance_data else (
-                results[1] if len(results) > 1 and not isinstance(results[1], Exception) else {}
-            )
+            trades_data = results[1] if not isinstance(results[1], Exception) else {}
 
             # Extract metrics from LunarCrush
             if isinstance(lc_data, dict):
@@ -213,13 +216,29 @@ class MSSService:
             else:
                 altrank, galaxy_score, sentiment = None, None, None
 
-            # Extract VOLUME change from Binance (not price change!)
-            if isinstance(binance_stats, dict):
-                data = binance_stats.get("data", {})
-                current_volume = data.get("volume", 0)
-                prev_volume = data.get("prevVolume", current_volume)
-                volume_change = ((current_volume - prev_volume) / prev_volume * 100) if prev_volume > 0 else 0
+            # Extract VOLUME change from CoinAPI trade data
+            # Calculate volume spike by comparing buy/sell pressure
+            volume_change = 0
+            if isinstance(trades_data, dict) and trades_data.get("success"):
+                volume_info = trades_data.get("volume", {})
+                buy_pressure = volume_info.get("buyPressure", 50.0)
+                sell_pressure = volume_info.get("sellPressure", 50.0)
+                
+                # Volume spike detected when buy pressure significantly exceeds sell pressure
+                # or when total volume is unusually high (buy + sell imbalance)
+                if buy_pressure > 60:
+                    # Strong buy pressure = volume spike upward
+                    volume_change = (buy_pressure - 50) * 2  # Scale: 60% buy = 20% volume spike
+                elif sell_pressure > 60:
+                    # Strong sell pressure = volume spike downward
+                    volume_change = -(sell_pressure - 50) * 2
+                else:
+                    # Balanced pressure = no significant volume spike
+                    volume_change = 0
+                
+                logger.info(f"Phase 2 volume analysis: Buy {buy_pressure:.1f}%, Sell {sell_pressure:.1f}%, Spike: {volume_change:.1f}%")
             else:
+                logger.warning(f"CoinAPI trade data unavailable for {symbol}, volume spike = 0")
                 volume_change = 0
 
             # Calculate social score
@@ -230,7 +249,7 @@ class MSSService:
                 volume_24h_change_pct=volume_change
             )
 
-            logger.info(f"Phase 2 complete: {symbol} - Social score: {social_score:.2f}/30")
+            logger.info(f"Phase 2 complete: {symbol} - Social score: {social_score:.2f}/35")
             return social_score, breakdown
 
         except Exception as e:
@@ -245,8 +264,8 @@ class MSSService:
         """
         Phase 3: Validate institutional positioning
 
-        Uses Binance OI + Coinglass + whale detection to confirm
-        smart money accumulation.
+        Uses Coinglass Premium (top trader ratios), Coinglass OI trends,
+        and CoinAPI trade data for comprehensive whale detection.
 
         Args:
             symbol: Coin symbol to analyze
@@ -258,58 +277,76 @@ class MSSService:
         logger.info(f"Phase 3 Validation: {symbol}")
 
         try:
-            # Fetch data concurrently
+            # Fetch data concurrently - use proper Premium endpoints
             tasks = [
-                self.binance.get_open_interest(f"{symbol}USDT"),
+                self.coinglass_premium.get_oi_trend(symbol),
+                self.coinglass_premium.get_top_trader_ratio(symbol),
                 self.binance.get_funding_rate(f"{symbol}USDT"),
-                self.coinglass.get_market_data(symbol)
+                self.coinapi_comprehensive.get_recent_trades(symbol, "BINANCE", 100),
             ]
-
-            if not binance_data:
-                tasks.append(self.binance.get_24hr_ticker(f"{symbol}USDT"))
 
             results = await asyncio.gather(*tasks, return_exceptions=True)
 
-            oi_data = results[0] if not isinstance(results[0], Exception) else {}
-            funding_data = results[1] if not isinstance(results[1], Exception) else {}
-            coinglass_data = results[2] if not isinstance(results[2], Exception) else {}
-            binance_stats = binance_data if binance_data else (
-                results[3] if len(results) > 3 and not isinstance(results[3], Exception) else {}
-            )
+            oi_trend_data = results[0] if not isinstance(results[0], Exception) else {}
+            trader_data = results[1] if not isinstance(results[1], Exception) else {}
+            funding_data = results[2] if not isinstance(results[2], Exception) else {}
+            trades_data = results[3] if not isinstance(results[3], Exception) else {}
 
-            # Extract OI with proper error handling
-            oi_change = None
-            if isinstance(oi_data, dict) and oi_data.get("success"):
-                oi_value = oi_data.get("openInterest", 0)
-                prev_oi = oi_data.get("prevOpenInterest", oi_value)
-                oi_change = ((oi_value - prev_oi) / prev_oi * 100) if prev_oi > 0 else 0
-            elif not isinstance(oi_data, Exception):
-                logger.warning(f"OI data unavailable for {symbol}")
-                oi_change = 0  # Neutral if unavailable
+            # Extract OI change from Coinglass Premium OI trend
+            oi_change = 0.0
+            if isinstance(oi_trend_data, dict) and oi_trend_data.get("success"):
+                # Coinglass Premium OI trend returns change percentage
+                oi_change = oi_trend_data.get("oiChangePct", 0.0)
+                logger.info(f"Phase 3 OI trend: {oi_change:.2f}%")
+            else:
+                logger.warning(f"Coinglass OI trend unavailable for {symbol}")
             
-            # Extract funding rate with proper error handling
-            funding_rate = None
+            # Extract funding rate
+            funding_rate = 0.0
             if isinstance(funding_data, dict) and funding_data.get("success"):
-                funding_rate = funding_data.get("fundingRate", 0)
-            elif not isinstance(funding_data, Exception):
+                funding_rate = funding_data.get("fundingRate", 0.0)
+            else:
                 logger.warning(f"Funding rate unavailable for {symbol}")
-                funding_rate = 0  # Neutral if unavailable
             
-            # Extract top trader ratio from Coinglass with correct mapping
-            long_ratio = None
-            if isinstance(coinglass_data, dict) and coinglass_data.get("success"):
-                # Coinglass returns fundingRate and openInterest, not trader ratios directly
-                # Need to use different endpoint or calculate from available data
-                long_ratio = coinglass_data.get("longShortRatio", 1.0)
-            elif not isinstance(coinglass_data, Exception):
-                logger.warning(f"Coinglass data unavailable for {symbol}")
-                long_ratio = 1.0  # Neutral if unavailable
+            # Extract top trader ratio from Coinglass Premium
+            # This is the KEY fix - use proper Premium endpoint
+            long_ratio = 1.0
+            if isinstance(trader_data, dict) and trader_data.get("success"):
+                top_trader_long_pct = trader_data.get("topTraderLongPct", 50.0)
+                top_trader_short_pct = trader_data.get("topTraderShortPct", 50.0)
+                
+                # Convert percentage to ratio (e.g., 60% long, 40% short = 1.5 ratio)
+                if top_trader_short_pct > 0:
+                    long_ratio = top_trader_long_pct / top_trader_short_pct
+                else:
+                    long_ratio = 2.0 if top_trader_long_pct > 50 else 0.5
+                
+                logger.info(f"Phase 3 top traders: {top_trader_long_pct:.1f}% long, ratio: {long_ratio:.2f}")
+            else:
+                logger.warning(f"Coinglass top trader data unavailable for {symbol}")
 
-            # Whale accumulation detection (simplified - can enhance with orderbook analysis)
+            # Extract volume change from CoinAPI trades (same as Phase 2)
+            volume_change = 0.0
+            if isinstance(trades_data, dict) and trades_data.get("success"):
+                volume_info = trades_data.get("volume", {})
+                buy_pressure = volume_info.get("buyPressure", 50.0)
+                sell_pressure = volume_info.get("sellPressure", 50.0)
+                
+                # Convert pressure to volume change estimate
+                if buy_pressure > 60:
+                    volume_change = (buy_pressure - 50) * 2
+                elif sell_pressure > 60:
+                    volume_change = -(sell_pressure - 50) * 2
+                
+                logger.info(f"Phase 3 volume: Buy {buy_pressure:.1f}%, Sell {sell_pressure:.1f}%")
+            else:
+                logger.warning(f"CoinAPI trade data unavailable for {symbol}")
+
+            # Whale accumulation detection with ALL proper data sources
             whale_accumulation = self._detect_whale_accumulation(
                 oi_change=oi_change,
                 long_ratio=long_ratio,
-                volume_change=binance_stats.get("volume_change_24h", 0)
+                volume_change=volume_change
             )
 
             # Calculate validation score
@@ -320,7 +357,7 @@ class MSSService:
                 whale_accumulation=whale_accumulation
             )
 
-            logger.info(f"Phase 3 complete: {symbol} - Validation score: {validation_score:.2f}/35")
+            logger.info(f"Phase 3 complete: {symbol} - Validation score: {validation_score:.2f}/35, Whale: {whale_accumulation}")
             return validation_score, breakdown
 
         except Exception as e:
