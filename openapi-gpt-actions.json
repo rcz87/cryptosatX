@@ -12,11 +12,7 @@
     "servers": [
         {
             "url": "https://guardiansofthetoken.org",
-            "description": "\ud83d\ude80 MAXIMAL Production Server"
-        },
-        {
-            "url": "https://cryptosatx.replit.app",
-            "description": "Development Server"
+            "description": "CryptoSatX Production API"
         }
     ],
     "paths": {

@@ -63,11 +63,7 @@ async def get_maximal_gpt_schema():
             },
         },
         "servers": [
-            {"url": base_url, "description": "🚀 MAXIMAL Production Server"},
-            {
-                "url": "https://cryptosatx.replit.app",
-                "description": "Development Server",
-            },
+            {"url": "https://guardiansofthetoken.org", "description": "CryptoSatX Production API"}
         ],
         "paths": {
             # === CORE SIGNAL ENDPOINTS ===
