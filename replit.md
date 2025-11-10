@@ -53,7 +53,74 @@ The PostgreSQL database includes a `signals` table with the following structure:
 - **Migration Support**: Migration script (`app/storage/migrate_to_db.py`) for transferring existing JSON data to PostgreSQL
 
 ## External Dependencies
-- **CoinAPI Startup**: Integrated for comprehensive market data, including multi-timeframe OHLCV, order book depth analysis, recent trades volume tracking, real-time bid/ask quotes, and multi-exchange price aggregation.
+- **CoinAPI Startup**: Integrated for comprehensive market data, including multi-timeframe OHLCV, order book depth analysis, recent trades volume tracking, real-time bid/ask quotes, and multi-exchange price aggregation. **Whale Detection**: Detects large orders (>5x average) in orderbook for whale wall analysis.
 - **Coinglass v4**: Integrated for funding rates, open interest data, liquidations, long/short ratios, and top trader positioning.
 - **LunarCrush**: Provides social sentiment, community engagement metrics, and advanced social momentum analysis.
 - **OKX Public API**: Utilized for candlestick/OHLCV data.
+- **Binance Futures API** (NEW - Nov 2025): Public API for futures market data, coin discovery, 24hr statistics, funding rates, and open interest without authentication required.
+- **CoinGecko API** (NEW - Nov 2025): Free tier API for coin discovery, market cap filtering, volume analysis, and category-based coin search (10,000+ coins available).
+
+## Recent Updates (November 10, 2025)
+
+### Smart Money Scanner - Dynamic Coin Discovery & Analysis Upgrade ✨
+
+**Major Enhancement**: Expanded Smart Money Scanner with dynamic coin discovery and unlimited analysis capabilities.
+
+**New Services Added:**
+1. **BinanceFuturesService** (`app/services/binance_futures_service.py`)
+   - Fetch all Binance Futures perpetual symbols
+   - 24hr market statistics (price, volume, price changes)
+   - Funding rates and mark prices
+   - Open interest data
+   - Candlestick/OHLCV data with multiple timeframes
+   - Filter coins by volume, price change, and market cap
+   - **No API key required** - uses public endpoints
+
+2. **CoinGeckoService** (`app/services/coingecko_service.py`)
+   - Discover 10,000+ coins from CoinGecko
+   - Filter by market cap (find small caps and micro caps)
+   - Filter by 24h volume (ensure liquidity)
+   - Filter by category (meme, DeFi, gaming, AI, etc.)
+   - New listings discovery
+   - Trending coins tracking
+   - Coin search by name/symbol
+   - **Free tier**: 30 calls/min, 10K calls/month
+
+**Smart Money Service Extensions** (`app/services/smart_money_service.py`):
+- `analyze_any_coin(symbol)` - Analyze ANY cryptocurrency dynamically, not limited to predefined list
+- `discover_new_coins(max_market_cap, min_volume, source, limit)` - Discover small cap opportunities from multiple sources
+- `get_futures_coins_list(min_volume)` - Get complete list of Binance Futures coins with volume filtering
+- `auto_select_coins(criteria, limit)` - Auto-select coins based on criteria (volume, gainers, losers, small_cap)
+
+**New API Endpoints** (`app/api/routes_smart_money.py`):
+1. `GET /smart-money/analyze/{symbol}` - Analyze any coin with full accumulation/distribution scoring
+2. `GET /smart-money/discover` - Discover new/small cap coins with customizable filters
+3. `GET /smart-money/futures/list` - List all Binance Futures coins with volume filtering
+4. `GET /smart-money/scan/auto` - Auto-select and scan coins based on dynamic criteria
+
+**Total Endpoints**: Increased from 4 to 9 endpoints (+125% expansion)
+
+**Key Features:**
+- ✅ **100% Backward Compatible** - All existing endpoints unchanged and fully functional
+- ✅ **Dynamic Analysis** - No longer limited to predefined 38-coin list
+- ✅ **Multi-Source Discovery** - Combines Binance Futures + CoinGecko data
+- ✅ **Flexible Filtering** - Market cap, volume, category, and futures availability
+- ✅ **GPT-Compatible** - All endpoints work with GPT Actions for conversational analysis
+- ✅ **Whale Detection Integrated** - All analyses include whale activity tracking from CoinAPI orderbook, trades, SMC patterns, top trader positioning, and liquidation data
+
+**Use Cases:**
+- Ask GPT about any coin (e.g., "Analyze PEPE") - not limited to predefined list
+- Discover new small cap opportunities before retail (e.g., "Find coins under $50M market cap")
+- Auto-scan trending/pumping coins (e.g., "Scan today's top gainers for accumulation")
+- Check which coins have futures trading available for leverage opportunities
+
+**Performance:**
+- All new services use async HTTP clients with connection pooling
+- Concurrent API calls via asyncio.gather
+- Efficient error handling with safe fallbacks
+- Rate limit aware with automatic retries
+
+**Documentation:**
+- Complete upgrade summary: `SMART_MONEY_UPGRADE_SUMMARY.md`
+- Whale detection features: `WHALE_DETECTION_FEATURES.md`
+- All endpoints documented in OpenAPI schema at `/docs`
