@@ -58,6 +58,11 @@ async def get_signal(symbol: str, debug: bool = False, include_ai_validation: bo
                         "reasoning": validation.get("reasoning"),
                         "model_used": validation.get("model_used"),
                     }
+                else:
+                    signal["ai_validation"] = {
+                        "success": False,
+                        "error": validation.get("error", "AI validation failed")
+                    }
             except Exception as ai_error:
                 # Don't fail the entire request if AI validation fails
                 signal["ai_validation"] = {
