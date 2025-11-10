@@ -56,3 +56,86 @@ The PostgreSQL `signals` table stores:
 - **OKX Public API**: Candlestick/OHLCV data.
 - **Binance Futures API**: Public API for futures market data, coin discovery, 24hr statistics, funding rates, and open interest.
 - **CoinGecko API**: Coin discovery, market cap filtering, volume analysis, and category-based coin search.
+---
+
+## MSS Alpha System - Multi-Modal Signal Score (November 10, 2025) 🚀
+
+### Major Feature: High-Potential Cryptocurrency Discovery
+
+Implemented 3-phase analytical framework for discovering high-potential cryptocurrencies before retail adoption.
+
+**Core Philosophy:**
+Unlike traditional signals that analyze established coins, MSS focuses on **emerging assets** through phased filtering:
+1. **Phase 1: Discovery (0-30pts)** - Tokenomics filtering (FDV, age, supply)
+2. **Phase 2: Social Confirmation (0-35pts)** - Community momentum validation
+3. **Phase 3: Institutional Validation (0-35pts)** - Whale/smart money positioning
+
+**Implementation Status: 🟢 Production Ready (All Systems Operational)**
+
+### Core Components
+
+**1. MSS Engine & Service**
+- ✅ `app/core/mss_engine.py` - 3-phase weighted scoring algorithm
+- ✅ `app/services/mss_service.py` - Service orchestrator
+- ✅ `app/api/routes_mss.py` - REST endpoints
+
+**2. API Endpoints**
+- ✅ `GET /mss/info` - System information
+- ✅ `GET /mss/discover` - Coin discovery by FDV/age filters
+- ✅ `GET /mss/analyze/{symbol}` - Full 3-phase MSS analysis
+- ✅ `GET /mss/scan` - Auto-scan for high-potential opportunities
+- ✅ `GET /mss/history` - Latest MSS signals (paginated)
+- ✅ `GET /mss/history/{symbol}` - Symbol-specific signal history
+- ✅ `GET /mss/top-scores` - Highest-scoring discoveries
+- ✅ `GET /mss/analytics` - Analytics summary
+- ✅ `GET /mss/telegram/test` - Test Telegram notifications
+
+### Telegram Integration (Nov 10, 2025)
+
+- ✅ **TelegramMSSNotifier** service with rich HTML formatting
+- ✅ Auto-alerts for MSS scores ≥ 75 (configurable)
+- ✅ 3-phase breakdown visualization with progress bars
+- ✅ Tier classification (Diamond ≥80, Gold 65-79, Silver 50-64, Bronze <50)
+- ✅ AI-generated insights based on phase scores
+- ✅ Includes market data (price, market cap, FDV)
+- ✅ Whale activity and institutional positioning indicators
+
+### Database Storage Integration (Nov 10, 2025)
+
+- ✅ **MSSSignalDatabaseService** (`app/storage/mss_db.py`)
+- ✅ Reuses existing `signals` table with "MSS_" signal prefix
+- ✅ Auto-saves high-scoring signals (MSS ≥ 75)
+- ✅ Complete phase breakdown stored in JSONB fields
+- ✅ MSS-specific PostgreSQL indexes:
+  - `idx_signals_mss_timestamp` - Fast chronological queries
+  - `idx_signals_mss_score` - Efficient score filtering
+- ✅ Graceful error handling - DB failures don't block API
+- ✅ Query endpoints: history, top-scores, analytics
+
+### GPT Actions Integration (Nov 10, 2025)
+
+- ✅ Extended OpenAPI schema with 6 MSS endpoints
+- ✅ Schema available at `GET /gpt/action-schema` (version 2.0.0)
+- ✅ Production-ready for OpenAI GPT Custom Actions
+- ✅ Base URL: `https://guardiansofthetoken.org`
+- ✅ Complete parameter documentation with examples
+
+**GPT Actions Use Cases:**
+- "Find me new crypto gems under $20M market cap"
+- "Analyze PEPE for early accumulation signals"
+- "Show me top Diamond tier discoveries"
+- "What cryptocurrencies are whales buying?"
+
+### External Services Integration
+
+- ✅ **CoinGecko** - Coin discovery, market cap filtering
+- ✅ **Binance Futures** - Volume, OI, funding rates
+- ✅ **LunarCrush** - Social sentiment & AltRank
+- ✅ **Coinglass Premium** - Top trader positioning
+- ✅ **CoinAPI Comprehensive** - Whale detection via orderbook
+
+### Documentation
+
+- Comprehensive guide: `MSS_SYSTEM_GUIDE.md`
+- All endpoints in OpenAPI schema at `/docs`
+- GPT Actions schema at `/gpt/action-schema`
