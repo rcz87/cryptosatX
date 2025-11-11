@@ -185,15 +185,20 @@ async def analyze_new_listings_with_mss(
         alerts_sent = 0
         
         for listing in filtered_listings:
-            symbol = listing.get("symbol")
+            pair_symbol = listing.get("symbol")  # e.g., "ZKUSDT"
+            base_asset = listing.get("baseAsset")  # e.g., "ZK"
             
-            # Run MSS analysis
-            mss_result = await mss_service.calculate_mss_score(symbol)
+            if not base_asset:
+                logger.warning(f"No baseAsset for {pair_symbol}, skipping MSS analysis")
+                continue
+            
+            # Run MSS analysis using base asset (not the full pair)
+            mss_result = await mss_service.calculate_mss_score(base_asset)
             
             if mss_result.get("success"):
                 analysis = {
-                    "symbol": symbol,
-                    "baseAsset": listing.get("baseAsset"),
+                    "symbol": pair_symbol,  # Display full pair
+                    "base_asset": base_asset,  # Show base for clarity
                     "age_hours": listing.get("age_hours"),
                     "listed_at": listing.get("listed_at"),
                     "mss_score": mss_result.get("mss_score"),
@@ -215,7 +220,7 @@ async def analyze_new_listings_with_mss(
                     p1_breakdown = phase1.get("breakdown", {})
                     
                     alert_sent = await notifier.send_mss_discovery_alert(
-                        symbol=symbol,
+                        symbol=base_asset,  # Use base asset for alerts
                         mss_score=mss_result.get("mss_score"),
                         signal=mss_result.get("signal"),
                         confidence=mss_result.get("confidence"),
@@ -223,11 +228,17 @@ async def analyze_new_listings_with_mss(
                         price=listing.get("stats", {}).get("current_price") or p1_breakdown.get("current_price"),
                         market_cap=p1_breakdown.get("market_cap_usd"),
                         fdv=p1_breakdown.get("fdv_usd"),
-                        custom_note=f"🆕 NEW BINANCE LISTING ({listing.get('age_hours')}h old)"
+                        custom_note=f"🆕 NEW BINANCE LISTING {pair_symbol} ({listing.get('age_hours')}h old)"
                     )
                     
                     if alert_sent:
                         alerts_sent += 1
+            else:
+                # Log MSS analysis failure for debugging
+                logger.error(
+                    f"MSS analysis failed for {base_asset} ({pair_symbol}): "
+                    f"{mss_result.get('error', 'Unknown error')}"
+                )
         
         # Sort by MSS score (highest first)
         analyzed_coins.sort(
@@ -295,10 +306,15 @@ async def watch_new_listings(
         watch_list = []
         
         for listing in new_listings:
-            symbol = listing.get("symbol")
+            pair_symbol = listing.get("symbol")  # e.g., "ZKUSDT"
+            base_asset = listing.get("baseAsset")  # e.g., "ZK"
             
-            # Quick MSS analysis
-            mss_result = await mss_service.calculate_mss_score(symbol)
+            if not base_asset:
+                logger.warning(f"No baseAsset for {pair_symbol}, skipping")
+                continue
+            
+            # Quick MSS analysis using base asset
+            mss_result = await mss_service.calculate_mss_score(base_asset)
             
             if mss_result.get("success"):
                 mss_score = mss_result.get("mss_score", 0)
@@ -306,8 +322,8 @@ async def watch_new_listings(
                 # Only include if meets minimum score
                 if mss_score >= min_mss_score:
                     watch_list.append({
-                        "symbol": symbol,
-                        "baseAsset": listing.get("baseAsset"),
+                        "symbol": pair_symbol,  # Display full pair
+                        "base_asset": base_asset,  # Include base
                         "age_hours": listing.get("age_hours"),
                         "mss_score": mss_score,
                         "tier": mss_result.get("tier"),
@@ -315,6 +331,12 @@ async def watch_new_listings(
                         "volume_24h_usd": listing.get("stats", {}).get("quote_volume_usd"),
                         "price_change_24h": listing.get("stats", {}).get("price_change_24h")
                     })
+            else:
+                # Log failure for debugging
+                logger.error(
+                    f"MSS analysis failed for {base_asset} ({pair_symbol}): "
+                    f"{mss_result.get('error', 'Unknown error')}"
+                )
         
         # Sort by MSS score
         watch_list.sort(
