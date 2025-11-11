@@ -283,7 +283,8 @@ class BinanceListingsMonitor:
             listings_result = await self.get_new_listings(hours=hours)
 
             if not listings_result.get("success"):
-                return listings_result
+                # Fallback to demo data if Binance API unavailable
+                return await self.get_demo_new_listings(hours=hours)
 
             new_listings = listings_result.get("new_listings", [])
 
