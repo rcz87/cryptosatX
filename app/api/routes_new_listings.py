@@ -5,11 +5,13 @@ Early detection for Binance perpetual futures listings
 from fastapi import APIRouter, Query
 from typing import Optional
 from datetime import datetime
+import logging
 
 from app.services.binance_listings_monitor import BinanceListingsMonitor
 from app.services.mss_service import MSSService
 from app.services.telegram_mss_notifier import TelegramMSSNotifier
 
+logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
@@ -165,10 +167,10 @@ async def analyze_new_listings_with_mss(
         
         new_listings = listings_result.get("new_listings", [])
         
-        # Filter by volume
+        # Filter by volume (handle None stats)
         filtered_listings = [
             listing for listing in new_listings
-            if listing.get("stats", {}).get("quote_volume_usd", 0) >= min_volume_usd
+            if (listing.get("stats") or {}).get("quote_volume_usd", 0) >= min_volume_usd
         ]
         
         if not filtered_listings:
@@ -196,6 +198,9 @@ async def analyze_new_listings_with_mss(
             mss_result = await mss_service.calculate_mss_score(base_asset)
             
             if mss_result.get("success"):
+                # Safely extract stats (may be None if Binance API failed)
+                stats = listing.get("stats") or {}
+                
                 analysis = {
                     "symbol": pair_symbol,  # Display full pair
                     "base_asset": base_asset,  # Show base for clarity
@@ -206,9 +211,9 @@ async def analyze_new_listings_with_mss(
                     "signal": mss_result.get("signal"),
                     "confidence": mss_result.get("confidence"),
                     "phase_scores": mss_result.get("phase_scores"),
-                    "volume_24h_usd": listing.get("stats", {}).get("quote_volume_usd"),
-                    "price_change_24h": listing.get("stats", {}).get("price_change_24h"),
-                    "trades_24h": listing.get("stats", {}).get("trades_24h")
+                    "volume_24h_usd": stats.get("quote_volume_usd"),
+                    "price_change_24h": stats.get("price_change_24h"),
+                    "trades_24h": stats.get("trades_24h")
                 }
                 
                 analyzed_coins.append(analysis)
@@ -218,6 +223,7 @@ async def analyze_new_listings_with_mss(
                     phases = mss_result.get("phases", {})
                     phase1 = phases.get("phase1_discovery", {})
                     p1_breakdown = phase1.get("breakdown", {})
+                    stats = listing.get("stats") or {}
                     
                     alert_sent = await notifier.send_mss_discovery_alert(
                         symbol=base_asset,  # Use base asset for alerts
@@ -225,7 +231,7 @@ async def analyze_new_listings_with_mss(
                         signal=mss_result.get("signal"),
                         confidence=mss_result.get("confidence"),
                         phases=phases,
-                        price=listing.get("stats", {}).get("current_price") or p1_breakdown.get("current_price"),
+                        price=stats.get("current_price") or p1_breakdown.get("current_price"),
                         market_cap=p1_breakdown.get("market_cap_usd"),
                         fdv=p1_breakdown.get("fdv_usd"),
                         custom_note=f"🆕 NEW BINANCE LISTING {pair_symbol} ({listing.get('age_hours')}h old)"
@@ -321,6 +327,7 @@ async def watch_new_listings(
                 
                 # Only include if meets minimum score
                 if mss_score >= min_mss_score:
+                    stats = listing.get("stats") or {}
                     watch_list.append({
                         "symbol": pair_symbol,  # Display full pair
                         "base_asset": base_asset,  # Include base
@@ -328,8 +335,8 @@ async def watch_new_listings(
                         "mss_score": mss_score,
                         "tier": mss_result.get("tier"),
                         "signal": mss_result.get("signal"),
-                        "volume_24h_usd": listing.get("stats", {}).get("quote_volume_usd"),
-                        "price_change_24h": listing.get("stats", {}).get("price_change_24h")
+                        "volume_24h_usd": stats.get("quote_volume_usd"),
+                        "price_change_24h": stats.get("price_change_24h")
                     })
             else:
                 # Log failure for debugging
