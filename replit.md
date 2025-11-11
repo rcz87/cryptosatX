@@ -67,15 +67,23 @@ The PostgreSQL `signals` table stores:
 - ✅ Production server verified and operational
 - ✅ GitHub repository now in sync with latest codebase
 
+**Binance New Listings Status:**
+- ⚠️ **Binance API Blocked (HTTP 451)** - Replit server IP restricted by Binance
+- ✅ Code ready, but API unavailable from production server
+- ❌ Removed demo data fallback per user request (real trading only)
+- 💡 Alternative: Use MSS /scan endpoint for new coin discovery across all exchanges
+
 ---
 
-## Binance New Listings Monitor (November 11, 2025) ⚡
+## Binance New Listings Monitor (November 11, 2025) ⚠️
 
 ### Early Detection for Fresh Perpetual Listings
 
-Monitors Binance Futures API for newly listed perpetual contracts, enabling entry before retail FOMO.
+**Implementation Status: 🔴 API Blocked**
 
-**Implementation Status: 🟢 Production Ready**
+Binance Futures API returns HTTP 451 (region restriction) from Replit production servers. Endpoint returns clear error instead of fake data.
+
+**Note:** For real new coin discovery, use `/mss/scan` endpoint which works with CoinGecko + multiple exchanges.
 
 ### Core Components
 

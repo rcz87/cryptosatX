@@ -72,35 +72,15 @@ async def get_binance_new_listings(
     monitor = BinanceListingsMonitor()
 
     try:
-        # Try to get real data first
         if include_stats:
             result = await monitor.detect_new_listings_with_stats(hours=hours)
         else:
             result = await monitor.get_new_listings(hours=hours)
 
-        # If API fails, use demo data for testing
         if not result.get("success"):
-            logger.warning(
-                f"Binance API unavailable, using demo data: {result.get('error', 'Unknown error')}"
+            logger.error(
+                f"Binance API unavailable: {result.get('error', 'Unknown error')}"
             )
-            result = await monitor.get_demo_new_listings(hours=hours)
-
-            # Add stats if requested
-            if include_stats:
-                for listing in result.get("new_listings", []):
-                    if "stats" not in listing:
-                        listing["stats"] = {
-                            "price_change_24h": listing.get("stats", {}).get(
-                                "price_change_24h", 0
-                            ),
-                            "quote_volume_usd": listing.get("stats", {}).get(
-                                "quote_volume_usd", 0
-                            ),
-                            "trades_24h": listing.get("stats", {}).get("trades_24h", 0),
-                            "current_price": listing.get("stats", {}).get(
-                                "current_price", 0
-                            ),
-                        }
 
         return result
 
@@ -504,7 +484,7 @@ async def analyze_new_listings_with_mss(
                     stats = listing.get("stats") or {}
 
                     alert_sent = await notifier.send_mss_discovery_alert(
-                        symbol=base_asset,  # Use base asset for alerts
+                        symbol=base_asset,
                         mss_score=mss_result.get("mss_score"),
                         signal=mss_result.get("signal"),
                         confidence=mss_result.get("confidence"),
@@ -513,7 +493,6 @@ async def analyze_new_listings_with_mss(
                         or p1_breakdown.get("current_price"),
                         market_cap=p1_breakdown.get("market_cap_usd"),
                         fdv=p1_breakdown.get("fdv_usd"),
-                        custom_note=f"🆕 NEW BINANCE LISTING {pair_symbol} ({listing.get('age_hours')}h old)",
                     )
 
                     if alert_sent:
