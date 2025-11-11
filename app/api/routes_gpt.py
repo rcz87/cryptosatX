@@ -53,7 +53,7 @@ async def get_gpt_action_schema():
                             "name": "symbol",
                             "in": "path",
                             "required": True,
-                            "description": "Cryptocurrency symbol. Supports ALL major cryptocurrencies: BTC, ETH, SOL, BNB, ADA, DOGE, MATIC, DOT, AVAX, LINK, UNI, ATOM, XRP, LTC, BCH, ETC, FIL, TRX, VET, THETA, FTM, SAND, MANA, APE, SHIB, LUNA, GALA, AXS, ENJ, CHZ, BAT, ZIL, COMP, MKR, SUSHI, AAVE, YFI, CRV, 1INCH, SNX, REN, KNC, BAL, LRC, and many more.",
+                            "description": "Cryptocurrency symbol (e.g., BTC, ETH, SOL, DOGE, SHIB, PEPE). Supports all major cryptocurrencies on Binance Futures.",
                             "schema": {
                                 "type": "string",
                                 "example": "BTC"
@@ -97,7 +97,7 @@ async def get_gpt_action_schema():
                             "name": "symbol",
                             "in": "path",
                             "required": True,
-                            "description": "Cryptocurrency symbol. Supports ALL major cryptocurrencies: BTC, ETH, SOL, BNB, ADA, DOGE, MATIC, DOT, AVAX, LINK, UNI, ATOM, XRP, LTC, BCH, ETC, FIL, TRX, VET, THETA, FTM, SAND, MANA, APE, SHIB, LUNA, GALA, AXS, ENJ, CHZ, BAT, ZIL, COMP, MKR, SUSHI, AAVE, YFI, CRV, 1INCH, SNX, REN, KNC, BAL, LRC, and many more.",
+                            "description": "Cryptocurrency symbol (e.g., BTC, ETH, SOL, DOGE, SHIB, PEPE). Supports all major cryptocurrencies on Binance Futures.",
                             "schema": {
                                 "type": "string",
                                 "example": "BTC"
@@ -126,7 +126,7 @@ async def get_gpt_action_schema():
             "/smart-money/scan": {
                 "get": {
                     "summary": "Scan Smart Money Activity",
-                    "description": "Scan 50+ cryptocurrencies for whale accumulation/distribution patterns. Detects coins being accumulated or distributed by smart money before retail traders enter/exit. Returns coins with accumulation score (buy-before-retail signals) and distribution score (short-before-dump signals). Supports ALL major cryptocurrencies: BTC, ETH, SOL, BNB, ADA, DOGE, MATIC, DOT, AVAX, LINK, UNI, ATOM, XRP, LTC, BCH, ETC, FIL, TRX, VET, THETA, FTM, SAND, MANA, APE, SHIB, LUNA, GALA, AXS, ENJ, CHZ, BAT, ZIL, COMP, MKR, SUSHI, AAVE, YFI, CRV, 1INCH, SNX, REN, KNC, BAL, LRC, and many more.",
+                    "description": "Scan cryptocurrencies for whale accumulation/distribution patterns. Returns buy-before-retail signals (accumulation) and short-before-dump signals (distribution) based on smart money activity.",
                     "operationId": "scanSmartMoney",
                     "parameters": [
                         {
@@ -157,7 +157,7 @@ async def get_gpt_action_schema():
                             "name": "coins",
                             "in": "query",
                             "required": False,
-                            "description": "Comma-separated list of specific coins to scan (e.g., 'BTC,ETH,SOL,AVAX,DOGE,SHIB'). Supports ALL major cryptocurrencies. If not provided, scans all 50+ default coins including BTC, ETH, SOL, BNB, ADA, DOGE, MATIC, DOT, AVAX, LINK, UNI, ATOM, XRP, LTC, BCH, ETC, FIL, TRX, VET, THETA, FTM, SAND, MANA, APE, SHIB, LUNA, GALA, AXS, ENJ, CHZ, BAT, ZIL, COMP, MKR, SUSHI, AAVE, YFI, CRV, 1INCH, SNX, REN, KNC, BAL, LRC, and more.",
+                            "description": "Comma-separated list of coins to scan (e.g., 'BTC,ETH,SOL,AVAX,DOGE,SHIB'). If not provided, scans all 50+ default major cryptocurrencies.",
                             "schema": {
                                 "type": "string",
                                 "example": "BTC,ETH,SOL,AVAX,DOGE,SHIB"
@@ -250,7 +250,7 @@ async def get_gpt_action_schema():
             "/mss/analyze/{symbol}": {
                 "get": {
                     "summary": "MSS Analysis - Discover High-Potential Cryptocurrencies",
-                    "description": "Analyze any cryptocurrency using Multi-Modal Signal Score (MSS) system with 3-phase validation: Discovery (tokenomics), Social Confirmation (community momentum), and Institutional Validation (whale positioning). Returns MSS score 0-100 with signal strength (STRONG_LONG, MODERATE_LONG, LONG, WEAK_LONG, NEUTRAL). MSS ≥80 = Diamond tier (rare gems), MSS 65-79 = Gold tier (strong potential), MSS 50-64 = Silver tier (moderate potential). Perfect for finding hidden gems before retail adoption.",
+                    "description": "3-phase MSS analysis: tokenomics, social momentum, whale positioning. Returns score 0-100. Diamond ≥80, Gold 65-79, Silver 50-64. Find hidden gems before retail adoption.",
                     "operationId": "analyzeMSS",
                     "parameters": [
                         {
