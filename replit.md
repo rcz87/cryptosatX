@@ -58,6 +58,17 @@ The PostgreSQL `signals` table stores:
 - **CoinGecko API**: Coin discovery, market cap filtering, volume analysis, and category-based coin search.
 ---
 
+## Recent Updates (November 11, 2025)
+
+**Git Sync Completed:**
+- ✅ Merged GitHub updates while preserving local improvements
+- ✅ Maintained 15-endpoint GPT Actions schema (routes_gpt.py: 653 lines)
+- ✅ All features intact: MSS, Smart Money, New Listings, Signals
+- ✅ Production server verified and operational
+- ✅ GitHub repository now in sync with latest codebase
+
+---
+
 ## Binance New Listings Monitor (November 11, 2025) ⚡
 
 ### Early Detection for Fresh Perpetual Listings
