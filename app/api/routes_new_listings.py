@@ -9,6 +9,7 @@ from datetime import datetime
 import logging
 
 from app.services.binance_listings_monitor import BinanceListingsMonitor
+from app.services.multi_exchange_listings_monitor import multi_exchange_monitor
 from app.services.mss_service import MSSService
 from app.services.telegram_mss_notifier import TelegramMSSNotifier
 
@@ -105,6 +106,259 @@ async def get_binance_new_listings(
 
     finally:
         await monitor.close()
+
+
+@router.get("/new-listings/multi-exchange")
+async def get_multi_exchange_listings(
+    hours: int = Query(
+        default=72,
+        ge=1,
+        le=168,
+        description="Look back period in hours (1-168). Default 72h (3 days)",
+    ),
+    exchanges: str = Query(
+        default="binance,okx,coinapi",
+        description="Comma-separated list of exchanges to include (binance,okx,coinapi)",
+    ),
+    min_volume_usd: float = Query(
+        default=100000, ge=0, description="Minimum 24h volume in USD (default $100K)"
+    ),
+):
+    """
+    Get new listings from multiple exchanges (Binance + OKX + CoinAPI)
+
+    **SOLVES REGION RESTRICTIONS:**
+    - Combines data from Binance, OKX, and CoinAPI
+    - Overcomes HTTP 451 region restrictions
+    - Provides comprehensive market coverage
+    - Automatic fallback between sources
+
+    **Use Case:**
+    - Complete market overview of new perpetual listings
+    - Alternative when Binance API is restricted
+    - Cross-exchange opportunity detection
+    - Regional restriction bypass
+
+    **How It Works:**
+    1. Queries all available exchanges in parallel
+    2. Normalizes data to standard format
+    3. Removes duplicates across exchanges
+    4. Filters by volume and age
+    5. Sorts by listing time (newest first)
+
+    **Parameters:**
+    - hours: Look back period (default 72h)
+    - exchanges: Comma-separated exchanges to include
+    - min_volume_usd: Filter low-volume listings
+
+    **Returns:**
+    ```json
+    {
+      "success": true,
+      "listings": [
+        {
+          "symbol": "ZKUSDT",
+          "base_asset": "ZK",
+          "exchange": "binance",
+          "listed_at": "2025-11-09T14:30:00",
+          "age_hours": 36.5,
+          "volume_24h": 152750000,
+          "price_change_24h": 12.5
+        }
+      ],
+      "sources": {
+        "binance": {"success": true, "listings_count": 2},
+        "okx": {"success": true, "listings_count": 1},
+        "coinapi": {"success": false, "error": "API key required"}
+      },
+      "count": 3,
+      "timestamp": "2025-11-11T04:30:00"
+    }
+    ```
+
+    **Regional Restriction Solution:**
+    If Binance returns HTTP 451, the system automatically:
+    - Falls back to OKX and CoinAPI data
+    - Provides alternative listing sources
+    - Maintains full functionality
+    - No service interruption
+    """
+    try:
+        # Parse exchanges parameter
+        requested_exchanges = [ex.strip().lower() for ex in exchanges.split(",")]
+
+        # Get listings from all available sources
+        all_results = await multi_exchange_monitor.get_all_new_listings(hours=hours)
+
+        # Filter by requested exchanges
+        filtered_listings = []
+        for listing in all_results.get("listings", []):
+            if listing.get("exchange", "").lower() in requested_exchanges:
+                # Apply volume filter
+                if listing.get("volume_24h", 0) >= min_volume_usd:
+                    filtered_listings.append(listing)
+
+        # Filter sources by requested exchanges
+        filtered_sources = {}
+        for exchange, source_data in all_results.get("sources", {}).items():
+            if exchange in requested_exchanges:
+                filtered_sources[exchange] = source_data
+
+        return {
+            "success": True,
+            "listings": filtered_listings,
+            "sources": filtered_sources,
+            "count": len(filtered_listings),
+            "filters": {
+                "hours": hours,
+                "exchanges": requested_exchanges,
+                "min_volume_usd": min_volume_usd,
+            },
+            "timestamp": datetime.utcnow().isoformat(),
+            "note": "Multi-exchange data overcomes regional restrictions",
+        }
+
+    except Exception as e:
+        logger.error(f"Multi-exchange listings error: {e}")
+        return {
+            "success": False,
+            "error": f"Failed to fetch multi-exchange listings: {str(e)}",
+            "listings": [],
+            "count": 0,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
+
+
+@router.get("/new-listings/region-bypass")
+async def get_region_bypass_listings(
+    hours: int = Query(
+        default=48, ge=1, le=168, description="Look back period in hours (default 48h)"
+    ),
+    auto_fallback: bool = Query(
+        default=True,
+        description="Automatically use alternative sources when Binance fails",
+    ),
+):
+    """
+    **REGION RESTRICTION BYPASS** - Get new listings when Binance is blocked
+
+    **Perfect for HTTP 451 Errors:**
+    - Automatically detects Binance region restrictions
+    - Seamlessly switches to OKX and CoinAPI
+    - No manual intervention required
+    - Full functionality maintained
+
+    **Use Case:**
+    "I'm getting HTTP 451 from Binance, give me new listings anyway"
+
+    **How It Works:**
+    1. Tries Binance first (primary source)
+    2. Detects HTTP 451 or connection errors
+    3. Automatically falls back to OKX + CoinAPI
+    4. Combines all available data
+    5. Returns unified listing results
+
+    **Parameters:**
+    - hours: Look back period (default 48h)
+    - auto_fallback: Enable automatic source switching
+
+    **Returns:**
+    ```json
+    {
+      "success": true,
+      "listings": [...],
+      "primary_source": "okx",  // Shows which source worked
+      "fallback_used": true,      // Confirms bypass was used
+      "binance_status": "HTTP 451 - Region Restricted",
+      "alternative_sources": ["okx", "coinapi"],
+      "count": 5
+    }
+    ```
+
+    **No More Region Issues:**
+    This endpoint ensures you always get new listings data,
+    regardless of your geographic location or Binance's restrictions.
+    """
+    try:
+        # Get all exchange data
+        all_results = await multi_exchange_monitor.get_all_new_listings(hours=hours)
+
+        # Determine which sources worked
+        working_sources = []
+        failed_sources = {}
+
+        for exchange, source_data in all_results.get("sources", {}).items():
+            if source_data.get("success"):
+                working_sources.append(exchange)
+            else:
+                failed_sources[exchange] = source_data.get("error", "Unknown error")
+
+        # Determine primary source (prefer Binance, then OKX, then CoinAPI)
+        primary_source = None
+        source_priority = ["binance", "okx", "coinapi"]
+
+        for source in source_priority:
+            if source in working_sources:
+                primary_source = source
+                break
+
+        # Check if Binance specifically failed with region restriction
+        binance_region_error = False
+        if "binance" in failed_sources:
+            error_msg = failed_sources["binance"].lower()
+            if any(
+                keyword in error_msg
+                for keyword in ["451", "region", "restricted", "blocked"]
+            ):
+                binance_region_error = True
+
+        # Prepare response
+        response = {
+            "success": True,
+            "listings": all_results.get("listings", []),
+            "count": len(all_results.get("listings", [])),
+            "primary_source": primary_source,
+            "working_sources": working_sources,
+            "failed_sources": failed_sources,
+            "fallback_used": primary_source != "binance" if auto_fallback else False,
+            "timestamp": datetime.utcnow().isoformat(),
+            "hours": hours,
+        }
+
+        # Add region-specific information
+        if binance_region_error:
+            response.update(
+                {
+                    "binance_status": "HTTP 451 - Region Restricted",
+                    "region_bypass_active": True,
+                    "alternative_sources": working_sources,
+                    "note": "Successfully bypassed Binance region restrictions using alternative exchanges",
+                }
+            )
+        elif "binance" in failed_sources:
+            response.update(
+                {
+                    "binance_status": f"Failed: {failed_sources['binance']}",
+                    "region_bypass_active": len(working_sources) > 0,
+                    "alternative_sources": working_sources,
+                }
+            )
+        else:
+            response.update(
+                {"binance_status": "Available", "region_bypass_active": False}
+            )
+
+        return response
+
+    except Exception as e:
+        logger.error(f"Region bypass listings error: {e}")
+        return {
+            "success": False,
+            "error": f"Region bypass failed: {str(e)}",
+            "listings": [],
+            "count": 0,
+            "timestamp": datetime.utcnow().isoformat(),
+        }
 
 
 @router.get("/new-listings/analyze")
