@@ -13,7 +13,7 @@ from pathlib import Path
 
 class JSONFormatter(logging.Formatter):
     """Format logs as JSON for easy parsing and analysis"""
-    
+
     def format(self, record: logging.LogRecord) -> str:
         log_data = {
             "timestamp": datetime.utcnow().isoformat(),
@@ -24,60 +24,77 @@ class JSONFormatter(logging.Formatter):
             "function": record.funcName,
             "line": record.lineno,
         }
-        
+
         # Add exception info if present
         if record.exc_info:
             log_data["exception"] = self.formatException(record.exc_info)
-        
+
         # Add custom fields if present
         if hasattr(record, "extra_data"):
             log_data["extra"] = record.extra_data
-        
+
         return json.dumps(log_data, ensure_ascii=False)
 
 
-def setup_json_logger(name: str = "cryptosatx", level: int = logging.INFO) -> logging.Logger:
+def setup_json_logger(
+    name: str = "cryptosatx", level: int = logging.INFO
+) -> logging.Logger:
     """
     Setup structured JSON logger
-    
+
     Args:
         name: Logger name
         level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
-    
+
     Returns:
         Configured logger instance
     """
     logger = logging.getLogger(name)
     logger.setLevel(level)
-    
+
     # Avoid duplicate handlers
     if logger.handlers:
         return logger
-    
-    # Console handler with JSON formatting
+
+    # Console handler with JSON formatting - fix encoding for Windows
     console_handler = logging.StreamHandler(sys.stdout)
+    # Fix encoding issues on Windows
+    if hasattr(sys.stdout, "reconfigure"):
+        try:
+            sys.stdout.reconfigure(encoding="utf-8")
+        except:
+            pass
     console_handler.setFormatter(JSONFormatter())
     logger.addHandler(console_handler)
-    
+
     # Optional: File handler for persistent logs
-    log_dir = Path("logs")
-    log_dir.mkdir(exist_ok=True)
-    
-    file_handler = logging.FileHandler(log_dir / f"{name}.log")
-    file_handler.setFormatter(JSONFormatter())
-    logger.addHandler(file_handler)
-    
+    try:
+        log_dir = Path("logs")
+        log_dir.mkdir(exist_ok=True)
+
+        file_handler = logging.FileHandler(log_dir / f"{name}.log", encoding="utf-8")
+        file_handler.setFormatter(JSONFormatter())
+        logger.addHandler(file_handler)
+    except Exception as e:
+        # Fallback if file logging fails
+        logger.warning(f"Could not setup file logging: {e}")
+
     return logger
 
 
-def log_api_call(logger: logging.Logger, endpoint: str, symbol: Optional[str] = None, 
-                 duration: Optional[float] = None, status: str = "success", 
-                 extra_data: Optional[Dict[str, Any]] = None):
+def log_api_call(
+    logger: logging.Logger,
+    endpoint: str,
+    symbol: Optional[str] = None,
+    duration: Optional[float] = None,
+    status: str = "success",
+    extra_data: Optional[Dict[str, Any]] = None,
+):
     """
     Log API calls with structured data
-    
+
     Example:
-        log_api_call(logger, "/signals/BTC", symbol="BTC", duration=1.23, 
+        log_api_call(logger, "/signals/BTC", symbol="BTC", duration=1.23,
                      extra_data={"score": 65, "signal": "LONG"})
     """
     data = {
@@ -86,26 +103,30 @@ def log_api_call(logger: logging.Logger, endpoint: str, symbol: Optional[str] = 
         "duration_ms": round(duration * 1000, 2) if duration else None,
         "status": status,
     }
-    
+
     if extra_data:
         data.update(extra_data)
-    
+
     # Create log record with extra data
     log_record = logger.makeRecord(
-        logger.name, logging.INFO, "", 0, 
-        f"API Call: {endpoint}", (), None
+        logger.name, logging.INFO, "", 0, f"API Call: {endpoint}", (), None
     )
-    setattr(log_record, 'extra_data', data)  # Use setattr to avoid type checking issues
+    setattr(log_record, "extra_data", data)  # Use setattr to avoid type checking issues
     logger.handle(log_record)
 
 
-def log_signal_generation(logger: logging.Logger, symbol: str, signal: str, 
-                          score: float, factors: Dict[str, Any]):
+def log_signal_generation(
+    logger: logging.Logger,
+    symbol: str,
+    signal: str,
+    score: float,
+    factors: Dict[str, Any],
+):
     """
     Log signal generation events
-    
+
     Example:
-        log_signal_generation(logger, "BTC", "LONG", 72.5, 
+        log_signal_generation(logger, "BTC", "LONG", 72.5,
                             {"funding_rate": 0.01, "sentiment": 75})
     """
     data = {
@@ -115,19 +136,26 @@ def log_signal_generation(logger: logging.Logger, symbol: str, signal: str,
         "score": score,
         "factors": factors,
     }
-    
+
     log_record = logger.makeRecord(
-        logger.name, logging.INFO, "", 0,
-        f"Signal Generated: {symbol} -> {signal}", (), None
+        logger.name,
+        logging.INFO,
+        "",
+        0,
+        f"Signal Generated: {symbol} -> {signal}",
+        (),
+        None,
     )
-    setattr(log_record, 'extra_data', data)  # Use setattr to avoid type checking issues
+    setattr(log_record, "extra_data", data)  # Use setattr to avoid type checking issues
     logger.handle(log_record)
 
 
-def log_error(logger: logging.Logger, error: Exception, context: Optional[Dict[str, Any]] = None):
+def log_error(
+    logger: logging.Logger, error: Exception, context: Optional[Dict[str, Any]] = None
+):
     """
     Log errors with context
-    
+
     Example:
         try:
             ...
@@ -139,12 +167,11 @@ def log_error(logger: logging.Logger, error: Exception, context: Optional[Dict[s
         "error_message": str(error),
         "context": context or {},
     }
-    
+
     log_record = logger.makeRecord(
-        logger.name, logging.ERROR, "", 0,
-        f"Error: {str(error)}", (), None
+        logger.name, logging.ERROR, "", 0, f"Error: {str(error)}", (), None
     )
-    setattr(log_record, 'extra_data', data)  # Use setattr to avoid type checking issues
+    setattr(log_record, "extra_data", data)  # Use setattr to avoid type checking issues
     logger.handle(log_record)
 
 

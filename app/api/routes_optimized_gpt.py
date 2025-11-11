@@ -292,7 +292,7 @@ async def get_maximal_gpt_schema():
                             },
                         },
                         {
-                            "name": "exclude_overbought",
+                            "name": "exclude_overbought_coins",
                             "in": "query",
                             "description": "Exclude overbought coins to reduce risk",
                             "schema": {"type": "boolean", "default": True},
@@ -1044,28 +1044,31 @@ def _optimize_portfolio_allocation(
 
 # === MISSING ENDPOINTS IMPLEMENTATION ===
 
+
 @router.get("/smart-money/accumulation")
 async def find_whale_accumulation(
     min_score: int = Query(8, description="Minimum accumulation score (0-10)"),
-    exclude_overbought: bool = Query(True, description="Exclude overbought coins"),
+    exclude_overbought_coins: bool = Query(
+        True, description="Exclude overbought coins"
+    ),
     api_key: str = Depends(get_optional_api_key),
 ):
     """
     📈 **Whale Accumulation Finder** - Buy Before Retail FOMO
-    
+
     Find coins being accumulated by institutions and whales.
     Returns high-conviction accumulation opportunities.
     """
     try:
         result = await smart_money_service.scan_smart_money(
             min_accumulation_score=min_score,
-            min_distribution_score=10  # High threshold to exclude distribution
+            min_distribution_score=10,  # High threshold to exclude distribution
         )
-        
+
         accumulation_signals = result.get("accumulation", [])
-        
+
         # Filter overbought if requested
-        if exclude_overbought:
+        if exclude_overbought_coins:
             filtered_signals = []
             for signal in accumulation_signals:
                 if signal.get("accumulationScore", 0) >= min_score:
@@ -1073,22 +1076,19 @@ async def find_whale_accumulation(
                     if signal.get("rsi", 50) < 70:
                         filtered_signals.append(signal)
             accumulation_signals = filtered_signals
-        
+
         return {
             "success": True,
             "timestamp": datetime.now().isoformat(),
             "accumulationOpportunities": accumulation_signals,
             "count": len(accumulation_signals),
             "minScore": min_score,
-            "excludeOverbought": exclude_overbought,
-            "message": f"Found {len(accumulation_signals)} high-conviction whale accumulation opportunities"
+            "excludeOverbought": exclude_overbought_coins,
+            "message": f"Found {len(accumulation_signals)} high-conviction whale accumulation opportunities",
         }
-    
+
     except Exception as e:
-        return {
-            "success": False,
-            "error": f"Accumulation scan failed: {str(e)}"
-        }
+        return {"success": False, "error": f"Accumulation scan failed: {str(e)}"}
 
 
 @router.get("/portfolio/optimize")
@@ -1100,10 +1100,12 @@ async def optimize_portfolio_public(
 ):
     """
     💼 **Portfolio Optimizer** - AI-Powered Asset Allocation
-    
+
     Public endpoint for portfolio optimization (redirects to /actions/portfolio-optimizer)
     """
-    return await optimize_portfolio(risk_tolerance, investment_amount, time_horizon, api_key)
+    return await optimize_portfolio(
+        risk_tolerance, investment_amount, time_horizon, api_key
+    )
 
 
 @router.get("/risk/assess/{symbol}")
@@ -1114,7 +1116,7 @@ async def assess_risk(
 ):
     """
     ⚠️ **Risk Assessment** - Comprehensive Risk Analysis
-    
+
     Analyze risk for cryptocurrency position including:
     - Volatility analysis
     - Liquidity assessment
@@ -1124,17 +1126,17 @@ async def assess_risk(
     """
     try:
         symbol = symbol.upper()
-        
+
         # Get signal data
         signal = await signal_engine.build_signal(symbol, debug=False)
-        
+
         # Calculate comprehensive risk metrics
         volatility_7d = signal.get("coinAPIMetrics", {}).get("volatility7d", 10.0)
-        
+
         # Risk score calculation
         score = signal.get("score", 50)
         confidence = signal.get("confidence", "medium")
-        
+
         # Determine risk level
         if score > 65 or score < 35:
             risk_level = "high"
@@ -1145,16 +1147,16 @@ async def assess_risk(
         else:
             risk_level = "low"
             risk_score = 25
-        
+
         # Volatility adjustment
         if volatility_7d > 15:
             risk_score += 15
             risk_level = "high"
         elif volatility_7d > 10:
             risk_score += 10
-        
+
         risk_score = min(100, risk_score)
-        
+
         # Position sizing recommendation
         if position_size:
             max_loss_percent = 2.0  # 2% max loss per trade
@@ -1162,7 +1164,7 @@ async def assess_risk(
             recommended_size = (position_size * max_loss_percent) / stop_loss_percent
         else:
             recommended_size = None
-        
+
         return {
             "success": True,
             "symbol": symbol,
@@ -1172,36 +1174,39 @@ async def assess_risk(
                 "riskScore": round(risk_score, 2),
                 "volatility": {
                     "7day": round(volatility_7d, 2),
-                    "level": "high" if volatility_7d > 15 else "medium" if volatility_7d > 10 else "low"
+                    "level": (
+                        "high"
+                        if volatility_7d > 15
+                        else "medium" if volatility_7d > 10 else "low"
+                    ),
                 },
                 "liquidity": {
                     "level": "high",
-                    "openInterest": signal.get("metrics", {}).get("openInterest", 0)
+                    "openInterest": signal.get("metrics", {}).get("openInterest", 0),
                 },
                 "marketRegime": _detect_market_regime(signal),
-                "signalConfidence": confidence
+                "signalConfidence": confidence,
             },
             "positionSizing": {
                 "requestedSize": position_size,
-                "recommendedSize": round(recommended_size, 2) if recommended_size else None,
+                "recommendedSize": (
+                    round(recommended_size, 2) if recommended_size else None
+                ),
                 "maxLossPercent": 2.0,
                 "stopLossPercent": _calculate_stop_loss(signal, "moderate"),
-                "takeProfitPercent": _calculate_take_profit(signal, "moderate")
+                "takeProfitPercent": _calculate_take_profit(signal, "moderate"),
             },
             "riskMitigation": {
                 "stopLoss": f"{_calculate_stop_loss(signal, 'moderate')}% below entry",
                 "takeProfit": f"{_calculate_take_profit(signal, 'moderate')}% above entry",
                 "positionLimit": "2-5% of portfolio",
-                "diversification": "Maintain 8-12 positions across different sectors"
+                "diversification": "Maintain 8-12 positions across different sectors",
             },
-            "warnings": _get_risk_warnings(signal, risk_score)
+            "warnings": _get_risk_warnings(signal, risk_score),
         }
-    
+
     except Exception as e:
-        return {
-            "success": False,
-            "error": f"Risk assessment failed: {str(e)}"
-        }
+        return {"success": False, "error": f"Risk assessment failed: {str(e)}"}
 
 
 @router.get("/strategies/recommend")
@@ -1213,7 +1218,7 @@ async def recommend_strategies(
 ):
     """
     🎯 **Trading Strategy Recommendations** - AI-Powered Strategies
-    
+
     Get AI-recommended trading strategies based on market conditions:
     - Momentum strategies
     - Mean reversion strategies
@@ -1222,18 +1227,20 @@ async def recommend_strategies(
     """
     try:
         strategies = []
-        
+
         # If symbol provided, analyze specific coin
         if symbol:
             symbol = symbol.upper()
             signal = await signal_engine.build_signal(symbol, debug=False)
-            
+
             # Generate strategies based on signal
-            strategies.extend(_generate_strategies_for_signal(signal, strategy_type, timeframe))
+            strategies.extend(
+                _generate_strategies_for_signal(signal, strategy_type, timeframe)
+            )
         else:
             # Market-wide strategy recommendations
             strategies = _generate_market_strategies(strategy_type, timeframe)
-        
+
         return {
             "success": True,
             "timestamp": datetime.now().isoformat(),
@@ -1245,88 +1252,99 @@ async def recommend_strategies(
             "marketConditions": {
                 "regime": "bullish",  # Would analyze actual market
                 "volatility": "moderate",
-                "trend": "up"
-            }
+                "trend": "up",
+            },
         }
-    
+
     except Exception as e:
-        return {
-            "success": False,
-            "error": f"Strategy recommendation failed: {str(e)}"
-        }
+        return {"success": False, "error": f"Strategy recommendation failed: {str(e)}"}
 
 
 def _get_risk_warnings(signal: dict, risk_score: float) -> list:
     """Generate risk warnings based on signal data"""
     warnings = []
-    
+
     if risk_score > 70:
         warnings.append("⚠️ HIGH RISK: Consider reducing position size")
-    
+
     funding_rate = signal.get("metrics", {}).get("fundingRate", 0)
     if abs(funding_rate) > 0.01:
-        warnings.append(f"⚠️ High funding rate ({funding_rate*100:.2f}%): Overcrowded trade")
-    
+        warnings.append(
+            f"⚠️ High funding rate ({funding_rate*100:.2f}%): Overcrowded trade"
+        )
+
     score = signal.get("score", 50)
     if 48 <= score <= 52:
         warnings.append("⚠️ NEUTRAL signal: Low conviction trade, consider waiting")
-    
+
     if not warnings:
         warnings.append("✅ Risk levels acceptable for moderate trading")
-    
+
     return warnings
 
 
-def _generate_strategies_for_signal(signal: dict, strategy_type: str, timeframe: str) -> list:
+def _generate_strategies_for_signal(
+    signal: dict, strategy_type: str, timeframe: str
+) -> list:
     """Generate strategies based on signal"""
     strategies = []
-    
+
     signal_value = signal.get("signal", "NEUTRAL")
     score = signal.get("score", 50)
     confidence = signal.get("confidence", "medium")
-    
+
     # Momentum strategy
     if strategy_type in ["momentum", "all"] and signal_value != "NEUTRAL":
-        strategies.append({
-            "name": "Momentum Trading",
-            "type": "momentum",
-            "action": signal_value,
-            "confidence": confidence,
-            "entry": "Enter on breakout confirmation",
-            "exit": f"Exit at {_calculate_take_profit(signal, 'moderate')}% profit or {_calculate_stop_loss(signal, 'moderate')}% loss",
-            "timeHorizon": timeframe,
-            "riskReward": "1:2.5"
-        })
-    
+        strategies.append(
+            {
+                "name": "Momentum Trading",
+                "type": "momentum",
+                "action": signal_value,
+                "confidence": confidence,
+                "entry": "Enter on breakout confirmation",
+                "exit": f"Exit at {_calculate_take_profit(signal, 'moderate')}% profit or {_calculate_stop_loss(signal, 'moderate')}% loss",
+                "timeHorizon": timeframe,
+                "riskReward": "1:2.5",
+            }
+        )
+
     # Mean reversion strategy
     if strategy_type in ["mean_reversion", "all"]:
         if score > 70 or score < 30:
-            strategies.append({
-                "name": "Mean Reversion",
-                "type": "mean_reversion",
-                "action": "SHORT" if score > 70 else "LONG",
-                "confidence": "medium",
-                "entry": "Enter at extreme levels",
-                "exit": "Exit when price returns to mean (score 45-55)",
-                "timeHorizon": "short_term",
-                "riskReward": "1:2"
-            })
-    
+            strategies.append(
+                {
+                    "name": "Mean Reversion",
+                    "type": "mean_reversion",
+                    "action": "SHORT" if score > 70 else "LONG",
+                    "confidence": "medium",
+                    "entry": "Enter at extreme levels",
+                    "exit": "Exit when price returns to mean (score 45-55)",
+                    "timeHorizon": "short_term",
+                    "riskReward": "1:2",
+                }
+            )
+
     # Trend following
     if strategy_type in ["trend_following", "all"]:
-        multi_tf_trend = signal.get("comprehensiveMetrics", {}).get("multiTimeframeTrend", "neutral")
+        multi_tf_trend = signal.get("comprehensiveMetrics", {}).get(
+            "multiTimeframeTrend", "neutral"
+        )
         if multi_tf_trend in ["strongly_bullish", "bullish"]:
-            strategies.append({
-                "name": "Trend Following",
-                "type": "trend_following",
-                "action": "LONG",
-                "confidence": "high" if multi_tf_trend == "strongly_bullish" else "medium",
-                "entry": "Enter on pullbacks to support",
-                "exit": "Trail stop at 15% below high",
-                "timeHorizon": "medium_term",
-                "riskReward": "1:3"
-            })
-    
+            strategies.append(
+                {
+                    "name": "Trend Following",
+                    "type": "trend_following",
+                    "action": "LONG",
+                    "confidence": (
+                        "high" if multi_tf_trend == "strongly_bullish" else "medium"
+                    ),
+                    "entry": "Enter on pullbacks to support",
+                    "exit": "Trail stop at 15% below high",
+                    "timeHorizon": "medium_term",
+                    "riskReward": "1:3",
+                }
+            )
+
     return strategies
 
 
@@ -1341,7 +1359,7 @@ def _generate_market_strategies(strategy_type: str, timeframe: str) -> list:
             "entry": "Build position across BTC (40%), ETH (30%), Altcoins (30%)",
             "exit": "Rebalance weekly based on signals",
             "timeHorizon": timeframe,
-            "riskReward": "1:2.5"
+            "riskReward": "1:2.5",
         },
         {
             "name": "Sector Rotation",
@@ -1351,6 +1369,6 @@ def _generate_market_strategies(strategy_type: str, timeframe: str) -> list:
             "entry": "Rotate into sectors showing accumulation",
             "exit": "Rotate out of sectors showing distribution",
             "timeHorizon": "medium_term",
-            "riskReward": "1:3"
-        }
+            "riskReward": "1:3",
+        },
     ]

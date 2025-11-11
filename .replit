@@ -1,7 +1,11 @@
+# CryptoSatX Enhanced Configuration for Replit
+# Supports MSS System, Database, and all new features
+
 modules = ["python-3.11"]
+
 [build]
 system = "uvicorn[standard]"
-command = "uvicorn main:app --host 0.0.0 --port 8000"
+command = "uvicorn main:app --host 0.0.0.0 --port $PORT"
 
 [deploy]
 run = "python3 main.py"
@@ -9,20 +13,40 @@ modules = ["python-3.11"]
 
 [nix]
 channel = "stable-24_05"
-packages = ["cargo", "glibcLocales", "libiconv", "libxcrypt", "openssl", "pkg-config", "postgresql", "rustc"]
+packages = [
+  "cargo", 
+  "glibcLocales", 
+  "libiconv", 
+  "libxcrypt", 
+  "openssl", 
+  "pkg-config", 
+  "postgresql", 
+  "rustc",
+  "postgresql_15"  # For database support
+]
 
 [deployment]
-run = ["sh", "-c", "PORT=8000 python3 main.py"]
+run = ["sh", "-c", "PORT=$PORT python3 main.py"]
 deploymentTarget = "vm"
 
 [env]
 PYTHONPATH = "$PYTHONPATH:."
+# Database configuration for Replit (SQLite by default)
+DATABASE_URL = "sqlite:///cryptosatx.db"
+# Enable all features
+ENABLE_MSS = "true"
+ENABLE_DATABASE = "true"
+ENABLE_TELEGRAM = "true"
+ENABLE_OPENAI = "true"
+# Replit specific settings
+REPLIT_ENVIRONMENT = "production"
+PORT = "8000"
 
 [workflows]
-runButton = "Project"
+runButton = "CryptoSatX Enhanced"
 
 [[workflows.workflow]]
-name = "Project"
+name = "CryptoSatX Enhanced"
 mode = "parallel"
 author = "agent"
 
@@ -39,21 +63,26 @@ outputType = "console"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "PORT=8000 python3 main.py"
+args = "PORT=$PORT python3 main.py"
 waitForPort = 8000
 
 [agent]
 expertMode = true
 integrations = ["python_database:1.0.0"]
 
+# Port configuration for Replit
 [[ports]]
 localPort = 8000
 externalPort = 80
 
 [[ports]]
-localPort = 35311
-externalPort = 3001
+localPort = 5432
+externalPort = 5432  # PostgreSQL
 
 [[ports]]
-localPort = 36595
-externalPort = 3000
+localPort = 6379
+externalPort = 6379  # Redis (if needed)
+
+[[ports]]
+localPort = 3000
+externalPort = 3000  # Frontend (if needed)

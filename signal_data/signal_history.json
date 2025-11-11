@@ -3178,5 +3178,27 @@
         "volatility7d": 25.15
       }
     }
+  },
+  {
+    "id": "sig_20251110041244435927",
+    "saved_at": "2025-11-10T04:12:44.435927",
+    "data": {
+      "symbol": "BTC",
+      "timestamp": "2025-11-10T04:12:44.435927",
+      "signal": "LONG",
+      "score": 54.1,
+      "confidence": "medium",
+      "price": 0.0,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 50/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 0.0,
+        "socialScore": 50.0,
+        "priceTrend": "neutral"
+      }
+    }
   }
 ]
