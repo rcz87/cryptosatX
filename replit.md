@@ -1,7 +1,7 @@
 # Crypto Futures Signal API
 
 ## Overview
-This project is a production-ready FastAPI backend for generating real-time cryptocurrency futures trading signals. It aggregates diverse market data (price action, funding rates, open interest, social sentiment) to provide LONG/SHORT/NEUTRAL recommendations based on a multi-factor weighted scoring system. The API is designed for compatibility with GPT Actions, aiming to provide a robust tool for informed trading decisions, with significant market potential in automated trading and signal provision services. It also includes an advanced Multi-Modal Signal Score (MSS) system to identify high-potential emerging cryptocurrencies.
+This project is a production-ready FastAPI backend for generating real-time cryptocurrency futures trading signals. It aggregates diverse market data (price action, funding rates, open interest, social sentiment) to provide LONG/SHORT/NEUTRAL recommendations based on a multi-factor weighted scoring system. The API is designed for compatibility with GPT Actions, aiming to provide a robust tool for informed trading decisions, with significant market potential in automated trading and signal provision services. It includes an advanced Multi-Modal Signal Score (MSS) system to identify high-potential emerging cryptocurrencies, plus a Binance New Listings Monitor for early detection of fresh perpetual futures listings before retail adoption.
 
 ## User Preferences
 - Clean, modular code structure
@@ -56,6 +56,47 @@ The PostgreSQL `signals` table stores:
 - **OKX Public API**: Candlestick/OHLCV data.
 - **Binance Futures API**: Public API for futures market data, coin discovery, 24hr statistics, funding rates, and open interest.
 - **CoinGecko API**: Coin discovery, market cap filtering, volume analysis, and category-based coin search.
+---
+
+## Binance New Listings Monitor (November 11, 2025) ⚡
+
+### Early Detection for Fresh Perpetual Listings
+
+Monitors Binance Futures API for newly listed perpetual contracts, enabling entry before retail FOMO.
+
+**Implementation Status: 🟢 Production Ready**
+
+### Core Components
+
+**1. Binance Listings Monitor Service**
+- ✅ `app/services/binance_listings_monitor.py` - Detects new perpetual listings
+- ✅ Tracks onboard dates from Binance exchangeInfo API
+- ✅ Calculates listing age in hours
+- ✅ Enriches with 24h trading stats (volume, price change, trade count)
+- ✅ Extracts `baseAsset` for MSS integration
+
+**2. API Endpoints**
+- ✅ `GET /new-listings/binance` - Get new Binance perpetual listings with stats
+- ✅ `GET /new-listings/analyze` - Auto-analyze new listings with MSS + Telegram alerts
+- ✅ `GET /new-listings/watch` - Filtered watch list (high MSS scores only)
+
+**3. Key Features**
+- ✅ **Smart Base Asset Handling**: Extracts base asset (e.g., "ZK") from pair (e.g., "ZKUSDT") for MSS analysis
+- ✅ **Graceful Degradation**: Handles missing stats data without crashes
+- ✅ **MSS Integration**: Auto-runs 3-phase MSS analysis on new listings
+- ✅ **Telegram Alerts**: Sends alerts for high-scoring new listings (MSS ≥65)
+- ✅ **Production Error Handling**: Robust logging for debugging
+
+**4. Use Cases**
+- Early entry on Binance new listings (like ZRX, ZROU, ZRC, ZORA)
+- Automated monitoring for high-potential new coins
+- Pre-retail discovery for alpha generation
+
+**GPT Actions Use Cases:**
+- "What new coins were listed on Binance today?"
+- "Analyze new Binance listings with MSS"
+- "Show me the watch list for new high-scoring listings"
+
 ---
 
 ## MSS Alpha System - Multi-Modal Signal Score (November 10, 2025) 🚀
