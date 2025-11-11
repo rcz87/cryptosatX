@@ -525,6 +525,127 @@ async def get_gpt_action_schema():
                         }
                     }
                 }
+            },
+            "/new-listings/binance": {
+                "get": {
+                    "summary": "Binance New Listings - Early Detection",
+                    "description": "Detect newly listed Binance perpetual futures (1-168h lookback). Get listing age, volume, price change. Perfect for early entry before retail FOMO.",
+                    "operationId": "getBinanceNewListings",
+                    "parameters": [
+                        {
+                            "name": "hours",
+                            "in": "query",
+                            "required": False,
+                            "description": "Lookback period in hours (1-168). Default 72h (3 days).",
+                            "schema": {
+                                "type": "integer",
+                                "default": 72,
+                                "minimum": 1,
+                                "maximum": 168
+                            }
+                        },
+                        {
+                            "name": "include_stats",
+                            "in": "query",
+                            "required": False,
+                            "description": "Include 24h trading stats (volume, price change). Default true.",
+                            "schema": {
+                                "type": "boolean",
+                                "default": True
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "List of new Binance perpetual listings with stats"
+                        }
+                    }
+                }
+            },
+            "/new-listings/analyze": {
+                "get": {
+                    "summary": "Analyze New Listings with MSS",
+                    "description": "Auto-analyze new Binance listings with full 3-phase MSS scoring. Sends Telegram alerts for high-scoring discoveries (MSS ≥65). Perfect for automated monitoring.",
+                    "operationId": "analyzeNewListings",
+                    "parameters": [
+                        {
+                            "name": "hours",
+                            "in": "query",
+                            "required": False,
+                            "description": "Lookback period in hours. Default 72h.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 72,
+                                "minimum": 1,
+                                "maximum": 168
+                            }
+                        },
+                        {
+                            "name": "min_volume_usd",
+                            "in": "query",
+                            "required": False,
+                            "description": "Minimum 24h volume in USD. Default $100K.",
+                            "schema": {
+                                "type": "number",
+                                "default": 100000,
+                                "minimum": 0
+                            }
+                        },
+                        {
+                            "name": "auto_alert",
+                            "in": "query",
+                            "required": False,
+                            "description": "Send Telegram alerts for high MSS scores. Default true.",
+                            "schema": {
+                                "type": "boolean",
+                                "default": True
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "New listings with MSS analysis and alert status"
+                        }
+                    }
+                }
+            },
+            "/new-listings/watch": {
+                "get": {
+                    "summary": "Watch List - High-Potential New Listings",
+                    "description": "Filtered watch list showing only recent high-MSS new listings. Shows coins under 48h old with MSS ≥60. Perfect for quick opportunity screening.",
+                    "operationId": "watchNewListings",
+                    "parameters": [
+                        {
+                            "name": "min_mss_score",
+                            "in": "query",
+                            "required": False,
+                            "description": "Minimum MSS score filter. Default 60.",
+                            "schema": {
+                                "type": "number",
+                                "default": 60,
+                                "minimum": 0,
+                                "maximum": 100
+                            }
+                        },
+                        {
+                            "name": "max_age_hours",
+                            "in": "query",
+                            "required": False,
+                            "description": "Maximum listing age in hours. Default 24h.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 24,
+                                "minimum": 1,
+                                "maximum": 72
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "High-potential new listings watch list"
+                        }
+                    }
+                }
             }
         }
     }
