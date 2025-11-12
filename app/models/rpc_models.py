@@ -17,7 +17,7 @@ class RPCResponse(BaseModel):
     """Unified RPC response model"""
     ok: bool = Field(..., description="Success status")
     operation: str = Field(..., description="Operation name that was executed")
-    data: Optional[Dict[str, Any]] = Field(None, description="Response data")
+    data: Any = Field(None, description="Response data (can be dict, list, string, number, bool, null)")
     meta: Optional[Dict[str, Any]] = Field(None, description="Metadata (execution time, data sources, etc.)")
     error: Optional[str] = Field(None, description="Error message if ok=False")
 

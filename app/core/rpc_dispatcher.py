@@ -154,39 +154,45 @@ class RPCDispatcher:
     
     async def _coinglass_markets(self, args: Dict) -> Dict:
         """Get Coinglass markets"""
-        from app.services.coinglass_comprehensive_service import coinglass_service
-        return await coinglass_service.get_markets()
+        from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+        return await coinglass_comprehensive.get_markets()
     
     async def _coinglass_liquidations_symbol(self, args: Dict) -> Dict:
         """Get liquidations for symbol - FIXED arg passing"""
-        from app.services.coinglass_comprehensive_service import coinglass_service
-        symbol = args.pop("symbol")  # Remove from args to avoid duplicate
-        return await coinglass_service.get_liquidations_by_symbol(symbol, **args)
+        from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+        symbol = args.get("symbol", "BTC")
+        exchange = args.get("exchange", "Binance")
+        interval = args.get("interval", "h1")
+        return await coinglass_comprehensive.get_liquidation_history(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval
+        )
     
     async def _coinglass_funding_rate_history(self, args: Dict) -> Dict:
         """Get funding rate history"""
-        from app.services.coinglass_comprehensive_service import coinglass_service
-        return await coinglass_service.get_funding_rate_history(**args)
+        from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+        return await coinglass_comprehensive.get_funding_rate_history(**args)
     
     async def _coinglass_open_interest_history(self, args: Dict) -> Dict:
         """Get open interest history"""
-        from app.services.coinglass_comprehensive_service import coinglass_service
-        return await coinglass_service.get_open_interest_history(**args)
+        from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+        return await coinglass_comprehensive.get_open_interest_history(**args)
     
     async def _coinglass_fear_greed(self, args: Dict) -> Dict:
         """Get Fear & Greed Index"""
-        from app.services.coinglass_comprehensive_service import coinglass_service
-        return await coinglass_service.get_indicators_fear_greed()
+        from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+        return await coinglass_comprehensive.get_indicators_fear_greed()
     
     async def _coinglass_rsi_list(self, args: Dict) -> Dict:
         """Get RSI list"""
-        from app.services.coinglass_comprehensive_service import coinglass_service
-        return await coinglass_service.get_indicators_rsi_list()
+        from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+        return await coinglass_comprehensive.get_indicators_rsi_list()
     
     async def _coinglass_supported_coins(self, args: Dict) -> Dict:
         """Get supported coins"""
-        from app.services.coinglass_comprehensive_service import coinglass_service
-        return await coinglass_service.get_supported_coins()
+        from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+        return await coinglass_comprehensive.get_supported_coins()
     
     async def _smart_money_scan(self, args: Dict) -> Dict:
         """Scan smart money - FIXED"""
@@ -194,10 +200,11 @@ class RPCDispatcher:
         min_acc = args.get("min_accumulation_score", 5)
         min_dist = args.get("min_distribution_score", 5)
         coins_str = args.get("coins")
-        return await smart_money_service.scan_all(
+        coin_list = coins_str.split(",") if coins_str else None
+        return await smart_money_service.scan_markets(
             min_accumulation_score=min_acc,
             min_distribution_score=min_dist,
-            coins=coins_str
+            coins=coin_list
         )
     
     async def _smart_money_scan_accumulation(self, args: Dict) -> Dict:
