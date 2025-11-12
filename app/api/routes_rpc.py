@@ -206,11 +206,28 @@ async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
                                     }
                                 },
                                 "examples": {
-                                    "getSignal": {
+                                    "getSignalBTC": {
                                         "summary": "Get BTC trading signal",
+                                        "description": "IMPORTANT: 'args' field is REQUIRED with 'symbol' parameter",
                                         "value": {
                                             "operation": "signals.get",
                                             "args": {"symbol": "BTC"}
+                                        }
+                                    },
+                                    "getSignalSOL": {
+                                        "summary": "Get SOL trading signal",
+                                        "description": "Example for Solana - notice 'args' object contains 'symbol'",
+                                        "value": {
+                                            "operation": "signals.get",
+                                            "args": {"symbol": "SOL"}
+                                        }
+                                    },
+                                    "getSignalETH": {
+                                        "summary": "Get ETH trading signal",
+                                        "description": "Example for Ethereum - 'args' must be an object with 'symbol' key",
+                                        "value": {
+                                            "operation": "signals.get",
+                                            "args": {"symbol": "ETH"}
                                         }
                                     },
                                     "scanSmartMoney": {
@@ -225,20 +242,6 @@ async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
                                         "value": {
                                             "operation": "mss.discover",
                                             "args": {"min_mss_score": 75, "max_results": 10}
-                                        }
-                                    },
-                                    "coinglassLiquidations": {
-                                        "summary": "Get SOL liquidations",
-                                        "value": {
-                                            "operation": "coinglass.liquidations.symbol",
-                                            "args": {"symbol": "SOL"}
-                                        }
-                                    },
-                                    "lunarcrushCoin": {
-                                        "summary": "Get PEPE social metrics",
-                                        "value": {
-                                            "operation": "lunarcrush.coin",
-                                            "args": {"symbol": "PEPE"}
                                         }
                                     }
                                 }

@@ -125,13 +125,13 @@ class RPCDispatcher:
     def _validate_args(self, metadata, args: Dict) -> str:
         """Validate required arguments - returns error message or None"""
         if metadata.requires_symbol and not args.get("symbol"):
-            return "Missing required argument: symbol"
+            return f"Missing required argument 'symbol' for operation '{metadata.name}'. Example: {{\"operation\": \"{metadata.name}\", \"args\": {{\"symbol\": \"BTC\"}}}}"
         if metadata.requires_topic and not args.get("topic"):
-            return "Missing required argument: topic"
+            return f"Missing required argument 'topic' for operation '{metadata.name}'. Example: {{\"operation\": \"{metadata.name}\", \"args\": {{\"topic\": \"bitcoin\"}}}}"
         if metadata.requires_asset and not args.get("asset"):
-            return "Missing required argument: asset"
+            return f"Missing required argument 'asset' for operation '{metadata.name}'. Example: {{\"operation\": \"{metadata.name}\", \"args\": {{\"asset\": \"BTC\"}}}}"
         if metadata.requires_exchange and not args.get("exchange"):
-            return "Missing required argument: exchange"
+            return f"Missing required argument 'exchange' for operation '{metadata.name}'. Example: {{\"operation\": \"{metadata.name}\", \"args\": {{\"exchange\": \"Binance\"}}}}"
         return None
     
     # ========================================================================
