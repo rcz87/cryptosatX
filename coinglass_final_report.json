@@ -1,0 +1,596 @@
+{
+  "timestamp": "2025-11-12T09:59:28.809705",
+  "summary": {
+    "total": 64,
+    "successful": 64,
+    "failed": 0,
+    "success_rate": 100.0
+  },
+  "performance": {
+    "avg": 0.6008437499999999
+  },
+  "categories": {
+    "Market": {
+      "total": 4,
+      "success": 4
+    },
+    "Liquidation": {
+      "total": 6,
+      "success": 6
+    },
+    "Funding": {
+      "total": 4,
+      "success": 4
+    },
+    "OI": {
+      "total": 6,
+      "success": 6
+    },
+    "Long/Short": {
+      "total": 3,
+      "success": 3
+    },
+    "Taker": {
+      "total": 2,
+      "success": 2
+    },
+    "Orderbook": {
+      "total": 5,
+      "success": 5
+    },
+    "Hyperliquid": {
+      "total": 3,
+      "success": 3
+    },
+    "On-Chain": {
+      "total": 3,
+      "success": 3
+    },
+    "Indicator": {
+      "total": 12,
+      "success": 12
+    },
+    "Macro": {
+      "total": 1,
+      "success": 1
+    },
+    "News": {
+      "total": 1,
+      "success": 1
+    },
+    "Options": {
+      "total": 2,
+      "success": 2
+    },
+    "ETF": {
+      "total": 1,
+      "success": 1
+    },
+    "Index": {
+      "total": 3,
+      "success": 3
+    },
+    "Util": {
+      "total": 5,
+      "success": 5
+    },
+    "Other": {
+      "total": 3,
+      "success": 3
+    }
+  },
+  "all_results": [
+    {
+      "name": "Market - All Coins",
+      "url": "http://localhost:8000/coinglass/markets",
+      "status": 200,
+      "response_time": 0.912,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Market - BTC",
+      "url": "http://localhost:8000/coinglass/markets/BTCUSDT",
+      "status": 200,
+      "response_time": 0.983,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Market - Perpetual BTC",
+      "url": "http://localhost:8000/coinglass/perpetual-market/BTCUSDT",
+      "status": 200,
+      "response_time": 0.554,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Market - Pairs Markets",
+      "url": "http://localhost:8000/coinglass/pairs-markets/BTCUSDT",
+      "status": 200,
+      "response_time": 0.542,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Liquidation - Order",
+      "url": "http://localhost:8000/coinglass/liquidation/order",
+      "status": 200,
+      "response_time": 0.549,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Liquidation - Exchange List",
+      "url": "http://localhost:8000/coinglass/liquidation/exchange-list",
+      "status": 200,
+      "response_time": 0.536,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Liquidation - Aggregated History",
+      "url": "http://localhost:8000/coinglass/liquidation/aggregated-history",
+      "status": 200,
+      "response_time": 0.542,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Liquidation - History",
+      "url": "http://localhost:8000/coinglass/liquidation/history",
+      "status": 200,
+      "response_time": 0.407,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Liquidation - Symbol BTC",
+      "url": "http://localhost:8000/coinglass/liquidations/BTCUSDT",
+      "status": 200,
+      "response_time": 0.83,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Liquidation - Heatmap BTC",
+      "url": "http://localhost:8000/coinglass/liquidations/BTCUSDT/heatmap",
+      "status": 200,
+      "response_time": 0.474,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Funding - History",
+      "url": "http://localhost:8000/coinglass/funding-rate/history",
+      "status": 200,
+      "response_time": 0.544,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Funding - OI Weight History",
+      "url": "http://localhost:8000/coinglass/funding-rate/oi-weight-history",
+      "status": 200,
+      "response_time": 0.61,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Funding - Vol Weight History",
+      "url": "http://localhost:8000/coinglass/funding-rate/vol-weight-history",
+      "status": 200,
+      "response_time": 0.485,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Funding - Exchange List BTC",
+      "url": "http://localhost:8000/coinglass/funding-rate/exchange-list/BTCUSDT",
+      "status": 200,
+      "response_time": 1.261,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "OI - History",
+      "url": "http://localhost:8000/coinglass/open-interest/history",
+      "status": 200,
+      "response_time": 0.472,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "OI - Aggregated History",
+      "url": "http://localhost:8000/coinglass/open-interest/aggregated-history",
+      "status": 200,
+      "response_time": 0.451,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "OI - Aggregated Stablecoin",
+      "url": "http://localhost:8000/coinglass/open-interest/aggregated-stablecoin-history",
+      "status": 200,
+      "response_time": 0.458,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "OI - Aggregated Coin Margin",
+      "url": "http://localhost:8000/coinglass/open-interest/aggregated-coin-margin-history",
+      "status": 200,
+      "response_time": 0.449,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "OI - Exchange List BTC",
+      "url": "http://localhost:8000/coinglass/open-interest/exchange-list/BTCUSDT",
+      "status": 200,
+      "response_time": 0.413,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "OI - Exchange History Chart",
+      "url": "http://localhost:8000/coinglass/open-interest/exchange-history-chart",
+      "status": 200,
+      "response_time": 0.483,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Long/Short - Account Ratio",
+      "url": "http://localhost:8000/coinglass/top-long-short-account-ratio/history",
+      "status": 200,
+      "response_time": 0.497,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Long/Short - Position Ratio",
+      "url": "http://localhost:8000/coinglass/top-long-short-position-ratio/history",
+      "status": 200,
+      "response_time": 0.475,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Long/Short - Net Position",
+      "url": "http://localhost:8000/coinglass/net-position/history",
+      "status": 200,
+      "response_time": 0.457,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Taker - Buy/Sell Volume",
+      "url": "http://localhost:8000/coinglass/volume/taker-buy-sell",
+      "status": 200,
+      "response_time": 0.712,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Taker - Exchange List",
+      "url": "http://localhost:8000/coinglass/taker-buy-sell-volume/exchange-list",
+      "status": 200,
+      "response_time": 0.449,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Orderbook - Ask/Bids History",
+      "url": "http://localhost:8000/coinglass/orderbook/ask-bids-history",
+      "status": 200,
+      "response_time": 0.454,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Orderbook - Aggregated History",
+      "url": "http://localhost:8000/coinglass/orderbook/aggregated-history",
+      "status": 200,
+      "response_time": 0.497,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Orderbook - Whale Walls",
+      "url": "http://localhost:8000/coinglass/orderbook/whale-walls",
+      "status": 200,
+      "response_time": 0.526,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Orderbook - Whale History",
+      "url": "http://localhost:8000/coinglass/orderbook/whale-history",
+      "status": 200,
+      "response_time": 0.443,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Orderbook - Detailed History",
+      "url": "http://localhost:8000/coinglass/orderbook/detailed-history",
+      "status": 200,
+      "response_time": 0.671,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Hyperliquid - Whale Alerts",
+      "url": "http://localhost:8000/coinglass/hyperliquid/whale-alerts",
+      "status": 200,
+      "response_time": 0.517,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Hyperliquid - Whale Positions",
+      "url": "http://localhost:8000/coinglass/hyperliquid/whale-positions",
+      "status": 200,
+      "response_time": 0.93,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Hyperliquid - Positions BTC",
+      "url": "http://localhost:8000/coinglass/hyperliquid/positions/BTCUSDT",
+      "status": 200,
+      "response_time": 0.426,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "On-Chain - Whale Transfers",
+      "url": "http://localhost:8000/coinglass/chain/whale-transfers",
+      "status": 200,
+      "response_time": 2.262,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "On-Chain - Exchange Flows",
+      "url": "http://localhost:8000/coinglass/chain/exchange-flows",
+      "status": 200,
+      "response_time": 0.512,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "On-Chain - Reserves BTC",
+      "url": "http://localhost:8000/coinglass/on-chain/reserves/BTC",
+      "status": 200,
+      "response_time": 0.385,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - RSI List",
+      "url": "http://localhost:8000/coinglass/indicators/rsi-list",
+      "status": 200,
+      "response_time": 0.643,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - RSI",
+      "url": "http://localhost:8000/coinglass/indicators/rsi",
+      "status": 200,
+      "response_time": 0.404,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - MA",
+      "url": "http://localhost:8000/coinglass/indicators/ma",
+      "status": 200,
+      "response_time": 0.378,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - EMA",
+      "url": "http://localhost:8000/coinglass/indicators/ema",
+      "status": 200,
+      "response_time": 0.443,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - Bollinger",
+      "url": "http://localhost:8000/coinglass/indicators/bollinger",
+      "status": 200,
+      "response_time": 0.686,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - MACD",
+      "url": "http://localhost:8000/coinglass/indicators/macd",
+      "status": 200,
+      "response_time": 0.576,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - Basis",
+      "url": "http://localhost:8000/coinglass/indicators/basis",
+      "status": 200,
+      "response_time": 0.607,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - Whale Index",
+      "url": "http://localhost:8000/coinglass/indicators/whale-index",
+      "status": 200,
+      "response_time": 0.434,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - CGDI",
+      "url": "http://localhost:8000/coinglass/indicators/cgdi",
+      "status": 200,
+      "response_time": 0.639,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - CDRI",
+      "url": "http://localhost:8000/coinglass/indicators/cdri",
+      "status": 200,
+      "response_time": 0.629,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - Golden Ratio",
+      "url": "http://localhost:8000/coinglass/indicators/golden-ratio",
+      "status": 200,
+      "response_time": 1.155,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Indicator - Fear & Greed",
+      "url": "http://localhost:8000/coinglass/indicators/fear-greed",
+      "status": 200,
+      "response_time": 0.68,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Macro - Economic Calendar",
+      "url": "http://localhost:8000/coinglass/calendar/economic",
+      "status": 200,
+      "response_time": 0.523,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "News - Feed",
+      "url": "http://localhost:8000/coinglass/news/feed",
+      "status": 200,
+      "response_time": 0.502,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Options - Open Interest",
+      "url": "http://localhost:8000/coinglass/options/open-interest",
+      "status": 200,
+      "response_time": 0.456,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Options - Volume",
+      "url": "http://localhost:8000/coinglass/options/volume",
+      "status": 200,
+      "response_time": 0.647,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "ETF - Flows BTC",
+      "url": "http://localhost:8000/coinglass/etf/flows/BTC",
+      "status": 200,
+      "response_time": 0.635,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Index - Bull Market Peak",
+      "url": "http://localhost:8000/coinglass/index/bull-market-peak",
+      "status": 200,
+      "response_time": 0.531,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Index - Rainbow Chart",
+      "url": "http://localhost:8000/coinglass/index/rainbow-chart",
+      "status": 200,
+      "response_time": 1.08,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Index - Stock to Flow",
+      "url": "http://localhost:8000/coinglass/index/stock-to-flow",
+      "status": 200,
+      "response_time": 0.751,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Util - Supported Coins",
+      "url": "http://localhost:8000/coinglass/supported-coins",
+      "status": 200,
+      "response_time": 0.381,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Util - Exchanges",
+      "url": "http://localhost:8000/coinglass/exchanges",
+      "status": 200,
+      "response_time": 0.844,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Util - Price Change",
+      "url": "http://localhost:8000/coinglass/price-change",
+      "status": 200,
+      "response_time": 0.632,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Util - Price History",
+      "url": "http://localhost:8000/coinglass/price-history",
+      "status": 200,
+      "response_time": 0.443,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Util - Delisted Pairs",
+      "url": "http://localhost:8000/coinglass/delisted-pairs",
+      "status": 200,
+      "response_time": 0.323,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Other - Borrow Interest Rate",
+      "url": "http://localhost:8000/coinglass/borrow/interest-rate",
+      "status": 200,
+      "response_time": 0.296,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Other - Exchange Assets",
+      "url": "http://localhost:8000/coinglass/exchange/assets/binance",
+      "status": 200,
+      "response_time": 0.324,
+      "success": true,
+      "has_data": true
+    },
+    {
+      "name": "Other - Dashboard BTC",
+      "url": "http://localhost:8000/coinglass/dashboard/BTCUSDT",
+      "status": 200,
+      "response_time": 0.644,
+      "success": true,
+      "has_data": true
+    }
+  ]
+}
