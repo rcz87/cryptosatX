@@ -392,6 +392,514 @@ class LunarCrushComprehensiveService:
             
         except Exception as e:
             return {"success": False, "error": str(e)}
+    
+    # ==================== TOPICS API (NARRATIVE DETECTION) ====================
+    
+    async def get_trending_topics(self, limit: int = 20, sort: str = "social_volume") -> Dict:
+        """
+        Get trending cryptocurrency topics/narratives
+        Endpoint: /topics/list/v1
+        
+        Args:
+            limit: Number of topics to return (default 20)
+            sort: Sort by social_volume, engagement, or sentiment
+            
+        Returns:
+            List of trending topics with:
+            - Topic name and slug
+            - Social volume, engagement
+            - Sentiment, momentum
+            - Related coins
+            
+        Use case: Detect emerging narratives before price pumps
+        Examples: "AI Agents", "RWA", "DePIN", "Gaming", etc.
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/topics/list/v1"
+            params = {
+                "limit": limit,
+                "sort": sort
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if data.get("data"):
+                topics = data["data"]
+                
+                # Extract key metrics
+                parsed_topics = []
+                for topic in topics:
+                    parsed_topics.append({
+                        "topic": topic.get("topic", ""),
+                        "slug": topic.get("slug", ""),
+                        "socialVolume": int(topic.get("social_volume", 0)),
+                        "socialEngagement": int(topic.get("social_engagement", 0)),
+                        "sentiment": float(topic.get("average_sentiment", 0)),
+                        "posts24h": int(topic.get("posts_24h", 0)),
+                        "change24h": float(topic.get("social_volume_change_24h", 0)),
+                        "relatedCoins": topic.get("related_coins", [])[:5]  # Top 5 coins
+                    })
+                
+                return {
+                    "success": True,
+                    "totalTopics": len(parsed_topics),
+                    "topics": parsed_topics,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "source": "lunarcrush_topics"
+                }
+            
+            return {"success": False, "error": "No topics data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_topic_details(self, topic_slug: str) -> Dict:
+        """
+        Get detailed information about a specific topic
+        Endpoint: /topic/{topic}/v1
+        
+        Args:
+            topic_slug: Topic identifier (e.g., "ai-agents", "real-world-assets")
+            
+        Returns:
+            Comprehensive topic data including:
+            - Social metrics and trends
+            - Top related coins
+            - Sentiment analysis
+            - Momentum indicators
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/topic/{topic_slug}/v1"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if data.get("data"):
+                topic_data = data["data"]
+                
+                return {
+                    "success": True,
+                    "topic": topic_data.get("topic", ""),
+                    "slug": topic_slug,
+                    "socialVolume": int(topic_data.get("social_volume", 0)),
+                    "socialEngagement": int(topic_data.get("social_engagement", 0)),
+                    "sentiment": float(topic_data.get("average_sentiment", 0)),
+                    "change24h": float(topic_data.get("social_volume_change_24h", 0)),
+                    "change7d": float(topic_data.get("social_volume_change_7d", 0)),
+                    "relatedCoins": topic_data.get("related_coins", []),
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "source": "lunarcrush_topic"
+                }
+            
+            return {"success": False, "error": "No topic data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    # ==================== CATEGORIES API (SECTOR ROTATION) ====================
+    
+    async def get_categories(self, limit: int = 30) -> Dict:
+        """
+        Get all cryptocurrency categories/sectors
+        Endpoint: /categories/list/v1
+        
+        Returns:
+            List of crypto sectors with performance metrics:
+            - Layer-1, DeFi, NFT, Gaming, Meme, etc.
+            - Social volume and sentiment per category
+            - 24h/7d performance changes
+            
+        Use case: Sector rotation analysis, portfolio allocation
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/categories/list/v1"
+            params = {"limit": limit}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if data.get("data"):
+                categories = data["data"]
+                
+                parsed_categories = []
+                for cat in categories:
+                    parsed_categories.append({
+                        "category": cat.get("category", ""),
+                        "slug": cat.get("slug", ""),
+                        "coinCount": int(cat.get("num_coins", 0)),
+                        "socialVolume": int(cat.get("social_volume", 0)),
+                        "sentiment": float(cat.get("average_sentiment", 0)),
+                        "change24h": float(cat.get("social_volume_change_24h", 0)),
+                        "marketCap": float(cat.get("market_cap", 0))
+                    })
+                
+                return {
+                    "success": True,
+                    "totalCategories": len(parsed_categories),
+                    "categories": parsed_categories,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "source": "lunarcrush_categories"
+                }
+            
+            return {"success": False, "error": "No categories data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_category_details(self, category_slug: str) -> Dict:
+        """
+        Get detailed category/sector performance
+        Endpoint: /category/{category}/v1
+        
+        Args:
+            category_slug: Category identifier (e.g., "layer-1", "defi", "meme")
+            
+        Returns:
+            Category performance with top coins in sector
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/category/{category_slug}/v1"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if data.get("data"):
+                cat_data = data["data"]
+                
+                return {
+                    "success": True,
+                    "category": cat_data.get("category", ""),
+                    "slug": category_slug,
+                    "coinCount": int(cat_data.get("num_coins", 0)),
+                    "socialVolume": int(cat_data.get("social_volume", 0)),
+                    "sentiment": float(cat_data.get("average_sentiment", 0)),
+                    "change24h": float(cat_data.get("social_volume_change_24h", 0)),
+                    "topCoins": cat_data.get("top_coins", [])[:10],
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "source": "lunarcrush_category"
+                }
+            
+            return {"success": False, "error": "No category data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    # ==================== CREATORS/INFLUENCERS API ====================
+    
+    async def get_top_creators(self, limit: int = 50, sort: str = "followers") -> Dict:
+        """
+        Get top cryptocurrency influencers/creators
+        Endpoint: /creators/list/v1
+        
+        Args:
+            limit: Number of creators (default 50)
+            sort: Sort by followers, engagement, or influence_score
+            
+        Returns:
+            List of top crypto influencers with:
+            - Creator name and network (twitter, youtube, etc.)
+            - Follower count, engagement rate
+            - Recent activity, sentiment
+            - Top mentioned coins
+            
+        Use case: Track whale sentiment, early alpha signals
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/creators/list/v1"
+            params = {
+                "limit": limit,
+                "sort": sort
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if data.get("data"):
+                creators = data["data"]
+                
+                parsed_creators = []
+                for creator in creators:
+                    parsed_creators.append({
+                        "name": creator.get("name", ""),
+                        "username": creator.get("username", ""),
+                        "network": creator.get("network", ""),
+                        "followers": int(creator.get("followers", 0)),
+                        "engagementRate": float(creator.get("engagement_rate", 0)),
+                        "posts24h": int(creator.get("posts_24h", 0)),
+                        "influenceScore": float(creator.get("influence_score", 0)),
+                        "topMentions": creator.get("top_coins", [])[:5]
+                    })
+                
+                return {
+                    "success": True,
+                    "totalCreators": len(parsed_creators),
+                    "creators": parsed_creators,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "source": "lunarcrush_creators"
+                }
+            
+            return {"success": False, "error": "No creators data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    # ==================== COINS LIST V2 (REAL-TIME DISCOVERY) ====================
+    
+    async def get_coins_realtime(
+        self, 
+        limit: int = 100, 
+        sort: str = "social_volume",
+        min_galaxy_score: Optional[float] = None
+    ) -> Dict:
+        """
+        Get real-time coin list (NO CACHE - instant data)
+        Endpoint: /coins/list/v2
+        
+        Args:
+            limit: Number of coins (default 100)
+            sort: Sort by social_volume, galaxy_score, market_cap, volume_24h
+            min_galaxy_score: Filter coins with Galaxy Score >= this value
+            
+        Returns:
+            Real-time coin list with current social + market metrics
+            
+        Note: v2 endpoint provides LIVE data vs v1 (1-hour cache)
+        Better for MSS scanning and real-time discovery
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/coins/list/v2"
+            params = {
+                "limit": limit,
+                "sort": sort
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if data.get("data"):
+                coins = data["data"]
+                
+                # Filter by galaxy score if specified
+                if min_galaxy_score:
+                    coins = [c for c in coins if float(c.get("galaxy_score", 0)) >= min_galaxy_score]
+                
+                parsed_coins = []
+                for coin in coins:
+                    parsed_coins.append({
+                        "symbol": coin.get("symbol", ""),
+                        "name": coin.get("name", ""),
+                        "galaxyScore": float(coin.get("galaxy_score", 0)),
+                        "altRank": int(coin.get("alt_rank", 0)),
+                        "socialVolume": int(coin.get("social_volume", 0)),
+                        "sentiment": float(coin.get("average_sentiment", 0)),
+                        "price": float(coin.get("price", 0)),
+                        "marketCap": float(coin.get("market_cap", 0)),
+                        "volume24h": float(coin.get("volume_24h", 0)),
+                        "change24h": float(coin.get("percent_change_24h", 0))
+                    })
+                
+                return {
+                    "success": True,
+                    "totalCoins": len(parsed_coins),
+                    "coins": parsed_coins,
+                    "filters": {
+                        "sort": sort,
+                        "minGalaxyScore": min_galaxy_score
+                    },
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "source": "lunarcrush_coins_v2_realtime"
+                }
+            
+            return {"success": False, "error": "No coins data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    # ==================== AI INSIGHTS (AUTOMATED ANALYSIS) ====================
+    
+    async def get_ai_topic_insights(self, topic: str) -> Dict:
+        """
+        Get AI-generated insights about a topic
+        Endpoint: /ai/topic/{topic}
+        
+        Args:
+            topic: Topic to analyze (e.g., "bitcoin", "defi", "nft")
+            
+        Returns:
+            AI-generated analysis including:
+            - Topic summary and key trends
+            - Sentiment analysis
+            - Notable developments
+            - Related opportunities
+            
+        Use case: Automated narrative analysis, market intelligence
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/ai/topic/{topic}"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if data.get("data"):
+                ai_data = data["data"]
+                
+                return {
+                    "success": True,
+                    "topic": topic,
+                    "summary": ai_data.get("summary", ""),
+                    "insights": ai_data.get("insights", []),
+                    "sentiment": ai_data.get("sentiment", ""),
+                    "keyTrends": ai_data.get("key_trends", []),
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "source": "lunarcrush_ai"
+                }
+            
+            return {"success": False, "error": "No AI insights available"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    # ==================== ADVANCED ANALYTICS ====================
+    
+    async def analyze_narrative_opportunities(self, top_n_topics: int = 10) -> Dict:
+        """
+        Advanced analysis: Find high-opportunity coins from trending narratives
+        
+        Combines:
+        1. Trending topics detection
+        2. Related coins extraction
+        3. Galaxy Score filtering
+        4. Momentum analysis
+        
+        Returns:
+            High-probability trading opportunities based on narrative momentum
+        """
+        try:
+            # Get trending topics
+            topics_result = await self.get_trending_topics(limit=top_n_topics)
+            
+            if not topics_result.get("success"):
+                return {"success": False, "error": "Failed to fetch topics"}
+            
+            opportunities = []
+            
+            for topic in topics_result.get("topics", []):
+                # Filter for high-momentum topics
+                if topic.get("change24h", 0) > 50:  # 50%+ social volume increase
+                    related_coins = topic.get("relatedCoins", [])
+                    
+                    for coin in related_coins[:3]:  # Top 3 coins per topic
+                        opportunities.append({
+                            "symbol": coin,
+                            "narrative": topic.get("topic", ""),
+                            "narrativeMomentum": topic.get("change24h", 0),
+                            "socialVolume": topic.get("socialVolume", 0),
+                            "sentiment": topic.get("sentiment", 0)
+                        })
+            
+            # Sort by narrative momentum
+            opportunities.sort(key=lambda x: x.get("narrativeMomentum", 0), reverse=True)
+            
+            return {
+                "success": True,
+                "opportunitiesFound": len(opportunities),
+                "opportunities": opportunities[:20],  # Top 20
+                "timestamp": datetime.utcnow().isoformat(),
+                "source": "lunarcrush_narrative_analysis"
+            }
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def analyze_sector_rotation(self) -> Dict:
+        """
+        Sector rotation analysis
+        
+        Identifies:
+        1. Heating sectors (increasing social momentum)
+        2. Cooling sectors (decreasing momentum)
+        3. Recommended sector allocation
+        
+        Returns:
+            Sector rotation signals for portfolio rebalancing
+        """
+        try:
+            categories_result = await self.get_categories(limit=20)
+            
+            if not categories_result.get("success"):
+                return {"success": False, "error": "Failed to fetch categories"}
+            
+            heating = []
+            cooling = []
+            
+            for cat in categories_result.get("categories", []):
+                change_24h = cat.get("change24h", 0)
+                
+                if change_24h > 25:  # Heating up
+                    heating.append({
+                        "sector": cat.get("category", ""),
+                        "momentum": change_24h,
+                        "sentiment": cat.get("sentiment", 0),
+                        "socialVolume": cat.get("socialVolume", 0)
+                    })
+                elif change_24h < -25:  # Cooling down
+                    cooling.append({
+                        "sector": cat.get("category", ""),
+                        "momentum": change_24h,
+                        "sentiment": cat.get("sentiment", 0),
+                        "socialVolume": cat.get("socialVolume", 0)
+                    })
+            
+            heating.sort(key=lambda x: x.get("momentum", 0), reverse=True)
+            cooling.sort(key=lambda x: x.get("momentum", 0))
+            
+            return {
+                "success": True,
+                "heatingSectors": heating,
+                "coolingSectors": cooling,
+                "signal": "rotate_to_heating" if len(heating) > 0 else "hold",
+                "timestamp": datetime.utcnow().isoformat(),
+                "source": "lunarcrush_sector_rotation"
+            }
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
 
 # Global instance for easy import

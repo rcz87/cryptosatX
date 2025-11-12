@@ -19,6 +19,7 @@ from app.api import (
     routes_smart_money,
     routes_mss,
     routes_new_listings,
+    routes_narratives,
 )
 
 # ADDED FOR CRYPTOSATX ENHANCEMENT - Import new routes
@@ -114,6 +115,7 @@ app.include_router(
 app.include_router(routes_analytics.router, tags=["Analytics & Insights"])  # ADDED FOR DATABASE ANALYTICS
 app.include_router(routes_mss.router, prefix="/mss", tags=["MSS Alpha System"])  # ADDED FOR MSS SYSTEM
 app.include_router(routes_new_listings.router, tags=["Binance New Listings"])  # ADDED FOR NEW LISTINGS MONITOR
+app.include_router(routes_narratives.router, prefix="/narratives", tags=["Narratives & Market Intelligence"])  # ADDED FOR NARRATIVE DETECTION
 
 
 if __name__ == "__main__":
