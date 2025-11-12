@@ -108,6 +108,34 @@ async def get_perpetual_market(symbol: str):
         await service.close()
 
 
+@router.get("/pairs-markets/{symbol}")
+async def get_pairs_markets(symbol: str):
+    """
+    Get futures market data PER EXCHANGE (11TH ENDPOINT!)
+    
+    Returns breakdown by exchange for arbitrage analysis:
+    - Price differences across exchanges
+    - Volume and OI per exchange
+    - Long/short volume split
+    - Liquidations per exchange
+    - Funding rates comparison
+    - OI/Volume ratios
+    
+    Perfect for:
+    - Arbitrage opportunities (price spreads)
+    - Cross-exchange volume analysis
+    - Finding best exchange for trading
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_pairs_markets(symbol=symbol)
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/supported-coins")
 async def get_supported_coins():
     """

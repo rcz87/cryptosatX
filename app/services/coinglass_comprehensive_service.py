@@ -132,6 +132,90 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
+        """
+        Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/pairs-markets?symbol=BTC
+        
+        Returns detailed breakdown by exchange:
+        - Price, volume, OI per exchange
+        - Long/short volume split
+        - Liquidations per exchange
+        - Funding rate per exchange
+        - OI/Volume ratio
+        
+        Perfect for arbitrage opportunities and cross-exchange analysis
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/pairs-markets"
+            params = {"symbol": symbol.upper()}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                pairs = data["data"]
+                
+                # Aggregate statistics
+                total_volume_usd = sum(float(p.get("volume_usd", 0)) for p in pairs)
+                total_oi_usd = sum(float(p.get("open_interest_usd", 0)) for p in pairs)
+                
+                # Find price extremes (arbitrage opportunities)
+                prices = [float(p.get("current_price", 0)) for p in pairs if p.get("current_price")]
+                price_spread = None
+                if prices:
+                    min_price = min(prices)
+                    max_price = max(prices)
+                    price_spread = {
+                        "min": min_price,
+                        "max": max_price,
+                        "spread": max_price - min_price,
+                        "spreadPercent": ((max_price - min_price) / min_price * 100) if min_price > 0 else 0
+                    }
+                
+                # Top exchanges by volume
+                top_by_volume = sorted(pairs, key=lambda x: float(x.get("volume_usd", 0)), reverse=True)[:5]
+                
+                # Top exchanges by OI
+                top_by_oi = sorted(pairs, key=lambda x: float(x.get("open_interest_usd", 0)), reverse=True)[:5]
+                
+                return {
+                    "success": True,
+                    "symbol": symbol.upper(),
+                    "exchangeCount": len(pairs),
+                    "aggregates": {
+                        "totalVolumeUSD": total_volume_usd,
+                        "totalOpenInterestUSD": total_oi_usd,
+                        "priceSpread": price_spread
+                    },
+                    "topExchangesByVolume": [
+                        {
+                            "exchange": p.get("exchange_name"),
+                            "volume": p.get("volume_usd"),
+                            "price": p.get("current_price")
+                        } for p in top_by_volume
+                    ],
+                    "topExchangesByOI": [
+                        {
+                            "exchange": p.get("exchange_name"),
+                            "oi": p.get("open_interest_usd"),
+                            "price": p.get("current_price")
+                        } for p in top_by_oi
+                    ],
+                    "allPairs": pairs,
+                    "source": "coinglass_pairs_markets"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== LIQUIDATION ENDPOINTS ====================
     
     async def get_liquidation_orders(self, symbol: str = "BTC") -> Dict:
