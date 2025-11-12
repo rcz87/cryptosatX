@@ -157,6 +157,10 @@ class SignalEngine:
                 "socialScore": context.social_score,
                 "priceTrend": context.price_trend,
             },
+            "premiumDataAvailable": context.premium_data_available,
+            "comprehensiveDataAvailable": context.comprehensive_data_available,
+            "lunarcrushDataAvailable": context.lunarcrush_comprehensive_available,
+            "coinapiDataAvailable": context.coinapi_comprehensive_available,
         }
 
         # Add comprehensive Coinglass metrics if available
