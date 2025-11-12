@@ -858,6 +858,73 @@ class CoinglassComprehensiveService:
             
         except Exception as e:
             return {"success": False, "error": str(e)}
+    
+    async def get_exchange_assets(self, exchange: str = "Binance") -> Dict:
+        """
+        Get exchange wallet holdings/reserves (10th ENDPOINT!)
+        REAL ENDPOINT: /api/exchange/assets?exchange=Binance
+        
+        Returns current exchange holdings by wallet address:
+        - Wallet addresses
+        - Balance (quantity + USD value)
+        - Asset symbols and names
+        - Current prices
+        
+        Shows real-time exchange holdings - useful for tracking whale movements
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/exchange/assets"
+            params = {"exchange": exchange.capitalize()}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                assets = data["data"]
+                
+                # Calculate totals
+                total_usd = sum(float(asset.get("balance_usd", 0)) for asset in assets)
+                
+                # Group by symbol
+                by_symbol = {}
+                for asset in assets:
+                    symbol = asset.get("symbol", "UNKNOWN")
+                    if symbol not in by_symbol:
+                        by_symbol[symbol] = {
+                            "symbol": symbol,
+                            "name": asset.get("assets_name", symbol),
+                            "total_balance": 0,
+                            "total_usd": 0,
+                            "wallets": []
+                        }
+                    by_symbol[symbol]["total_balance"] += float(asset.get("balance", 0))
+                    by_symbol[symbol]["total_usd"] += float(asset.get("balance_usd", 0))
+                    by_symbol[symbol]["wallets"].append({
+                        "address": asset.get("wallet_address"),
+                        "balance": asset.get("balance"),
+                        "balance_usd": asset.get("balance_usd")
+                    })
+                
+                return {
+                    "success": True,
+                    "exchange": exchange.capitalize(),
+                    "totalValueUSD": total_usd,
+                    "assetCount": len(by_symbol),
+                    "topAssets": sorted(by_symbol.values(), key=lambda x: x["total_usd"], reverse=True)[:20],
+                    "allAssets": list(by_symbol.values()),
+                    "rawData": assets[:10],
+                    "source": "coinglass_exchange_assets"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
 
 # Global instance for easy import
