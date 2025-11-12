@@ -135,6 +135,44 @@ async def get_price_change():
         await service.close()
 
 
+@router.get("/price-history")
+async def get_price_history(
+    exchange: str = Query("Binance", description="Exchange name"),
+    symbol: str = Query("BTCUSDT", description="Trading pair"),
+    interval: str = Query("1h", description="Interval: 1m, 5m, 15m, 30m, 1h, 4h, 1d, 1w"),
+    limit: int = Query(100, description="Number of candles (max 1000)", le=1000)
+):
+    """
+    Get historical price data - OHLCV candles (13TH ENDPOINT!)
+    
+    Returns candlestick data for charting:
+    - Open, High, Low, Close prices
+    - Volume in USD
+    - Timestamp per candle
+    - Summary statistics (price change, high/low, total volume)
+    
+    Perfect for:
+    - Price charting and visualization
+    - Technical analysis (patterns, indicators)
+    - Backtesting strategies
+    
+    Intervals supported: 1m, 5m, 15m, 30m, 1h, 4h, 1d, 1w
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_price_history(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            limit=limit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """

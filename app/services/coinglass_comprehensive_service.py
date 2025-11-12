@@ -216,6 +216,83 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_price_history(self, exchange: str = "Binance", symbol: str = "BTCUSDT", 
+                                interval: str = "1h", limit: int = 100) -> Dict:
+        """
+        Get historical price data (OHLCV candles) (13TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/price/history
+        
+        Parameters:
+        - exchange: Binance, OKX, Bybit, etc.
+        - symbol: Trading pair (e.g., BTCUSDT)
+        - interval: 1m, 5m, 15m, 30m, 1h, 4h, 1d, 1w
+        - limit: Number of candles (max 1000)
+        
+        Returns OHLCV data for charting and technical analysis
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/price/history"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol.upper(),
+                "interval": interval,
+                "limit": limit
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                candles = data["data"]
+                
+                # Calculate price change from first to last
+                if len(candles) >= 2:
+                    first_open = float(candles[0].get("open", 0))
+                    last_close = float(candles[-1].get("close", 0))
+                    price_change = last_close - first_open
+                    price_change_percent = (price_change / first_open * 100) if first_open > 0 else 0
+                else:
+                    price_change = 0
+                    price_change_percent = 0
+                
+                # Find highest/lowest in period
+                highs = [float(c.get("high", 0)) for c in candles]
+                lows = [float(c.get("low", 0)) for c in candles]
+                highest = max(highs) if highs else 0
+                lowest = min(lows) if lows else 0
+                
+                # Total volume
+                total_volume = sum(float(c.get("volume_usd", 0)) for c in candles)
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol.upper(),
+                    "interval": interval,
+                    "candleCount": len(candles),
+                    "summary": {
+                        "firstOpen": first_open if len(candles) > 0 else 0,
+                        "lastClose": last_close if len(candles) > 0 else 0,
+                        "priceChange": price_change,
+                        "priceChangePercent": price_change_percent,
+                        "highest": highest,
+                        "lowest": lowest,
+                        "totalVolumeUSD": total_volume
+                    },
+                    "candles": candles,
+                    "source": "coinglass_price_history"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)
