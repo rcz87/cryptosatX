@@ -5,7 +5,7 @@ This project is a production-ready FastAPI backend for generating real-time cryp
 
 ## Recent Changes (November 12, 2025)
 - **Coinglass Integration COMPLETE**: Verified all 65 Coinglass Standard plan endpoints operational (100% success rate). ALL endpoints callable by GPT Actions via FastAPI routes.
-- **GPT Actions Schema**: Use `https://guardiansofthetoken.org/openapi.json` directly for GPT Actions integration. This canonical OpenAPI 3.x schema includes ALL 65 Coinglass endpoints plus complete API surface (signals, MSS, LunarCrush, Smart Money, etc.). Verified working in production.
+- **GPT Actions Schema**: Use `https://guardiansofthetoken.org/openapi.json` for GPT Actions integration. Schema includes ALL 155 endpoints (65 Coinglass, 6 LunarCrush, 7 CoinAPI, 77 core features). NOTE: If error "Could not find a valid URL in servers" appears, follow workaround in `GPT_ACTIONS_WORKAROUND.md` to manually add servers field during import.
 - **Fixed Premium Data Detection**: Changed premium data availability logic from strict AND (all endpoints required) to flexible OR (accepts 2+ out of 4 endpoints). This resolves false negatives when OI Trend endpoint returns 404 for certain coins.
 - **Added Response Flags**: Added `premiumDataAvailable`, `comprehensiveDataAvailable`, `lunarcrushDataAvailable`, and `coinapiDataAvailable` flags to API responses for better GPT Actions compatibility.
 - **OKX Fallback**: Implemented automatic fallback to OKX Public API for funding rate and open interest when Coinglass data is unavailable, with source tracking.

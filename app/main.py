@@ -117,6 +117,29 @@ app.include_router(routes_mss.router, prefix="/mss", tags=["MSS Alpha System"]) 
 app.include_router(routes_new_listings.router, tags=["Binance New Listings"])  # ADDED FOR NEW LISTINGS MONITOR
 app.include_router(routes_narratives.router, prefix="/narratives", tags=["Narratives & Market Intelligence"])  # ADDED FOR NARRATIVE DETECTION
 
+# Override OpenAPI schema to inject servers field for GPT Actions compatibility
+# This MUST be done AFTER all routes are registered to ensure proper schema generation
+def custom_openapi():
+    if app.openapi_schema:
+        return app.openapi_schema
+    from fastapi.openapi.utils import get_openapi
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    # Inject servers field required by GPT Actions
+    openapi_schema["servers"] = [
+        {
+            "url": "https://guardiansofthetoken.org",
+            "description": "Production server"
+        }
+    ]
+    app.openapi_schema = openapi_schema
+    return app.openapi_schema
+
+app.openapi = custom_openapi
 
 if __name__ == "__main__":
     import uvicorn

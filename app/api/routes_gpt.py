@@ -26,6 +26,41 @@ def get_services():
     return signal_engine, telegram_notifier, mss_service, smart_money_service
 
 
+@router.get("/gpt-openapi.json")
+async def get_gpt_openapi_schema(request: Request):
+    """
+    ✅ OpenAPI schema with servers field for GPT Actions compatibility
+    
+    This endpoint returns the complete OpenAPI schema with the servers field
+    required by GPT Actions. Use this endpoint when GPT Actions shows error:
+    'Could not find a valid URL in servers'
+    
+    **RECOMMENDED FOR GPT ACTIONS:** Use this endpoint instead of /openapi.json
+    """
+    from fastapi.openapi.utils import get_openapi
+    
+    # Get FastAPI app instance
+    app = request.app
+    
+    # Generate OpenAPI schema
+    openapi_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+    
+    # Add servers field for GPT Actions compatibility
+    openapi_schema["servers"] = [
+        {
+            "url": "https://guardiansofthetoken.org",
+            "description": "Production server"
+        }
+    ]
+    
+    return openapi_schema
+
+
 @router.get("/gpt/complete-schema-v3")
 async def get_complete_gpt_schema_v3(request: Request):
     """

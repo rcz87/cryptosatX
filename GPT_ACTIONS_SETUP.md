@@ -6,7 +6,21 @@ This guide explains how to integrate the CryptoSatX API with GPT Actions to acce
 
 ---
 
-## Quick Start (Recommended)
+## ⚠️ IMPORTANT: Fix untuk Error "Servers"
+
+Jika Anda mendapat error:
+```
+Could not find a valid URL in 'servers'
+```
+
+**SOLUSI CEPAT (2 menit):**
+Lihat file **`GPT_ACTIONS_WORKAROUND.md`** untuk panduan lengkap.
+
+**Ringkasan:** Tambahkan `servers` field secara manual saat import schema.
+
+---
+
+## Quick Start
 
 ### Use the Canonical OpenAPI Schema
 
@@ -23,6 +37,8 @@ This is the **authoritative** OpenAPI 3.x schema that includes:
 - ✅ LunarCrush social sentiment
 - ✅ Binance New Listings monitor
 - ✅ WebSocket streaming endpoints
+
+**NOTE:** Jika ada error "servers", ikuti workaround di `GPT_ACTIONS_WORKAROUND.md`
 
 ---
 
