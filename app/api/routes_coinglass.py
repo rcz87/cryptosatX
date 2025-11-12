@@ -1292,6 +1292,20 @@ async def get_news_feed():
         await service.close()
 
 
+@router.get("/volume/taker-buy-sell")
+async def get_taker_buy_sell_volume(
+    symbol: str = Query("BTC", description="Symbol"),
+    exchange_list: str = Query("Binance", description="Exchange list"),
+    interval: str = Query("h1", description="Interval (h1, h4, d1)")
+):
+    """💹 ENDPOINT #59: Taker Buy/Sell Volume - Order flow analysis!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_taker_buy_sell_volume(symbol, exchange_list, interval)
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,

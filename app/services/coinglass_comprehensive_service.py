@@ -4430,6 +4430,70 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_taker_buy_sell_volume(self, symbol: str = "BTC", exchange_list: str = "Binance", interval: str = "h1") -> Dict:
+        """Get Aggregated Taker Buy/Sell Volume - Order flow analysis! (59TH ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/aggregated-taker-buy-sell-volume/history"
+            params = {
+                "exchange_list": exchange_list,
+                "symbol": symbol,
+                "interval": interval
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                
+                if not history:
+                    return {"success": False, "error": "No volume data"}
+                
+                latest = history[-1]
+                buy_vol = float(latest.get("aggregated_buy_volume_usd", 0))
+                sell_vol = float(latest.get("aggregated_sell_volume_usd", 0))
+                
+                total_vol = buy_vol + sell_vol
+                buy_ratio = (buy_vol / total_vol * 100) if total_vol > 0 else 0
+                sell_ratio = (sell_vol / total_vol * 100) if total_vol > 0 else 0
+                
+                pressure = "BULLISH" if buy_vol > sell_vol else "BEARISH" if sell_vol > buy_vol else "NEUTRAL"
+                delta = buy_vol - sell_vol
+                
+                processed_history = []
+                for h in history:
+                    buy = float(h.get("aggregated_buy_volume_usd", 0))
+                    sell = float(h.get("aggregated_sell_volume_usd", 0))
+                    processed_history.append({
+                        "timestamp": h.get("time", 0),
+                        "buyVolume": buy,
+                        "sellVolume": sell,
+                        "delta": buy - sell,
+                        "buyRatio": (buy / (buy + sell) * 100) if (buy + sell) > 0 else 0
+                    })
+                
+                return {
+                    "success": True,
+                    "symbol": symbol,
+                    "exchange": exchange_list,
+                    "interval": interval,
+                    "current": {
+                        "buyVolume": buy_vol,
+                        "sellVolume": sell_vol,
+                        "buyRatio": round(buy_ratio, 2),
+                        "sellRatio": round(sell_ratio, 2),
+                        "delta": delta,
+                        "pressure": pressure
+                    },
+                    "history": processed_history,
+                    "note": "Aggregated taker buy/sell volume shows market order flow. Higher buy volume = bullish pressure, higher sell volume = bearish pressure.",
+                    "source": "taker_buy_sell_volume"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
     async def get_long_short_ratio(self, symbol: str = "BTC") -> Dict:
