@@ -1772,6 +1772,129 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_top_long_short_position_ratio_history(self, exchange: str = "Binance", 
+                                                          symbol: str = "BTCUSDT", interval: str = "h1", 
+                                                          limit: int = 100) -> Dict:
+        """
+        Get TOP TRADER Long/Short POSITION Ratio history (28TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/top-long-short-position-ratio/history
+        
+        Parameters:
+        - exchange: Exchange name (e.g., Binance, OKX)
+        - symbol: Trading pair (e.g., BTCUSDT)
+        - interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w
+        - limit: Number of data points (max 1000)
+        
+        Returns TOP trader POSITION distribution (not account count!):
+        - Long % vs Short % (by VOLUME/SIZE of positions)
+        - Long/Short ratio
+        - ACTUAL CAPITAL distribution!
+        
+        Shows where smart money is ACTUALLY deploying capital!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/top-long-short-position-ratio/history"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol.upper(),
+                "interval": interval,
+                "limit": limit
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                ratio_data = data["data"]
+                
+                if len(ratio_data) >= 2:
+                    latest = ratio_data[-1]
+                    first = ratio_data[0]
+                    
+                    latest_long = float(latest.get("top_position_long_percent", 0))
+                    latest_short = float(latest.get("top_position_short_percent", 0))
+                    latest_ratio = float(latest.get("top_position_long_short_ratio", 0))
+                    
+                    # Calculate averages
+                    avg_long = sum(float(d.get("top_position_long_percent", 0)) for d in ratio_data) / len(ratio_data)
+                    avg_short = sum(float(d.get("top_position_short_percent", 0)) for d in ratio_data) / len(ratio_data)
+                    avg_ratio = sum(float(d.get("top_position_long_short_ratio", 0)) for d in ratio_data) / len(ratio_data)
+                    
+                    # Capital deployment sentiment
+                    if latest_ratio > 3.0:
+                        sentiment = "EXTREMELY_BULLISH"
+                        sentiment_desc = f"Top traders deploying {latest_ratio:.2f}:1 capital to longs - Extreme conviction!"
+                    elif latest_ratio > 2.0:
+                        sentiment = "VERY_BULLISH"
+                        sentiment_desc = f"Top traders deploying {latest_ratio:.2f}:1 capital to longs - Strong conviction"
+                    elif latest_ratio > 1.5:
+                        sentiment = "BULLISH"
+                        sentiment_desc = f"Top traders deploying {latest_ratio:.2f}:1 capital to longs - Bullish capital flow"
+                    elif latest_ratio > 1.0:
+                        sentiment = "SLIGHTLY_BULLISH"
+                        sentiment_desc = f"Top traders deploying {latest_ratio:.2f}:1 capital to longs - Slight long bias"
+                    elif latest_ratio == 1.0:
+                        sentiment = "NEUTRAL"
+                        sentiment_desc = "Top traders capital balanced 1:1"
+                    elif latest_ratio > 0.67:
+                        sentiment = "SLIGHTLY_BEARISH"
+                        sentiment_desc = f"Top traders deploying {1/latest_ratio:.2f}:1 capital to shorts - Slight short bias"
+                    elif latest_ratio > 0.5:
+                        sentiment = "BEARISH"
+                        sentiment_desc = f"Top traders deploying {1/latest_ratio:.2f}:1 capital to shorts - Bearish capital flow"
+                    elif latest_ratio > 0.33:
+                        sentiment = "VERY_BEARISH"
+                        sentiment_desc = f"Top traders deploying {1/latest_ratio:.2f}:1 capital to shorts - Strong short conviction"
+                    else:
+                        sentiment = "EXTREMELY_BEARISH"
+                        sentiment_desc = f"Top traders deploying {1/latest_ratio:.2f}:1 capital to shorts - Extreme short conviction!"
+                    
+                    return {
+                        "success": True,
+                        "exchange": exchange,
+                        "symbol": symbol.upper(),
+                        "interval": interval,
+                        "dataPointCount": len(ratio_data),
+                        "latest": {
+                            "longPercent": latest_long,
+                            "shortPercent": latest_short,
+                            "ratio": latest_ratio,
+                            "sentiment": sentiment,
+                            "sentimentDescription": sentiment_desc
+                        },
+                        "summary": {
+                            "avgLongPercent": avg_long,
+                            "avgShortPercent": avg_short,
+                            "avgRatio": avg_ratio,
+                            "firstRatio": float(first.get("top_position_long_short_ratio", 0)),
+                            "lastRatio": latest_ratio,
+                            "ratioChange": latest_ratio - float(first.get("top_position_long_short_ratio", 0))
+                        },
+                        "timeSeries": ratio_data,
+                        "note": "Top trader POSITION size (capital distribution), not account count",
+                        "source": "coinglass_top_position_ratio"
+                    }
+                else:
+                    return {
+                        "success": True,
+                        "exchange": exchange,
+                        "symbol": symbol.upper(),
+                        "interval": interval,
+                        "dataPointCount": len(ratio_data),
+                        "timeSeries": ratio_data,
+                        "source": "coinglass_top_position_ratio"
+                    }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)

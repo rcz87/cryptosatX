@@ -909,6 +909,110 @@ async def get_top_long_short_account_ratio_history(
         await service.close()
 
 
+@router.get("/top-long-short-position-ratio/history")
+async def get_top_long_short_position_ratio_history(
+    exchange: str = Query("Binance", description="Exchange name"),
+    symbol: str = Query("BTCUSDT", description="Trading pair"),
+    interval: str = Query("h1", description="Interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)", le=1000)
+):
+    """
+    Get TOP TRADER Long/Short POSITION Ratio history (28TH ENDPOINT!)
+    
+    Returns CAPITAL DISTRIBUTION of top/elite traders:
+    - Long % vs Short % (by POSITION SIZE/VOLUME)
+    - Long/Short ratio
+    - Smart money capital deployment
+    - Time-series data
+    
+    🔥 CRITICAL DIFFERENCE from Account Ratio (Ep.27):
+    
+    **Account Ratio (Ep.27)**: HOW MANY top traders are long/short
+    **Position Ratio (Ep.28)**: HOW MUCH CAPITAL is in long/short positions ✨
+    
+    Why This Matters:
+    - Account ratio = 70% long = 70% of traders are long
+    - Position ratio = 60% long = 60% of MONEY is in longs
+    - Difference reveals POSITION SIZING strategy!
+    
+    Example Scenarios:
+    
+    1. **Account > Position** (e.g., 72% accounts long, 66% capital long):
+       - Many traders long, but with SMALL positions
+       - Few traders short, but with LARGE positions
+       - **Signal: Smart money not fully convinced on longs**
+    
+    2. **Position > Account** (e.g., 60% accounts long, 70% capital long):
+       - Fewer traders long, but with LARGE positions
+       - Many traders short, but with SMALL positions
+       - **Signal: Smart money has STRONG long conviction**
+    
+    3. **Position = Account** (e.g., both 70%):
+       - Position sizing is uniform
+       - No special conviction either way
+    
+    Trading Signals:
+    
+    1. **Conviction Analysis**:
+       - High position ratio = Strong capital conviction
+       - Low position ratio = Weak capital deployment
+       - Gap between account/position = Position sizing insight
+    
+    2. **Capital Flow Tracking**:
+       - Position ratio increasing = MORE capital flowing to longs
+       - Position ratio decreasing = Capital exiting longs
+       - Track where BIG money is moving!
+    
+    3. **Smart Money Strategy**:
+       - Compare with account ratio (Ep.27)
+       - Large gap = Asymmetric position sizing
+       - Small gap = Symmetric positioning
+    
+    4. **Risk Assessment**:
+       - High position ratio + High account ratio = Full conviction
+       - High position ratio + Low account ratio = Few whales betting big
+       - Low position ratio + High account ratio = Many small bets
+    
+    Current Data Example:
+    - Account ratio (Ep.27): 72.76% long (many traders)
+    - Position ratio (Ep.28): 66.46% long (less capital) 
+    - **Insight: Longs are SMALLER on average!**
+    
+    Advanced Analysis (Combine with Ep.27):
+    ```
+    Account Long %: 72.76%
+    Position Long %: 66.46%
+    Gap: 6.3%
+    
+    Interpretation:
+    - More traders are long than capital suggests
+    - Short positions are LARGER on average
+    - Smart money may be hedging with bigger shorts
+    - Moderate conviction on longs
+    ```
+    
+    Use Cases:
+    - Measure smart money conviction (position size)
+    - Track capital deployment trends
+    - Detect asymmetric position sizing
+    - Confirm trends with capital flow
+    - Identify whale positioning strategies
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_top_long_short_position_ratio_history(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            limit=limit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
