@@ -1427,6 +1427,116 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_funding_rate_exchange_list(self, symbol: str = "BTC") -> Dict:
+        """
+        Get REAL-TIME Funding Rate per exchange (25TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/funding-rate/exchange-list
+        
+        Parameters:
+        - symbol: Coin symbol (e.g., BTC, ETH)
+        
+        Returns current funding rate for ALL exchanges:
+        - Current funding rate per exchange
+        - Funding interval (1h or 8h)
+        - Next funding time
+        - Separated by margin type
+        
+        Perfect for cross-exchange arbitrage!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/funding-rate/exchange-list"
+            params = {"symbol": symbol.upper()}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                fr_data = data["data"]
+                
+                stablecoin_list = []
+                coin_margin_list = []
+                
+                for item in fr_data:
+                    symbol_data = item.get("symbol")
+                    
+                    # Process stablecoin-margined
+                    if "stablecoin_margin_list" in item:
+                        for ex in item["stablecoin_margin_list"]:
+                            stablecoin_list.append({
+                                "exchange": ex.get("exchange"),
+                                "fundingRate": float(ex.get("funding_rate", 0)),
+                                "fundingRatePercent": float(ex.get("funding_rate", 0)) * 100,
+                                "fundingInterval": ex.get("funding_rate_interval"),
+                                "nextFundingTime": ex.get("next_funding_time")
+                            })
+                    
+                    # Process coin-margined
+                    if "coin_margin_list" in item:
+                        for ex in item["coin_margin_list"]:
+                            coin_margin_list.append({
+                                "exchange": ex.get("exchange"),
+                                "fundingRate": float(ex.get("funding_rate", 0)),
+                                "fundingRatePercent": float(ex.get("funding_rate", 0)) * 100,
+                                "fundingInterval": ex.get("funding_rate_interval"),
+                                "nextFundingTime": ex.get("next_funding_time")
+                            })
+                
+                # Sort by funding rate (highest to lowest)
+                stablecoin_sorted = sorted(stablecoin_list, 
+                                          key=lambda x: x["fundingRate"], 
+                                          reverse=True)
+                coin_margin_sorted = sorted(coin_margin_list, 
+                                           key=lambda x: x["fundingRate"], 
+                                           reverse=True)
+                
+                # Calculate statistics
+                stable_rates = [ex["fundingRate"] for ex in stablecoin_list]
+                coin_rates = [ex["fundingRate"] for ex in coin_margin_list]
+                
+                stable_stats = {
+                    "count": len(stable_rates),
+                    "average": sum(stable_rates) / len(stable_rates) if stable_rates else 0,
+                    "highest": max(stable_rates) if stable_rates else 0,
+                    "lowest": min(stable_rates) if stable_rates else 0,
+                    "averagePercent": (sum(stable_rates) / len(stable_rates) * 100) if stable_rates else 0
+                }
+                
+                coin_stats = {
+                    "count": len(coin_rates),
+                    "average": sum(coin_rates) / len(coin_rates) if coin_rates else 0,
+                    "highest": max(coin_rates) if coin_rates else 0,
+                    "lowest": min(coin_rates) if coin_rates else 0,
+                    "averagePercent": (sum(coin_rates) / len(coin_rates) * 100) if coin_rates else 0
+                }
+                
+                return {
+                    "success": True,
+                    "symbol": symbol.upper(),
+                    "stablecoinMargined": {
+                        "statistics": stable_stats,
+                        "top5Highest": stablecoin_sorted[:5],
+                        "top5Lowest": stablecoin_sorted[-5:],
+                        "allExchanges": stablecoin_sorted
+                    },
+                    "coinMargined": {
+                        "statistics": coin_stats,
+                        "top5Highest": coin_margin_sorted[:5],
+                        "top5Lowest": coin_margin_sorted[-5:],
+                        "allExchanges": coin_margin_sorted
+                    },
+                    "source": "coinglass_fr_exchange_list"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)

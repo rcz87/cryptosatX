@@ -704,6 +704,64 @@ async def get_volume_weighted_funding_rate_history(
         await service.close()
 
 
+@router.get("/funding-rate/exchange-list/{symbol}")
+async def get_funding_rate_exchange_list(symbol: str):
+    """
+    Get REAL-TIME Funding Rate per exchange (25TH ENDPOINT!)
+    
+    Returns current funding rate across ALL exchanges:
+    - Current funding rate per exchange
+    - Funding interval (1h or 8h typical)
+    - Next funding time timestamp
+    - Separated by margin type (stablecoin vs coin-margined)
+    - Statistical summary (avg, high, low)
+    - Top 5 highest/lowest FR exchanges
+    
+    Perfect for:
+    - **Cross-exchange arbitrage** (find FR spreads)
+    - Real-time FR comparison
+    - Exchange selection (trade where FR is favorable)
+    - Market consensus view
+    
+    Trading Strategies:
+    1. **Arbitrage Detection**:
+       - High FR exchange (e.g., Bybit 0.377%) vs Low FR (e.g., CoinEx 0%)
+       - Spread = 0.377% arbitrage opportunity!
+    
+    2. **Exchange Selection**:
+       - If LONG: Choose exchange with LOWEST FR (pay less)
+       - If SHORT: Choose exchange with HIGHEST FR (earn more)
+    
+    3. **Market Sentiment**:
+       - All exchanges HIGH FR = Strong bullish consensus
+       - Mixed FR = Market uncertainty
+       - All exchanges LOW/NEG FR = Bearish consensus
+    
+    4. **Funding Interval Optimization**:
+       - 1h interval (dYdX, Kraken) = More frequent payments
+       - 8h interval (Binance, OKX) = Less frequent but larger
+    
+    Example Use Cases:
+    - Find cheapest exchange to long (lowest FR)
+    - Find best exchange to short (highest FR)
+    - Detect funding rate arbitrage opportunities
+    - Compare stablecoin vs coin-margined FR
+    
+    Response Structure:
+    - stablecoinMargined: Linear contracts (BTCUSDT)
+    - coinMargined: Inverse contracts (BTCUSD)
+    - Each includes: statistics + top5 + allExchanges
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_funding_rate_exchange_list(symbol=symbol)
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
