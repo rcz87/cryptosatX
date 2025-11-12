@@ -2757,6 +2757,204 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_liquidation_history(self, exchange: str = "Binance", 
+                                       symbol: str = "BTCUSDT", interval: str = "1d", 
+                                       limit: int = 100,
+                                       start_time: int = None,
+                                       end_time: int = None) -> Dict:
+        """
+        Get SINGLE EXCHANGE-PAIR LIQUIDATION HISTORY (34TH ENDPOINT!)
+        Endpoint: /api/futures/liquidation/history
+        
+        Parameters:
+        - exchange: Exchange name (e.g., Binance, OKX)
+        - symbol: Trading pair (e.g., BTCUSDT, ETHUSDT)
+        - interval: Time interval (1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w)
+        - limit: Number of data points (max 1000)
+        - start_time: Start timestamp in milliseconds (optional)
+        - end_time: End timestamp in milliseconds (optional)
+        
+        Returns TIME-SERIES liquidation data for SPECIFIC exchange-pair:
+        - Long liquidations per period
+        - Short liquidations per period
+        - Trend analysis for this specific pair
+        - Cascade detection on this exchange
+        
+        Different from aggregated-history:
+        - This is for ONE specific exchange-pair
+        - aggregated-history combines multiple exchanges
+        
+        Perfect for exchange-specific analysis and pair-specific strategies!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/liquidation/history"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol,
+                "interval": interval,
+                "limit": limit
+            }
+            
+            if start_time:
+                params["start_time"] = start_time
+            if end_time:
+                params["end_time"] = end_time
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                
+                if not history:
+                    return {"success": False, "error": "No historical data"}
+                
+                # Calculate statistics
+                total_long = sum(float(h.get("long_liquidation_usd", 0)) for h in history)
+                total_short = sum(float(h.get("short_liquidation_usd", 0)) for h in history)
+                total_all = total_long + total_short
+                
+                # Find peak liquidation events
+                history_sorted = sorted(history, 
+                                       key=lambda x: float(x.get("long_liquidation_usd", 0)) + 
+                                                   float(x.get("short_liquidation_usd", 0)),
+                                       reverse=True)
+                
+                # Identify cascade events (top 3)
+                cascade_events = []
+                for i, event in enumerate(history_sorted[:3]):
+                    long_liq = float(event.get("long_liquidation_usd", 0))
+                    short_liq = float(event.get("short_liquidation_usd", 0))
+                    total_liq = long_liq + short_liq
+                    
+                    if long_liq > short_liq * 2:
+                        cascade_type = "LONG_CASCADE"
+                        description = f"Long cascade - ${long_liq:,.0f} longs liquidated (bearish)"
+                    elif short_liq > long_liq * 2:
+                        cascade_type = "SHORT_CASCADE"
+                        description = f"Short cascade - ${short_liq:,.0f} shorts liquidated (bullish)"
+                    else:
+                        cascade_type = "MIXED_CASCADE"
+                        description = f"Mixed cascade - ${total_liq:,.0f} total (volatile)"
+                    
+                    cascade_events.append({
+                        "rank": i + 1,
+                        "timestamp": event.get("time"),
+                        "type": cascade_type,
+                        "totalLiquidation": total_liq,
+                        "longLiquidation": long_liq,
+                        "shortLiquidation": short_liq,
+                        "description": description
+                    })
+                
+                # Trend analysis
+                if len(history) >= 2:
+                    first_period = history[0]
+                    last_period = history[-1]
+                    
+                    first_long = float(first_period.get("long_liquidation_usd", 0))
+                    first_short = float(first_period.get("short_liquidation_usd", 0))
+                    last_long = float(last_period.get("long_liquidation_usd", 0))
+                    last_short = float(last_period.get("short_liquidation_usd", 0))
+                    
+                    if first_long > first_short and last_short > last_long:
+                        trend = "REVERSAL_TO_BULLISH"
+                        trend_desc = f"{symbol} on {exchange}: Shifted from long to short liquidations - Upward reversal"
+                    elif first_short > first_long and last_long > last_short:
+                        trend = "REVERSAL_TO_BEARISH"
+                        trend_desc = f"{symbol} on {exchange}: Shifted from short to long liquidations - Downward reversal"
+                    elif total_long > total_short * 1.5:
+                        trend = "PERSISTENT_BEARISH"
+                        trend_desc = f"{symbol} on {exchange}: Consistent long liquidations - Sustained downtrend"
+                    elif total_short > total_long * 1.5:
+                        trend = "PERSISTENT_BULLISH"
+                        trend_desc = f"{symbol} on {exchange}: Consistent short liquidations - Sustained uptrend"
+                    else:
+                        trend = "CHOPPY"
+                        trend_desc = f"{symbol} on {exchange}: Mixed liquidations - Sideways market"
+                else:
+                    trend = "INSUFFICIENT_DATA"
+                    trend_desc = "Not enough data points"
+                
+                # Calculate intensity
+                avg_long_per_period = total_long / len(history)
+                avg_short_per_period = total_short / len(history)
+                avg_total_per_period = total_all / len(history)
+                
+                # Intensity scoring (adjusted for single pair)
+                if avg_total_per_period > 30_000_000:
+                    intensity = "EXTREME"
+                    intensity_desc = f"${avg_total_per_period:,.0f}/period - EXTREME for single pair!"
+                elif avg_total_per_period > 15_000_000:
+                    intensity = "VERY_HIGH"
+                    intensity_desc = f"${avg_total_per_period:,.0f}/period - Very high activity"
+                elif avg_total_per_period > 5_000_000:
+                    intensity = "HIGH"
+                    intensity_desc = f"${avg_total_per_period:,.0f}/period - High activity"
+                elif avg_total_per_period > 2_000_000:
+                    intensity = "MODERATE"
+                    intensity_desc = f"${avg_total_per_period:,.0f}/period - Moderate activity"
+                else:
+                    intensity = "LOW"
+                    intensity_desc = f"${avg_total_per_period:,.0f}/period - Low activity"
+                
+                # Format history
+                formatted_history = []
+                for h in history:
+                    long_liq = float(h.get("long_liquidation_usd", 0))
+                    short_liq = float(h.get("short_liquidation_usd", 0))
+                    total = long_liq + short_liq
+                    
+                    formatted_history.append({
+                        "timestamp": h.get("time"),
+                        "longLiquidation": long_liq,
+                        "shortLiquidation": short_liq,
+                        "totalLiquidation": total,
+                        "longPercent": (long_liq / total * 100) if total > 0 else 0,
+                        "shortPercent": (short_liq / total * 100) if total > 0 else 0,
+                        "netFlow": long_liq - short_liq
+                    })
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "dataPoints": len(history),
+                    "summary": {
+                        "totalLongLiquidations": total_long,
+                        "totalShortLiquidations": total_short,
+                        "totalAllLiquidations": total_all,
+                        "longPercent": (total_long / total_all * 100) if total_all > 0 else 0,
+                        "shortPercent": (total_short / total_all * 100) if total_all > 0 else 0,
+                        "avgPerPeriod": avg_total_per_period,
+                        "avgLongPerPeriod": avg_long_per_period,
+                        "avgShortPerPeriod": avg_short_per_period
+                    },
+                    "trend": {
+                        "direction": trend,
+                        "description": trend_desc
+                    },
+                    "intensity": {
+                        "level": intensity,
+                        "description": intensity_desc
+                    },
+                    "cascadeEvents": cascade_events,
+                    "history": formatted_history,
+                    "note": "Single exchange-pair liquidation history. For multi-exchange use aggregated-history.",
+                    "source": "coinglass_liq_history"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
     async def get_long_short_ratio(self, symbol: str = "BTC") -> Dict:

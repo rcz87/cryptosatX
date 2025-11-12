@@ -448,6 +448,170 @@ async def get_liquidation_aggregated_history(
         await service.close()
 
 
+@router.get("/liquidation/history")
+async def get_liquidation_history(
+    exchange: str = Query("Binance", description="Exchange name (e.g., Binance, OKX)"),
+    symbol: str = Query("BTCUSDT", description="Trading pair (e.g., BTCUSDT, ETHUSDT)"),
+    interval: str = Query("1d", description="Time interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)"),
+    start_time: int = Query(None, description="Start timestamp in milliseconds (optional)"),
+    end_time: int = Query(None, description="End timestamp in milliseconds (optional)")
+):
+    """
+    Get SINGLE EXCHANGE-PAIR LIQUIDATION HISTORY (34TH ENDPOINT!)
+    
+    Returns TIME-SERIES liquidation data for a SPECIFIC exchange-pair combination.
+    This is different from aggregated-history which combines multiple exchanges.
+    
+    Why This Matters:
+    
+    1. **Exchange-Specific Analysis**:
+       - Track liquidations on ONE specific exchange
+       - Compare same pair across different exchanges
+       - Identify exchange-specific patterns
+       - Exchange arbitrage opportunities
+    
+    2. **Pair-Specific Strategies**:
+       - Analyze liquidation patterns for specific trading pairs
+       - Backtest pair-specific strategies
+       - Identify pair-specific cascade timing
+       - Optimize entries for specific pairs
+    
+    3. **Granular Risk Assessment**:
+       - Measure risk for specific exchange-pair combo
+       - Compare volatility across exchanges
+       - Identify safest venue for each pair
+       - Exchange-specific position sizing
+    
+    4. **Comparative Analysis**:
+       - Compare BTCUSDT on Binance vs OKX
+       - Identify which exchange has more stable liquidations
+       - Find best execution venue per pair
+       - Cross-exchange pattern validation
+    
+    Difference from Aggregated-History:
+    ```
+    liquidation/history:
+    - Single exchange-pair (e.g., Binance BTCUSDT)
+    - Precise venue-specific analysis
+    - Exchange arbitrage insights
+    
+    liquidation/aggregated-history:
+    - Multiple exchanges combined
+    - Market-wide liquidation view
+    - Overall market sentiment
+    ```
+    
+    Trading Signals:
+    
+    1. **Exchange-Specific Cascades**:
+       - Large spikes on ONE exchange = Isolated event
+       - Different from market-wide cascades
+       - Exchange-specific stop-loss hunting
+       - Venue-specific risk management
+    
+    2. **Pair Trend Analysis**:
+       - REVERSAL_TO_BULLISH = Shift to short liquidations
+       - PERSISTENT_BEARISH = Ongoing long liquidations
+       - CHOPPY = Sideways price action
+       - Use for pair-specific entries
+    
+    3. **Intensity Scoring**:
+       - EXTREME = Dangerous for this pair on this exchange
+       - HIGH/MODERATE = Normal volatility
+       - LOW = Safe trading conditions
+       - Adjust position size accordingly
+    
+    4. **Cross-Exchange Comparison**:
+       - Query same pair on different exchanges
+       - Compare liquidation patterns
+       - Choose safest execution venue
+       - Identify arbitrage opportunities
+    
+    Example Use Cases:
+    
+    **Exchange Comparison**:
+    ```
+    Query 1: Binance BTCUSDT - $15M avg liquidations/day
+    Query 2: OKX BTCUSDT - $8M avg liquidations/day
+    → OKX has lower volatility for BTC
+    → Consider OKX for safer BTC trading
+    ```
+    
+    **Pair-Specific Strategy**:
+    ```
+    ETHUSDT on Binance:
+    - Cascades happen at 4h intervals
+    - Best entry 30min after cascade
+    - Backtest confirms 65% win rate
+    → Implement cascade-based entry strategy
+    ```
+    
+    **Trend Reversal Detection**:
+    ```
+    BTCUSDT Binance (Last 7 days):
+    - Days 1-5: Heavy long liquidations (downtrend)
+    - Days 6-7: Shift to short liquidations
+    - Signal: REVERSAL_TO_BULLISH detected
+    → Enter long position, stop below recent low
+    ```
+    
+    **Risk Management**:
+    ```
+    SOLUSDT Binance:
+    - Intensity: EXTREME ($50M avg/day for single pair!)
+    - Recent cascade: $120M in one day
+    → Reduce position size by 75%
+    → Use very tight stops
+    → Consider trading on less volatile exchange
+    ```
+    
+    Current Data Example (BTCUSDT Binance, 1d, 10 days):
+    - Total long liq: $134M
+    - Total short liq: $64M
+    - Trend: PERSISTENT_BEARISH (2.1x more long liqs)
+    - Peak cascade: $43M on Nov 4
+    - Intensity: HIGH ($20M/day average)
+    
+    Response includes:
+    - Exchange and symbol info
+    - Summary (total long/short, averages, percentages)
+    - Trend analysis (direction, description)
+    - Intensity scoring (level, description)
+    - Top 3 cascade events (type, size, timestamp)
+    - Complete time-series history
+    
+    Use Cases:
+    - Exchange-specific analysis
+    - Pair-specific backtesting
+    - Cross-exchange comparison
+    - Venue selection optimization
+    - Exchange arbitrage detection
+    - Pair-specific risk management
+    
+    Perfect for:
+    - Traders optimizing execution venue
+    - Quants backtesting pair strategies
+    - Risk managers assessing venue safety
+    - Arbitrageurs finding cross-exchange opportunities
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_liquidation_history(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            limit=limit,
+            start_time=start_time,
+            end_time=end_time
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,
