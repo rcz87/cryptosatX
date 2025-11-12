@@ -1,6 +1,6 @@
 """
 OKX Public API Service
-Provides candlestick/OHLCV data without requiring authentication
+Provides candlestick/OHLCV data, funding rates, and open interest without requiring authentication
 """
 import httpx
 from typing import Dict, List, Optional
@@ -11,6 +11,24 @@ class OKXService:
     
     def __init__(self):
         self.base_url = "https://www.okx.com/api/v5"
+    
+    def _normalize_to_swap_inst_id(self, symbol: str) -> str:
+        """
+        Normalize symbol to OKX perpetual swap format
+        
+        Args:
+            symbol: Simple symbol like 'BTC', 'ETH', 'SOL'
+            
+        Returns:
+            OKX instrument ID like 'BTC-USDT-SWAP'
+        """
+        symbol = symbol.upper()
+        if symbol.endswith("-USDT-SWAP"):
+            return symbol
+        elif symbol.endswith("-USDT"):
+            return f"{symbol}-SWAP"
+        else:
+            return f"{symbol}-USDT-SWAP"
     
     async def get_candles(self, symbol: str, timeframe: str = "15m", limit: int = 100) -> Dict:
         """
@@ -104,6 +122,178 @@ class OKXService:
             "success": False,
             "error": error
         }
+    
+    async def get_funding_rate(self, symbol: str) -> Dict:
+        """
+        Get current funding rate for a perpetual swap
+        Public endpoint - no authentication required
+        
+        Args:
+            symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH', 'SOL')
+            
+        Returns:
+            Dict with uniform schema:
+            {
+                "success": bool,
+                "source": "okx",
+                "symbol": str,
+                "fundingRate": float,
+                "nextFundingTime": str,
+                "error": str (optional)
+            }
+        """
+        try:
+            inst_id = self._normalize_to_swap_inst_id(symbol)
+            url = f"{self.base_url}/public/funding-rate"
+            params = {"instId": inst_id}
+            
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.get(url, params=params)
+                
+                if response.status_code != 200:
+                    return {
+                        "success": False,
+                        "source": "okx",
+                        "symbol": symbol,
+                        "fundingRate": 0.0,
+                        "error": f"HTTP {response.status_code}"
+                    }
+                
+                data = response.json()
+                
+                if data.get("code") != "0":
+                    return {
+                        "success": False,
+                        "source": "okx",
+                        "symbol": symbol,
+                        "fundingRate": 0.0,
+                        "error": f"OKX error: {data.get('msg', 'Unknown')}"
+                    }
+                
+                if not data.get("data") or len(data["data"]) == 0:
+                    return {
+                        "success": False,
+                        "source": "okx",
+                        "symbol": symbol,
+                        "fundingRate": 0.0,
+                        "error": "No funding rate data"
+                    }
+                
+                funding_data = data["data"][0]
+                
+                return {
+                    "success": True,
+                    "source": "okx",
+                    "symbol": symbol,
+                    "fundingRate": float(funding_data.get("fundingRate", 0.0)),
+                    "nextFundingRate": float(funding_data.get("nextFundingRate", 0.0)),
+                    "nextFundingTime": funding_data.get("nextFundingTime", ""),
+                    "fundingTime": funding_data.get("fundingTime", "")
+                }
+                
+        except httpx.HTTPStatusError as e:
+            return {
+                "success": False,
+                "source": "okx",
+                "symbol": symbol,
+                "fundingRate": 0.0,
+                "error": f"HTTP error: {e.response.status_code}"
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "source": "okx",
+                "symbol": symbol,
+                "fundingRate": 0.0,
+                "error": str(e)
+            }
+    
+    async def get_open_interest(self, symbol: str) -> Dict:
+        """
+        Get current open interest for a perpetual swap
+        Public endpoint - no authentication required
+        
+        Args:
+            symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH', 'SOL')
+            
+        Returns:
+            Dict with uniform schema:
+            {
+                "success": bool,
+                "source": "okx",
+                "symbol": str,
+                "openInterest": float,
+                "openInterestCcy": float,
+                "error": str (optional)
+            }
+        """
+        try:
+            inst_id = self._normalize_to_swap_inst_id(symbol)
+            url = f"{self.base_url}/public/open-interest"
+            params = {
+                "instType": "SWAP",
+                "instId": inst_id
+            }
+            
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.get(url, params=params)
+                
+                if response.status_code != 200:
+                    return {
+                        "success": False,
+                        "source": "okx",
+                        "symbol": symbol,
+                        "openInterest": 0.0,
+                        "error": f"HTTP {response.status_code}"
+                    }
+                
+                data = response.json()
+                
+                if data.get("code") != "0":
+                    return {
+                        "success": False,
+                        "source": "okx",
+                        "symbol": symbol,
+                        "openInterest": 0.0,
+                        "error": f"OKX error: {data.get('msg', 'Unknown')}"
+                    }
+                
+                if not data.get("data") or len(data["data"]) == 0:
+                    return {
+                        "success": False,
+                        "source": "okx",
+                        "symbol": symbol,
+                        "openInterest": 0.0,
+                        "error": "No open interest data"
+                    }
+                
+                oi_data = data["data"][0]
+                
+                return {
+                    "success": True,
+                    "source": "okx",
+                    "symbol": symbol,
+                    "openInterest": float(oi_data.get("oi", 0.0)),
+                    "openInterestCcy": float(oi_data.get("oiCcy", 0.0)),
+                    "timestamp": oi_data.get("ts", "")
+                }
+                
+        except httpx.HTTPStatusError as e:
+            return {
+                "success": False,
+                "source": "okx",
+                "symbol": symbol,
+                "openInterest": 0.0,
+                "error": f"HTTP error: {e.response.status_code}"
+            }
+        except Exception as e:
+            return {
+                "success": False,
+                "source": "okx",
+                "symbol": symbol,
+                "openInterest": 0.0,
+                "error": str(e)
+            }
 
 
 # Singleton instance

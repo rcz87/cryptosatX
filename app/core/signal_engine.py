@@ -251,6 +251,64 @@ class SignalEngine:
 
         return response
 
+    async def _get_funding_and_oi_with_fallback(self, symbol: str, cg_data: Dict, comp_markets: Dict, comprehensive_available: bool) -> Dict:
+        """
+        Get funding rate and open interest with OKX fallback
+        
+        Sequential fallback strategy: Coinglass → OKX
+        Returns dict with funding_rate, open_interest, and source tracking
+        """
+        # Start with Coinglass data
+        funding_source = "coinglass"
+        oi_source = "coinglass"
+        
+        funding = (
+            comp_markets.get("fundingRateByOI", cg_data.get("fundingRate", 0.0))
+            if comprehensive_available
+            else cg_data.get("fundingRate", 0.0)
+        )
+        oi = (
+            comp_markets.get("openInterestUsd", cg_data.get("openInterest", 0.0))
+            if comprehensive_available
+            else cg_data.get("openInterest", 0.0)
+        )
+        
+        # Check if Coinglass data is valid
+        cg_success = cg_data.get("success", False) or comprehensive_available
+        
+        # If Coinglass failed or returned zero values, try OKX fallback
+        if not cg_success or (funding == 0.0 and oi == 0.0):
+            print(f"⚠️  Coinglass funding/OI unavailable for {symbol}, attempting OKX fallback...")
+            
+            try:
+                # Fetch from OKX
+                okx_funding_result, okx_oi_result = await asyncio.gather(
+                    okx_service.get_funding_rate(symbol),
+                    okx_service.get_open_interest(symbol),
+                    return_exceptions=True
+                )
+                
+                # Handle potential exceptions
+                if not isinstance(okx_funding_result, Exception) and okx_funding_result.get("success"):
+                    funding = okx_funding_result.get("fundingRate", 0.0)
+                    funding_source = "okx"
+                    print(f"✅ OKX funding rate retrieved for {symbol}: {funding}")
+                
+                if not isinstance(okx_oi_result, Exception) and okx_oi_result.get("success"):
+                    oi = okx_oi_result.get("openInterest", 0.0)
+                    oi_source = "okx"
+                    print(f"✅ OKX open interest retrieved for {symbol}: {oi}")
+                    
+            except Exception as e:
+                print(f"⚠️  OKX fallback failed for {symbol}: {e}")
+        
+        return {
+            "fundingRate": funding,
+            "openInterest": oi,
+            "fundingSource": funding_source,
+            "oiSource": oi_source
+        }
+    
     async def _collect_market_data(self, symbol: str) -> EnhancedSignalContext:
         """
         Fetch all market data concurrently using asyncio.gather
@@ -332,12 +390,25 @@ class SignalEngine:
         # Calculate multi-timeframe trend from comprehensive markets data
         multi_tf_trend = self._calculate_multi_timeframe_trend(comp_markets)
 
-        # Build context
-        premium_available = (
-            liq_data.get("success", False)
-            and ls_data.get("success", False)
-            and oi_trend_data.get("success", False)
-        )
+        # Build context - FIXED: More flexible premium data check
+        # Accept premium data if at least 2 out of 4 endpoints succeed
+        # OI Trend endpoint frequently returns 404 for some coins (like SOL)
+        premium_success_count = sum([
+            liq_data.get("success", False),
+            ls_data.get("success", False),
+            oi_trend_data.get("success", False),
+            trader_data.get("success", False)
+        ])
+        premium_available = premium_success_count >= 2
+        
+        # Log which premium endpoints succeeded
+        if premium_available:
+            successful_endpoints = []
+            if liq_data.get("success"): successful_endpoints.append("liquidations")
+            if ls_data.get("success"): successful_endpoints.append("long/short ratio")
+            if oi_trend_data.get("success"): successful_endpoints.append("OI trend")
+            if trader_data.get("success"): successful_endpoints.append("top trader")
+            print(f"✅ Premium data available for {symbol}: {', '.join(successful_endpoints)}")
 
         comprehensive_available = comp_markets.get("success", False)
         lunarcrush_comp_available = lc_comp.get("success", False)
@@ -366,17 +437,15 @@ class SignalEngine:
                 f"⚠️  CoinAPI comprehensive data unavailable for {symbol}. Order book/trades analysis will use defaults."
             )
 
-        # Prefer comprehensive markets data for funding/OI if available, fallback to basic
-        funding = (
-            comp_markets.get("fundingRateByOI", cg_data.get("fundingRate", 0.0))
-            if comprehensive_available
-            else cg_data.get("fundingRate", 0.0)
+        # Get funding/OI with OKX fallback
+        funding_oi_data = await self._get_funding_and_oi_with_fallback(
+            symbol, cg_data, comp_markets, comprehensive_available
         )
-        oi = (
-            comp_markets.get("openInterestUsd", cg_data.get("openInterest", 0.0))
-            if comprehensive_available
-            else cg_data.get("openInterest", 0.0)
-        )
+        
+        funding = funding_oi_data["fundingRate"]
+        oi = funding_oi_data["openInterest"]
+        funding_source = funding_oi_data["fundingSource"]
+        oi_source = funding_oi_data["oiSource"]
 
         return EnhancedSignalContext(
             symbol=symbol,
