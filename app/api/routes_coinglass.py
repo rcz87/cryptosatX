@@ -244,6 +244,50 @@ async def get_rsi_indicator(
         await service.close()
 
 
+@router.get("/open-interest/history")
+async def get_open_interest_history(
+    exchange: str = Query("Binance", description="Exchange name"),
+    symbol: str = Query("BTCUSDT", description="Trading pair"),
+    interval: str = Query("1d", description="Interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)", le=1000),
+    unit: str = Query("usd", description="Unit: 'usd' or 'coin'")
+):
+    """
+    Get Open Interest historical data - OHLC format (16TH ENDPOINT!)
+    
+    Returns OI movement over time (NOT price!):
+    - OI OHLC (Open, High, Low, Close)
+    - Latest OI value
+    - OI trend analysis (increasing/decreasing)
+    - Statistics (highest, lowest, average OI)
+    
+    Trend signals:
+    - OI INCREASE + Price UP = Bullish (new longs opening)
+    - OI INCREASE + Price DOWN = Bearish (new shorts opening)
+    - OI DECREASE + Price UP = Bullish weak (shorts closing)
+    - OI DECREASE + Price DOWN = Bearish weak (longs closing)
+    
+    Perfect for:
+    - Institutional positioning tracking
+    - Correlation with price movements
+    - Trend confirmation/divergence
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_open_interest_history(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            limit=limit,
+            unit=unit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
