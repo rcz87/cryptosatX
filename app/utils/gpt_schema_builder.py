@@ -8,8 +8,8 @@ import copy
 
 def build_gpt_actions_schema(
     app_openapi: Dict[str, Any],
-    include_tags: Set[str] = None,
-    exclude_paths: Set[str] = None,
+    include_tags: Set[str] | None = None,
+    exclude_paths: Set[str] | None = None,
     base_url: str = "https://guardiansofthetoken.org"
 ) -> Dict[str, Any]:
     """
