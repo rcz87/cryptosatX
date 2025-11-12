@@ -1,11 +1,14 @@
 """
 GPT Actions integration routes
 Provides OpenAPI schema for connecting this API to OpenAI GPT Actions
+DYNAMIC SCHEMA GENERATION - Auto-includes all tagged routes
 """
 import os
-from fastapi import APIRouter, HTTPException
+import httpx
+from fastapi import APIRouter, HTTPException, Request
 from typing import Optional
 from datetime import datetime
+from app.utils.gpt_schema_builder import build_gpt_actions_schema
 
 router = APIRouter()
 
@@ -23,25 +26,93 @@ def get_services():
     return signal_engine, telegram_notifier, mss_service, smart_money_service
 
 
-@router.get("/gpt/action-schema")
-async def get_gpt_action_schema():
+@router.get("/gpt/complete-schema-v3")
+async def get_complete_gpt_schema_v3(request: Request):
     """
-    Returns OpenAPI-compatible schema for GPT Actions integration
+    🚀 **COMPLETE GPT Actions Schema V3** - Includes ALL 65+ Coinglass endpoints
     
-    This endpoint provides the schema that can be used to register
-    this API as a GPT Action in OpenAI's GPT builder.
+    **USE THIS ENDPOINT FOR GPT ACTIONS INTEGRATION**
+    
+    Dynamically generates OpenAPI schema from FastAPI routes by filtering tags.
+    Automatically includes:
+    - All 65 Coinglass endpoints (liquidations, funding, OI, indicators, etc.)
+    - Core signal & market data endpoints
+    - Smart Money, MSS, LunarCrush, Narratives, New Listings
+    
+    This endpoint provides the COMPLETE schema for GPT Actions integration.
+    Schema is auto-generated from app routes, so it's always up-to-date.
     """
-    # Production custom domain with SSL certificate ready
-    # guardiansofthetoken.org is the primary custom domain
+    # Get base URL
     base_url = os.getenv("BASE_URL", "https://guardiansofthetoken.org")
     
     # Auto-detect if running on Replit (for development/testing)
     replit_domain = os.getenv("REPLIT_DOMAINS")
     if replit_domain and "localhost" in base_url:
-        # Development environment - use Replit domain
         base_url = f"https://{replit_domain.split(',')[0]}"
     elif not base_url or base_url == "http://localhost:8000":
-        # Fallback for local development
+        base_url = "http://localhost:8000"
+    
+    # Get full OpenAPI schema directly from app
+    # Force regeneration to get latest routes
+    app = request.app
+    
+    # Clear OpenAPI cache to force fresh generation
+    if hasattr(app, 'openapi_schema'):
+        app.openapi_schema = None
+    if hasattr(app, '_openapi'):
+        delattr(app, '_openapi')
+    
+    # Get fresh OpenAPI schema
+    app_openapi = app.openapi()
+    
+    print(f"[DEBUG GPT SCHEMA] Generated fresh OpenAPI schema")
+    print(f"[DEBUG GPT SCHEMA] OpenAPI has {len(app_openapi.get('paths', {}))} total paths")
+    
+    # Build filtered GPT Actions schema with all relevant tags
+    schema = build_gpt_actions_schema(
+        app_openapi=app_openapi,
+        include_tags={
+            "Signals",
+            "Market Data",
+            "Coinglass Data",
+            "Smart Money",
+            "MSS Discovery",
+            "LunarCrush",
+            "Narratives",
+            "New Listings",
+            "Alerts",
+            "Smart Money Scanner",
+            "MSS Alpha System",
+            "LunarCrush Social Data",
+            "Binance New Listings",
+            "Narratives & Market Intelligence",
+            "CoinAPI Market Data",
+            "Smart Money Concept (SMC)",
+            "Signal History"
+        },
+        base_url=base_url
+    )
+    
+    print(f"[DEBUG GPT SCHEMA] Built filtered schema with {len(schema.get('paths', {}))} paths")
+    coinglass_count = len([p for p in schema.get('paths', {}) if 'coinglass' in p])
+    print(f"[DEBUG GPT SCHEMA] Coinglass endpoints in filtered schema: {coinglass_count}")
+    
+    return schema
+
+
+# Legacy manual schema for fallback/reference
+@router.get("/gpt/action-schema/manual")
+async def get_manual_gpt_schema():
+    """
+    Manual/static GPT Actions schema (legacy fallback)
+    Use /gpt/action-schema instead for auto-generated schema
+    """
+    base_url = os.getenv("BASE_URL", "https://guardiansofthetoken.org")
+    
+    replit_domain = os.getenv("REPLIT_DOMAINS")
+    if replit_domain and "localhost" in base_url:
+        base_url = f"https://{replit_domain.split(',')[0]}"
+    elif not base_url or base_url == "http://localhost:8000":
         base_url = "http://localhost:8000"
     
     schema = {
