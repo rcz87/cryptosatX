@@ -1,0 +1,49 @@
+{
+  "timestamp": "2025-11-12T10:01:34.298126",
+  "summary": {
+    "runtime_seconds": 30.56665015220642,
+    "messages_received": 4,
+    "errors": 2,
+    "disconnections": 0,
+    "message_rate": 0.13086157560877715
+  },
+  "data_samples": [
+    {
+      "status": "connected",
+      "message": "Real-time liquidation stream active",
+      "channels": [
+        "liquidationOrders"
+      ]
+    },
+    {
+      "channel": "liquidationOrders",
+      "data": [
+        {
+          "baseAsset": "ALLO",
+          "exName": "Binance",
+          "price": 0.4709835,
+          "side": 2,
+          "symbol": "ALLOUSDT",
+          "time": 1762941678804,
+          "volUsd": 3223.411074
+        }
+      ],
+      "time": 1762941678822
+    },
+    {
+      "channel": "liquidationOrders",
+      "data": [
+        {
+          "baseAsset": "MAGIC",
+          "exName": "Binance",
+          "price": 0.138,
+          "side": 1,
+          "symbol": "MAGICUSDT",
+          "time": 1762941680240,
+          "volUsd": 1588.5732
+        }
+      ],
+      "time": 1762941680253
+    }
+  ]
+}
