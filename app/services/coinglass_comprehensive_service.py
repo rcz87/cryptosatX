@@ -2017,6 +2017,125 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_net_position_history(self, exchange: str = "Binance", 
+                                        symbol: str = "BTCUSDT", interval: str = "h1", 
+                                        limit: int = 100) -> Dict:
+        """
+        Get Net Position Change history (30TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/v2/net-position/history
+        
+        Parameters:
+        - exchange: Exchange name (e.g., Binance, OKX)
+        - symbol: Trading pair (e.g., BTCUSDT)
+        - interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w
+        - limit: Number of data points (max 1000)
+        
+        Returns NET POSITION FLOW:
+        - Net long change (BTC added/removed)
+        - Net short change (BTC added/removed)
+        - Shows CAPITAL FLOW direction!
+        
+        Positive = Positions ADDED
+        Negative = Positions CLOSED/REDUCED
+        
+        Track where smart money is moving!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/v2/net-position/history"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol.upper(),
+                "interval": interval,
+                "limit": limit
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                position_data = data["data"]
+                
+                if len(position_data) >= 2:
+                    latest = position_data[-1]
+                    first = position_data[0]
+                    
+                    latest_long_change = float(latest.get("net_long_change", 0))
+                    latest_short_change = float(latest.get("net_short_change", 0))
+                    
+                    # Calculate total changes over period
+                    total_long_change = sum(float(d.get("net_long_change", 0)) for d in position_data)
+                    total_short_change = sum(float(d.get("net_short_change", 0)) for d in position_data)
+                    
+                    # Determine capital flow
+                    if latest_long_change > 50 and latest_short_change < -50:
+                        flow = "STRONG_LONG_ACCUMULATION"
+                        flow_desc = f"Strong long accumulation: +{latest_long_change:.2f} BTC longs, {latest_short_change:.2f} BTC shorts"
+                    elif latest_long_change > 20 and latest_short_change < -20:
+                        flow = "MODERATE_LONG_ACCUMULATION"
+                        flow_desc = f"Moderate long accumulation: +{latest_long_change:.2f} BTC longs, {latest_short_change:.2f} BTC shorts"
+                    elif latest_long_change > 0 and latest_short_change < 0:
+                        flow = "SLIGHT_LONG_BIAS"
+                        flow_desc = f"Slight long bias: {latest_long_change:+.2f} BTC longs, {latest_short_change:+.2f} BTC shorts"
+                    elif latest_short_change > 50 and latest_long_change < -50:
+                        flow = "STRONG_SHORT_ACCUMULATION"
+                        flow_desc = f"Strong short accumulation: +{latest_short_change:.2f} BTC shorts, {latest_long_change:.2f} BTC longs"
+                    elif latest_short_change > 20 and latest_long_change < -20:
+                        flow = "MODERATE_SHORT_ACCUMULATION"
+                        flow_desc = f"Moderate short accumulation: +{latest_short_change:.2f} BTC shorts, {latest_long_change:.2f} BTC longs"
+                    elif latest_short_change > 0 and latest_long_change < 0:
+                        flow = "SLIGHT_SHORT_BIAS"
+                        flow_desc = f"Slight short bias: {latest_short_change:+.2f} BTC shorts, {latest_long_change:+.2f} BTC longs"
+                    elif abs(latest_long_change) < 10 and abs(latest_short_change) < 10:
+                        flow = "NEUTRAL"
+                        flow_desc = f"Minimal position changes: {latest_long_change:+.2f} BTC longs, {latest_short_change:+.2f} BTC shorts"
+                    else:
+                        flow = "MIXED"
+                        flow_desc = f"Mixed flows: {latest_long_change:+.2f} BTC longs, {latest_short_change:+.2f} BTC shorts"
+                    
+                    return {
+                        "success": True,
+                        "exchange": exchange,
+                        "symbol": symbol.upper(),
+                        "interval": interval,
+                        "dataPointCount": len(position_data),
+                        "latest": {
+                            "netLongChange": latest_long_change,
+                            "netShortChange": latest_short_change,
+                            "flow": flow,
+                            "flowDescription": flow_desc
+                        },
+                        "summary": {
+                            "totalLongChange": total_long_change,
+                            "totalShortChange": total_short_change,
+                            "netFlow": total_long_change + total_short_change,
+                            "avgLongChange": total_long_change / len(position_data),
+                            "avgShortChange": total_short_change / len(position_data)
+                        },
+                        "timeSeries": position_data,
+                        "note": "Net position change shows capital FLOW (additions/reductions). Positive = added, Negative = closed",
+                        "source": "coinglass_net_position"
+                    }
+                else:
+                    return {
+                        "success": True,
+                        "exchange": exchange,
+                        "symbol": symbol.upper(),
+                        "interval": interval,
+                        "dataPointCount": len(position_data),
+                        "timeSeries": position_data,
+                        "source": "coinglass_net_position"
+                    }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)

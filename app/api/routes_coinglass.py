@@ -1140,6 +1140,140 @@ async def get_taker_buy_sell_volume_exchange_list(
         await service.close()
 
 
+@router.get("/net-position/history")
+async def get_net_position_history(
+    exchange: str = Query("Binance", description="Exchange name"),
+    symbol: str = Query("BTCUSDT", description="Trading pair"),
+    interval: str = Query("h1", description="Interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)", le=1000)
+):
+    """
+    Get Net Position Change history (30TH ENDPOINT!)
+    
+    Returns CAPITAL FLOW tracking (position additions/reductions):
+    - Net long change (BTC added/removed from longs)
+    - Net short change (BTC added/removed from shorts)
+    - Capital flow direction and strength
+    - Time-series data
+    
+    🔥 CRITICAL DIFFERENCE from Position Ratio (Ep.28):
+    
+    **Position Ratio (Ep.28)**: WHERE positions ARE (static distribution)
+    **Net Position Change (Ep.30)**: WHERE positions are MOVING (dynamic flow) ✨
+    
+    What This Shows:
+    - **Positive change**: Positions being ADDED/OPENED
+    - **Negative change**: Positions being CLOSED/REDUCED
+    - Shows REAL-TIME capital movement!
+    
+    Example Interpretation:
+    
+    **Bullish Flow**:
+    ```
+    Net long change: +100 BTC (longs being added)
+    Net short change: -50 BTC (shorts being closed)
+    → Capital flowing INTO longs, OUT OF shorts
+    → Bullish momentum building
+    ```
+    
+    **Bearish Flow**:
+    ```
+    Net long change: -80 BTC (longs being closed)
+    Net short change: +150 BTC (shorts being added)
+    → Capital flowing OUT OF longs, INTO shorts
+    → Bearish momentum building
+    ```
+    
+    **Neutral/Balanced**:
+    ```
+    Net long change: +20 BTC
+    Net short change: +15 BTC
+    → Both sides adding positions
+    → Volatility expected, no clear direction
+    ```
+    
+    Flow Classifications:
+    - STRONG_LONG_ACCUMULATION: >50 BTC flowing to longs
+    - MODERATE_LONG_ACCUMULATION: >20 BTC flowing to longs
+    - SLIGHT_LONG_BIAS: Positive long flow
+    - STRONG_SHORT_ACCUMULATION: >50 BTC flowing to shorts
+    - MODERATE_SHORT_ACCUMULATION: >20 BTC flowing to shorts
+    - SLIGHT_SHORT_BIAS: Positive short flow
+    - NEUTRAL: Minimal changes (<10 BTC)
+    - MIXED: Conflicting signals
+    
+    Trading Signals:
+    
+    1. **Trend Confirmation**:
+       - Price UP + Long positions increasing = Confirmed uptrend ✅
+       - Price DOWN + Short positions increasing = Confirmed downtrend ✅
+       - Shows conviction behind price moves
+    
+    2. **Divergence Detection (MOST POWERFUL)**:
+       - Price UP + Longs decreasing = Distribution ⚠️
+       - Price DOWN + Longs increasing = Accumulation 💎
+       - Smart money doing opposite of price!
+    
+    3. **Capitulation/Exhaustion**:
+       - Massive long closing (-200+ BTC) = Potential capitulation
+       - Massive short closing (-200+ BTC) = Short squeeze incoming
+       - Extreme flows signal reversals
+    
+    4. **Momentum Shift**:
+       - Track changes from long→short or short→long
+       - Sudden flow reversal = Trend change
+       - Leading indicator for price moves
+    
+    5. **Position Building**:
+       - Steady long accumulation = Smart money positioning
+       - Steady short accumulation = Whale positioning
+       - Track multi-period trends
+    
+    Current Data Example:
+    - Latest: -20.35 BTC longs, +154.76 BTC shorts
+    - Signal: Capital flowing FROM longs TO shorts
+    - Interpretation: Bearish momentum building
+    
+    Advanced Analysis (Combine with Ep.28):
+    ```
+    Position Ratio (Ep.28): 66% long
+    Net Position Change (Ep.30): -20 BTC longs, +155 BTC shorts
+    
+    Insight: Despite majority being long (66%), 
+    new capital is flowing to SHORTS!
+    → Early bearish signal before ratio shifts
+    → Leading indicator of sentiment change
+    ```
+    
+    Use Cases:
+    - Track real-time capital movement
+    - Detect early trend changes
+    - Identify accumulation/distribution
+    - Confirm price moves with flow
+    - Spot divergences for reversals
+    - Monitor position building/unwinding
+    
+    Why This is a Leading Indicator:
+    - Net position changes happen BEFORE price moves
+    - Shows what traders are DOING, not just thinking
+    - Tracks actual capital deployment
+    - More actionable than static ratios
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_net_position_history(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            limit=limit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
