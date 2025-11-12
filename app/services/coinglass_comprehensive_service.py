@@ -361,6 +361,98 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_rsi_indicator(self, exchange: str = "Binance", symbol: str = "BTCUSDT",
+                                interval: str = "1h", limit: int = 100, window: int = 14) -> Dict:
+        """
+        Get RSI (Relative Strength Index) technical indicator (15TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/indicators/rsi
+        
+        Parameters:
+        - exchange: Binance, OKX, Bybit, etc.
+        - symbol: Trading pair (e.g., BTCUSDT)
+        - interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w
+        - limit: Number of data points (max 4500)
+        - window: RSI period (default 14)
+        
+        Returns RSI values with overbought/oversold analysis
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/indicators/rsi"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol.upper(),
+                "interval": interval,
+                "limit": limit,
+                "window": window
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                rsi_data = data["data"]
+                
+                # Get latest RSI
+                latest_rsi = float(rsi_data[-1].get("rsi_value", 0)) if rsi_data else 0
+                
+                # Classify signal
+                if latest_rsi > 70:
+                    signal = "OVERBOUGHT"
+                    signal_description = "Strong sell signal - RSI above 70"
+                elif latest_rsi < 30:
+                    signal = "OVERSOLD"
+                    signal_description = "Strong buy signal - RSI below 30"
+                elif latest_rsi > 60:
+                    signal = "BULLISH"
+                    signal_description = "Bullish momentum - RSI above 60"
+                elif latest_rsi < 40:
+                    signal = "BEARISH"
+                    signal_description = "Bearish momentum - RSI below 40"
+                else:
+                    signal = "NEUTRAL"
+                    signal_description = "Neutral zone - RSI between 40-60"
+                
+                # Calculate extremes
+                rsi_values = [float(r.get("rsi_value", 0)) for r in rsi_data]
+                max_rsi = max(rsi_values) if rsi_values else 0
+                min_rsi = min(rsi_values) if rsi_values else 0
+                avg_rsi = sum(rsi_values) / len(rsi_values) if rsi_values else 0
+                
+                # Count overbought/oversold occurrences
+                overbought_count = sum(1 for v in rsi_values if v > 70)
+                oversold_count = sum(1 for v in rsi_values if v < 30)
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol.upper(),
+                    "interval": interval,
+                    "window": window,
+                    "dataPointCount": len(rsi_data),
+                    "latestRSI": latest_rsi,
+                    "signal": signal,
+                    "signalDescription": signal_description,
+                    "statistics": {
+                        "max": max_rsi,
+                        "min": min_rsi,
+                        "average": avg_rsi,
+                        "overboughtCount": overbought_count,
+                        "oversoldCount": oversold_count
+                    },
+                    "timeSeries": rsi_data,
+                    "source": "coinglass_rsi_indicator"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)

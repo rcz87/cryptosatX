@@ -198,6 +198,52 @@ async def get_delisted_pairs():
         await service.close()
 
 
+@router.get("/indicators/rsi")
+async def get_rsi_indicator(
+    exchange: str = Query("Binance", description="Exchange name"),
+    symbol: str = Query("BTCUSDT", description="Trading pair"),
+    interval: str = Query("1h", description="Interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 4500)", le=4500),
+    window: int = Query(14, description="RSI period (default 14)")
+):
+    """
+    Get RSI (Relative Strength Index) technical indicator (15TH ENDPOINT!)
+    
+    Returns RSI analysis for trading signals:
+    - Latest RSI value
+    - Signal classification (OVERBOUGHT/OVERSOLD/BULLISH/BEARISH/NEUTRAL)
+    - Historical RSI data
+    - Statistics (max, min, average RSI)
+    - Overbought/oversold frequency
+    
+    Trading signals:
+    - RSI > 70 = OVERBOUGHT (sell signal)
+    - RSI < 30 = OVERSOLD (buy signal)
+    - RSI 60-70 = BULLISH (upward momentum)
+    - RSI 30-40 = BEARISH (downward momentum)
+    - RSI 40-60 = NEUTRAL (consolidation)
+    
+    Perfect for:
+    - Entry/exit timing
+    - Momentum confirmation
+    - Divergence detection
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_rsi_indicator(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            limit=limit,
+            window=window
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
