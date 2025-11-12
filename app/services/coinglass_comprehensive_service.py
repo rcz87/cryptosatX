@@ -876,6 +876,90 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_oi_exchange_list(self, symbol: str = "BTC") -> Dict:
+        """
+        Get Open Interest breakdown by EXCHANGE (20TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/open-interest/exchange-list
+        
+        Parameters:
+        - symbol: Coin symbol (e.g., BTC, ETH)
+        
+        Returns comprehensive OI data per exchange:
+        - Total OI (USD + quantity)
+        - Coin-margined vs Stablecoin-margined breakdown
+        - OI change % across 6 timeframes (5m, 15m, 30m, 1h, 4h, 24h)
+        - All exchanges + aggregate
+        
+        Perfect for cross-exchange analysis!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/open-interest/exchange-list"
+            params = {"symbol": symbol.upper()}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                exchanges_data = data["data"]
+                
+                # Find aggregate and top exchanges
+                aggregate = next((e for e in exchanges_data if e.get("exchange") == "All"), None)
+                exchanges = [e for e in exchanges_data if e.get("exchange") != "All"]
+                
+                # Sort exchanges by OI
+                exchanges_sorted = sorted(exchanges, 
+                                         key=lambda x: float(x.get("open_interest_usd", 0)), 
+                                         reverse=True)
+                
+                top_5 = exchanges_sorted[:5]
+                
+                # Calculate market share for top 5
+                total_oi = float(aggregate.get("open_interest_usd", 0)) if aggregate else 0
+                
+                top_5_with_share = []
+                for ex in top_5:
+                    ex_oi = float(ex.get("open_interest_usd", 0))
+                    market_share = (ex_oi / total_oi * 100) if total_oi > 0 else 0
+                    
+                    top_5_with_share.append({
+                        "exchange": ex.get("exchange"),
+                        "openInterestUSD": ex_oi,
+                        "openInterestQuantity": float(ex.get("open_interest_quantity", 0)),
+                        "marketShare": market_share,
+                        "coinMargined": float(ex.get("open_interest_by_coin_margin", 0)),
+                        "stablecoinMargined": float(ex.get("open_interest_by_stable_coin_margin", 0)),
+                        "change24h": float(ex.get("open_interest_change_percent_24h", 0))
+                    })
+                
+                # Aggregate data
+                aggregate_info = {
+                    "totalOI": float(aggregate.get("open_interest_usd", 0)) if aggregate else 0,
+                    "totalQuantity": float(aggregate.get("open_interest_quantity", 0)) if aggregate else 0,
+                    "coinMargined": float(aggregate.get("open_interest_by_coin_margin", 0)) if aggregate else 0,
+                    "stablecoinMargined": float(aggregate.get("open_interest_by_stable_coin_margin", 0)) if aggregate else 0,
+                    "change24h": float(aggregate.get("open_interest_change_percent_24h", 0)) if aggregate else 0
+                } if aggregate else {}
+                
+                return {
+                    "success": True,
+                    "symbol": symbol.upper(),
+                    "exchangeCount": len(exchanges),
+                    "aggregate": aggregate_info,
+                    "top5Exchanges": top_5_with_share,
+                    "allExchanges": exchanges_data,
+                    "source": "coinglass_oi_exchange_list"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)

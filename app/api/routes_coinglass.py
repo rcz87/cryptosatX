@@ -425,6 +425,46 @@ async def get_aggregated_coin_margin_oi_history(
         await service.close()
 
 
+@router.get("/open-interest/exchange-list/{symbol}")
+async def get_oi_exchange_list(symbol: str):
+    """
+    Get Open Interest breakdown by EXCHANGE (20TH ENDPOINT!)
+    
+    Returns comprehensive OI data per exchange:
+    - Total market OI aggregate (All exchanges combined)
+    - Per-exchange breakdown (Binance, OKX, Bybit, CME, etc.)
+    - Market share % for each exchange
+    - Coin-margined vs Stablecoin-margined split
+    - OI changes across 6 timeframes (5m, 15m, 30m, 1h, 4h, 24h)
+    
+    Perfect for:
+    - Cross-exchange OI comparison
+    - Market dominance analysis (which exchange leads?)
+    - Exchange flow tracking (money moving between exchanges)
+    - Contract type preference per exchange
+    - Short-term momentum (5m-4h changes)
+    
+    Example insights:
+    - Binance: $12.4B (18% market share) - Mixed margin types
+    - CME: $14.5B (21% market share) - Institutional, USDT-only
+    - Bybit: $7.1B (10% market share) - Growing fast (+2.87% 24h)
+    
+    Use Cases:
+    - Identify which exchanges are accumulating/distributing
+    - Spot exchange-specific trends before market-wide moves
+    - Analyze institutional (CME) vs retail (Binance) flows
+    - Track defi exchanges (dYdX) separately
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_oi_exchange_list(symbol=symbol)
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
