@@ -1895,6 +1895,128 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_taker_buy_sell_volume_exchange_list(self, symbol: str = "BTC", 
+                                                        range: str = "h1") -> Dict:
+        """
+        Get Taker Buy/Sell Volume per exchange (29TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/taker-buy-sell-volume/exchange-list
+        
+        Parameters:
+        - symbol: Trading coin (e.g., BTC, ETH)
+        - range: Time range (5m, 15m, 30m, 1h, 4h, 12h, 24h)
+        
+        Returns AGGRESSIVE market pressure:
+        - Taker buy vs sell volume (USD)
+        - Buy/sell ratio per exchange
+        - Shows AGGRESSIVE buying vs selling!
+        
+        Taker = Market orders (pay fees, aggressive)
+        Maker = Limit orders (get rebates, passive)
+        
+        HIGH taker buy = Strong buying pressure!
+        HIGH taker sell = Strong selling pressure!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/taker-buy-sell-volume/exchange-list"
+            params = {
+                "symbol": symbol.upper(),
+                "range": range
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                volume_data = data["data"]
+                
+                overall_buy_ratio = float(volume_data.get("buy_ratio", 0))
+                overall_sell_ratio = float(volume_data.get("sell_ratio", 0))
+                overall_buy_vol = float(volume_data.get("buy_vol_usd", 0))
+                overall_sell_vol = float(volume_data.get("sell_vol_usd", 0))
+                
+                # Determine market pressure
+                if overall_buy_ratio > 60:
+                    pressure = "EXTREME_BUYING_PRESSURE"
+                    pressure_desc = f"Takers aggressively buying ({overall_buy_ratio:.2f}%) - Strong bullish pressure!"
+                elif overall_buy_ratio > 55:
+                    pressure = "STRONG_BUYING_PRESSURE"
+                    pressure_desc = f"Takers favor buying ({overall_buy_ratio:.2f}%) - Bullish pressure"
+                elif overall_buy_ratio > 52:
+                    pressure = "MODERATE_BUYING_PRESSURE"
+                    pressure_desc = f"Slight taker buying bias ({overall_buy_ratio:.2f}%)"
+                elif overall_buy_ratio >= 48:
+                    pressure = "BALANCED"
+                    pressure_desc = f"Taker volume balanced ({overall_buy_ratio:.2f}% buy, {overall_sell_ratio:.2f}% sell)"
+                elif overall_buy_ratio >= 45:
+                    pressure = "MODERATE_SELLING_PRESSURE"
+                    pressure_desc = f"Slight taker selling bias ({overall_sell_ratio:.2f}% sell)"
+                elif overall_buy_ratio >= 40:
+                    pressure = "STRONG_SELLING_PRESSURE"
+                    pressure_desc = f"Takers favor selling ({overall_sell_ratio:.2f}%) - Bearish pressure"
+                else:
+                    pressure = "EXTREME_SELLING_PRESSURE"
+                    pressure_desc = f"Takers aggressively selling ({overall_sell_ratio:.2f}%) - Strong bearish pressure!"
+                
+                # Process exchange list
+                exchange_list = volume_data.get("exchange_list", [])
+                exchange_processed = []
+                
+                for ex in exchange_list:
+                    exchange_processed.append({
+                        "exchange": ex.get("exchange"),
+                        "buyRatio": float(ex.get("buy_ratio", 0)),
+                        "sellRatio": float(ex.get("sell_ratio", 0)),
+                        "buyVolumeUSD": float(ex.get("buy_vol_usd", 0)),
+                        "sellVolumeUSD": float(ex.get("sell_vol_usd", 0)),
+                        "totalVolumeUSD": float(ex.get("buy_vol_usd", 0)) + float(ex.get("sell_vol_usd", 0)),
+                        "netBuyVolumeUSD": float(ex.get("buy_vol_usd", 0)) - float(ex.get("sell_vol_usd", 0))
+                    })
+                
+                # Sort by total volume
+                exchange_sorted = sorted(exchange_processed, 
+                                        key=lambda x: x["totalVolumeUSD"], 
+                                        reverse=True)
+                
+                # Find most bullish/bearish exchanges
+                most_bullish = sorted(exchange_processed, 
+                                     key=lambda x: x["buyRatio"], 
+                                     reverse=True)[:5]
+                most_bearish = sorted(exchange_processed, 
+                                     key=lambda x: x["sellRatio"], 
+                                     reverse=True)[:5]
+                
+                return {
+                    "success": True,
+                    "symbol": symbol.upper(),
+                    "range": range,
+                    "overall": {
+                        "buyRatio": overall_buy_ratio,
+                        "sellRatio": overall_sell_ratio,
+                        "buyVolumeUSD": overall_buy_vol,
+                        "sellVolumeUSD": overall_sell_vol,
+                        "totalVolumeUSD": overall_buy_vol + overall_sell_vol,
+                        "netBuyVolumeUSD": overall_buy_vol - overall_sell_vol,
+                        "pressure": pressure,
+                        "pressureDescription": pressure_desc
+                    },
+                    "topExchangesByVolume": exchange_sorted[:10],
+                    "mostBullishExchanges": most_bullish,
+                    "mostBearishExchanges": most_bearish,
+                    "allExchanges": exchange_sorted,
+                    "note": "Taker volume = aggressive market orders (shows buying/selling pressure)",
+                    "source": "coinglass_taker_volume"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)

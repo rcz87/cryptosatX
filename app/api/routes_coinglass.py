@@ -1013,6 +1013,133 @@ async def get_top_long_short_position_ratio_history(
         await service.close()
 
 
+@router.get("/taker-buy-sell-volume/exchange-list")
+async def get_taker_buy_sell_volume_exchange_list(
+    symbol: str = Query("BTC", description="Trading coin (e.g., BTC, ETH)"),
+    range: str = Query("h1", description="Time range: 5m, 15m, 30m, 1h, 4h, 12h, 24h")
+):
+    """
+    Get Taker Buy/Sell Volume per exchange (29TH ENDPOINT!)
+    
+    Returns AGGRESSIVE market pressure across all exchanges:
+    - Taker buy vs sell volume (USD)
+    - Buy/sell ratio per exchange
+    - Overall market pressure sentiment
+    - Exchange rankings
+    
+    🔥 What is Taker Volume:
+    
+    **Taker Orders** (AGGRESSIVE):
+    - Market orders that TAKE liquidity
+    - Execute immediately at market price
+    - Pay FEES (taker fees)
+    - Show AGGRESSIVE buying/selling
+    
+    **Maker Orders** (PASSIVE):
+    - Limit orders that PROVIDE liquidity
+    - Wait in order book
+    - Receive REBATES (maker rebates)
+    - Show passive positioning
+    
+    Why Taker Volume Matters:
+    
+    1. **Aggressive Pressure Detection**:
+       - High taker buy = Aggressive buying (bullish pressure)
+       - High taker sell = Aggressive selling (bearish pressure)
+       - Shows who's more desperate to trade!
+    
+    2. **Market Sentiment**:
+       - Taker buy > 55% = Buyers willing to pay premium
+       - Taker sell > 55% = Sellers panic dumping
+       - Balanced (48-52%) = No urgency either way
+    
+    3. **Institutional Activity**:
+       - Large taker orders = Whales/institutions moving
+       - High taker volume = Strong conviction trades
+       - Shows "smart money" urgency
+    
+    Current Market Pressure Classifications:
+    - Buy > 60%: EXTREME buying pressure 🔥
+    - Buy 55-60%: Strong buying pressure 📈
+    - Buy 52-55%: Moderate buying pressure ↗️
+    - Buy 48-52%: Balanced ↔️
+    - Buy 45-48%: Moderate selling pressure ↘️
+    - Buy 40-45%: Strong selling pressure 📉
+    - Buy < 40%: EXTREME selling pressure ❄️
+    
+    Trading Signals:
+    
+    1. **Trend Confirmation**:
+       - Price UP + High taker buy = Confirmed uptrend ✅
+       - Price DOWN + High taker sell = Confirmed downtrend ✅
+       - Shows real conviction behind moves
+    
+    2. **Divergence Detection**:
+       - Price UP + High taker sell = Distribution (bearish) ⚠️
+       - Price DOWN + High taker buy = Accumulation (bullish) 💎
+       - Smart money doing opposite of price!
+    
+    3. **Reversal Signals**:
+       - Extreme taker sell (>60%) = Potential capitulation
+       - Extreme taker buy (>60%) = Potential exhaustion
+       - Look for extremes to fade
+    
+    4. **Exchange Arbitrage**:
+       - Compare taker ratios across exchanges
+       - High buy on one, high sell on another = Arbitrage flow
+       - Track cross-exchange pressure
+    
+    Example Use Cases:
+    
+    **Bullish Confirmation**:
+    ```
+    BTC price: +5%
+    Taker buy: 58% (strong buying)
+    Interpretation: Real buying pressure, trend confirmed
+    Action: Follow the trend
+    ```
+    
+    **Bearish Divergence**:
+    ```
+    BTC price: +3%
+    Taker sell: 57% (strong selling)
+    Interpretation: Smart money distributing into rally
+    Action: Take profits, prepare for reversal
+    ```
+    
+    **Capitulation Signal**:
+    ```
+    BTC price: -10%
+    Taker sell: 65% (extreme panic)
+    Interpretation: Potential bottom/capitulation
+    Action: Contrarian buy opportunity
+    ```
+    
+    Current Data Example:
+    - Overall: 44.17% buy, 55.83% sell
+    - Signal: Moderate-to-strong selling pressure
+    - Interpretation: Market under bearish pressure
+    
+    Response includes:
+    - Overall market pressure
+    - Top 10 exchanges by volume
+    - 5 most bullish exchanges
+    - 5 most bearish exchanges
+    - All exchanges sorted by volume
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_taker_buy_sell_volume_exchange_list(
+            symbol=symbol,
+            range=range
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
