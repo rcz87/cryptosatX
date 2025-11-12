@@ -1,0 +1,151 @@
+openapi: 3.1.0
+info:
+  title: CryptoSatX - Trading Signals API
+  version: 3.0.0
+  description: |
+    Real-time cryptocurrency trading signals with multi-factor analysis.
+    Uses flat parameters for GPT Actions compatibility.
+
+servers:
+  - url: https://guardiansofthetoken.org
+    description: Production API
+
+paths:
+  /gpt/signal:
+    post:
+      operationId: getTradingSignal
+      summary: Get trading signal for cryptocurrency
+      description: |
+        Returns LONG/SHORT/NEUTRAL signal with confidence score based on 8-factor analysis:
+        - Liquidations, Funding Rate, Price Momentum, Long/Short Ratio
+        - Smart Money, OI Trend, Social Sentiment, Fear & Greed
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - symbol
+              properties:
+                symbol:
+                  type: string
+                  description: Cryptocurrency symbol (BTC, ETH, SOL, AXS, PEPE, etc.)
+                  example: BTC
+                debug:
+                  type: boolean
+                  description: Enable debug mode for detailed metrics
+                  default: false
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+                  data:
+                    type: object
+                    properties:
+                      symbol:
+                        type: string
+                      signal:
+                        type: string
+                        enum: [LONG, SHORT, NEUTRAL]
+                      score:
+                        type: number
+                        description: Composite score (0-100)
+                      confidence:
+                        type: string
+                        enum: [high, medium, low]
+                      price:
+                        type: number
+                      reasons:
+                        type: array
+                        items:
+                          type: string
+                  operation:
+                    type: string
+                    example: signals.get
+
+  /gpt/health:
+    get:
+      operationId: checkHealth
+      summary: Check API health status
+      description: Verify that the API is operational
+      responses:
+        '200':
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                      version:
+                        type: string
+                      message:
+                        type: string
+
+  /gpt/smart-money-scan:
+    post:
+      operationId: scanSmartMoney
+      summary: Scan for smart money activity
+      description: |
+        Detect whale accumulation and distribution patterns across all coins.
+        Returns coins with significant institutional activity.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                min_accumulation_score:
+                  type: integer
+                  minimum: 0
+                  maximum: 10
+                  default: 5
+                  description: Minimum accumulation score threshold
+      responses:
+        '200':
+          description: Smart money analysis results
+
+  /gpt/mss-discover:
+    post:
+      operationId: discoverHighPotentialCoins
+      summary: Discover high-potential cryptocurrencies
+      description: |
+        Multi-Modal Signal Score (MSS) system for finding emerging cryptocurrencies.
+        3-phase analysis: Discovery, Social Confirmation, Institutional Validation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                min_mss_score:
+                  type: integer
+                  minimum: 0
+                  maximum: 100
+                  default: 75
+                  description: Minimum MSS score threshold
+                max_results:
+                  type: integer
+                  minimum: 1
+                  maximum: 50
+                  default: 10
+                  description: Maximum number of results to return
+      responses:
+        '200':
+          description: MSS discovery results
