@@ -640,6 +640,70 @@ async def get_oi_weighted_funding_rate_history(
         await service.close()
 
 
+@router.get("/funding-rate/vol-weight-history")
+async def get_volume_weighted_funding_rate_history(
+    symbol: str = Query("BTC", description="Coin symbol (e.g., BTC, ETH)"),
+    interval: str = Query("1d", description="Interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)", le=1000)
+):
+    """
+    Get VOLUME-WEIGHTED Funding Rate history (24TH ENDPOINT!)
+    
+    Returns AGGREGATED funding rate weighted by Trading Volume across ALL exchanges:
+    - Weights by trading volume (high volume = high weight)
+    - Different from OI-weighted (positions vs activity)
+    - Active trader sentiment indicator
+    - OHLC data with sentiment analysis
+    
+    OI-Weighted vs Volume-Weighted:
+    - **OI-Weighted**: Weights by positions held → Positional bias
+    - **Volume-Weighted**: Weights by trading activity → Active trader bias ✨
+    
+    Why Both Matter:
+    - **OI-weighted FR**: What holders believe (long-term view)
+    - **Volume-weighted FR**: What traders are doing (short-term activity)
+    - **Divergence**: OI-weighted ≠ Vol-weighted = Position vs Activity mismatch
+    
+    Example Divergence:
+    - OI-weighted FR: +0.5% (holders bullish)
+    - Volume-weighted FR: -0.2% (active traders bearish)
+    - Signal: Smart money (low volume) vs retail (high volume) split
+    
+    Sentiment Classification:
+    - Extremely Bullish: avg FR > 5% (reversal risk!)
+    - Very Bullish: avg FR > 2%
+    - Bullish: avg FR > 1%
+    - Slightly Bullish: avg FR > 0%
+    - Slightly Bearish: avg FR < 0%
+    - Bearish: avg FR < -1%
+    - Very Bearish: avg FR < -2%
+    - Extremely Bearish: avg FR < -5% (reversal risk!)
+    
+    Trading Signals:
+    - Vol-weighted FR > OI-weighted FR = Active buyers aggressive
+    - Vol-weighted FR < OI-weighted FR = Active sellers aggressive
+    - High vol-weighted FR = Active traders paying premium (FOMO)
+    
+    Perfect for:
+    - **Active trader sentiment** (what's trading NOW)
+    - Short-term momentum analysis
+    - Compare with OI-weighted for smart money detection
+    - Identify retail vs institutional bias
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_volume_weighted_funding_rate_history(
+            symbol=symbol,
+            interval=interval,
+            limit=limit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
