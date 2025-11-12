@@ -4353,6 +4353,47 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_economic_calendar(self) -> Dict:
+        """Get Economic Calendar Events! (57TH ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/calendar/economic-data"
+            
+            response = await client.get(url, headers=self.headers)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                events = data["data"]
+                
+                processed_events = []
+                for event in events:
+                    processed_events.append({
+                        "name": event.get("calendar_name", ""),
+                        "country": event.get("country_name", ""),
+                        "countryCode": event.get("country_code", ""),
+                        "timestamp": event.get("publish_timestamp", 0),
+                        "importance": event.get("importance_level", 1),
+                        "impact": event.get("data_effect", ""),
+                        "forecast": event.get("forecast_value", ""),
+                        "previous": event.get("previous_value", ""),
+                        "actual": event.get("published_value", ""),
+                        "revised": event.get("revised_previous_value", "")
+                    })
+                
+                high_impact = [e for e in processed_events if e["importance"] >= 2]
+                
+                return {
+                    "success": True,
+                    "totalEvents": len(processed_events),
+                    "highImpactEvents": len(high_impact),
+                    "events": processed_events,
+                    "note": "Economic calendar with macro events affecting crypto markets. Importance: 1=low, 2=medium, 3=high.",
+                    "source": "economic_calendar"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
     async def get_long_short_ratio(self, symbol: str = "BTC") -> Dict:

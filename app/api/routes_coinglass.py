@@ -1272,6 +1272,16 @@ async def get_fear_greed_index():
         await service.close()
 
 
+@router.get("/calendar/economic")
+async def get_economic_calendar():
+    """📅 ENDPOINT #57: Economic Calendar - Macro events impacting crypto!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_economic_calendar()
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,
