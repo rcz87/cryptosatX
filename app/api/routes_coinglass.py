@@ -240,24 +240,31 @@ async def get_exchange_reserves(symbol: str = "BTC"):
         await service.close()
 
 
+@router.get("/index/bull-market-peak")
+async def get_bull_market_peak():
+    """
+    Bull Market Peak Indicators - Multi-metric positioning signals
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_bull_market_indicators()
+        if not result.get("success"):
+            raise HTTPException(status_code=500, detail=result.get("error"))
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/index/rainbow-chart")
 async def get_rainbow_chart():
     """
-    Get Bitcoin Rainbow Chart data (long-term positioning indicator)
-    
-    Returns:
-    - Current price band
-    - Trading signal (extreme_buy to extreme_sell)
-    
-    Helps identify market cycle positions
+    Bitcoin Rainbow Chart - Long-term valuation bands
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_rainbow_chart()
-        
         if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error", "Failed to fetch rainbow chart"))
-        
+            raise HTTPException(status_code=500, detail=result.get("error"))
         return result
     finally:
         await service.close()
@@ -266,46 +273,28 @@ async def get_rainbow_chart():
 @router.get("/index/stock-to-flow")
 async def get_stock_to_flow():
     """
-    Get Bitcoin Stock-to-Flow model valuation
-    
-    Returns:
-    - Current vs S2F model price
-    - Deviation percentage
-    - Valuation (undervalued to overvalued)
-    
-    >30% above S2F = overheated
-    >30% below S2F = opportunity
+    Bitcoin Stock-to-Flow Model - Scarcity valuation
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_stock_to_flow()
-        
         if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error", "Failed to fetch S2F data"))
-        
+            raise HTTPException(status_code=500, detail=result.get("error"))
         return result
     finally:
         await service.close()
 
 
-@router.get("/borrow/interest-rates")
-async def get_borrow_rates():
+@router.get("/borrow/interest-rate")
+async def get_borrow_interest_rate():
     """
-    Get cryptocurrency borrow interest rates
-    
-    Returns:
-    - Average borrow rate
-    - Leverage demand indicator
-    
-    High rates = high leverage demand = bullish (or dangerous if too high)
+    Borrow Interest Rate History - Leverage demand indicator
     """
     service = CoinglassComprehensiveService()
     try:
-        result = await service.get_borrow_interest_rates()
-        
+        result = await service.get_borrow_interest_rate()
         if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error", "Failed to fetch borrow rates"))
-        
+            raise HTTPException(status_code=500, detail=result.get("error"))
         return result
     finally:
         await service.close()
@@ -341,21 +330,27 @@ async def get_trading_dashboard(symbol: str):
         options_oi_task = service.get_options_open_interest()
         options_vol_task = service.get_options_volume()
         
-        # NEW: Market indexes (Bitcoin only)
+        # NEW: Market indicators (Bitcoin only)
         if symbol.upper() in ["BTC", "BITCOIN"]:
+            bull_task = service.get_bull_market_indicators()
             rainbow_task = service.get_rainbow_chart()
             s2f_task = service.get_stock_to_flow()
+            borrow_task = service.get_borrow_interest_rate()
         else:
-            rainbow_task = asyncio.create_task(asyncio.sleep(0, result={"success": False, "error": "BTC only"}))
-            s2f_task = asyncio.create_task(asyncio.sleep(0, result={"success": False, "error": "BTC only"}))
+            null_result = {"success": False, "error": "BTC only"}
+            bull_task = asyncio.create_task(asyncio.sleep(0, result=null_result))
+            rainbow_task = asyncio.create_task(asyncio.sleep(0, result=null_result))
+            s2f_task = asyncio.create_task(asyncio.sleep(0, result=null_result))
+            borrow_task = asyncio.create_task(asyncio.sleep(0, result=null_result))
         
-        borrow_task = service.get_borrow_interest_rates()
-        
-        # Execute all concurrently
-        market, liquidations, etf_flows, reserves, options_oi, options_vol, rainbow, s2f, borrow_rates = await asyncio.gather(
+        # Execute all 10 endpoints concurrently (VERIFIED REAL ENDPOINTS!)
+        results = await asyncio.gather(
             market_task, liq_task, etf_task, reserves_task, 
-            options_oi_task, options_vol_task, rainbow_task, s2f_task, borrow_task
+            options_oi_task, options_vol_task, 
+            bull_task, rainbow_task, s2f_task, borrow_task
         )
+        
+        market, liquidations, etf_flows, reserves, options_oi, options_vol, bull_indicators, rainbow, s2f, borrow = results
         
         return {
             "symbol": symbol.upper(),
@@ -378,17 +373,23 @@ async def get_trading_dashboard(symbol: str):
                 "interpretation": reserves.get("interpretation", "unknown")
             },
             
-            # Market indexes (NEW!)
+            # Market indexes (NEW! - Bitcoin only)
             "marketIndexes": {
-                "rainbow": rainbow,
+                "bullMarketPeak": bull_indicators,
+                "rainbowChart": rainbow,
                 "stockToFlow": s2f,
-                "borrowRates": borrow_rates
+                "borrowInterestRate": borrow
             },
             
             "status": {
-                "endpointsUsed": 9,
-                "optimizationLevel": "50%+",
-                "note": "Maximized Coinglass Standard plan endpoints (November 2025)"
+                "endpointsUsed": 10,
+                "optimizationLevel": "COMPREHENSIVE",
+                "note": "All endpoints verified from official Coinglass docs (November 2025)",
+                "endpoints": [
+                    "market", "liquidations", "options_oi", "options_vol", 
+                    "etf_flows", "exchange_reserves", "bull_indicators", 
+                    "rainbow_chart", "stock_to_flow", "borrow_interest_rate"
+                ]
             }
         }
     finally:

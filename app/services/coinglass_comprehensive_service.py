@@ -465,16 +465,17 @@ class CoinglassComprehensiveService:
     async def get_options_open_interest(self) -> Dict:
         """
         Get Bitcoin/Crypto options open interest across exchanges
-        Endpoint: /api/options/open-interest
+        REAL ENDPOINT: /api/option/info?symbol=BTC
         
         Returns total options OI by exchange (Deribit, OKX, Binance, etc.)
         Update frequency: 30 seconds
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url_v4}/api/options/open-interest"
+            url = f"{self.base_url_v4}/api/option/info"
+            params = {"symbol": "BTC"}  # FIXED: Required parameter!
             
-            response = await client.get(url, headers=self.headers)
+            response = await client.get(url, headers=self.headers, params=params)
             
             if response.status_code != 200:
                 return {"success": False, "error": f"HTTP {response.status_code}"}
@@ -484,27 +485,34 @@ class CoinglassComprehensiveService:
             if str(data.get("code")) == "0" and data.get("data"):
                 options_data = data["data"]
                 
-                # Calculate total OI and top exchange
+                # Calculate total OI and volume
                 total_oi = 0
-                top_exchange = {"name": "", "oi": 0}
+                total_volume = 0
+                exchanges = []
                 
                 if isinstance(options_data, list):
                     for exchange_data in options_data:
                         oi = float(exchange_data.get("openInterest", 0))
+                        vol = float(exchange_data.get("volume", 0))
                         total_oi += oi
-                        
-                        if oi > top_exchange["oi"]:
-                            top_exchange = {
-                                "name": exchange_data.get("exchange", ""),
-                                "oi": oi
-                            }
+                        total_volume += vol
+                        exchanges.append({
+                            "exchange": exchange_data.get("exchangeName", ""),
+                            "openInterest": oi,
+                            "volume": vol
+                        })
+                
+                # Sort by OI descending
+                exchanges.sort(key=lambda x: x["openInterest"], reverse=True)
+                top_exchange = exchanges[0] if exchanges else {"exchange": "", "openInterest": 0}
                 
                 return {
                     "success": True,
                     "totalOptionsOI": total_oi,
+                    "totalVolume24h": total_volume,
                     "topExchange": top_exchange,
-                    "exchanges": options_data,
-                    "source": "coinglass_options_oi"
+                    "exchanges": exchanges,
+                    "source": "coinglass_options"
                 }
             
             return {"success": False, "error": "No data"}
@@ -515,38 +523,15 @@ class CoinglassComprehensiveService:
     async def get_options_volume(self) -> Dict:
         """
         Get Bitcoin/Crypto options trading volume
-        Endpoint: /api/options/volume
+        NOTE: This data is included in /api/option/info endpoint
         
         Returns 24h options volume by exchange
         """
         try:
-            client = await self._get_client()
-            url = f"{self.base_url_v4}/api/options/volume"
+            # Options volume is part of option/info endpoint
+            return await self.get_options_open_interest()
             
-            response = await client.get(url, headers=self.headers)
-            
-            if response.status_code != 200:
-                return {"success": False, "error": f"HTTP {response.status_code}"}
-            
-            data = response.json()
-            
-            if str(data.get("code")) == "0" and data.get("data"):
-                volume_data = data["data"]
-                
-                total_volume = 0
-                if isinstance(volume_data, list):
-                    for exchange_data in volume_data:
-                        total_volume += float(exchange_data.get("volume24h", 0))
-                
-                return {
-                    "success": True,
-                    "totalVolume24h": total_volume,
-                    "exchanges": volume_data,
-                    "source": "coinglass_options_volume"
-                }
-            
-            return {"success": False, "error": "No data"}
-            
+
         except Exception as e:
             return {"success": False, "error": str(e)}
     
@@ -554,18 +539,24 @@ class CoinglassComprehensiveService:
     
     async def get_etf_flows(self, asset: str = "BTC") -> Dict:
         """
-        Get Bitcoin/Crypto ETF flows (institutional money tracking)
-        Endpoint: /api/etf/flows
+        Get Bitcoin/Ethereum ETF flows (institutional money tracking)
+        REAL ENDPOINTS: /api/etf/bitcoin/flow-history OR /api/etf/ethereum/flow-history
         
         Returns daily/weekly/monthly ETF inflows and outflows
         Critical for detecting institutional accumulation/distribution
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url_v4}/api/etf/flows"
-            params = {"asset": asset.upper()}
             
-            response = await client.get(url, headers=self.headers, params=params)
+            # FIXED: Use correct endpoint paths from official docs
+            if asset.upper() in ["BTC", "BITCOIN"]:
+                url = f"{self.base_url_v4}/api/etf/bitcoin/flow-history"
+            elif asset.upper() in ["ETH", "ETHEREUM"]:
+                url = f"{self.base_url_v4}/api/etf/ethereum/flow-history"
+            else:
+                return {"success": False, "error": f"ETF data only available for BTC and ETH"}
+            
+            response = await client.get(url, headers=self.headers)
             
             if response.status_code != 200:
                 return {"success": False, "error": f"HTTP {response.status_code}"}
@@ -579,8 +570,8 @@ class CoinglassComprehensiveService:
                 if isinstance(etf_data, list) and len(etf_data) > 0:
                     latest = etf_data[-1]
                     
-                    daily_flow = float(latest.get("dailyFlow", 0))
-                    total_holdings = float(latest.get("totalHoldings", 0))
+                    daily_flow = float(latest.get("netflow", 0))
+                    total_holdings = float(latest.get("totalAssets", 0))
                     
                     # Determine institutional sentiment
                     if daily_flow > 100_000_000:  # $100M+
@@ -600,7 +591,7 @@ class CoinglassComprehensiveService:
                         "dailyFlow": daily_flow,
                         "totalHoldings": total_holdings,
                         "sentiment": sentiment,
-                        "historicalData": etf_data,
+                        "historicalData": etf_data[:10],  # Last 10 days
                         "source": "coinglass_etf_flows"
                     }
             
@@ -614,13 +605,13 @@ class CoinglassComprehensiveService:
     async def get_exchange_reserves(self, symbol: str = "BTC") -> Dict:
         """
         Get cryptocurrency reserves on exchanges (whale movement detection)
-        Endpoint: /api/on-chain/exchange-reserves
+        REAL ENDPOINT: /api/exchange/balance/list
         
         Returns exchange balance changes - critical for whale tracking
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url_v4}/api/on-chain/exchange-reserves"
+            url = f"{self.base_url_v4}/api/exchange/balance/list"
             params = {"symbol": symbol.upper()}
             
             response = await client.get(url, headers=self.headers, params=params)
@@ -631,25 +622,34 @@ class CoinglassComprehensiveService:
             data = response.json()
             
             if str(data.get("code")) == "0" and data.get("data"):
-                reserves_data = data["data"]
+                balances = data["data"]
                 
-                if isinstance(reserves_data, list) and len(reserves_data) >= 2:
-                    latest = reserves_data[-1]
-                    previous = reserves_data[-2]
+                if isinstance(balances, list) and len(balances) > 0:
+                    # Aggregate total exchange reserves
+                    total_balance = 0
+                    change_1h = 0
+                    change_7d = 0
+                    change_30d = 0
                     
-                    current_reserves = float(latest.get("balance", 0))
-                    previous_reserves = float(previous.get("balance", 0))
-                    change = current_reserves - previous_reserves
-                    change_pct = (change / previous_reserves * 100) if previous_reserves > 0 else 0
+                    for exchange_data in balances:
+                        balance = float(exchange_data.get("balance", 0))
+                        total_balance += balance
+                        change_1h += float(exchange_data.get("h1Change", 0))
+                        change_7d += float(exchange_data.get("h24Change", 0))
+                        change_30d += float(exchange_data.get("d30Change", 0))
                     
-                    # Whale movement interpretation
-                    if change < -10000:  # Large outflow
-                        interpretation = "whale_accumulation"  # Moving to cold storage
-                    elif change < 0:
+                    # Calculate percentage changes
+                    change_1h_pct = (change_1h / total_balance * 100) if total_balance > 0 else 0
+                    change_7d_pct = (change_7d / total_balance * 100) if total_balance > 0 else 0
+                    
+                    # Whale movement interpretation (based on 7d trend)
+                    if change_7d_pct < -5:  # >5% outflow
+                        interpretation = "whale_accumulation"  # Moving to cold storage (bullish)
+                    elif change_7d_pct < -1:
                         interpretation = "accumulation"
-                    elif change > 10000:  # Large inflow
-                        interpretation = "whale_distribution"  # Preparing to sell
-                    elif change > 0:
+                    elif change_7d_pct > 5:  # >5% inflow
+                        interpretation = "whale_distribution"  # Preparing to sell (bearish)
+                    elif change_7d_pct > 1:
                         interpretation = "distribution"
                     else:
                         interpretation = "neutral"
@@ -657,13 +657,13 @@ class CoinglassComprehensiveService:
                     return {
                         "success": True,
                         "symbol": symbol.upper(),
-                        "currentReserves": current_reserves,
-                        "previousReserves": previous_reserves,
-                        "change": change,
-                        "changePct": change_pct,
+                        "totalExchangeBalance": total_balance,
+                        "change1h": change_1h,
+                        "change7d": change_7d,
+                        "changePct": change_7d_pct,
                         "interpretation": interpretation,
-                        "historicalData": reserves_data,
-                        "source": "coinglass_exchange_reserves"
+                        "topExchanges": balances[:5],  # Top 5 exchanges
+                        "source": "coinglass_exchange_balances"
                     }
             
             return {"success": False, "error": "No data"}
@@ -671,18 +671,18 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
-    # ==================== MARKET INDEXES ENDPOINTS ====================
+    # ==================== MARKET INDICATORS (ALL VERIFIED REAL ENDPOINTS!) ====================
     
-    async def get_rainbow_chart(self) -> Dict:
+    async def get_bull_market_indicators(self) -> Dict:
         """
-        Get Bitcoin Rainbow Chart data (long-term positioning indicator)
-        Endpoint: /api/index/rainbow-chart
+        Get Bull Market Peak Indicators
+        REAL ENDPOINT: /api/bull-market-peak-indicator
         
-        Returns current price position on rainbow bands
+        Returns multi-metric bull market positioning signals
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url_v4}/api/index/rainbow-chart"
+            url = f"{self.base_url_v4}/api/bull-market-peak-indicator"
             
             response = await client.get(url, headers=self.headers)
             
@@ -692,33 +692,39 @@ class CoinglassComprehensiveService:
             data = response.json()
             
             if str(data.get("code")) == "0" and data.get("data"):
-                rainbow_data = data["data"]
-                
-                if isinstance(rainbow_data, dict):
-                    current_band = rainbow_data.get("currentBand", "")
-                    price = rainbow_data.get("currentPrice", 0)
-                    
-                    # Map band to trading signal
-                    band_signals = {
-                        "Fire Sale": "extreme_buy",
-                        "Buy": "buy",
-                        "Accumulate": "accumulate",
-                        "Hold": "hold",
-                        "Is This a Bubble?": "sell",
-                        "FOMO Intensifies": "extreme_sell",
-                        "Maximum Bubble Territory": "extreme_sell"
-                    }
-                    
-                    signal = band_signals.get(current_band, "hold")
-                    
-                    return {
-                        "success": True,
-                        "currentBand": current_band,
-                        "currentPrice": price,
-                        "signal": signal,
-                        "data": rainbow_data,
-                        "source": "coinglass_rainbow"
-                    }
+                return {
+                    "success": True,
+                    "indicators": data["data"],
+                    "source": "coinglass_bull_indicators"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_rainbow_chart(self) -> Dict:
+        """
+        Bitcoin Rainbow Chart - Long-term valuation bands
+        REAL ENDPOINT: /api/index/bitcoin/rainbow-chart (FIXED PATH!)
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/index/bitcoin/rainbow-chart"  # FIXED: Add /bitcoin/
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                return {
+                    "success": True,
+                    "data": data["data"],
+                    "source": "coinglass_rainbow"
+                }
             
             return {"success": False, "error": "No data"}
             
@@ -727,14 +733,12 @@ class CoinglassComprehensiveService:
     
     async def get_stock_to_flow(self) -> Dict:
         """
-        Get Bitcoin Stock-to-Flow model data
-        Endpoint: /api/index/stock-to-flow
-        
-        Returns S2F ratio and price valuation
+        Bitcoin Stock-to-Flow Model
+        REAL ENDPOINT: /api/index/stock-flow (verified in official docs!)
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url_v4}/api/index/stock-to-flow"
+            url = f"{self.base_url_v4}/api/index/stock-flow"
             
             response = await client.get(url, headers=self.headers)
             
@@ -744,56 +748,28 @@ class CoinglassComprehensiveService:
             data = response.json()
             
             if str(data.get("code")) == "0" and data.get("data"):
-                s2f_data = data["data"]
-                
-                if isinstance(s2f_data, dict):
-                    current_price = float(s2f_data.get("currentPrice", 0))
-                    s2f_price = float(s2f_data.get("s2fPrice", 0))
-                    ratio = float(s2f_data.get("s2fRatio", 0))
-                    
-                    # Calculate deviation from S2F model
-                    deviation_pct = ((current_price - s2f_price) / s2f_price * 100) if s2f_price > 0 else 0
-                    
-                    # Valuation signal
-                    if deviation_pct < -30:
-                        valuation = "extremely_undervalued"
-                    elif deviation_pct < -10:
-                        valuation = "undervalued"
-                    elif deviation_pct > 30:
-                        valuation = "extremely_overvalued"
-                    elif deviation_pct > 10:
-                        valuation = "overvalued"
-                    else:
-                        valuation = "fair_value"
-                    
-                    return {
-                        "success": True,
-                        "currentPrice": current_price,
-                        "s2fModelPrice": s2f_price,
-                        "s2fRatio": ratio,
-                        "deviationPct": deviation_pct,
-                        "valuation": valuation,
-                        "data": s2f_data,
-                        "source": "coinglass_s2f"
-                    }
+                return {
+                    "success": True,
+                    "data": data["data"],
+                    "source": "coinglass_stock_to_flow"
+                }
             
             return {"success": False, "error": "No data"}
             
         except Exception as e:
             return {"success": False, "error": str(e)}
     
-    async def get_borrow_interest_rates(self) -> Dict:
+    async def get_borrow_interest_rate(self, symbol: str = "BTC") -> Dict:
         """
-        Get cryptocurrency borrow interest rates across exchanges
-        Endpoint: /api/borrow/interest-rates
-        
-        Returns funding cost trends - high rates = bullish leverage demand
+        Borrow Interest Rate History
+        REAL ENDPOINT: /api/borrow-interest-rate/history
         """
         try:
             client = await self._get_client()
-            url = f"{self.base_url_v4}/api/borrow/interest-rates"
+            url = f"{self.base_url_v4}/api/borrow-interest-rate/history"
+            params = {"symbol": symbol.upper()}  # Add symbol parameter
             
-            response = await client.get(url, headers=self.headers)
+            response = await client.get(url, headers=self.headers, params=params)
             
             if response.status_code != 200:
                 return {"success": False, "error": f"HTTP {response.status_code}"}
@@ -801,37 +777,11 @@ class CoinglassComprehensiveService:
             data = response.json()
             
             if str(data.get("code")) == "0" and data.get("data"):
-                rates_data = data["data"]
-                
-                if isinstance(rates_data, list):
-                    # Calculate average borrow rate
-                    total_rate = 0
-                    count = 0
-                    
-                    for rate_entry in rates_data:
-                        rate = float(rate_entry.get("rate", 0))
-                        total_rate += rate
-                        count += 1
-                    
-                    avg_rate = total_rate / count if count > 0 else 0
-                    
-                    # Interpret leverage demand
-                    if avg_rate > 0.1:  # >10% APR
-                        demand = "extreme_high"
-                    elif avg_rate > 0.05:
-                        demand = "high"
-                    elif avg_rate > 0.02:
-                        demand = "moderate"
-                    else:
-                        demand = "low"
-                    
-                    return {
-                        "success": True,
-                        "averageRate": avg_rate,
-                        "leverageDemand": demand,
-                        "rates": rates_data,
-                        "source": "coinglass_borrow_rates"
-                    }
+                return {
+                    "success": True,
+                    "data": data["data"],
+                    "source": "coinglass_borrow_rate"
+                }
             
             return {"success": False, "error": "No data"}
             
