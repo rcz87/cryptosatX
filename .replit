@@ -61,17 +61,5 @@ expertMode = true
 integrations = ["python_database:1.0.0"]
 
 [[ports]]
-localPort = 3000
-externalPort = 3000
-
-[[ports]]
-localPort = 5432
-externalPort = 5432
-
-[[ports]]
-localPort = 6379
-externalPort = 6379
-
-[[ports]]
 localPort = 8000
 externalPort = 80
