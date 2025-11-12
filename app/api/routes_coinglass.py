@@ -465,6 +465,62 @@ async def get_oi_exchange_list(symbol: str):
         await service.close()
 
 
+@router.get("/open-interest/exchange-history-chart")
+async def get_oi_exchange_history_chart(
+    symbol: str = Query("BTC", description="Coin symbol (e.g., BTC, ETH)"),
+    range: str = Query("12h", description="Time range: all, 1m, 15m, 1h, 4h, 12h, 24h"),
+    unit: str = Query("usd", description="Unit: 'usd' or 'coin'")
+):
+    """
+    Get Open Interest history CHART data per exchange (21ST ENDPOINT!)
+    
+    Returns TIME-SERIES data optimized for charting:
+    - timeList: Array of timestamps (x-axis)
+    - priceList: Array of prices (reference line)
+    - exchangeData: Object with exchange OI arrays (y-axis per exchange)
+    
+    Chart-ready format:
+    {
+      "timeList": [1762128000000, 1762214400000, ...],
+      "priceList": [110494.9, 106537.2, ...],
+      "exchangeData": {
+        "BINANCE": [12149298874, 12117334695, ...],
+        "BYBIT": [7123456789, 7234567890, ...],
+        ...
+      }
+    }
+    
+    Perfect for:
+    - Multi-line charts (OI per exchange over time)
+    - Stacked area charts (total market OI)
+    - Exchange comparison visualization
+    - Correlation analysis (OI vs price)
+    
+    Example use cases:
+    - Plot Binance OI vs CME OI to see retail vs institutional trends
+    - Overlay price to detect OI-price divergences
+    - Stack all exchanges to visualize total market OI
+    - Compare short-term (1h) vs long-term (24h) trends
+    
+    Response includes:
+    - Raw chart data (arrays)
+    - Price summary (first/last price, change %)
+    - Per-exchange summary (first/last OI, change %)
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_oi_exchange_history_chart(
+            symbol=symbol,
+            range=range,
+            unit=unit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """

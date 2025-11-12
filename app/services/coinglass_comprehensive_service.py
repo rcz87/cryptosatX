@@ -960,6 +960,95 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_oi_exchange_history_chart(self, symbol: str = "BTC", 
+                                            range: str = "12h", unit: str = "usd") -> Dict:
+        """
+        Get Open Interest history CHART data per exchange (21ST ENDPOINT!)
+        REAL ENDPOINT: /api/futures/open-interest/exchange-history-chart
+        
+        Parameters:
+        - symbol: Coin symbol (e.g., BTC, ETH)
+        - range: Time range (all, 1m, 15m, 1h, 4h, 12h, 24h, etc.)
+        - unit: 'usd' or 'coin'
+        
+        Returns TIME-SERIES data perfect for charting:
+        - time_list: Array of timestamps
+        - price_list: Array of prices
+        - data_map: Object with exchange OI arrays
+        
+        Ready for frontend charting libraries!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/open-interest/exchange-history-chart"
+            params = {
+                "symbol": symbol.upper(),
+                "range": range,
+                "unit": unit
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                chart_data = data["data"]
+                
+                time_list = chart_data.get("time_list", [])
+                price_list = chart_data.get("price_list", [])
+                data_map = chart_data.get("data_map", {})
+                
+                # Calculate summary for each exchange
+                exchange_summaries = {}
+                for exchange, values in data_map.items():
+                    if values:
+                        first_val = float(values[0]) if values else 0
+                        last_val = float(values[-1]) if values else 0
+                        change = last_val - first_val
+                        change_percent = (change / first_val * 100) if first_val > 0 else 0
+                        
+                        exchange_summaries[exchange] = {
+                            "firstOI": first_val,
+                            "lastOI": last_val,
+                            "change": change,
+                            "changePercent": change_percent,
+                            "dataPoints": len(values)
+                        }
+                
+                # Price summary
+                price_summary = {}
+                if price_list:
+                    price_summary = {
+                        "firstPrice": float(price_list[0]),
+                        "lastPrice": float(price_list[-1]),
+                        "priceChange": float(price_list[-1]) - float(price_list[0]),
+                        "priceChangePercent": ((float(price_list[-1]) - float(price_list[0])) / float(price_list[0]) * 100) if price_list[0] > 0 else 0
+                    }
+                
+                return {
+                    "success": True,
+                    "symbol": symbol.upper(),
+                    "range": range,
+                    "unit": unit,
+                    "dataPoints": len(time_list),
+                    "chartData": {
+                        "timeList": time_list,
+                        "priceList": price_list,
+                        "exchangeData": data_map
+                    },
+                    "priceSummary": price_summary,
+                    "exchangeSummaries": exchange_summaries,
+                    "source": "coinglass_oi_chart"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)
