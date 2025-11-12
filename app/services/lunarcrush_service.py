@@ -193,10 +193,18 @@ class LunarCrushService:
                 
                 if categories:
                     category_list = [cat.strip().lower() for cat in categories.split(",")]
-                    coins = [
-                        c for c in coins 
-                        if any(cat in c.get("categories", "").lower() for cat in category_list)
-                    ]
+                    filtered_coins = []
+                    for c in coins:
+                        coin_categories = c.get("categories", "")
+                        # Handle both string and list formats
+                        if isinstance(coin_categories, list):
+                            coin_cat_str = ",".join(coin_categories).lower()
+                        else:
+                            coin_cat_str = str(coin_categories).lower()
+                        
+                        if any(cat in coin_cat_str for cat in category_list):
+                            filtered_coins.append(c)
+                    coins = filtered_coins
                 
                 # Build response
                 return {
@@ -225,6 +233,67 @@ class LunarCrushService:
             return {
                 "success": False,
                 "error": str(e),
+            }
+
+    async def get_topic_details(self, topic: str) -> Dict:
+        """
+        Get detailed social metrics for a topic (coin, NFT, stock)
+        
+        Topics API provides 24-hour aggregated social activity with comparison to previous 24h
+        
+        Args:
+            topic: Topic name (e.g., "bitcoin", "ethereum", "#crypto")
+                   Must be lowercase with only: letters, numbers, spaces, #, $
+                   Can also use numeric IDs like "coins:1" for Bitcoin
+        
+        Returns:
+            Dict with comprehensive topic metrics including:
+            - topic_rank: Ranking among all topics
+            - related_topics: List of related trending topics
+            - social_volume: 24h social mentions
+            - sentiment: Average sentiment
+            - social_contributors: Number of unique contributors
+            - social_dominance: % of total social volume
+            - Time-series data (if available)
+        """
+        try:
+            # Normalize topic (lowercase, basic validation)
+            topic = topic.lower().strip()
+            
+            url = f"{self.base_url}/topic/{topic}/v1"
+            
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.get(url, headers=self.headers)
+                response.raise_for_status()
+                
+                data = response.json()
+                
+                if data.get("error"):
+                    return {
+                        "success": False,
+                        "error": data["error"],
+                    }
+                
+                # Extract and format response
+                return {
+                    "success": True,
+                    "config": data.get("config", {}),
+                    "data": data.get("data", {}),
+                }
+        
+        except httpx.HTTPStatusError as e:
+            print(f"LunarCrush topic HTTP error for {topic}: {e}")
+            return {
+                "success": False,
+                "error": f"HTTP error: {e.response.status_code}",
+                "topic": topic,
+            }
+        except Exception as e:
+            print(f"LunarCrush topic error for {topic}: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+                "topic": topic,
             }
 
 

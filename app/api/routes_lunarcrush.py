@@ -133,25 +133,32 @@ async def discover_coins(
     """
     🆕 LUNARCRUSH API V4 - Discover high-potential coins from 7,634+ tracked coins
     
+    **⚠️ Important Note:**
+    - LunarCrush API returns coins in pages (default: 100 coins per request)
+    - Filters are applied CLIENT-SIDE to the fetched page
+    - For best results: use higher `limit` values and combine with `sort` parameter
+    - To find specific coins, sort by relevant metric first (e.g., sort=galaxy_score)
+    
     **Use Cases:**
-    - Find emerging coins with high social momentum
-    - Discover quality projects (high Galaxy Score)
-    - Filter by sentiment and social engagement
-    - Category-based discovery (DeFi, Layer-1, Gaming, etc.)
+    - Browse top coins by market cap (default sort)
+    - Find high social momentum coins (sort=social_volume_24h)
+    - Discover trending coins (sort=alt_rank)
+    - Filter by categories (DeFi, Layer-1, etc.)
     
     **Galaxy Score™:** LunarCrush proprietary metric (0-100)
     - Combines social, market, and technical indicators
     - Higher score = stronger coin health
     
     **AltRank™:** Momentum-based ranking
-    - Lower rank = better performing
+    - Lower rank = better performing (1 is best)
     - Tracks price + social momentum
     
-    **Example Queries:**
-    - High quality coins: `?min_galaxy_score=70&max_alt_rank=100`
-    - Bullish sentiment: `?min_sentiment=80&min_social_volume=10000`
-    - Layer-1 discovery: `?categories=layer-1&min_galaxy_score=60`
-    - Top trending: `?sort=social_volume_24h&limit=50`
+    **Recommended Queries:**
+    - Top by market cap: `?limit=100` (default)
+    - High social volume: `?sort=social_volume_24h&limit=100`
+    - Low alt rank (trending): `?sort=alt_rank&limit=100`
+    - Layer-1 coins: `?categories=layer-1&limit=200`
+    - Quality coins: `?sort=galaxy_score&limit=100&min_galaxy_score=60`
     
     **Returns:**
     Rich data per coin including:
@@ -180,5 +187,59 @@ async def discover_coins(
         
         return result
     
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/topic/{topic}")
+async def get_topic_social_metrics(topic: str):
+    """
+    🆕 LUNARCRUSH TOPICS API - Get comprehensive social metrics for any topic
+    
+    **What are Topics?**
+    - Social topics can be: coins, NFT collections, stocks, or general topics
+    - Get 24-hour aggregated social activity with trend comparisons
+    - Track related trending topics and social dominance
+    
+    **Topic Format:**
+    - Use lowercase topic names: `bitcoin`, `ethereum`, `dogecoin`
+    - Can include #hashtags or $cashtags: `#crypto`, `$btc`
+    - Numeric IDs also supported: `coins:1` (Bitcoin), `stocks:7056` (NVIDIA)
+    
+    **Use Cases:**
+    - Track social sentiment for specific coins
+    - Discover related trending topics
+    - Monitor social volume spikes
+    - Compare social activity over time
+    - Find emerging narratives
+    
+    **Returns:**
+    - `topic_rank`: Ranking among all tracked topics
+    - `related_topics`: List of 70+ related trending topics
+    - `social_volume_24h`: Total social mentions
+    - `social_dominance`: % share of total social activity
+    - `social_contributors`: Unique users discussing topic
+    - `sentiment`: Average community sentiment
+    - Time-series data for trend analysis
+    
+    **Examples:**
+    - `/lunarcrush/topic/bitcoin` - Bitcoin social metrics
+    - `/lunarcrush/topic/ethereum` - Ethereum social metrics
+    - `/lunarcrush/topic/solana` - Solana social metrics
+    - `/lunarcrush/topic/coins:1` - Bitcoin by numeric ID
+    """
+    try:
+        result = await lunarcrush_service.get_topic_details(topic)
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=404,
+                detail=result.get("error", f"Topic '{topic}' not found")
+            )
+        
+        return result
+    
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

@@ -29,7 +29,11 @@ The API provides clean JSON responses and offers a debug mode (`?debug=true`) fo
 - **Telegram Notifier**: Provides human-friendly signal alerts for both core signals and MSS discoveries.
 
 ### Feature Specifications
-- **Comprehensive Integrations**: Leverages Coinglass v4 for market data, liquidations, and open interest; LunarCrush for social sentiment; CoinAPI for comprehensive market data and whale detection; Binance Futures for futures market data; and CoinGecko for coin discovery.
+- **Comprehensive Integrations**: Leverages Coinglass v4 for market data, liquidations, and open interest; LunarCrush v4 for social sentiment (7,634+ coins, Topics API); CoinAPI for comprehensive market data and whale detection; Binance Futures for futures market data; and CoinGecko for coin discovery.
+- **LunarCrush v4 Features**: 
+  - Coins Discovery endpoint with Galaxy Score and AltRank filtering
+  - Topics API for social metrics and trend analysis
+  - 7,634+ coins tracked with rich social data
 - **Output**: Signals include recommendation, composite score, confidence level, top 3 contributing factors, and raw metrics (in debug mode). MSS alerts include a 3-phase breakdown and tier classification.
 
 ### System Design Choices
