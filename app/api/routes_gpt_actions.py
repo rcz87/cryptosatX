@@ -37,7 +37,8 @@ async def get_signal_gpt(request: GPTSignalRequest) -> Dict[str, Any]:
     from app.core.signal_engine import signal_engine
     
     try:
-        result = await signal_engine.build_signal(request.symbol, debug=request.debug)
+        debug = request.debug if request.debug is not None else False
+        result = await signal_engine.build_signal(request.symbol, debug=debug)
         return {
             "ok": True,
             "data": result,
@@ -54,10 +55,10 @@ async def smart_money_scan_gpt(request: GPTSmartMoneyRequest) -> Dict[str, Any]:
     
     Flat parameter version for GPT Actions compatibility.
     """
-    from app.core.smart_money_analyzer import smart_money_analyzer
+    from app.services.smart_money_service import smart_money_service
     
     try:
-        result = await smart_money_analyzer.scan_all_coins(
+        result = await smart_money_service.scan_all_coins(
             min_accumulation_score=request.min_accumulation_score
         )
         return {
@@ -76,10 +77,10 @@ async def mss_discover_gpt(request: GPTMSSRequest) -> Dict[str, Any]:
     
     Flat parameter version for GPT Actions compatibility.
     """
-    from app.services.mss_discovery import mss_discovery
+    from app.services.mss_service import mss_service
     
     try:
-        result = await mss_discovery.discover_gems(
+        result = await mss_service.discover_gems(
             min_mss_score=request.min_mss_score,
             max_results=request.max_results
         )
