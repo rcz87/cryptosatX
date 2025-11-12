@@ -329,6 +329,51 @@ async def get_aggregated_oi_history(
         await service.close()
 
 
+@router.get("/open-interest/aggregated-stablecoin-history")
+async def get_aggregated_stablecoin_oi_history(
+    exchange_list: str = Query("Binance", description="Exchange name(s), comma-separated"),
+    symbol: str = Query("BTC", description="Coin symbol (e.g., BTC, ETH)"),
+    interval: str = Query("1d", description="Interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)", le=1000)
+):
+    """
+    Get AGGREGATED STABLECOIN Open Interest history (18TH ENDPOINT!)
+    
+    Returns OI in COIN/STABLECOIN terms (NOT USD!):
+    - OI denominated in the actual coin (e.g., BTC, ETH)
+    - Tracks coin-denominated positions
+    - OHLC data for stablecoin OI
+    - Trend analysis
+    
+    Key differences:
+    - USD OI: Shows positions in dollar value (e.g., $67.9B)
+    - Stablecoin OI: Shows positions in coin amount (e.g., 94,000 BTC)
+    
+    Why useful:
+    - Track actual coin accumulation/distribution
+    - See real coin-denominated leverage
+    - Compare coin OI vs USD OI to detect price impacts
+    
+    Example:
+    - If USD OI increases but coin OI stable = price went up
+    - If coin OI increases but USD OI stable = price went down
+    - If both increase = real accumulation + price up
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_aggregated_stablecoin_oi_history(
+            exchange_list=exchange_list,
+            symbol=symbol,
+            interval=interval,
+            limit=limit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
