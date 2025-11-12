@@ -521,6 +521,65 @@ async def get_oi_exchange_history_chart(
         await service.close()
 
 
+@router.get("/funding-rate/history")
+async def get_funding_rate_history(
+    exchange: str = Query("Binance", description="Exchange name"),
+    symbol: str = Query("BTCUSDT", description="Trading pair"),
+    interval: str = Query("1d", description="Interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)", le=1000)
+):
+    """
+    Get Funding Rate historical data (22ND ENDPOINT!)
+    
+    Returns funding rate OHLC data with sentiment analysis:
+    - Latest funding rate & percentage
+    - Sentiment classification (Extremely Bullish to Extremely Bearish)
+    - Statistical summary (avg, high, low, positive/negative periods)
+    - Full time-series OHLC data
+    
+    Funding Rate Explained:
+    - **Positive FR** (e.g., +0.01 = +1%): Longs pay shorts → Bullish sentiment
+    - **Negative FR** (e.g., -0.01 = -1%): Shorts pay longs → Bearish sentiment
+    - **High FR** (>2%): Extreme bullish, potential long squeeze
+    - **Low FR** (<-2%): Extreme bearish, potential short squeeze
+    
+    Sentiment Classification:
+    - Extremely Bullish: avg FR > 5% (reversal risk!)
+    - Very Bullish: avg FR > 2%
+    - Bullish: avg FR > 1%
+    - Slightly Bullish: avg FR > 0%
+    - Slightly Bearish: avg FR < 0%
+    - Bearish: avg FR < -1%
+    - Very Bearish: avg FR < -2%
+    - Extremely Bearish: avg FR < -5% (reversal risk!)
+    
+    Trading Signals:
+    - High positive FR + price stall = Long squeeze coming
+    - High negative FR + price stall = Short squeeze coming
+    - FR flip from positive to negative = Sentiment shift
+    - Extreme FR = Contrarian signal (fade the crowd)
+    
+    Perfect for:
+    - Market sentiment analysis
+    - Squeeze detection (high FR = potential reversal)
+    - Entry/exit timing (extreme FR = fade)
+    - Cross-exchange FR comparison
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_funding_rate_history(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            limit=limit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """

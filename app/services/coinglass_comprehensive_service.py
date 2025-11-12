@@ -1049,6 +1049,138 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_funding_rate_history(self, exchange: str = "Binance", symbol: str = "BTCUSDT",
+                                       interval: str = "1d", limit: int = 100) -> Dict:
+        """
+        Get Funding Rate historical data (22ND ENDPOINT!)
+        REAL ENDPOINT: /api/futures/funding-rate/history
+        
+        Parameters:
+        - exchange: Exchange name (e.g., Binance, OKX, Bybit)
+        - symbol: Trading pair (e.g., BTCUSDT)
+        - interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w
+        - limit: Number of data points (max 1000)
+        
+        Returns funding rate OHLC data:
+        - Positive = Longs pay shorts (bullish sentiment)
+        - Negative = Shorts pay longs (bearish sentiment)
+        - Extreme values = Potential reversal
+        
+        CRITICAL for sentiment analysis!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/funding-rate/history"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol.upper(),
+                "interval": interval,
+                "limit": limit
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                fr_data = data["data"]
+                
+                # Calculate funding rate statistics
+                if len(fr_data) >= 2:
+                    first_fr = float(fr_data[0].get("close", 0))
+                    last_fr = float(fr_data[-1].get("close", 0))
+                    
+                    # Extract all close values for analysis
+                    closes = [float(d.get("close", 0)) for d in fr_data]
+                    highs = [float(d.get("high", 0)) for d in fr_data]
+                    lows = [float(d.get("low", 0)) for d in fr_data]
+                    
+                    avg_fr = sum(closes) / len(closes) if closes else 0
+                    max_fr = max(highs) if highs else 0
+                    min_fr = min(lows) if lows else 0
+                    
+                    # Sentiment analysis
+                    if avg_fr > 0.05:
+                        sentiment = "EXTREMELY_BULLISH"
+                        sentiment_desc = f"Avg funding {avg_fr*100:.2f}% - Extreme long bias, reversal risk!"
+                    elif avg_fr > 0.02:
+                        sentiment = "VERY_BULLISH"
+                        sentiment_desc = f"Avg funding {avg_fr*100:.2f}% - Strong long bias"
+                    elif avg_fr > 0.01:
+                        sentiment = "BULLISH"
+                        sentiment_desc = f"Avg funding {avg_fr*100:.2f}% - Moderate long bias"
+                    elif avg_fr > 0:
+                        sentiment = "SLIGHTLY_BULLISH"
+                        sentiment_desc = f"Avg funding {avg_fr*100:.2f}% - Slight long bias"
+                    elif avg_fr > -0.01:
+                        sentiment = "SLIGHTLY_BEARISH"
+                        sentiment_desc = f"Avg funding {avg_fr*100:.2f}% - Slight short bias"
+                    elif avg_fr > -0.02:
+                        sentiment = "BEARISH"
+                        sentiment_desc = f"Avg funding {avg_fr*100:.2f}% - Moderate short bias"
+                    elif avg_fr > -0.05:
+                        sentiment = "VERY_BEARISH"
+                        sentiment_desc = f"Avg funding {avg_fr*100:.2f}% - Strong short bias"
+                    else:
+                        sentiment = "EXTREMELY_BEARISH"
+                        sentiment_desc = f"Avg funding {avg_fr*100:.2f}% - Extreme short bias, reversal risk!"
+                    
+                    # Count positive vs negative periods
+                    positive_count = sum(1 for c in closes if c > 0)
+                    negative_count = sum(1 for c in closes if c < 0)
+                    
+                    return {
+                        "success": True,
+                        "exchange": exchange,
+                        "symbol": symbol.upper(),
+                        "interval": interval,
+                        "dataPointCount": len(fr_data),
+                        "latestFundingRate": last_fr,
+                        "latestFundingRatePercent": last_fr * 100,
+                        "sentiment": sentiment,
+                        "sentimentDescription": sentiment_desc,
+                        "summary": {
+                            "firstFR": first_fr,
+                            "lastFR": last_fr,
+                            "average": avg_fr,
+                            "averagePercent": avg_fr * 100,
+                            "highest": max_fr,
+                            "highestPercent": max_fr * 100,
+                            "lowest": min_fr,
+                            "lowestPercent": min_fr * 100,
+                            "positivePeriods": positive_count,
+                            "negativePeriods": negative_count
+                        },
+                        "timeSeries": fr_data,
+                        "source": "coinglass_funding_rate"
+                    }
+                else:
+                    first_fr = 0
+                    last_fr = 0
+                    sentiment = "UNKNOWN"
+                    sentiment_desc = "Insufficient data"
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol.upper(),
+                    "interval": interval,
+                    "dataPointCount": len(fr_data),
+                    "latestFundingRate": last_fr,
+                    "sentiment": sentiment,
+                    "sentimentDescription": sentiment_desc,
+                    "timeSeries": fr_data,
+                    "source": "coinglass_funding_rate"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)
