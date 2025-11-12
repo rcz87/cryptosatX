@@ -45,9 +45,140 @@ async def get_market_by_symbol(symbol: str):
         await service.close()
 
 
+@router.get("/liquidation/order")
+async def get_liquidation_order(
+    exchange: str = Query("Binance", description="Exchange name"),
+    symbol: str = Query("BTC", description="Trading coin"),
+    min_liquidation_amount: int = Query(10000, description="Minimum USD threshold for liquidations")
+):
+    """
+    Get individual liquidation orders - UPDATED! (31ST ENDPOINT!)
+    
+    Returns detailed liquidation events:
+    - Individual liquidation orders (up to 200 per request)
+    - Long vs short liquidations
+    - Whale liquidations (large orders)
+    - Recent liquidation activity
+    
+    What Are Liquidations:
+    - Forced closure of leveraged positions
+    - Happens when margin insufficient to maintain position
+    - side: 1 = LONG liquidation (price went down, longs got rekt)
+    - side: 2 = SHORT liquidation (price went up, shorts got rekt)
+    
+    Why Track Liquidations:
+    
+    1. **Market Direction**:
+       - Heavy long liquidations = Price falling, downtrend
+       - Heavy short liquidations = Price rising, uptrend/squeeze
+       - Shows which side is getting wrecked
+    
+    2. **Stop-Loss Hunting**:
+       - Large liquidation clusters = Price zones whales target
+       - Price often moves to trigger liquidations
+       - Predict where price will hunt next
+    
+    3. **Cascade Detection**:
+       - Many rapid liquidations = Liquidation cascade
+       - Creates momentum in liquidation direction
+       - Often leads to V-shaped reversals after exhaustion
+    
+    4. **Whale Liquidations**:
+       - $100k+ liquidations = Major players getting wrecked
+       - Shows even smart money can be wrong
+       - Often signals trend exhaustion
+    
+    5. **Market Panic**:
+       - Spike in liquidations = Market panic
+       - High volatility expected
+       - Contrarian opportunity when extreme
+    
+    Trading Signals:
+    
+    1. **Trend Confirmation**:
+       - Price down + Long liquidations spiking = Confirmed downtrend
+       - Price up + Short liquidations spiking = Confirmed uptrend
+       - Shows forced selling/buying pressure
+    
+    2. **Reversal Detection**:
+       - Massive liquidation spike = Potential exhaustion
+       - Often followed by sharp reversal
+       - Look for capitulation signals
+    
+    3. **Support/Resistance**:
+       - Liquidation clusters mark key price levels
+       - Price attracted to liquidation zones
+       - Use for entry/exit planning
+    
+    4. **Volatility Prediction**:
+       - Rising liquidations = Rising volatility
+       - Chain reactions possible
+       - Prepare for rapid moves
+    
+    Example Use Cases:
+    
+    **Downtrend Confirmation**:
+    ```
+    Price: -5%
+    Long liquidations: $50M
+    Short liquidations: $5M
+    → Confirmed downtrend, longs getting wrecked
+    → More downside likely as stops cascade
+    ```
+    
+    **Short Squeeze Detection**:
+    ```
+    Price: +8%
+    Short liquidations: $100M+
+    Long liquidations: $10M
+    → Short squeeze in progress
+    → Shorts forced to buy, pushing price higher
+    ```
+    
+    **Whale Hunt**:
+    ```
+    Single liquidation: $500k at $103,500
+    → Whale got liquidated
+    → Price may reverse after hunting this level
+    ```
+    
+    **Capitulation Signal**:
+    ```
+    Long liquidations: $200M in 1 hour
+    → Potential capitulation/bottom
+    → Contrarian buying opportunity
+    ```
+    
+    Current Data Example:
+    - Recent liquidations show more shorts getting rekt
+    - Suggests upward price movement
+    - Track for continuation or reversal
+    
+    Response includes:
+    - Summary (total longs/shorts liquidated, counts, sentiment)
+    - Top 10 largest liquidations (whale hunts)
+    - Recent 20 long liquidations
+    - Recent 20 short liquidations
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_liquidation_orders(
+            exchange=exchange,
+            symbol=symbol,
+            min_liquidation_amount=min_liquidation_amount
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,
+    exchange: str = Query("Binance", description="Exchange name"),
+    min_liquidation_amount: int = Query(10000, description="Minimum USD threshold"),
     include_orders: bool = Query(False, description="Include recent liquidation orders"),
     include_map: bool = Query(False, description="Include liquidation heatmap")
 ):
@@ -63,11 +194,15 @@ async def get_liquidations(
     try:
         result = {
             "symbol": symbol.upper(),
-            "coinList": await service.get_liquidation_coin_list(symbol=symbol)
+            "coinList": await service.get_liquidation_coin_list(exchange=exchange, symbol=symbol)
         }
         
         if include_orders:
-            result["orders"] = await service.get_liquidation_orders(symbol=symbol)
+            result["orders"] = await service.get_liquidation_orders(
+                exchange=exchange,
+                symbol=symbol,
+                min_liquidation_amount=min_liquidation_amount
+            )
         
         if include_map:
             result["heatmap"] = await service.get_liquidation_map(symbol=symbol)

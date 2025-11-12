@@ -2222,17 +2222,36 @@ class CoinglassComprehensiveService:
     
     # ==================== LIQUIDATION ENDPOINTS ====================
     
-    async def get_liquidation_orders(self, symbol: str = "BTC") -> Dict:
+    async def get_liquidation_orders(self, exchange: str = "Binance", symbol: str = "BTC", 
+                                      min_liquidation_amount: int = 10000) -> Dict:
         """
-        Get recent liquidation orders (past 7 days)
+        Get recent liquidation orders - UPDATED! (31ST ENDPOINT!)
         Endpoint: /api/futures/liquidation/order
         
-        Returns detailed liquidation orders with exchange, pair, amount
+        Parameters:
+        - exchange: Exchange name (e.g., Binance, OKX)
+        - symbol: Trading coin (e.g., BTC, ETH)
+        - min_liquidation_amount: Minimum USD threshold (default 10000)
+        
+        Returns detailed liquidation orders:
+        - Individual liquidation events
+        - Long vs short liquidations
+        - Large liquidation detection (whale hunts)
+        - Recent liquidation activity
+        
+        side: 1 = LONG liquidation (longs got rekt)
+        side: 2 = SHORT liquidation (shorts got rekt)
+        
+        Track stop-loss hunting and market panic!
         """
         try:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/futures/liquidation/order"
-            params = {"symbol": symbol.upper()}
+            params = {
+                "exchange": exchange,
+                "symbol": symbol.upper(),
+                "min_liquidation_amount": min_liquidation_amount
+            }
             
             response = await client.get(url, headers=self.headers, params=params)
             
@@ -2244,17 +2263,73 @@ class CoinglassComprehensiveService:
             if str(data.get("code")) == "0" and data.get("data"):
                 orders = data["data"]
                 
-                long_total = sum(o.get("amount_usd", 0) for o in orders if o.get("side") == "long")
-                short_total = sum(o.get("amount_usd", 0) for o in orders if o.get("side") == "short")
+                # Process liquidations
+                long_liqs = []
+                short_liqs = []
+                
+                for o in orders:
+                    side = o.get("side")
+                    usd_value = float(o.get("usd_value", 0))
+                    price = float(o.get("price", 0))
+                    
+                    liq_info = {
+                        "exchange": o.get("exchange_name"),
+                        "symbol": o.get("symbol"),
+                        "price": price,
+                        "usdValue": usd_value,
+                        "time": o.get("time"),
+                        "side": "LONG" if side == 1 else "SHORT"
+                    }
+                    
+                    if side == 1:
+                        long_liqs.append(liq_info)
+                    elif side == 2:
+                        short_liqs.append(liq_info)
+                
+                # Calculate totals
+                long_total = sum(l["usdValue"] for l in long_liqs)
+                short_total = sum(l["usdValue"] for l in short_liqs)
+                
+                # Find largest liquidations
+                all_liqs = long_liqs + short_liqs
+                largest_liqs = sorted(all_liqs, key=lambda x: x["usdValue"], reverse=True)[:10]
+                
+                # Determine market sentiment from liquidations
+                if long_total > short_total * 2:
+                    sentiment = "STRONG_DOWNTREND"
+                    sentiment_desc = f"Massive long liquidations (${long_total:,.0f}) - Strong sell-off!"
+                elif long_total > short_total * 1.5:
+                    sentiment = "MODERATE_DOWNTREND"
+                    sentiment_desc = f"More long liquidations (${long_total:,.0f}) - Downward pressure"
+                elif short_total > long_total * 2:
+                    sentiment = "STRONG_UPTREND"
+                    sentiment_desc = f"Massive short liquidations (${short_total:,.0f}) - Short squeeze!"
+                elif short_total > long_total * 1.5:
+                    sentiment = "MODERATE_UPTREND"
+                    sentiment_desc = f"More short liquidations (${short_total:,.0f}) - Upward pressure"
+                else:
+                    sentiment = "BALANCED"
+                    sentiment_desc = f"Balanced liquidations (${long_total:,.0f} long, ${short_total:,.0f} short)"
                 
                 return {
                     "success": True,
+                    "exchange": exchange,
                     "symbol": symbol.upper(),
-                    "orders": orders,
-                    "longLiquidations": long_total,
-                    "shortLiquidations": short_total,
-                    "totalLiquidations": long_total + short_total,
-                    "orderCount": len(orders),
+                    "minAmount": min_liquidation_amount,
+                    "summary": {
+                        "longLiquidations": long_total,
+                        "shortLiquidations": short_total,
+                        "totalLiquidations": long_total + short_total,
+                        "longCount": len(long_liqs),
+                        "shortCount": len(short_liqs),
+                        "totalCount": len(orders),
+                        "sentiment": sentiment,
+                        "sentimentDescription": sentiment_desc
+                    },
+                    "largestLiquidations": largest_liqs,
+                    "longLiquidations": long_liqs[:20],
+                    "shortLiquidations": short_liqs[:20],
+                    "note": "side 1=LONG liquidated, 2=SHORT liquidated. Shows recent liquidation events.",
                     "source": "coinglass_liq_orders"
                 }
             
