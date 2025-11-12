@@ -108,6 +108,33 @@ async def get_perpetual_market(symbol: str):
         await service.close()
 
 
+@router.get("/price-change")
+async def get_price_change():
+    """
+    Get price changes for ALL coins (12TH ENDPOINT!)
+    
+    Returns multi-timeframe analysis:
+    - Price changes: 5m, 15m, 30m, 1h, 4h, 12h, 24h
+    - Amplitude (volatility) per timeframe
+    - Top 10 gainers/losers (24h)
+    - Most volatile coins
+    - Short-term momentum (1h gainers)
+    
+    Perfect for:
+    - Momentum screening (what's pumping NOW)
+    - Volatility hunting (high amplitude = opportunity)
+    - Quick market overview
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_coins_price_change()
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """

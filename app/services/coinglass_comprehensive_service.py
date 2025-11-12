@@ -132,6 +132,90 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_coins_price_change(self) -> Dict:
+        """
+        Get price changes for ALL coins across multiple timeframes (12TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/coins-price-change
+        
+        Returns price changes & amplitude (volatility) for:
+        - 5m, 15m, 30m, 1h, 4h, 12h, 24h timeframes
+        
+        Perfect for:
+        - Momentum screening (coins pumping/dumping)
+        - Volatility analysis (amplitude = opportunity)
+        - Quick market overview
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/coins-price-change"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                coins = data["data"]
+                
+                # Find top gainers/losers (24h)
+                sorted_24h = sorted(coins, key=lambda x: float(x.get("price_change_percent_24h", 0)), reverse=True)
+                top_gainers = sorted_24h[:10]
+                top_losers = sorted_24h[-10:][::-1]  # Reverse to show worst first
+                
+                # Find most volatile (24h amplitude)
+                sorted_volatile = sorted(coins, key=lambda x: float(x.get("price_amplitude_percent_24h", 0)), reverse=True)
+                most_volatile = sorted_volatile[:10]
+                
+                # Short-term momentum (1h)
+                sorted_1h = sorted(coins, key=lambda x: float(x.get("price_change_percent_1h", 0)), reverse=True)
+                top_1h_gainers = sorted_1h[:10]
+                
+                return {
+                    "success": True,
+                    "coinCount": len(coins),
+                    "topGainers24h": [
+                        {
+                            "symbol": c.get("symbol"),
+                            "price": c.get("current_price"),
+                            "change24h": c.get("price_change_percent_24h"),
+                            "amplitude24h": c.get("price_amplitude_percent_24h")
+                        } for c in top_gainers
+                    ],
+                    "topLosers24h": [
+                        {
+                            "symbol": c.get("symbol"),
+                            "price": c.get("current_price"),
+                            "change24h": c.get("price_change_percent_24h"),
+                            "amplitude24h": c.get("price_amplitude_percent_24h")
+                        } for c in top_losers
+                    ],
+                    "mostVolatile24h": [
+                        {
+                            "symbol": c.get("symbol"),
+                            "price": c.get("current_price"),
+                            "amplitude24h": c.get("price_amplitude_percent_24h"),
+                            "change24h": c.get("price_change_percent_24h")
+                        } for c in most_volatile
+                    ],
+                    "top1hGainers": [
+                        {
+                            "symbol": c.get("symbol"),
+                            "price": c.get("current_price"),
+                            "change1h": c.get("price_change_percent_1h"),
+                            "change24h": c.get("price_change_percent_24h")
+                        } for c in top_1h_gainers
+                    ],
+                    "allCoins": coins,
+                    "source": "coinglass_price_change"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)
