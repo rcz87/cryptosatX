@@ -580,6 +580,66 @@ async def get_funding_rate_history(
         await service.close()
 
 
+@router.get("/funding-rate/oi-weight-history")
+async def get_oi_weighted_funding_rate_history(
+    symbol: str = Query("BTC", description="Coin symbol (e.g., BTC, ETH)"),
+    interval: str = Query("1d", description="Interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)", le=1000)
+):
+    """
+    Get OI-WEIGHTED Funding Rate history (23RD ENDPOINT!)
+    
+    Returns AGGREGATED funding rate weighted by Open Interest across ALL exchanges:
+    - More accurate than single exchange FR
+    - Weights by OI (bigger exchanges = higher weight)
+    - Market-wide sentiment indicator
+    - OHLC data with sentiment analysis
+    
+    Why OI-Weighted is Better:
+    - **Single Exchange FR**: Only shows one exchange sentiment
+    - **Simple Average FR**: Treats all exchanges equally (misleading)
+    - **OI-Weighted FR**: Weights by liquidity/volume (MOST ACCURATE) ✨
+    
+    Example:
+    - Binance (12B OI) FR = 0.5% → Weight: High
+    - Small Exchange (100M OI) FR = 2% → Weight: Low
+    - Result: Weighted FR closer to 0.5% (more accurate)
+    
+    Sentiment Classification:
+    - Extremely Bullish: avg FR > 5% (reversal risk!)
+    - Very Bullish: avg FR > 2%
+    - Bullish: avg FR > 1%
+    - Slightly Bullish: avg FR > 0%
+    - Slightly Bearish: avg FR < 0%
+    - Bearish: avg FR < -1%
+    - Very Bearish: avg FR < -2%
+    - Extremely Bearish: avg FR < -5% (reversal risk!)
+    
+    Trading Signals:
+    - OI-weighted FR > 2% = Market-wide long bias (potential squeeze)
+    - OI-weighted FR < -2% = Market-wide short bias (potential squeeze)
+    - Divergence: Single exchange FR ≠ OI-weighted FR = Arbitrage opportunity
+    
+    Perfect for:
+    - **TRUE market sentiment** (not skewed by small exchanges)
+    - Squeeze detection across entire market
+    - More reliable than single exchange FR
+    - Professional-grade sentiment analysis
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_oi_weighted_funding_rate_history(
+            symbol=symbol,
+            interval=interval,
+            limit=limit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
