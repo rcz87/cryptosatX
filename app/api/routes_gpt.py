@@ -1025,7 +1025,7 @@ async def send_telegram_alert(
     Only LONG/SHORT signals are sent (NEUTRAL filtered).
     Alerts auto-save to database.
     """
-    signal_engine, telegram_notifier, mss_service, smart_money_scanner = get_services()
+    signal_engine, telegram_notifier, mss_service, smart_money_service = get_services()
     
     try:
         symbol = symbol.upper()
@@ -1138,17 +1138,31 @@ async def send_telegram_alert(
 def _format_mss_alert(symbol: str, mss_result: dict) -> str:
     """Format MSS analysis alert for Telegram"""
     mss_score = mss_result.get("mss_score", 0)
-    tier = mss_result.get("tier", "bronze").upper()
     signal = mss_result.get("signal", "NEUTRAL")
     confidence = mss_result.get("confidence", "low")
     
-    phases = mss_result.get("phases", {})
-    discovery = phases.get("discovery", {})
-    social = phases.get("social_confirmation", {})
-    institutional = phases.get("institutional_validation", {})
+    # Determine tier from score
+    if mss_score >= 80:
+        tier = "DIAMOND"
+        tier_emoji = "💎"
+    elif mss_score >= 70:
+        tier = "GOLD"
+        tier_emoji = "🥇"
+    elif mss_score >= 60:
+        tier = "SILVER"
+        tier_emoji = "🥈"
+    else:
+        tier = "BRONZE"
+        tier_emoji = "🥉"
     
-    # Tier emoji
-    tier_emoji = {"DIAMOND": "💎", "GOLD": "🥇", "SILVER": "🥈", "BRONZE": "🥉"}.get(tier, "📊")
+    phases = mss_result.get("phases", {})
+    phase1 = phases.get("phase1_discovery", {})
+    phase2 = phases.get("phase2_confirmation", {})
+    phase3 = phases.get("phase3_validation", {})
+    
+    p1_breakdown = phase1.get("breakdown", {})
+    p2_breakdown = phase2.get("breakdown", {})
+    p3_breakdown = phase3.get("breakdown", {})
     
     message = f"""🚀 <b>MSS DISCOVERY ALERT</b> 🚀
 ━━━━━━━━━━━━━━━━━━━━━━━
@@ -1160,19 +1174,20 @@ def _format_mss_alert(symbol: str, mss_result: dict) -> str:
 ━━━━━━━━━━━━━━━━━━━━━━━
 📊 <b>3-Phase Analysis</b>
 
-<b>Phase 1 - Discovery:</b> {discovery.get('score', 0):.1f}/100
-• Market Cap: ${discovery.get('market_cap', 0):,.0f}
-• FDV: ${discovery.get('fdv', 0):,.0f}
-• Volume 24h: ${discovery.get('volume_24h', 0):,.0f}
+<b>Phase 1 - Discovery:</b> {phase1.get('score', 0):.1f}/35
+• FDV: ${p1_breakdown.get('fdv_usd', 0):,.0f}
+• Age: {p1_breakdown.get('age_hours', 0):.1f}h
+• Status: {p1_breakdown.get('status', 'N/A')}
 
-<b>Phase 2 - Social Confirmation:</b> {social.get('score', 0):.1f}/100
-• Galaxy Score: {social.get('galaxy_score', 0):.1f}/100
-• Social Volume: {social.get('social_volume', 0):,.0f}
-• Sentiment: {social.get('sentiment', 0):.1f}/100
+<b>Phase 2 - Social Confirmation:</b> {phase2.get('score', 0):.1f}/30
+• AltRank: {p2_breakdown.get('altrank', 0):.0f}
+• Galaxy Score: {p2_breakdown.get('galaxy_score', 0):.1f}/100
+• Status: {p2_breakdown.get('status', 'N/A')}
 
-<b>Phase 3 - Institutional Validation:</b> {institutional.get('score', 0):.1f}/100
-• Funding Rate: {institutional.get('funding_rate', 0):.4f}%
-• Open Interest: ${institutional.get('open_interest', 0):,.0f}
+<b>Phase 3 - Institutional Validation:</b> {phase3.get('score', 0):.1f}/35
+• OI Change: {p3_breakdown.get('oi_change_pct', 0):.1f}%
+• Funding Rate: {p3_breakdown.get('funding_rate', 0):.4f}%
+• Status: {p3_breakdown.get('status', 'N/A')}
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 💡 <b>Why This Matters:</b>
@@ -1200,30 +1215,30 @@ def _format_smart_money_alert(symbol: str, accumulation: list, distribution: lis
     if accumulation:
         acc = accumulation[0]
         message += f"""🟢 <b>ACCUMULATION DETECTED</b>
-📊 Score: {acc.get('accumulation_score', 0):.1f}/10
+📊 Score: {acc.get('accumulationScore', 0):.1f}/10
+💰 Price: ${acc.get('price', 0):.6f}
 💡 Signal: Whales buying before retail!
 
-<b>Indicators:</b>
-• Funding Rate: {acc.get('funding_rate', 0):.4f}% (negative = longs paying shorts)
-• Price Action: Sideways accumulation phase
-• Social Activity: Low (stealth accumulation)
-• Whale Activity: BUYING
-
+<b>Key Reasons:</b>
 """
+        for reason in acc.get('reasons', [])[:3]:
+            message += f"• {reason}\n"
+        
+        message += "\n"
     
     if distribution:
         dist = distribution[0]
         message += f"""🔴 <b>DISTRIBUTION DETECTED</b>
-📊 Score: {dist.get('distribution_score', 0):.1f}/10
+📊 Score: {dist.get('distributionScore', 0):.1f}/10
+💰 Price: ${dist.get('price', 0):.6f}
 ⚠️ Signal: Whales selling to retail!
 
-<b>Indicators:</b>
-• Funding Rate: {dist.get('funding_rate', 0):.4f}% (positive = overcrowded longs)
-• Price Action: Recent pump / top formation
-• Social Activity: High FOMO
-• Whale Activity: SELLING
-
+<b>Key Reasons:</b>
 """
+        for reason in dist.get('reasons', [])[:3]:
+            message += f"• {reason}\n"
+        
+        message += "\n"
     
     if not accumulation and not distribution:
         message += """⚪ <b>NEUTRAL</b>

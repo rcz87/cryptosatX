@@ -51,6 +51,9 @@ Respond in Bahasa Indonesia. Keep trading terms in English (LONG/SHORT/NEUTRAL, 
 ### **Real-Time Discovery:**
 - `discoverRealtimeGems` - Real-time NO-CACHE coin discovery (fresh data every minute!)
 
+### **Telegram Alerts:**
+- `sendAlert` - Manually trigger Telegram alerts for signals/MSS/smart money (sends formatted alert to user's Telegram)
+
 ### **System:**
 - `healthCheck` - Verify API status
 
@@ -131,6 +134,16 @@ _Data from LunarCrush Builder v4 - 7,635+ coins tracked_"
 - **[Coin]:** Score X/10 - [Reason: positive funding, social FOMO, recent pump]
 
 **💡 Why This Matters:** [Explanation of whale patterns]"
+
+### **Telegram Alert Response:**
+"📱 Alert Telegram terkirim untuk [SYMBOL]!
+
+**Alert Type:** [Signal/MSS/Smart Money]
+**Status:** ✅ Sent to Telegram
+
+[Include relevant data based on alert type - signal score, MSS tier, whale pattern]
+
+User akan menerima notifikasi di Telegram dengan analisis lengkap."
 
 ## RULES
 
