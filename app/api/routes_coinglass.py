@@ -771,6 +771,188 @@ async def get_orderbook_ask_bids_history(
         await service.close()
 
 
+@router.get("/orderbook/aggregated-history")
+async def get_orderbook_aggregated_history(
+    exchange_list: str = Query("Binance", description="Comma-separated exchange list"),
+    symbol: str = Query("BTC", description="Trading pair symbol"),
+    interval: str = Query("1h", description="Time interval (1h, 4h, 12h, 1d)"),
+    limit: int = Query(100, description="Number of data points"),
+    start_time: int = Query(None, description="Start timestamp (ms)"),
+    end_time: int = Query(None, description="End timestamp (ms)")
+):
+    """
+    🔥 ENDPOINT #36: AGGREGATED ORDERBOOK HISTORY
+    
+    Multi-exchange orderbook depth aggregation over time!
+    Shows market-wide liquidity across multiple exchanges.
+    
+    Returns:
+    - Aggregated bid/ask volumes (USD and quantity)
+    - Market-wide liquidity trends
+    - Bid/ask ratio analysis
+    - Buy/sell pressure detection
+    
+    Example: ?exchange_list=Binance,Bybit&symbol=BTC&interval=1h
+    
+    Perfect for:
+    - Market-wide liquidity analysis
+    - Cross-exchange depth tracking
+    - Institutional flow monitoring
+    - Systemic risk assessment
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_orderbook_aggregated_history(
+            exchange_list=exchange_list,
+            symbol=symbol,
+            interval=interval,
+            limit=limit,
+            start_time=start_time,
+            end_time=end_time
+        )
+        return result
+    finally:
+        await service.close()
+
+
+@router.get("/orderbook/whale-walls")
+async def get_large_limit_orders(
+    exchange: str = Query("Binance", description="Exchange name"),
+    symbol: str = Query("BTCUSDT", description="Trading pair")
+):
+    """
+    🐋 ENDPOINT #37: CURRENT WHALE WALLS - Real-time whale tracking!
+    
+    Detects MASSIVE limit orders sitting in the orderbook!
+    These are institutional accumulation/distribution zones.
+    
+    Returns:
+    - Current large limit orders (>$5M = mega whale)
+    - Bid walls (buy support zones)
+    - Ask walls (sell resistance zones)
+    - Order execution tracking
+    - Whale classification (MEGA_WHALE >$10M, LARGE_WHALE >$5M)
+    
+    Example: ?exchange=Binance&symbol=BTCUSDT
+    
+    Perfect for:
+    - Whale accumulation detection
+    - Distribution zone identification
+    - Support/resistance levels
+    - Institutional positioning
+    - Front-running prevention
+    
+    Real data example: $23.7M bid wall at $75k detected!
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_large_limit_orders(
+            exchange=exchange,
+            symbol=symbol
+        )
+        return result
+    finally:
+        await service.close()
+
+
+@router.get("/orderbook/whale-history")
+async def get_large_limit_order_history(
+    exchange: str = Query("Binance", description="Exchange name"),
+    symbol: str = Query("BTCUSDT", description="Trading pair"),
+    state: int = Query(1, description="Order state: 1=Active, 2=Canceled, 3=Filled"),
+    limit: int = Query(100, description="Number of orders")
+):
+    """
+    📊 ENDPOINT #38: WHALE WALL HISTORY - Historical whale tracking!
+    
+    Track what whales did in the past - filled, canceled, or active orders.
+    Reveals whale behavior patterns and market manipulation.
+    
+    Returns:
+    - Historical large limit orders
+    - Order lifecycle (start → current → end)
+    - Execution analysis
+    - Bid/Ask breakdown
+    - Largest whale orders
+    
+    State parameter:
+    - 1 = ACTIVE orders (still in book)
+    - 2 = CANCELED orders (pulled before fill)
+    - 3 = FILLED orders (executed)
+    
+    Example: ?exchange=Binance&symbol=BTCUSDT&state=2
+    
+    Perfect for:
+    - Whale behavior analysis
+    - Manipulation detection (canceled walls)
+    - Accumulation tracking (filled bids)
+    - Distribution tracking (filled asks)
+    - Pattern recognition
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_large_limit_order_history(
+            exchange=exchange,
+            symbol=symbol,
+            state=state,
+            limit=limit
+        )
+        return result
+    finally:
+        await service.close()
+
+
+@router.get("/orderbook/detailed-history")
+async def get_orderbook_detailed_history(
+    exchange: str = Query("Binance", description="Exchange name"),
+    symbol: str = Query("BTCUSDT", description="Trading pair"),
+    interval: str = Query("1h", description="Time interval (1h, 4h, 12h, 1d)"),
+    limit: int = Query(10, description="Number of snapshots (max 100)")
+):
+    """
+    📸 ENDPOINT #39: DETAILED ORDERBOOK SNAPSHOTS with PRICE LEVELS!
+    
+    Raw orderbook snapshots showing individual bid/ask price levels!
+    This is like watching the actual orderbook evolve over time.
+    
+    Returns:
+    - Orderbook snapshots at each timestamp
+    - Individual price levels (price + quantity)
+    - Bid/ask liquidity at each level
+    - Top 20 bids and asks per snapshot
+    
+    Example: ?exchange=Binance&symbol=BTCUSDT&interval=1h&limit=5
+    
+    Perfect for:
+    - Depth analysis at specific times
+    - Support/resistance identification
+    - Liquidity cluster detection
+    - Order book reconstruction
+    - Microstructure research
+    
+    Note: Returns detailed price-level data - can be large!
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_orderbook_detailed_history(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            limit=limit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,

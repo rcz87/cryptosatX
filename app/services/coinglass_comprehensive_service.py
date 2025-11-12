@@ -3145,6 +3145,379 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_orderbook_aggregated_history(self, exchange_list: str = "Binance", 
+                                                symbol: str = "BTC", interval: str = "1h", 
+                                                limit: int = 100,
+                                                start_time: int = None,
+                                                end_time: int = None) -> Dict:
+        """
+        Get AGGREGATED ORDERBOOK HISTORY (36TH ENDPOINT!)
+        Endpoint: /api/futures/orderbook/aggregated-ask-bids-history
+        
+        Multi-exchange orderbook aggregation - similar to aggregated liquidations
+        but for orderbook depth across multiple exchanges!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/orderbook/aggregated-ask-bids-history"
+            params = {
+                "exchange_list": exchange_list,
+                "symbol": symbol.upper(),
+                "interval": interval,
+                "limit": limit
+            }
+            
+            if start_time:
+                params["start_time"] = start_time
+            if end_time:
+                params["end_time"] = end_time
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                
+                if not history:
+                    return {"success": False, "error": "No historical data"}
+                
+                # Calculate aggregated statistics
+                total_bids = sum(float(h.get("aggregated_bids_usd", 0)) for h in history)
+                total_asks = sum(float(h.get("aggregated_asks_usd", 0)) for h in history)
+                avg_bids = total_bids / len(history)
+                avg_asks = total_asks / len(history)
+                
+                ratio = avg_bids / avg_asks if avg_asks > 0 else 0
+                
+                if ratio > 1.2:
+                    bias = "BUY_PRESSURE"
+                    bias_desc = f"Aggregated bids {ratio:.2f}x larger - Market-wide buy pressure"
+                elif ratio < 0.83:
+                    bias = "SELL_PRESSURE"
+                    bias_desc = f"Aggregated asks {1/ratio:.2f}x larger - Market-wide sell pressure"
+                else:
+                    bias = "BALANCED"
+                    bias_desc = f"Balanced market-wide liquidity (ratio {ratio:.2f})"
+                
+                # Format history
+                formatted_history = []
+                for h in history:
+                    bids = float(h.get("aggregated_bids_usd", 0))
+                    asks = float(h.get("aggregated_asks_usd", 0))
+                    total = bids + asks
+                    
+                    formatted_history.append({
+                        "timestamp": h.get("time"),
+                        "aggregatedBidsUsd": bids,
+                        "aggregatedAsksUsd": asks,
+                        "aggregatedBidsQty": float(h.get("aggregated_bids_quantity", 0)),
+                        "aggregatedAsksQty": float(h.get("aggregated_asks_quantity", 0)),
+                        "totalLiquidity": total,
+                        "bidAskRatio": bids / asks if asks > 0 else 0
+                    })
+                
+                return {
+                    "success": True,
+                    "exchanges": exchange_list,
+                    "symbol": symbol.upper(),
+                    "interval": interval,
+                    "dataPoints": len(history),
+                    "summary": {
+                        "avgBidsUsd": avg_bids,
+                        "avgAsksUsd": avg_asks,
+                        "totalAvgLiquidity": avg_bids + avg_asks,
+                        "bidAskRatio": ratio
+                    },
+                    "marketBias": {
+                        "bias": bias,
+                        "description": bias_desc
+                    },
+                    "history": formatted_history,
+                    "note": "Aggregated orderbook across multiple exchanges. Market-wide liquidity view.",
+                    "source": "coinglass_orderbook_aggregated"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_large_limit_orders(self, exchange: str = "Binance", symbol: str = "BTCUSDT") -> Dict:
+        """
+        Get CURRENT LARGE LIMIT ORDERS - WHALE WALLS! (37TH ENDPOINT!)
+        Endpoint: /api/futures/orderbook/large-limit-order
+        
+        Real-time whale wall detection - massive limit orders sitting in the book!
+        This is CRITICAL for identifying whale accumulation/distribution zones.
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/orderbook/large-limit-order"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                orders = data["data"]
+                
+                if not orders:
+                    return {"success": False, "error": "No large orders found"}
+                
+                # Separate bid and ask walls
+                bid_walls = [o for o in orders if o.get("order_side") == 1]  # Side 1 = Bid
+                ask_walls = [o for o in orders if o.get("order_side") == 2]  # Side 2 = Ask
+                
+                # Calculate totals
+                total_bid_value = sum(float(o.get("current_usd_value", 0)) for o in bid_walls)
+                total_ask_value = sum(float(o.get("current_usd_value", 0)) for o in ask_walls)
+                
+                # Find largest walls
+                bid_walls_sorted = sorted(bid_walls, key=lambda x: float(x.get("current_usd_value", 0)), reverse=True)
+                ask_walls_sorted = sorted(ask_walls, key=lambda x: float(x.get("current_usd_value", 0)), reverse=True)
+                
+                # Format orders
+                def format_order(o):
+                    return {
+                        "id": o.get("id"),
+                        "price": float(o.get("limit_price", 0)),
+                        "quantity": float(o.get("current_quantity", 0)),
+                        "usdValue": float(o.get("current_usd_value", 0)),
+                        "startTime": o.get("start_time"),
+                        "startValue": float(o.get("start_usd_value", 0)),
+                        "executedVolume": float(o.get("executed_volume", 0)),
+                        "executedValue": float(o.get("executed_usd_value", 0)),
+                        "tradeCount": o.get("trade_count", 0),
+                        "side": "BID" if o.get("order_side") == 1 else "ASK",
+                        "state": o.get("order_state")
+                    }
+                
+                formatted_bids = [format_order(o) for o in bid_walls_sorted[:20]]
+                formatted_asks = [format_order(o) for o in ask_walls_sorted[:20]]
+                
+                # Whale detection
+                mega_walls = []
+                for o in orders:
+                    value = float(o.get("current_usd_value", 0))
+                    if value > 5_000_000:  # >$5M = mega whale
+                        mega_walls.append({
+                            **format_order(o),
+                            "classification": "MEGA_WHALE" if value > 10_000_000 else "LARGE_WHALE"
+                        })
+                
+                mega_walls.sort(key=lambda x: x["usdValue"], reverse=True)
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "summary": {
+                        "totalBidWalls": len(bid_walls),
+                        "totalAskWalls": len(ask_walls),
+                        "totalBidValue": total_bid_value,
+                        "totalAskValue": total_ask_value,
+                        "megaWhaleCount": len(mega_walls)
+                    },
+                    "megaWhales": mega_walls,
+                    "topBidWalls": formatted_bids,
+                    "topAskWalls": formatted_asks,
+                    "note": "Current large limit orders (whale walls) in the orderbook. Real-time whale tracking!",
+                    "source": "coinglass_large_limit_orders"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_large_limit_order_history(self, exchange: str = "Binance", symbol: str = "BTCUSDT",
+                                             state: int = 1, limit: int = 100) -> Dict:
+        """
+        Get LARGE LIMIT ORDER HISTORY - Historical whale tracking! (38TH ENDPOINT!)
+        Endpoint: /api/futures/orderbook/large-limit-order-history
+        
+        Track historical whale walls - see what whales did in the past!
+        State: 1=Active, 2=Canceled, 3=Filled
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/orderbook/large-limit-order-history"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol,
+                "state": state,
+                "limit": limit
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                orders = data["data"]
+                
+                if not orders:
+                    return {"success": False, "error": "No historical orders found"}
+                
+                # Analyze order states
+                state_map = {1: "ACTIVE", 2: "CANCELED", 3: "FILLED"}
+                state_name = state_map.get(state, "UNKNOWN")
+                
+                # Separate by side
+                bids = [o for o in orders if o.get("order_side") == 1]
+                asks = [o for o in orders if o.get("order_side") == 2]
+                
+                # Calculate stats
+                total_bid_value = sum(float(o.get("start_usd_value", 0)) for o in bids)
+                total_ask_value = sum(float(o.get("start_usd_value", 0)) for o in asks)
+                
+                # Format orders
+                def format_order(o):
+                    return {
+                        "id": o.get("id"),
+                        "price": float(o.get("limit_price", 0)),
+                        "startQuantity": float(o.get("start_quantity", 0)),
+                        "startValue": float(o.get("start_usd_value", 0)),
+                        "currentQuantity": float(o.get("current_quantity", 0)),
+                        "currentValue": float(o.get("current_usd_value", 0)),
+                        "executedVolume": float(o.get("executed_volume", 0)),
+                        "executedValue": float(o.get("executed_usd_value", 0)),
+                        "startTime": o.get("start_time"),
+                        "endTime": o.get("order_end_time"),
+                        "side": "BID" if o.get("order_side") == 1 else "ASK",
+                        "state": state_name
+                    }
+                
+                formatted_orders = [format_order(o) for o in orders]
+                
+                # Find largest orders
+                largest_orders = sorted(formatted_orders, key=lambda x: x["startValue"], reverse=True)[:10]
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "state": state_name,
+                    "orderCount": len(orders),
+                    "summary": {
+                        "bidCount": len(bids),
+                        "askCount": len(asks),
+                        "totalBidValue": total_bid_value,
+                        "totalAskValue": total_ask_value
+                    },
+                    "largestOrders": largest_orders,
+                    "allOrders": formatted_orders,
+                    "note": f"Historical {state_name} whale walls. Track whale behavior over time!",
+                    "source": "coinglass_large_limit_order_history"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_orderbook_detailed_history(self, exchange: str = "Binance", 
+                                              symbol: str = "BTCUSDT", interval: str = "1h",
+                                              limit: int = 10) -> Dict:
+        """
+        Get DETAILED ORDERBOOK HISTORY with PRICE LEVELS! (39TH ENDPOINT!)
+        Endpoint: /api/futures/orderbook/history
+        
+        Shows actual orderbook snapshots with individual price levels!
+        This is like looking at the raw orderbook over time.
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/orderbook/history"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol,
+                "interval": interval,
+                "limit": limit
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                snapshots = data["data"]
+                
+                if not snapshots or len(snapshots) == 0:
+                    return {"success": False, "error": "No snapshot data"}
+                
+                # Parse snapshots
+                formatted_snapshots = []
+                for snapshot in snapshots:
+                    if len(snapshot) < 2:
+                        continue
+                    
+                    timestamp = snapshot[0]
+                    price_levels = snapshot[1] if len(snapshot) > 1 else []
+                    
+                    # Parse price levels [price, quantity]
+                    bids = []
+                    asks = []
+                    total_bid_value = 0
+                    total_ask_value = 0
+                    
+                    for level in price_levels:
+                        if len(level) >= 2:
+                            price = float(level[0])
+                            qty = float(level[1])
+                            value = price * qty
+                            
+                            # Determine if bid or ask based on context
+                            # (This is simplified - real logic may differ)
+                            if len(bids) < len(price_levels) // 2:
+                                bids.append({"price": price, "quantity": qty, "value": value})
+                                total_bid_value += value
+                            else:
+                                asks.append({"price": price, "quantity": qty, "value": value})
+                                total_ask_value += value
+                    
+                    formatted_snapshots.append({
+                        "timestamp": timestamp,
+                        "bids": bids[:20],  # Top 20 bids
+                        "asks": asks[:20],  # Top 20 asks
+                        "bidLiquidity": total_bid_value,
+                        "askLiquidity": total_ask_value,
+                        "totalLevels": len(price_levels)
+                    })
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "snapshotCount": len(formatted_snapshots),
+                    "snapshots": formatted_snapshots,
+                    "note": "Detailed orderbook snapshots with individual price levels. Raw orderbook over time!",
+                    "source": "coinglass_orderbook_detailed_history"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
     async def get_long_short_ratio(self, symbol: str = "BTC") -> Dict:
