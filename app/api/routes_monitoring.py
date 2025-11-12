@@ -6,11 +6,13 @@ Automated signal monitoring and alerting endpoints
 from fastapi import APIRouter, HTTPException, BackgroundTasks, Query
 from fastapi.responses import JSONResponse
 from typing import List, Dict, Any, Optional
-from datetime import datetime
+from datetime import datetime, timedelta
 import logging
+import asyncio
 
 from ..services.monitoring_service import get_monitoring_service, start_monitoring, stop_monitoring
 from ..services.telegram_notifier import TelegramNotifier
+from ..services.social_spike_monitor import social_spike_monitor
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/monitoring", tags=["monitoring"])
@@ -210,7 +212,7 @@ async def test_alert(symbol: str):
 🔗 Powered by CryptoSatX AI
         """.strip()
         
-        result = await telegram.send_signal_alert(test_signal, message)
+        result = await telegram.send_signal_alert(test_signal)
         
         return {
             "success": True,
@@ -244,7 +246,7 @@ async def monitoring_health_check():
         
         # Check Telegram configuration
         telegram = TelegramNotifier()
-        if not telegram.is_configured():
+        if not telegram.enabled:
             health_status = "warning"
             issues.append("Telegram not configured")
         
@@ -253,7 +255,7 @@ async def monitoring_health_check():
             "status": health_status,
             "issues": issues,
             "monitoring_status": status,
-            "telegram_configured": telegram.is_configured(),
+            "telegram_configured": telegram.enabled,
             "timestamp": datetime.now().isoformat()
         }
     except Exception as e:
@@ -313,4 +315,84 @@ async def get_monitoring_stats():
         }
     except Exception as e:
         logger.error(f"Failed to get monitoring stats: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/spike-monitor/status")
+async def get_spike_monitor_status():
+    """
+    Get social spike monitor status
+    
+    Returns monitoring configuration, last check time, and recent spike detections
+    for viral moment detection system.
+    """
+    try:
+        status = await social_spike_monitor.get_status()
+        return {
+            "success": True,
+            "status": status,
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to get spike monitor status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/spike-monitor/start")
+async def start_spike_monitor():
+    """
+    Start social spike monitor for viral moments
+    
+    Monitors top 50 coins every 5 minutes for social volume spikes >100%.
+    Sends automated Telegram alerts when viral moments are detected.
+    """
+    try:
+        if social_spike_monitor.is_running:
+            return {
+                "success": False,
+                "message": "Spike monitor already running",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        asyncio.create_task(social_spike_monitor.start())
+        await asyncio.sleep(1)
+        
+        logger.info("Social spike monitor started")
+        
+        return {
+            "success": True,
+            "message": "Social spike monitor started - monitoring viral moments",
+            "config": {
+                "check_interval": f"{social_spike_monitor.check_interval}s",
+                "min_spike_threshold": f"{social_spike_monitor.min_spike_threshold}%",
+                "top_coins_count": social_spike_monitor.top_coins_count
+            },
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to start spike monitor: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/spike-monitor/stop")
+async def stop_spike_monitor():
+    """Stop social spike monitor"""
+    try:
+        if not social_spike_monitor.is_running:
+            return {
+                "success": False,
+                "message": "Spike monitor not running",
+                "timestamp": datetime.now().isoformat()
+            }
+        
+        social_spike_monitor.stop()
+        logger.info("Social spike monitor stopped")
+        
+        return {
+            "success": True,
+            "message": "Social spike monitor stopped",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        logger.error(f"Failed to stop spike monitor: {e}")
         raise HTTPException(status_code=500, detail=str(e))

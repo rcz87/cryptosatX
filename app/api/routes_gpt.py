@@ -309,6 +309,297 @@ async def get_gpt_action_schema():
                     }
                 }
             },
+            "/lunarcrush/coin/{symbol}": {
+                "get": {
+                    "summary": "Get Comprehensive Social & Market Metrics (60+ Metrics)",
+                    "description": "Get comprehensive LunarCrush social and market metrics for any cryptocurrency. Returns 60+ data points including Galaxy Score™ (0-100 quality metric), AltRank™ (momentum ranking), social volume, engagement, sentiment, tweet/Reddit volumes, correlation rank, and price data. Perfect for deep social intelligence analysis.",
+                    "operationId": "getLunarCrushCoin",
+                    "parameters": [
+                        {
+                            "name": "symbol",
+                            "in": "path",
+                            "required": True,
+                            "description": "Cryptocurrency symbol (e.g., BTC, ETH, PEPE, SHIB). Supports 7,635+ coins tracked by LunarCrush.",
+                            "schema": {
+                                "type": "string",
+                                "example": "BTC"
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Comprehensive coin data with 60+ social and market metrics",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "galaxyScore": {"type": "number", "description": "Galaxy Score™ 0-100 (proprietary quality metric)"},
+                                            "altRank": {"type": "integer", "description": "AltRank™ momentum ranking (lower = better)"},
+                                            "socialVolume": {"type": "integer", "description": "24h social mentions across platforms"},
+                                            "sentiment": {"type": "number", "description": "Average sentiment score 0-100"},
+                                            "tweetVolume": {"type": "integer"},
+                                            "redditVolume": {"type": "integer"},
+                                            "price": {"type": "number"},
+                                            "marketCap": {"type": "number"},
+                                            "percentChange24h": {"type": "number"}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "/lunarcrush/coin/{symbol}/momentum": {
+                "get": {
+                    "summary": "Advanced Social Momentum Analysis",
+                    "description": "Comprehensive social momentum score combining current strength, 24h changes, and 7-day trends. Returns momentum score 0-100 with level classification (strong/moderate/weak). Includes Galaxy Score, social volume, sentiment trajectory, and spike detection. Use for entry timing confirmation.",
+                    "operationId": "getLunarCrushMomentum",
+                    "parameters": [
+                        {
+                            "name": "symbol",
+                            "in": "path",
+                            "required": True,
+                            "description": "Cryptocurrency symbol",
+                            "schema": {
+                                "type": "string",
+                                "example": "BTC"
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Social momentum analysis with score and trend data"
+                        }
+                    }
+                }
+            },
+            "/lunarcrush/coin/{symbol}/change": {
+                "get": {
+                    "summary": "Detect Social Spikes & Viral Moments",
+                    "description": "Get social metrics change/delta over time. Detects sudden social spikes (>300% = extreme, >100% = high, >50% = moderate). Returns social volume % change, engagement change, sentiment shift, and Galaxy Score delta. Perfect for viral moment detection and spike alerts.",
+                    "operationId": "getLunarCrushChange",
+                    "parameters": [
+                        {
+                            "name": "symbol",
+                            "in": "path",
+                            "required": True,
+                            "description": "Cryptocurrency symbol",
+                            "schema": {
+                                "type": "string",
+                                "example": "PEPE"
+                            }
+                        },
+                        {
+                            "name": "timeframe",
+                            "in": "query",
+                            "required": False,
+                            "description": "Time period for change analysis. Default 24h.",
+                            "schema": {
+                                "type": "string",
+                                "enum": ["1h", "24h", "7d"],
+                                "default": "24h"
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Social metrics change with spike level classification"
+                        }
+                    }
+                }
+            },
+            "/lunarcrush/coin/{symbol}/time-series": {
+                "get": {
+                    "summary": "Historical Social & Market Trends",
+                    "description": "Get historical time-series data for social and market metrics. Returns arrays of price OHLC, social volume trends, sentiment changes, and Galaxy Score historical data over time. Use for trend analysis, spike detection, and correlation studies.",
+                    "operationId": "getLunarCrushTimeSeries",
+                    "parameters": [
+                        {
+                            "name": "symbol",
+                            "in": "path",
+                            "required": True,
+                            "description": "Cryptocurrency symbol",
+                            "schema": {
+                                "type": "string"
+                            }
+                        },
+                        {
+                            "name": "interval",
+                            "in": "query",
+                            "required": False,
+                            "description": "Time interval for data points. Default 1d.",
+                            "schema": {
+                                "type": "string",
+                                "enum": ["1h", "1d", "1w"],
+                                "default": "1d"
+                            }
+                        },
+                        {
+                            "name": "days_back",
+                            "in": "query",
+                            "required": False,
+                            "description": "Number of days of historical data (1-365). Default 30.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 30,
+                                "minimum": 1,
+                                "maximum": 365
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Time-series arrays for trend analysis"
+                        }
+                    }
+                }
+            },
+            "/lunarcrush/coins/discovery": {
+                "get": {
+                    "summary": "Discover Coins with Advanced Filtering (7,635+ Coins)",
+                    "description": "Discover and filter from 7,635+ tracked cryptocurrencies using Galaxy Score, AltRank, sentiment, market cap, categories, and more. Returns comprehensive data for each coin. Use for building watchlists, screening opportunities, and market research.",
+                    "operationId": "discoverLunarCrushCoins",
+                    "parameters": [
+                        {
+                            "name": "limit",
+                            "in": "query",
+                            "required": False,
+                            "description": "Number of coins to return (max 100). Default 20.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 20,
+                                "minimum": 1,
+                                "maximum": 100
+                            }
+                        },
+                        {
+                            "name": "categories",
+                            "in": "query",
+                            "required": False,
+                            "description": "Filter by categories (e.g., 'layer-1', 'defi', 'meme', 'ai'). Comma-separated.",
+                            "schema": {
+                                "type": "string",
+                                "example": "layer-1,defi"
+                            }
+                        },
+                        {
+                            "name": "min_galaxy_score",
+                            "in": "query",
+                            "required": False,
+                            "description": "Minimum Galaxy Score (0-100). Higher = better quality.",
+                            "schema": {
+                                "type": "number",
+                                "minimum": 0,
+                                "maximum": 100
+                            }
+                        },
+                        {
+                            "name": "max_alt_rank",
+                            "in": "query",
+                            "required": False,
+                            "description": "Maximum AltRank (lower = better momentum). E.g., 100 for top 100.",
+                            "schema": {
+                                "type": "integer",
+                                "minimum": 1
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "List of discovered coins with filtering applied"
+                        }
+                    }
+                }
+            },
+            "/lunarcrush/topic/{topic}": {
+                "get": {
+                    "summary": "Topic Analysis & Social Intelligence",
+                    "description": "Get social metrics and analysis for specific topics/keywords (e.g., 'bitcoin', 'ethereum', 'defi'). Returns topic rank, related topics, cross-platform social data, and trend information. Use for narrative analysis and topic research.",
+                    "operationId": "getLunarCrushTopic",
+                    "parameters": [
+                        {
+                            "name": "topic",
+                            "in": "path",
+                            "required": True,
+                            "description": "Topic or keyword to analyze (e.g., 'bitcoin', 'ethereum', 'ai', 'defi')",
+                            "schema": {
+                                "type": "string",
+                                "example": "ethereum"
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Topic analysis with social intelligence"
+                        }
+                    }
+                }
+            },
+            "/narratives/discover/realtime": {
+                "get": {
+                    "summary": "Real-Time Gem Discovery (NO CACHE - Instant Data)",
+                    "description": "Real-time coin discovery with ZERO cache delay (v2 endpoint). Instantly discover emerging cryptocurrencies with fresh data updated every minute. Filter by Galaxy Score, social volume, categories. Perfect for catching viral moments and early entries before competition. NO 1-HOUR DELAY like competitors!",
+                    "operationId": "discoverRealtimeGems",
+                    "parameters": [
+                        {
+                            "name": "limit",
+                            "in": "query",
+                            "required": False,
+                            "description": "Number of coins (max 100). Default 20.",
+                            "schema": {
+                                "type": "integer",
+                                "default": 20,
+                                "maximum": 100
+                            }
+                        },
+                        {
+                            "name": "min_galaxy_score",
+                            "in": "query",
+                            "required": False,
+                            "description": "Minimum Galaxy Score for filtering (0-100). Recommended: 65+ for quality.",
+                            "schema": {
+                                "type": "number",
+                                "default": 60,
+                                "minimum": 0,
+                                "maximum": 100
+                            }
+                        },
+                        {
+                            "name": "sort",
+                            "in": "query",
+                            "required": False,
+                            "description": "Sort by metric. Default social_volume for trending.",
+                            "schema": {
+                                "type": "string",
+                                "enum": ["social_volume", "market_cap", "galaxy_score", "alt_rank"],
+                                "default": "social_volume"
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Real-time coin discovery results with fresh data",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "dataFreshness": {
+                                                "type": "string",
+                                                "example": "real-time (v2 - no cache)"
+                                            },
+                                            "totalCoins": {"type": "integer"},
+                                            "coins": {"type": "array"}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
             "/mss/scan": {
                 "get": {
                     "summary": "MSS Auto-Scan - Find New Crypto Gems",
