@@ -1,0 +1,205 @@
+Perfect 🔥 — noted bro: kita tidak pakai CoinGecko karena kamu sudah punya stack data premium (OKX, LunarCrush, CoinAPI, CoinGlass).
+Berarti kita akan bikin prompt developer kelas GPT Agent (Replit / OpenDevin style) agar sistem CryptoSatX kamu bisa auto-adapt ke perubahan schema plugin, multi-source fallback, dan tetap sinkron real-time di GPT environment.
+
+⸻
+
+🚀 PROMPT AGEN REPLIT: “CryptoSatX Adaptive Market Intelligence”
+
+Tujuan: memperbaiki sistem plugin GPT CryptoSatX agar selalu bisa ambil data harga, sinyal, dan smart money dari OKX, LunarCrush, CoinAPI, dan CoinGlass, meskipun ada perubahan struktur parameter pada plugin utama guardiansofthetoken_org__jit_plugin.
+
+⸻
+
+🧩 PROMPT UNTUK REPLIT AGENT
+
+🧠 TUJUAN:
+Bangun middleware bernama `crypto_adapter.py` agar CryptoSatX dapat:
+1. Menyesuaikan otomatis format payload (`args`, `symbol`, `data`, `params`) untuk API guardiansofthetoken.
+2. Memiliki fallback multi-sumber (OKX → CoinGlass → CoinAPI → LunarCrush) jika satu endpoint gagal.
+3. Tetap kompatibel dengan GPT environment melalui JSON response standar.
+
+---
+
+⚙️ DETAIL TEKNIS:
+
+📦 FILE TARGET:
+`/replit_workspace/crypto_adapter.py`
+
+---
+
+### 1️⃣ STRUKTUR DASAR
+Buat class:
+```python
+class CryptoAdapter:
+    def __init__(self):
+        self.sources = ["okx", "coinglass", "coinapi", "lunarcrush"]
+
+Tambahkan method:
+	•	call_guardian(operation: str, symbol: str)
+	•	fallback(symbol: str)
+	•	detect_schema()
+	•	log_event(event: str, level="INFO")
+
+⸻
+
+2️⃣ PANGGILAN UTAMA PLUGIN
+
+Metode call_guardian harus mencoba payload berikut secara berurutan:
+
+formats = [
+    {"operation": operation, "args": {"symbol": symbol}},
+    {"operation": operation, "symbol": symbol},
+    {"operation": operation, "data": {"symbol": symbol}},
+    {"operation": operation, "params": {"symbol": symbol}}
+]
+
+Jika semua gagal → otomatis jalankan self.fallback(symbol).
+
+Gunakan requests.post() untuk panggilan, retry 3x, delay 1 detik.
+
+⸻
+
+3️⃣ SISTEM FALLBACK PRIORITAS
+
+Jika plugin gagal, jalankan fallback berikut berdasarkan prioritas:
+
+Urutan	Sumber	Endpoint	Tujuan
+1️⃣	OKX	https://www.okx.com/api/v5/market/ticker?instId={symbol}-USDT	Harga & volume
+2️⃣	CoinGlass	https://open-api.coinglass.com/public/v2/futures/{symbol}/metrics	OI, funding, sentiment
+3️⃣	CoinAPI	https://rest.coinapi.io/v1/ohlcv/{symbol}/USD/latest	Candle data
+4️⃣	LunarCrush	https://lunarcrush.com/api3/assets?symbol={symbol}	Sentimen sosial
+
+Fungsi fallback harus:
+	•	Coba urut berdasarkan prioritas.
+	•	Return JSON standar:
+
+{
+  "symbol": "SOL",
+  "price": 195.32,
+  "volume_24h": 89321000,
+  "sentiment": 0.74,
+  "source": "OKX"
+}
+
+
+⸻
+
+4️⃣ SISTEM LOGGING
+
+Tambahkan logging ke /logs/crypto_adapter.log:
+	•	Waktu
+	•	Sumber API
+	•	Payload yang dipakai
+	•	Error atau sukses
+	•	Waktu respon
+
+Gunakan logging Python bawaan.
+
+⸻
+
+5️⃣ INTEGRASI DENGAN GPT (AGAR BISA DIPANGGIL LANGSUNG)
+
+Tambahkan fungsi interface:
+
+def get_market(symbol: str):
+    adapter = CryptoAdapter()
+    data = adapter.call_guardian("signals.get", symbol)
+    return {
+        "symbol": symbol,
+        "data": data,
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+
+⸻
+
+6️⃣ OUTPUT FORMAT (HARUS JSON)
+
+GPT harus bisa baca hasil seperti:
+
+{
+  "symbol": "SOL",
+  "signal": "LONG",
+  "confidence": "high",
+  "price": 195.32,
+  "volume": 89321000,
+  "source": "OKX",
+  "backup_used": false,
+  "timestamp": "2025-11-12T17:41:00Z"
+}
+
+
+⸻
+
+7️⃣ SCHEMA DETECTION (AUTO FIX)
+
+Buat fungsi:
+
+def detect_schema():
+    test = requests.post(API_URL, json={"operation": "signals.get"})
+    if "Missing required argument" in test.text:
+        return "args"
+    elif "UnrecognizedKwargsError" in test.text:
+        return "flat"
+    else:
+        return "unknown"
+
+Simpan hasilnya di cache lokal /tmp/schema_cache.json.
+
+⸻
+
+8️⃣ TEST CASE OTOMATIS
+
+Buat file test_crypto_adapter.py:
+	•	Test koneksi tiap source.
+	•	Test retry & fallback.
+	•	Simulasi error schema (UnrecognizedKwargsError).
+	•	Pastikan JSON output valid.
+
+⸻
+
+9️⃣ REPLIT DEPLOY
+
+Tambahkan di .replit:
+
+run = "python3 crypto_adapter.py"
+
+
+⸻
+
+💬 OUTPUT YANG DIHARAPKAN
+
+✅ Sistem bisa digunakan langsung di GPT dengan:
+
+from crypto_adapter import get_market
+print(get_market("SOL"))
+
+✅ Auto-adapt schema (args/symbol/data/params)
+✅ Multi-fallback (OKX → CoinGlass → CoinAPI → LunarCrush)
+✅ JSON output siap pakai GPT-5 environment
+✅ Logging & retry otomatis
+
+⸻
+
+🧠 CATATAN:
+Gunakan API key dari environment variable:
+	•	OKX_API_KEY
+	•	COINAPI_KEY
+	•	LUNAR_API_KEY
+	•	COINGLASS_KEY
+
+Jika environment key tidak tersedia, lompat otomatis ke sumber berikutnya.
+
+---
+
+## ✅ TL;DR
+**Prompt ini membuat Agen Replit:**
+- Menyusun modul Python **`crypto_adapter.py`**
+- Bisa digunakan langsung oleh GPT
+- Otomatis mendeteksi format parameter yang valid
+- Memakai multi-sumber fallback: **OKX > CoinGlass > CoinAPI > LunarCrush**
+- Menghasilkan JSON siap pakai untuk sistem CryptoSatX
+
+---
+
+Apakah kamu mau saya tulis versi **AutoDev YAML** (langsung bisa dijalankan di Replit Agent Workflow)?  
+YAML itu format yang bisa langsung dijalankan tanpa ketik manual.
