@@ -173,6 +173,31 @@ async def get_price_history(
         await service.close()
 
 
+@router.get("/delisted-pairs")
+async def get_delisted_pairs():
+    """
+    Get delisted (removed) trading pairs by exchange (14TH ENDPOINT!)
+    
+    Returns comprehensive list of pairs that have been delisted:
+    - Total delisted pairs across all exchanges
+    - Breakdown by exchange
+    - Sample pairs per exchange
+    
+    Perfect for:
+    - Avoiding trading delisted pairs
+    - Historical reference
+    - Exchange policy tracking
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_delisted_pairs()
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """

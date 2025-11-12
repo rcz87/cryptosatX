@@ -251,6 +251,8 @@ class CoinglassComprehensiveService:
                 candles = data["data"]
                 
                 # Calculate price change from first to last
+                first_open = 0.0
+                last_close = 0.0
                 if len(candles) >= 2:
                     first_open = float(candles[0].get("open", 0))
                     last_close = float(candles[-1].get("close", 0))
@@ -276,8 +278,8 @@ class CoinglassComprehensiveService:
                     "interval": interval,
                     "candleCount": len(candles),
                     "summary": {
-                        "firstOpen": first_open if len(candles) > 0 else 0,
-                        "lastClose": last_close if len(candles) > 0 else 0,
+                        "firstOpen": first_open,
+                        "lastClose": last_close,
                         "priceChange": price_change,
                         "priceChangePercent": price_change_percent,
                         "highest": highest,
@@ -286,6 +288,72 @@ class CoinglassComprehensiveService:
                     },
                     "candles": candles,
                     "source": "coinglass_price_history"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_delisted_pairs(self) -> Dict:
+        """
+        Get delisted (removed) trading pairs by exchange (14TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/delisted-exchange-pairs
+        
+        Returns pairs that have been delisted from exchanges:
+        - Useful for tracking discontinued pairs
+        - Historical reference
+        - Avoid trading delisted pairs
+        
+        Returns breakdown by exchange
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/delisted-exchange-pairs"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                exchanges_data = data["data"]
+                
+                # Count delisted pairs per exchange
+                exchange_summary = {}
+                total_delisted = 0
+                
+                for exchange, pairs in exchanges_data.items():
+                    count = len(pairs) if isinstance(pairs, list) else 0
+                    total_delisted += count
+                    if count > 0:
+                        exchange_summary[exchange] = {
+                            "count": count,
+                            "pairs": pairs[:10]  # Show first 10 as sample
+                        }
+                
+                # Sort exchanges by delisted count
+                top_exchanges = sorted(
+                    exchange_summary.items(),
+                    key=lambda x: x[1]["count"],
+                    reverse=True
+                )[:10]
+                
+                return {
+                    "success": True,
+                    "totalDelisted": total_delisted,
+                    "exchangeCount": len(exchange_summary),
+                    "topExchangesByDelistedCount": [
+                        {
+                            "exchange": ex,
+                            "delistedCount": info["count"],
+                            "samplePairs": info["pairs"][:5]
+                        } for ex, info in top_exchanges
+                    ],
+                    "allData": exchanges_data,
+                    "source": "coinglass_delisted_pairs"
                 }
             
             return {"success": False, "error": "No data"}
