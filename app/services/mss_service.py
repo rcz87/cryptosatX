@@ -20,6 +20,7 @@ from app.services.binance_futures_service import BinanceFuturesService
 from app.services.lunarcrush_service import LunarCrushService
 from app.services.coinglass_service import CoinglassService
 from app.services.coinglass_premium_service import CoinglassPremiumService
+from app.services.coinglass_comprehensive_service import CoinglassComprehensiveService
 from app.services.coinapi_comprehensive_service import CoinAPIComprehensiveService
 
 logger = logging.getLogger(__name__)
@@ -39,15 +40,17 @@ class MSSService:
         self.lunarcrush = LunarCrushService()
         self.coinglass = CoinglassService()
         self.coinglass_premium = CoinglassPremiumService()
+        self.coinglass_comprehensive = CoinglassComprehensiveService()
         self.coinapi_comprehensive = CoinAPIComprehensiveService()
 
-        logger.info("MSS Service initialized with all data providers (including Premium services)")
+        logger.info("MSS Service initialized with all data providers (Premium + Comprehensive)")
 
     async def close(self):
         """Close all HTTP clients"""
         await self.coingecko.close()
         await self.binance.close()
         await self.coinglass_premium.close()
+        await self.coinglass_comprehensive.close()
         await self.coinapi_comprehensive.close()
 
     async def phase1_discovery(
@@ -262,10 +265,14 @@ class MSSService:
         binance_data: Optional[Dict] = None
     ) -> Tuple[float, Dict]:
         """
-        Phase 3: Validate institutional positioning
+        Phase 3: Validate institutional positioning (ENHANCED with new data sources)
 
-        Uses Coinglass Premium (top trader ratios), Coinglass OI trends,
-        and CoinAPI trade data for comprehensive whale detection.
+        Uses Coinglass Premium + Comprehensive endpoints for maximum whale detection:
+        - OI trends & top trader ratios
+        - Options OI (smart money hedging)
+        - ETF flows (institutional sentiment)
+        - Exchange reserves (whale movements)
+        - CoinAPI trade data
 
         Args:
             symbol: Coin symbol to analyze
@@ -274,15 +281,21 @@ class MSSService:
         Returns:
             Tuple of (validation_score, breakdown_dict)
         """
-        logger.info(f"Phase 3 Validation: {symbol}")
+        logger.info(f"Phase 3 Validation (Enhanced): {symbol}")
 
         try:
-            # Fetch data concurrently - use proper Premium endpoints
+            # Fetch data concurrently - include NEW comprehensive endpoints
             tasks = [
+                # Existing Premium endpoints
                 self.coinglass_premium.get_oi_trend(symbol),
                 self.coinglass_premium.get_top_trader_ratio(symbol),
                 self.binance.get_funding_rate(f"{symbol}USDT"),
                 self.coinapi_comprehensive.get_recent_trades(symbol, "BINANCE", 100),
+                
+                # NEW: Comprehensive institutional tracking
+                self.coinglass_comprehensive.get_options_open_interest(),
+                self.coinglass_comprehensive.get_etf_flows(asset=symbol),
+                self.coinglass_comprehensive.get_exchange_reserves(symbol=symbol),
             ]
 
             results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -291,6 +304,9 @@ class MSSService:
             trader_data = results[1] if not isinstance(results[1], Exception) else {}
             funding_data = results[2] if not isinstance(results[2], Exception) else {}
             trades_data = results[3] if not isinstance(results[3], Exception) else {}
+            options_data = results[4] if not isinstance(results[4], Exception) else {}
+            etf_data = results[5] if not isinstance(results[5], Exception) else {}
+            reserves_data = results[6] if not isinstance(results[6], Exception) else {}
 
             # Extract OI change from Coinglass Premium OI trend
             oi_change = 0.0
@@ -342,22 +358,41 @@ class MSSService:
             else:
                 logger.warning(f"CoinAPI trade data unavailable for {symbol}")
 
-            # Whale accumulation detection with ALL proper data sources
-            whale_accumulation = self._detect_whale_accumulation(
+            # NEW: Extract institutional signals from comprehensive endpoints
+            options_oi = options_data.get("totalOptionsOI", 0) if isinstance(options_data, dict) and options_data.get("success") else 0
+            etf_sentiment = etf_data.get("sentiment", "neutral") if isinstance(etf_data, dict) and etf_data.get("success") else "neutral"
+            reserves_interpretation = reserves_data.get("interpretation", "neutral") if isinstance(reserves_data, dict) and reserves_data.get("success") else "neutral"
+            reserves_change_pct = reserves_data.get("changePct", 0) if isinstance(reserves_data, dict) and reserves_data.get("success") else 0
+            
+            # Log new data sources
+            logger.info(f"Phase 3 NEW data - Options OI: ${options_oi:,.0f}, ETF: {etf_sentiment}, Reserves: {reserves_interpretation} ({reserves_change_pct:+.2f}%)")
+            
+            # Enhanced whale accumulation detection with NEW data sources
+            whale_accumulation = self._detect_whale_accumulation_enhanced(
                 oi_change=oi_change,
                 long_ratio=long_ratio,
-                volume_change=volume_change
+                volume_change=volume_change,
+                options_oi=options_oi,
+                etf_sentiment=etf_sentiment,
+                reserves_interpretation=reserves_interpretation,
+                reserves_change_pct=reserves_change_pct
             )
 
-            # Calculate validation score
+            # Calculate validation score (with enhanced whale signal)
             validation_score, breakdown = self.mss_engine.calculate_validation_score(
                 oi_change_pct=oi_change,
                 funding_rate=funding_rate,
                 top_trader_long_ratio=long_ratio,
                 whale_accumulation=whale_accumulation
             )
+            
+            # Add new data to breakdown
+            breakdown["options_oi"] = options_oi
+            breakdown["etf_sentiment"] = etf_sentiment
+            breakdown["reserves_interpretation"] = reserves_interpretation
+            breakdown["whale_accumulation_enhanced"] = whale_accumulation
 
-            logger.info(f"Phase 3 complete: {symbol} - Validation score: {validation_score:.2f}/35, Whale: {whale_accumulation}")
+            logger.info(f"Phase 3 complete (Enhanced): {symbol} - Score: {validation_score:.2f}/35, Whale: {whale_accumulation}")
             return validation_score, breakdown
 
         except Exception as e:
@@ -552,3 +587,82 @@ class MSSService:
             1.5 <= long_ratio <= 2.5 and
             volume_change > 30
         )
+    
+    def _detect_whale_accumulation_enhanced(
+        self,
+        oi_change: Optional[float],
+        long_ratio: Optional[float],
+        volume_change: Optional[float],
+        options_oi: float = 0,
+        etf_sentiment: str = "neutral",
+        reserves_interpretation: str = "neutral",
+        reserves_change_pct: float = 0
+    ) -> bool:
+        """
+        ENHANCED whale accumulation detection with institutional tracking
+        
+        Uses traditional signals PLUS new data sources:
+        - Options OI (smart money hedging)
+        - ETF flows (institutional sentiment)
+        - Exchange reserves (whale movements)
+        
+        Whale accumulation when MULTIPLE conditions met:
+        
+        TRADITIONAL (high confidence if all 3):
+        - OI increasing (>50%)
+        - Long ratio sweet spot (1.5-2.5)
+        - Volume increasing (>30%)
+        
+        INSTITUTIONAL (bonus signals):
+        - Options OI > $1B (institutions hedging)
+        - ETF accumulation sentiment
+        - Exchange reserves decreasing (whales moving to cold storage)
+        
+        Args:
+            oi_change: OI change %
+            long_ratio: Long/Short ratio
+            volume_change: Volume change %
+            options_oi: Total options open interest
+            etf_sentiment: ETF flow sentiment (accumulation/distribution/neutral)
+            reserves_interpretation: Exchange reserves interpretation
+            reserves_change_pct: Exchange reserves change %
+            
+        Returns:
+            True if whale accumulation detected (either traditional OR institutional signals strong)
+        """
+        # Traditional detection (original logic)
+        traditional_signal = False
+        if oi_change is not None and long_ratio is not None and volume_change is not None:
+            traditional_signal = (
+                oi_change > 50 and
+                1.5 <= long_ratio <= 2.5 and
+                volume_change > 30
+            )
+        
+        # Institutional signals (NEW!)
+        institutional_signals = 0
+        
+        # 1. Options OI > $1B = smart money positioning
+        if options_oi > 1_000_000_000:
+            institutional_signals += 1
+            logger.info(f"Whale signal: High options OI (${options_oi/1e9:.2f}B)")
+        
+        # 2. ETF accumulation = institutions buying
+        if etf_sentiment in ["accumulation", "strong_accumulation"]:
+            institutional_signals += 1
+            logger.info(f"Whale signal: ETF {etf_sentiment}")
+        
+        # 3. Exchange reserves decreasing = whales moving to cold storage (bullish)
+        if reserves_interpretation in ["whale_accumulation", "accumulation"]:
+            institutional_signals += 1
+            logger.info(f"Whale signal: Exchange reserves {reserves_interpretation} ({reserves_change_pct:+.2f}%)")
+        
+        # Enhanced logic: Whale accumulation if:
+        # - Traditional signals all positive, OR
+        # - 2+ institutional signals detected
+        whale_detected = traditional_signal or institutional_signals >= 2
+        
+        if whale_detected:
+            logger.info(f"🐋 WHALE ACCUMULATION DETECTED! Traditional: {traditional_signal}, Institutional signals: {institutional_signals}/3")
+        
+        return whale_detected
