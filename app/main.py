@@ -32,6 +32,7 @@ from app.api import (
     routes_optimized_gpt,
     routes_analytics,  # ADDED FOR DATABASE ANALYTICS
     routes_rpc,  # ADDED FOR UNIFIED RPC ENDPOINT
+    routes_gpt_actions,  # ADDED FOR GPT ACTIONS FLAT PARAMS
 )
 
 # Load environment variables
@@ -118,6 +119,7 @@ app.include_router(routes_mss.router, prefix="/mss", tags=["MSS Alpha System"]) 
 app.include_router(routes_new_listings.router, tags=["Binance New Listings"])  # ADDED FOR NEW LISTINGS MONITOR
 app.include_router(routes_narratives.router, prefix="/narratives", tags=["Narratives & Market Intelligence"])  # ADDED FOR NARRATIVE DETECTION
 app.include_router(routes_rpc.router, tags=["Unified RPC - GPT Actions"])  # ADDED FOR UNIFIED RPC ENDPOINT - GPT ACTIONS
+app.include_router(routes_gpt_actions.router, tags=["GPT Actions (Flat Params)"])  # ADDED FOR GPT ACTIONS COMPATIBILITY
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility
 # This MUST be done AFTER all routes are registered to ensure proper schema generation

@@ -12179,5 +12179,92 @@
         "fearGreedIndex": 50
       }
     }
+  },
+  {
+    "id": "sig_20251112162628860622",
+    "saved_at": "2025-11-12T16:26:28.860648",
+    "data": {
+      "symbol": "SOL",
+      "timestamp": "2025-11-12T16:26:28.112350",
+      "signal": "SHORT",
+      "score": 46.3,
+      "confidence": "low",
+      "price": 152.51,
+      "reasons": [
+        "High funding rate (0.249%) - longs overleveraged",
+        "Overcrowded longs (80.3%) - contrarian bearish",
+        "Price trend: bearish"
+      ],
+      "metrics": {
+        "fundingRate": 0.002491,
+        "openInterest": 7401173324.0407,
+        "socialScore": 40.0,
+        "priceTrend": "bearish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": true,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "strongly_bearish",
+        "priceChanges": {
+          "5m": -0.61,
+          "15m": -1.1,
+          "1h": -3.24,
+          "4h": -4.79,
+          "24h": -5.1
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0871,
+          "oiVolumeRatio": 0.385
+        },
+        "fundingRates": {
+          "oiWeighted": 0.002491,
+          "volumeWeighted": 0.003877
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 451,
+        "socialMetrics": {
+          "volume": 0,
+          "engagement": 0,
+          "dominance": 0.0,
+          "tweetVolume": 0,
+          "redditVolume": 0,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 0.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 24.5,
+          "momentumLevel": "very_weak",
+          "volumeChange24h": 0.0,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 94.16,
+          "sellPressure": 5.84,
+          "avgTradeSize": 0.96
+        },
+        "volatility7d": 14.76
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      }
+    }
   }
 ]
