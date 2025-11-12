@@ -3776,6 +3776,199 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    # ==================== ON-CHAIN WHALE TRACKING ====================
+    
+    async def get_chain_whale_transfers(self, limit: int = 100) -> Dict:
+        """
+        Get ON-CHAIN WHALE TRANSFERS - Cross-chain whale movements! (43RD ENDPOINT!)
+        Endpoint: /api/chain/whale-transfer
+        
+        Track MASSIVE on-chain transfers across Bitcoin, Ethereum, Tron!
+        See whales moving funds between wallets and exchanges.
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/chain/whale-transfer"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                transfers = data["data"][:limit]
+                
+                if not transfers:
+                    return {"success": False, "error": "No whale transfers"}
+                
+                # Format transfers
+                formatted_transfers = []
+                for tx in transfers:
+                    amount_usd = float(tx.get("amount_usd", 0))
+                    
+                    formatted_transfers.append({
+                        "hash": tx.get("transaction_hash"),
+                        "asset": tx.get("asset_symbol"),
+                        "quantity": float(tx.get("asset_quantity", 0)),
+                        "amountUsd": amount_usd,
+                        "from": tx.get("from"),
+                        "to": tx.get("to"),
+                        "blockchain": tx.get("blockchain_name"),
+                        "blockHeight": tx.get("block_height"),
+                        "timestamp": tx.get("block_timestamp"),
+                        "classification": "MEGA" if amount_usd > 10_000_000 else "LARGE" if amount_usd > 5_000_000 else "MEDIUM"
+                    })
+                
+                # Sort by amount
+                formatted_transfers.sort(key=lambda x: x["amountUsd"], reverse=True)
+                
+                # Analyze by blockchain
+                by_chain = {}
+                for tx in formatted_transfers:
+                    chain = tx["blockchain"]
+                    if chain not in by_chain:
+                        by_chain[chain] = {"count": 0, "totalValue": 0}
+                    by_chain[chain]["count"] += 1
+                    by_chain[chain]["totalValue"] += tx["amountUsd"]
+                
+                # Analyze by asset
+                by_asset = {}
+                for tx in formatted_transfers:
+                    asset = tx["asset"]
+                    if asset not in by_asset:
+                        by_asset[asset] = {"count": 0, "totalValue": 0}
+                    by_asset[asset]["count"] += 1
+                    by_asset[asset]["totalValue"] += tx["amountUsd"]
+                
+                # Exchange flows
+                to_exchange = [tx for tx in formatted_transfers if tx["to"] not in ["unknown wallet", "unknown"]]
+                from_exchange = [tx for tx in formatted_transfers if tx["from"] not in ["unknown wallet", "unknown"]]
+                
+                total_value = sum(tx["amountUsd"] for tx in formatted_transfers)
+                mega_whales = [tx for tx in formatted_transfers if tx["classification"] == "MEGA"]
+                
+                return {
+                    "success": True,
+                    "transferCount": len(transfers),
+                    "summary": {
+                        "totalValue": total_value,
+                        "megaWhaleCount": len(mega_whales),
+                        "toExchangeCount": len(to_exchange),
+                        "fromExchangeCount": len(from_exchange),
+                        "byBlockchain": by_chain,
+                        "byAsset": by_asset
+                    },
+                    "megaWhales": mega_whales[:20],
+                    "recentTransfers": formatted_transfers[:50],
+                    "toExchange": to_exchange[:20],
+                    "fromExchange": from_exchange[:20],
+                    "note": "On-chain whale transfers across Bitcoin, Ethereum, Tron. Track massive fund movements!",
+                    "source": "chain_whale_transfers"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_exchange_chain_transactions(self, limit: int = 100) -> Dict:
+        """
+        Get EXCHANGE CHAIN TRANSACTIONS - Exchange deposit/withdrawal tracking! (44TH ENDPOINT!)
+        Endpoint: /api/exchange/chain/tx/list
+        
+        Track fund flows IN/OUT of exchanges on-chain!
+        Perfect for monitoring exchange reserves and whale exchange activity.
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/exchange/chain/tx/list"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                transactions = data["data"][:limit]
+                
+                if not transactions:
+                    return {"success": False, "error": "No exchange transactions"}
+                
+                # Format transactions
+                formatted_txs = []
+                for tx in transactions:
+                    amount_usd = float(tx.get("amount_usd", 0))
+                    transfer_type = tx.get("transfer_type")
+                    
+                    formatted_txs.append({
+                        "hash": tx.get("transaction_hash"),
+                        "asset": tx.get("asset_symbol"),
+                        "quantity": float(tx.get("asset_quantity", 0)),
+                        "amountUsd": amount_usd,
+                        "exchange": tx.get("exchange_name"),
+                        "type": "DEPOSIT" if transfer_type == 1 else "WITHDRAWAL" if transfer_type == 2 else "UNKNOWN",
+                        "from": tx.get("from_address"),
+                        "to": tx.get("to_address"),
+                        "timestamp": tx.get("transaction_time"),
+                        "classification": "LARGE" if amount_usd > 100_000 else "MEDIUM" if amount_usd > 50_000 else "SMALL"
+                    })
+                
+                # Sort by amount
+                formatted_txs.sort(key=lambda x: x["amountUsd"], reverse=True)
+                
+                # Analyze by exchange
+                by_exchange = {}
+                for tx in formatted_txs:
+                    exch = tx["exchange"]
+                    if exch not in by_exchange:
+                        by_exchange[exch] = {
+                            "deposits": {"count": 0, "value": 0},
+                            "withdrawals": {"count": 0, "value": 0}
+                        }
+                    
+                    if tx["type"] == "DEPOSIT":
+                        by_exchange[exch]["deposits"]["count"] += 1
+                        by_exchange[exch]["deposits"]["value"] += tx["amountUsd"]
+                    elif tx["type"] == "WITHDRAWAL":
+                        by_exchange[exch]["withdrawals"]["count"] += 1
+                        by_exchange[exch]["withdrawals"]["value"] += tx["amountUsd"]
+                
+                # Separate by type
+                deposits = [tx for tx in formatted_txs if tx["type"] == "DEPOSIT"]
+                withdrawals = [tx for tx in formatted_txs if tx["type"] == "WITHDRAWAL"]
+                
+                total_deposit_value = sum(tx["amountUsd"] for tx in deposits)
+                total_withdrawal_value = sum(tx["amountUsd"] for tx in withdrawals)
+                net_flow = total_deposit_value - total_withdrawal_value
+                
+                return {
+                    "success": True,
+                    "transactionCount": len(transactions),
+                    "summary": {
+                        "depositCount": len(deposits),
+                        "withdrawalCount": len(withdrawals),
+                        "totalDepositValue": total_deposit_value,
+                        "totalWithdrawalValue": total_withdrawal_value,
+                        "netFlow": net_flow,
+                        "flowDirection": "INFLOW" if net_flow > 0 else "OUTFLOW" if net_flow < 0 else "BALANCED",
+                        "byExchange": by_exchange
+                    },
+                    "largestTransactions": formatted_txs[:30],
+                    "recentDeposits": deposits[:20],
+                    "recentWithdrawals": withdrawals[:20],
+                    "note": "Exchange chain transactions - Track deposits/withdrawals to monitor exchange reserves!",
+                    "source": "exchange_chain_transactions"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
     async def get_long_short_ratio(self, symbol: str = "BTC") -> Dict:

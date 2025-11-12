@@ -1067,6 +1067,84 @@ async def get_hyperliquid_positions_by_symbol(
         await service.close()
 
 
+@router.get("/chain/whale-transfers")
+async def get_chain_whale_transfers(
+    limit: int = Query(100, description="Number of transfers to return")
+):
+    """
+    ⛓️ ENDPOINT #43: ON-CHAIN WHALE TRANSFERS
+    
+    Track MASSIVE cross-chain whale movements!
+    See whales moving funds across Bitcoin, Ethereum, and Tron blockchains.
+    
+    Returns:
+    - Recent whale transfers (>$1M typically)
+    - Mega whales (>$10M transfers)
+    - Blockchain breakdown (BTC, ETH, TRON)
+    - Asset breakdown (BTC, WETH, USDT, etc)
+    - Exchange flows (to/from exchanges)
+    - Transaction details (hash, from/to addresses, block height)
+    
+    Example: GET /coinglass/chain/whale-transfers?limit=50
+    
+    Perfect for:
+    - On-chain whale tracking
+    - Cross-chain analysis
+    - Exchange reserve monitoring
+    - Large fund movement detection
+    - Market sentiment analysis
+    
+    Real data: $38.7M WETH, $20M USDT, $14.4M BTC transfers tracked!
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_chain_whale_transfers(limit=limit)
+        return result
+    finally:
+        await service.close()
+
+
+@router.get("/chain/exchange-flows")
+async def get_exchange_chain_transactions(
+    limit: int = Query(100, description="Number of transactions to return")
+):
+    """
+    🏦 ENDPOINT #44: EXCHANGE CHAIN TRANSACTIONS
+    
+    Track exchange deposits and withdrawals on-chain!
+    Monitor fund flows IN/OUT of major exchanges.
+    
+    Returns:
+    - Recent exchange transactions (deposits & withdrawals)
+    - Exchange breakdown (Coinbase, Binance, Kraken, etc)
+    - Deposit vs Withdrawal analysis
+    - Net flow calculation (inflow/outflow)
+    - Largest transactions
+    - Asset breakdown
+    
+    Example: GET /coinglass/chain/exchange-flows?limit=50
+    
+    Perfect for:
+    - Exchange reserve monitoring
+    - Deposit/withdrawal tracking
+    - Exchange inflow/outflow analysis
+    - Market pressure detection
+    - Whale exchange activity
+    
+    Real data: $300k USDC deposits, $26k LINK withdrawals tracked!
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_exchange_chain_transactions(limit=limit)
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,
