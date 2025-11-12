@@ -288,6 +288,47 @@ async def get_open_interest_history(
         await service.close()
 
 
+@router.get("/open-interest/aggregated-history")
+async def get_aggregated_oi_history(
+    symbol: str = Query("BTC", description="Coin symbol (e.g., BTC, ETH)"),
+    interval: str = Query("1d", description="Interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)", le=1000),
+    unit: str = Query("usd", description="Unit: 'usd' or 'coin'")
+):
+    """
+    Get AGGREGATED Open Interest across ALL EXCHANGES (17TH ENDPOINT!)
+    
+    Returns TOTAL OI combining all exchanges (Binance, OKX, Bybit, etc.):
+    - Total market-wide OI (much larger than single exchange)
+    - Market-wide trend analysis
+    - OI volatility (swing range)
+    - OHLC data for total OI
+    
+    Key differences from per-exchange OI:
+    - Per-exchange OI: Shows single exchange positioning (e.g., Binance $8B)
+    - Aggregated OI: Shows TOTAL market positioning (e.g., All exchanges $68B)
+    
+    Perfect for:
+    - Market-wide institutional sentiment
+    - Overall positioning trends
+    - Cross-exchange flow analysis
+    - Macro market view
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_aggregated_oi_history(
+            symbol=symbol,
+            interval=interval,
+            limit=limit,
+            unit=unit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """

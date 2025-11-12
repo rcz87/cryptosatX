@@ -557,6 +557,115 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_aggregated_oi_history(self, symbol: str = "BTC", interval: str = "1d",
+                                        limit: int = 100, unit: str = "usd") -> Dict:
+        """
+        Get AGGREGATED Open Interest across ALL EXCHANGES (17TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/open-interest/aggregated-history
+        
+        Parameters:
+        - symbol: Coin symbol (e.g., BTC, ETH)
+        - interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w
+        - limit: Number of data points (max 1000)
+        - unit: 'usd' or 'coin'
+        
+        Returns TOTAL OI across Binance, OKX, Bybit, etc. combined!
+        Much larger values than single exchange OI.
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/open-interest/aggregated-history"
+            params = {
+                "symbol": symbol.upper(),
+                "interval": interval,
+                "limit": limit,
+                "unit": unit
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                oi_data = data["data"]
+                
+                # Calculate OI changes
+                if len(oi_data) >= 2:
+                    first_oi = float(oi_data[0].get("close", 0))
+                    last_oi = float(oi_data[-1].get("close", 0))
+                    oi_change = last_oi - first_oi
+                    oi_change_percent = (oi_change / first_oi * 100) if first_oi > 0 else 0
+                    
+                    # Trend detection for aggregated OI
+                    if oi_change_percent > 5:
+                        trend = "STRONG_ACCUMULATION"
+                        trend_desc = f"Total OI +{oi_change_percent:.1f}% - Market-wide accumulation"
+                    elif oi_change_percent > 0:
+                        trend = "ACCUMULATION"
+                        trend_desc = f"Total OI +{oi_change_percent:.1f}% - Gradual market accumulation"
+                    elif oi_change_percent < -5:
+                        trend = "STRONG_DISTRIBUTION"
+                        trend_desc = f"Total OI {oi_change_percent:.1f}% - Market-wide distribution"
+                    elif oi_change_percent < 0:
+                        trend = "DISTRIBUTION"
+                        trend_desc = f"Total OI {oi_change_percent:.1f}% - Gradual reduction"
+                    else:
+                        trend = "STABLE"
+                        trend_desc = "Total OI stable - Market equilibrium"
+                else:
+                    first_oi = 0
+                    last_oi = 0
+                    oi_change = 0
+                    oi_change_percent = 0
+                    trend = "UNKNOWN"
+                    trend_desc = "Insufficient data"
+                
+                # Find highs and lows
+                closes = [float(d.get("close", 0)) for d in oi_data]
+                highs = [float(d.get("high", 0)) for d in oi_data]
+                lows = [float(d.get("low", 0)) for d in oi_data]
+                
+                highest_oi = max(highs) if highs else 0
+                lowest_oi = min(lows) if lows else 0
+                avg_oi = sum(closes) / len(closes) if closes else 0
+                
+                # Calculate volatility (OI swing)
+                oi_range = highest_oi - lowest_oi
+                oi_volatility = (oi_range / avg_oi * 100) if avg_oi > 0 else 0
+                
+                return {
+                    "success": True,
+                    "symbol": symbol.upper(),
+                    "interval": interval,
+                    "unit": unit,
+                    "aggregationType": "ALL_EXCHANGES",
+                    "dataPointCount": len(oi_data),
+                    "latestTotalOI": last_oi,
+                    "trend": trend,
+                    "trendDescription": trend_desc,
+                    "summary": {
+                        "firstOI": first_oi,
+                        "lastOI": last_oi,
+                        "change": oi_change,
+                        "changePercent": oi_change_percent,
+                        "highest": highest_oi,
+                        "lowest": lowest_oi,
+                        "average": avg_oi,
+                        "range": oi_range,
+                        "volatility": oi_volatility
+                    },
+                    "timeSeries": oi_data,
+                    "source": "coinglass_aggregated_oi"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)
