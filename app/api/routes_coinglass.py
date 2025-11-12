@@ -762,6 +762,73 @@ async def get_funding_rate_exchange_list(symbol: str):
         await service.close()
 
 
+@router.get("/funding-rate/accumulated-exchange-list")
+async def get_accumulated_funding_rate_exchange_list(
+    range: str = Query("1d", description="Time period: 1d, 7d, 30d, etc."),
+    symbol: str = Query("BTC", description="Coin symbol (e.g., BTC, ETH)")
+):
+    """
+    Get ACCUMULATED Funding Rate per exchange (26TH ENDPOINT!)
+    
+    Returns CUMULATIVE funding rate over time period per exchange:
+    - Total funding paid/received over period
+    - Per-exchange breakdown
+    - Separated by margin type
+    - Statistical summary
+    
+    Key Differences:
+    - **Real-time FR (Ep.25)**: Current funding rate NOW (e.g., 0.01%)
+    - **Accumulated FR (Ep.26)**: Total funding over period (e.g., 0.55% over 1d) ✨
+    
+    Why Accumulated FR Matters:
+    - **Actual Cost**: Shows real funding paid/received
+    - **Period Analysis**: Compare total funding across exchanges
+    - **Profit Calculation**: Calculate actual funding profit/loss
+    
+    Example Use Cases:
+    
+    1. **Cost Analysis** (for Longs):
+       - Binance accumulated FR: 0.55% over 1d
+       - Means: Paid 0.55% of position value over 24h
+       - On $10,000 position: Paid $55 in funding
+    
+    2. **Exchange Comparison**:
+       - Exchange A: 0.30% accumulated (cheaper)
+       - Exchange B: 0.70% accumulated (expensive)
+       - Difference: 0.40% = $40 savings per $10k position
+    
+    3. **Profit Optimization** (for Shorts):
+       - Find exchange with HIGHEST accumulated FR
+       - Short there to EARN maximum funding
+    
+    4. **Period Analysis**:
+       - 1d: Short-term funding trends
+       - 7d: Weekly funding patterns
+       - 30d: Long-term funding costs
+    
+    Trading Strategies:
+    - LONG: Choose exchange with LOWEST accumulated FR (minimize cost)
+    - SHORT: Choose exchange with HIGHEST accumulated FR (maximize earnings)
+    - Compare with real-time FR to predict future costs
+    
+    Response Structure:
+    - stablecoinMargined: Linear contracts (BTCUSDT)
+    - tokenMargined: Inverse/coin-margined contracts (BTCUSD)
+    - Each includes: statistics, top5 highest/lowest, all exchanges
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_accumulated_funding_rate_exchange_list(
+            range=range,
+            symbol=symbol
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """

@@ -1537,6 +1537,118 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_accumulated_funding_rate_exchange_list(self, range: str = "1d", 
+                                                          symbol: str = "BTC") -> Dict:
+        """
+        Get ACCUMULATED Funding Rate per exchange (26TH ENDPOINT!)
+        REAL ENDPOINT: /api/futures/funding-rate/accumulated-exchange-list
+        
+        Parameters:
+        - range: Time period (1d, 7d, 30d, etc.)
+        - symbol: Coin symbol (e.g., BTC, ETH)
+        
+        Returns CUMULATIVE funding rate over time period:
+        - Total funding paid/received over period
+        - Per exchange breakdown
+        - Separated by margin type
+        
+        Shows ACTUAL profit/cost from funding!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/funding-rate/accumulated-exchange-list"
+            params = {
+                "range": range,
+                "symbol": symbol.upper()
+            }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                fr_data = data["data"]
+                
+                stablecoin_list = []
+                token_margin_list = []
+                
+                for item in fr_data:
+                    # Process stablecoin-margined
+                    if "stablecoin_margin_list" in item:
+                        for ex in item["stablecoin_margin_list"]:
+                            stablecoin_list.append({
+                                "exchange": ex.get("exchange"),
+                                "accumulatedFR": float(ex.get("funding_rate", 0)),
+                                "accumulatedFRPercent": float(ex.get("funding_rate", 0)) * 100
+                            })
+                    
+                    # Process token/coin-margined
+                    if "token_margin_list" in item:
+                        for ex in item["token_margin_list"]:
+                            token_margin_list.append({
+                                "exchange": ex.get("exchange"),
+                                "accumulatedFR": float(ex.get("funding_rate", 0)),
+                                "accumulatedFRPercent": float(ex.get("funding_rate", 0)) * 100
+                            })
+                
+                # Sort by accumulated FR
+                stablecoin_sorted = sorted(stablecoin_list, 
+                                          key=lambda x: x["accumulatedFR"], 
+                                          reverse=True)
+                token_sorted = sorted(token_margin_list, 
+                                     key=lambda x: x["accumulatedFR"], 
+                                     reverse=True)
+                
+                # Calculate statistics
+                stable_rates = [ex["accumulatedFR"] for ex in stablecoin_list]
+                token_rates = [ex["accumulatedFR"] for ex in token_margin_list]
+                
+                stable_stats = {
+                    "count": len(stable_rates),
+                    "average": sum(stable_rates) / len(stable_rates) if stable_rates else 0,
+                    "highest": max(stable_rates) if stable_rates else 0,
+                    "lowest": min(stable_rates) if stable_rates else 0,
+                    "averagePercent": (sum(stable_rates) / len(stable_rates) * 100) if stable_rates else 0,
+                    "total": sum(stable_rates)
+                }
+                
+                token_stats = {
+                    "count": len(token_rates),
+                    "average": sum(token_rates) / len(token_rates) if token_rates else 0,
+                    "highest": max(token_rates) if token_rates else 0,
+                    "lowest": min(token_rates) if token_rates else 0,
+                    "averagePercent": (sum(token_rates) / len(token_rates) * 100) if token_rates else 0,
+                    "total": sum(token_rates)
+                }
+                
+                return {
+                    "success": True,
+                    "symbol": symbol.upper(),
+                    "range": range,
+                    "stablecoinMargined": {
+                        "statistics": stable_stats,
+                        "top5Highest": stablecoin_sorted[:5],
+                        "top5Lowest": stablecoin_sorted[-5:],
+                        "allExchanges": stablecoin_sorted
+                    },
+                    "tokenMargined": {
+                        "statistics": token_stats,
+                        "top5Highest": token_sorted[:5],
+                        "top5Lowest": token_sorted[-5:],
+                        "allExchanges": token_sorted
+                    },
+                    "note": f"Accumulated funding rate over {range} period",
+                    "source": "coinglass_accumulated_fr"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_pairs_markets(self, symbol: str = "BTC") -> Dict:
         """
         Get futures market data PER EXCHANGE for a symbol (11TH ENDPOINT!)
