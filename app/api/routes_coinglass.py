@@ -1282,6 +1282,16 @@ async def get_economic_calendar():
         await service.close()
 
 
+@router.get("/news/feed")
+async def get_news_feed():
+    """📰 ENDPOINT #58: Crypto News Feed - Latest articles from major sources!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_news_feed()
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,

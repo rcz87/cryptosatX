@@ -4394,6 +4394,42 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_news_feed(self) -> Dict:
+        """Get Latest Crypto News Articles! (58TH ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/article/list"
+            
+            response = await client.get(url, headers=self.headers)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                articles = data["data"]
+                
+                processed_articles = []
+                for article in articles:
+                    processed_articles.append({
+                        "title": article.get("article_title", ""),
+                        "description": article.get("article_description", ""),
+                        "content": article.get("article_content", ""),
+                        "image": article.get("article_picture", ""),
+                        "source": article.get("source_name", ""),
+                        "sourceLogo": article.get("source_website_logo", ""),
+                        "publishedAt": article.get("article_release_time", 0),
+                        "url": article.get("article_url", "")
+                    })
+                
+                return {
+                    "success": True,
+                    "totalArticles": len(processed_articles),
+                    "articles": processed_articles,
+                    "note": "Latest crypto news from major sources (CoinTelegraph, TheBlock, etc). Real-time market news feed.",
+                    "source": "news_feed"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
     async def get_long_short_ratio(self, symbol: str = "BTC") -> Dict:
