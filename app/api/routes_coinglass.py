@@ -294,6 +294,160 @@ async def get_liquidation_exchange_list(
         await service.close()
 
 
+@router.get("/liquidation/aggregated-history")
+async def get_liquidation_aggregated_history(
+    exchange_list: str = Query("Binance", description="Comma-separated exchange names (e.g., 'Binance,OKX,Bybit')"),
+    symbol: str = Query("BTC", description="Trading symbol"),
+    interval: str = Query("1d", description="Time interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)"),
+    start_time: int = Query(None, description="Start timestamp in milliseconds (optional)"),
+    end_time: int = Query(None, description="End timestamp in milliseconds (optional)")
+):
+    """
+    Get AGGREGATED LIQUIDATION HISTORY over time (33RD ENDPOINT!)
+    
+    Returns TIME-SERIES liquidation data for trend and cascade analysis:
+    - Aggregated long liquidations per period
+    - Aggregated short liquidations per period
+    - Trend detection (reversal, persistent, choppy)
+    - Cascade event identification
+    - Liquidation intensity scoring
+    
+    Why This Matters:
+    
+    1. **Cascade Detection**:
+       - Identify liquidation cascades (domino effect)
+       - Spot peak liquidation events
+       - Track cascade severity over time
+       - Predict potential future cascades
+    
+    2. **Trend Reversal Signals**:
+       - Detect shifts from long to short liquidations
+       - Identify market turning points
+       - Track trend persistence vs reversal
+       - Early warning for trend changes
+    
+    3. **Volatility Analysis**:
+       - Measure liquidation intensity over time
+       - Predict upcoming volatility spikes
+       - Track market stability vs chaos
+       - Risk management for position sizing
+    
+    4. **Historical Pattern Analysis**:
+       - Compare current vs past liquidations
+       - Identify recurring patterns
+       - Backtest liquidation-based strategies
+       - Understand market cycle dynamics
+    
+    Trading Signals:
+    
+    1. **Cascade Events**:
+       - Large liquidation spikes = Cascade happened
+       - Multiple cascades = Extreme volatility
+       - Long cascade = Bearish dump
+       - Short cascade = Bullish squeeze
+    
+    2. **Trend Identification**:
+       - Persistent long liquidations = Downtrend
+       - Persistent short liquidations = Uptrend
+       - Reversal detected = Trend change imminent
+       - Choppy liquidations = Sideways market
+    
+    3. **Intensity Scoring**:
+       - EXTREME intensity = High risk, reduce positions
+       - HIGH intensity = Volatile market, tight stops
+       - MODERATE = Normal trading conditions
+       - LOW intensity = Low volatility, safe to scale
+    
+    4. **Leading Indicator**:
+       - Liquidation spikes often PRECEDE major moves
+       - Rising liquidations = Momentum building
+       - Declining liquidations = Momentum fading
+       - Use for entry/exit timing
+    
+    Example Use Cases:
+    
+    **Cascade Identification**:
+    ```
+    Day 1: $10M liquidations
+    Day 2: $65M liquidations (CASCADE!)
+    Day 3: $12M liquidations
+    → Major cascade on Day 2
+    → Likely caused sharp price move
+    → High volatility event
+    ```
+    
+    **Trend Reversal**:
+    ```
+    Week 1-3: Heavy long liquidations (downtrend)
+    Week 4: Shift to short liquidations
+    → Trend reversal to bullish
+    → Market sentiment changed
+    → Potential bottom found
+    ```
+    
+    **Intensity Warning**:
+    ```
+    Average: $20M/day liquidations
+    Intensity: VERY_HIGH
+    → Dangerous market conditions
+    → Reduce position sizes
+    → Tighten stop losses
+    ```
+    
+    **Historical Pattern**:
+    ```
+    Compare current liquidations to past 30 days
+    → Current = 2x historical average
+    → Abnormal market stress
+    → Expect continued volatility
+    ```
+    
+    Current Data Example (BTC, 1d, 10 days):
+    - Total long liq: $183M over 10 days
+    - Total short liq: $74M over 10 days
+    - Trend: PERSISTENT_BEARISH (2.5x more long liqs)
+    - Peak cascade: $64M on one day (long cascade)
+    - Intensity: MODERATE ($26M/day average)
+    
+    Response includes:
+    - Summary (total long/short, averages, percentages)
+    - Trend analysis (direction, description)
+    - Intensity scoring (level, description)
+    - Top 3 cascade events (type, size, timestamp)
+    - Complete time-series history
+    
+    Use Cases:
+    - Identify liquidation cascades
+    - Detect trend reversals early
+    - Measure market volatility intensity
+    - Backtest liquidation patterns
+    - Predict future volatility
+    - Time entries/exits around cascades
+    
+    Perfect for:
+    - Risk managers tracking cascade risk
+    - Traders timing entries around liquidations
+    - Quants building liquidation-based strategies
+    - Portfolio managers assessing market stress
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_liquidation_aggregated_history(
+            exchange_list=exchange_list,
+            symbol=symbol,
+            interval=interval,
+            limit=limit,
+            start_time=start_time,
+            end_time=end_time
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,
