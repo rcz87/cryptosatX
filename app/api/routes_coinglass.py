@@ -374,6 +374,57 @@ async def get_aggregated_stablecoin_oi_history(
         await service.close()
 
 
+@router.get("/open-interest/aggregated-coin-margin-history")
+async def get_aggregated_coin_margin_oi_history(
+    exchange_list: str = Query("Binance", description="Exchange name(s), comma-separated"),
+    symbol: str = Query("BTC", description="Coin symbol (e.g., BTC, ETH)"),
+    interval: str = Query("1d", description="Interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)", le=1000)
+):
+    """
+    Get AGGREGATED COIN-MARGIN Open Interest history (19TH ENDPOINT!)
+    
+    Returns OI for COIN-MARGINED (inverse) futures contracts:
+    - Tracks inverse contracts (e.g., BTCUSD where margin is in BTC)
+    - Different from linear contracts (BTCUSDT where margin is in USDT)
+    - OHLC data for coin-margined OI
+    - Trend analysis
+    
+    Contract Types Explained:
+    - **Linear (USDT-margined)**: BTCUSDT - margin in stablecoin
+    - **Inverse (Coin-margined)**: BTCUSD - margin in the coin itself
+    
+    Key Differences:
+    - Coin-margined: Profit/loss in BTC (more volatile)
+    - USDT-margined: Profit/loss in USDT (more stable)
+    - Different risk profiles and use cases
+    
+    Why Track Both:
+    - Professional traders use both contract types
+    - Coin-margined popular for hedging spot holdings
+    - Different OI trends indicate different trader behaviors
+    
+    Perfect for:
+    - Tracking inverse contract positioning
+    - Analyzing professional/institutional flows
+    - Comparing linear vs inverse contract trends
+    - Risk analysis (coin vs stablecoin exposure)
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_aggregated_coin_margin_oi_history(
+            exchange_list=exchange_list,
+            symbol=symbol,
+            interval=interval,
+            limit=limit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
