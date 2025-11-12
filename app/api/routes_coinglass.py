@@ -829,6 +829,86 @@ async def get_accumulated_funding_rate_exchange_list(
         await service.close()
 
 
+@router.get("/top-long-short-account-ratio/history")
+async def get_top_long_short_account_ratio_history(
+    exchange: str = Query("Binance", description="Exchange name"),
+    symbol: str = Query("BTCUSDT", description="Trading pair"),
+    interval: str = Query("h1", description="Interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)", le=1000)
+):
+    """
+    Get TOP TRADER Long/Short Account Ratio history (27TH ENDPOINT!)
+    
+    Returns positioning of TOP/ELITE traders only:
+    - Long % vs Short % (large accounts)
+    - Long/Short ratio
+    - Smart money sentiment analysis
+    - Time-series data
+    
+    What is Top Trader Data:
+    - Tracks ONLY elite/large account traders
+    - Filters out retail/small accounts
+    - Shows what SMART MONEY is doing
+    - More reliable than all-trader data
+    
+    Key Metrics:
+    - Long %: Percentage of top traders who are long
+    - Short %: Percentage of top traders who are short
+    - Ratio: Long/Short ratio (e.g., 2.67 = 2.67:1 favoring longs)
+    
+    Sentiment Classification:
+    - Ratio > 3.0: Extremely Bullish (smart money very long)
+    - Ratio > 2.0: Very Bullish
+    - Ratio > 1.5: Bullish
+    - Ratio > 1.0: Slightly Bullish
+    - Ratio = 1.0: Neutral (balanced)
+    - Ratio < 1.0: Bearish (shorts dominating)
+    - Ratio < 0.5: Very Bearish
+    - Ratio < 0.33: Extremely Bearish
+    
+    Trading Signals:
+    1. **Follow Smart Money**:
+       - High ratio (>2) = Smart money long → Consider long
+       - Low ratio (<0.5) = Smart money short → Consider short
+    
+    2. **Contrarian Play**:
+       - Extreme ratio (>3 or <0.33) = Potential reversal
+       - Smart money can be wrong at extremes
+    
+    3. **Divergence Detection**:
+       - Smart money ratio UP + Price DOWN = Accumulation
+       - Smart money ratio DOWN + Price UP = Distribution
+    
+    4. **Trend Confirmation**:
+       - Ratio increasing + Price up = Confirmed uptrend
+       - Ratio decreasing + Price down = Confirmed downtrend
+    
+    Example Use Cases:
+    - Track what institutional/whale traders are doing
+    - Confirm price trends with smart money positioning
+    - Detect accumulation/distribution phases
+    - Identify potential reversals at extremes
+    
+    Current Data Example:
+    - Top traders: 72.76% long, 27.24% short
+    - Ratio: 2.67:1 favoring longs
+    - Signal: Smart money is bullish
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_top_long_short_account_ratio_history(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            limit=limit
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/pairs-markets/{symbol}")
 async def get_pairs_markets(symbol: str):
     """
