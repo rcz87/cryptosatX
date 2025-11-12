@@ -1,14 +1,20 @@
 """
-Narratives & Market Intelligence API Routes
+LunarCrush Real-Time Discovery API Routes (Builder Tier)
 
-Advanced endpoints for:
-- Trending topics/narratives detection
-- Sector rotation analysis  
-- Influencer sentiment tracking
-- Real-time coin discovery
-- AI-powered insights
+Endpoints optimized for LunarCrush Builder subscription ($240/month).
+Focus: Real-time coin discovery with NO CACHE delay.
 
-Maximizes LunarCrush API subscription for alpha generation.
+Available Features:
+- Real-time coin discovery (Coins List v2 - instant data!)
+- Social momentum analysis
+- Time-series historical data
+- Change detection & spike alerts
+
+NOT Available in Builder Tier:
+- Topics/Narratives (Enterprise only)
+- Categories/Sectors (Enterprise only)  
+- Influencers/Creators (Enterprise only)
+- AI Insights (Enterprise only)
 """
 
 from fastapi import APIRouter, Query, HTTPException
@@ -22,352 +28,14 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-# ==================== TOPICS / NARRATIVES ====================
-
-@router.get("/topics/trending")
-async def get_trending_topics(
-    limit: int = Query(
-        20,
-        description="Number of topics to return",
-        ge=1,
-        le=50
-    ),
-    sort: str = Query(
-        "social_volume",
-        description="Sort by: social_volume, engagement, sentiment"
-    ),
-    min_momentum: Optional[float] = Query(
-        None,
-        description="Filter topics with 24h change >= this % (e.g., 50 for +50%)",
-        ge=0
-    )
-):
-    """
-    **Get Trending Cryptocurrency Topics/Narratives**
-    
-    Detects emerging narratives BEFORE price pumps.
-    
-    **Examples of topics:**
-    - AI Agents
-    - Real World Assets (RWA)
-    - DePIN (Decentralized Physical Infrastructure)
-    - Gaming & Metaverse
-    - Layer 2 Scaling
-    
-    **Use Case:**
-    - Find narrative-driven opportunities early
-    - Track sector momentum shifts
-    - Identify coins riding trending narratives
-    
-    **Example:** `GET /narratives/topics/trending?limit=10&min_momentum=50`
-    
-    Returns:
-    - Trending topics with social metrics
-    - Related coins per narrative
-    - 24h momentum changes
-    """
-    try:
-        result = await lunarcrush_comprehensive.get_trending_topics(limit=limit, sort=sort)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error", "Failed to fetch topics"))
-        
-        # Filter by momentum if specified
-        if min_momentum is not None:
-            topics = result.get("topics", [])
-            filtered = [t for t in topics if t.get("change24h", 0) >= min_momentum]
-            result["topics"] = filtered
-            result["totalTopics"] = len(filtered)
-            result["filters"] = {"min_momentum": min_momentum}
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Error fetching trending topics: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/topics/{topic_slug}")
-async def get_topic_details(
-    topic_slug: str
-):
-    """
-    **Get Detailed Topic Information**
-    
-    Analyze specific narrative performance and related coins.
-    
-    **Example slugs:**
-    - `ai-agents`
-    - `real-world-assets`
-    - `depin`
-    - `layer-2`
-    - `gaming`
-    
-    **Example:** `GET /narratives/topics/ai-agents`
-    
-    Returns:
-    - Social volume and engagement
-    - Sentiment analysis
-    - 24h/7d momentum
-    - Top related coins
-    """
-    try:
-        result = await lunarcrush_comprehensive.get_topic_details(topic_slug)
-        
-        if not result.get("success"):
-            raise HTTPException(
-                status_code=404, 
-                detail=f"Topic '{topic_slug}' not found or no data available"
-            )
-        
-        return result
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error fetching topic {topic_slug}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/topics/opportunities")
-async def get_narrative_opportunities(
-    top_n_topics: int = Query(
-        10,
-        description="Number of top topics to analyze",
-        ge=5,
-        le=20
-    )
-):
-    """
-    **Find High-Opportunity Coins from Trending Narratives**
-    
-    Advanced analysis combining:
-    1. Trending topics detection
-    2. Related coins extraction
-    3. Momentum filtering
-    
-    **Use Case:**
-    - Discover coins riding hot narratives
-    - Early entry on narrative-driven pumps
-    - Alpha generation before retail
-    
-    **Example:** `GET /narratives/topics/opportunities?top_n_topics=10`
-    
-    Returns:
-    - High-probability trading opportunities
-    - Sorted by narrative momentum
-    - Top 20 opportunities
-    """
-    try:
-        result = await lunarcrush_comprehensive.analyze_narrative_opportunities(
-            top_n_topics=top_n_topics
-        )
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error"))
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Error analyzing narrative opportunities: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ==================== CATEGORIES / SECTORS ====================
-
-@router.get("/sectors/list")
-async def get_all_sectors(
-    limit: int = Query(
-        30,
-        description="Number of sectors to return",
-        ge=1,
-        le=50
-    )
-):
-    """
-    **Get All Cryptocurrency Sectors/Categories**
-    
-    Track performance across major crypto sectors:
-    - Layer-1 (ETH, SOL, AVAX)
-    - DeFi (UNI, AAVE, COMP)
-    - NFT & Gaming (AXS, SAND, MANA)
-    - Meme Coins (DOGE, SHIB, PEPE)
-    - AI & ML
-    - Real World Assets
-    
-    **Use Case:**
-    - Sector rotation analysis
-    - Portfolio allocation
-    - Risk management
-    
-    **Example:** `GET /narratives/sectors/list?limit=20`
-    
-    Returns:
-    - All sectors with social + market metrics
-    - 24h momentum changes
-    - Coin count per sector
-    """
-    try:
-        result = await lunarcrush_comprehensive.get_categories(limit=limit)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error"))
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Error fetching sectors: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/sectors/{sector_slug}")
-async def get_sector_details(
-    sector_slug: str
-):
-    """
-    **Get Detailed Sector Performance**
-    
-    Deep dive into specific crypto sector.
-    
-    **Example slugs:**
-    - `layer-1`
-    - `defi`
-    - `nft`
-    - `gaming`
-    - `meme`
-    - `ai`
-    
-    **Example:** `GET /narratives/sectors/layer-1`
-    
-    Returns:
-    - Sector social metrics
-    - Top 10 coins in sector
-    - 24h momentum
-    - Sentiment analysis
-    """
-    try:
-        result = await lunarcrush_comprehensive.get_category_details(sector_slug)
-        
-        if not result.get("success"):
-            raise HTTPException(
-                status_code=404,
-                detail=f"Sector '{sector_slug}' not found"
-            )
-        
-        return result
-        
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error fetching sector {sector_slug}: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/sectors/rotation")
-async def analyze_sector_rotation():
-    """
-    **Sector Rotation Analysis**
-    
-    Identify:
-    1. Heating sectors (increasing momentum)
-    2. Cooling sectors (decreasing momentum)
-    3. Rotation signals
-    
-    **Use Case:**
-    - Portfolio rebalancing
-    - Risk management
-    - Trend following
-    
-    **Example:** `GET /narratives/sectors/rotation`
-    
-    Returns:
-    - Heating sectors (momentum > +25%)
-    - Cooling sectors (momentum < -25%)
-    - Rotation signal (rotate_to_heating / hold)
-    """
-    try:
-        result = await lunarcrush_comprehensive.analyze_sector_rotation()
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error"))
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Error analyzing sector rotation: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ==================== INFLUENCERS / CREATORS ====================
-
-@router.get("/influencers/top")
-async def get_top_influencers(
-    limit: int = Query(
-        50,
-        description="Number of influencers to return",
-        ge=10,
-        le=100
-    ),
-    sort: str = Query(
-        "followers",
-        description="Sort by: followers, engagement, influence_score"
-    ),
-    min_followers: Optional[int] = Query(
-        None,
-        description="Minimum follower count",
-        ge=1000
-    )
-):
-    """
-    **Get Top Cryptocurrency Influencers**
-    
-    Track whale sentiment through top crypto creators:
-    - Twitter/X influencers
-    - YouTube creators
-    - Key opinion leaders
-    
-    **Use Case:**
-    - Whale sentiment analysis
-    - Early alpha signals
-    - Influencer impact tracking
-    
-    **Example:** `GET /narratives/influencers/top?limit=50&min_followers=100000`
-    
-    Returns:
-    - Top influencers with follower counts
-    - Engagement rates
-    - Recent activity (posts/24h)
-    - Top mentioned coins
-    """
-    try:
-        result = await lunarcrush_comprehensive.get_top_creators(limit=limit, sort=sort)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error"))
-        
-        # Filter by follower count if specified
-        if min_followers is not None:
-            creators = result.get("creators", [])
-            filtered = [c for c in creators if c.get("followers", 0) >= min_followers]
-            result["creators"] = filtered
-            result["totalCreators"] = len(filtered)
-            result["filters"] = {"min_followers": min_followers}
-        
-        return result
-        
-    except Exception as e:
-        logger.error(f"Error fetching top influencers: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-# ==================== REAL-TIME DISCOVERY ====================
+# ==================== REAL-TIME DISCOVERY (KEY FEATURE!) ====================
 
 @router.get("/discover/realtime")
 async def discover_coins_realtime(
     limit: int = Query(
         100,
-        description="Number of coins to return",
-        ge=10,
+        description="Number of coins to return (1-200)",
+        ge=1,
         le=200
     ),
     sort: str = Query(
@@ -376,34 +44,57 @@ async def discover_coins_realtime(
     ),
     min_galaxy_score: Optional[float] = Query(
         None,
-        description="Filter coins with Galaxy Score >= this value",
+        description="Filter coins with Galaxy Score >= this value (0-100)",
         ge=0,
         le=100
+    ),
+    min_social_volume: Optional[int] = Query(
+        None,
+        description="Filter coins with minimum social volume",
+        ge=0
     )
 ):
     """
-    **Real-Time Coin Discovery (NO CACHE)**
+    **🚀 Real-Time Coin Discovery (NO CACHE - Builder Tier Exclusive!)**
     
-    Get LIVE coin data (not cached like /v1 endpoint).
+    **⭐ KEY ADVANTAGE:** Uses Coins List v2 endpoint
+    - ✅ **INSTANT DATA** (no 1-hour cache delay like v1)
+    - ✅ **Better for MSS scanning** (detect gems immediately!)
+    - ✅ **Live Galaxy Scores** (current social sentiment)
+    - ✅ **Current market data** (price, volume, market cap)
     
-    **Advantages over cached data:**
-    - Instant updates (no 1-hour delay)
-    - Current social momentum
-    - Better for MSS scanning
-    - Real-time Galaxy Scores
+    **Why This Matters:**
+    ```
+    BEFORE (v1 with 1h cache):
+    10:00 AM - PEPE pumps +50%
+    10:30 AM - You check MSS → Still shows 9:00 AM data
+    11:00 AM - Data updates → TOO LATE! Missed the entry
     
-    **Use Case:**
-    - Live social momentum tracking
-    - Real-time MSS discovery
-    - Current market scanning
+    NOW (v2 real-time):
+    10:00 AM - PEPE pumps +50%
+    10:01 AM - You check MSS → FRESH DATA! Early entry possible! 🎯
+    ```
     
-    **Example:** `GET /narratives/discover/realtime?limit=100&min_galaxy_score=60&sort=social_volume`
+    **Use Cases:**
+    - MSS scanning for high-potential gems
+    - Real-time social momentum tracking
+    - Live Galaxy Score monitoring
+    - Current market screening
+    
+    **Example Queries:**
+    - High Galaxy Score coins: `?min_galaxy_score=65&sort=galaxy_score`
+    - Social volume spikes: `?sort=social_volume&limit=50`
+    - Combined filters: `?min_galaxy_score=60&min_social_volume=1000`
+    
+    **Integration with MSS:**
+    This endpoint provides REAL-TIME data that can be used directly
+    with MSS analysis for faster gem discovery!
     
     Returns:
-    - Real-time coin list
-    - Current Galaxy Scores
-    - Live social volumes
-    - Market data
+    - Real-time coin list (NO CACHE!)
+    - Current Galaxy Scores & social metrics
+    - Live market data
+    - Data freshness indicator
     """
     try:
         result = await lunarcrush_comprehensive.get_coins_realtime(
@@ -415,6 +106,14 @@ async def discover_coins_realtime(
         if not result.get("success"):
             raise HTTPException(status_code=500, detail=result.get("error"))
         
+        # Additional filtering by social volume if specified
+        if min_social_volume is not None:
+            coins = result.get("coins", [])
+            filtered = [c for c in coins if c.get("socialVolume", 0) >= min_social_volume]
+            result["coins"] = filtered
+            result["totalCoins"] = len(filtered)
+            result["filters"]["min_social_volume"] = min_social_volume
+        
         return result
         
     except Exception as e:
@@ -422,44 +121,39 @@ async def discover_coins_realtime(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ==================== AI INSIGHTS ====================
+# ==================== SOCIAL MOMENTUM ANALYSIS ====================
 
-@router.get("/ai/topic/{topic}")
-async def get_ai_topic_insights(
-    topic: str
+@router.get("/momentum/{symbol}")
+async def analyze_coin_momentum(
+    symbol: str
 ):
     """
-    **AI-Generated Topic Insights**
+    **Advanced Social Momentum Analysis**
     
-    Get LunarCrush AI analysis of crypto topics.
+    Combines multiple LunarCrush endpoints for comprehensive analysis:
+    1. Current coin metrics (60+ data points)
+    2. 24h change detection (spike alerts)
+    3. 7-day trend analysis
     
-    **Example topics:**
-    - bitcoin
-    - ethereum
-    - defi
-    - nft
-    - layer2
+    **Returns:**
+    - Momentum score (0-100)
+    - Momentum level (very_weak to very_strong)
+    - Current social metrics
+    - 24h changes
+    - 7-day trend data
     
     **Use Case:**
-    - Automated market analysis
-    - Narrative summaries
-    - Trend identification
+    Quick health check of coin's social momentum before trading.
     
-    **Example:** `GET /narratives/ai/topic/bitcoin`
-    
-    Returns:
-    - AI-generated summary
-    - Key insights
-    - Sentiment analysis
-    - Notable trends
+    **Example:** `GET /narratives/momentum/BTC`
     """
     try:
-        result = await lunarcrush_comprehensive.get_ai_topic_insights(topic)
+        result = await lunarcrush_comprehensive.analyze_social_momentum(symbol.upper())
         
         if not result.get("success"):
             raise HTTPException(
                 status_code=404,
-                detail=f"No AI insights available for topic '{topic}'"
+                detail=f"Could not analyze momentum for {symbol}"
             )
         
         return result
@@ -467,89 +161,244 @@ async def get_ai_topic_insights(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"Error fetching AI insights for {topic}: {e}")
+        logger.error(f"Error analyzing momentum for {symbol}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== TIME-SERIES DATA ====================
+
+@router.get("/timeseries/{symbol}")
+async def get_coin_timeseries(
+    symbol: str,
+    interval: str = Query(
+        "1d",
+        description="Time interval: 1h, 1d, 1w"
+    ),
+    days_back: int = Query(
+        30,
+        description="Number of days of historical data",
+        ge=1,
+        le=365
+    )
+):
+    """
+    **Historical Time-Series Data**
+    
+    Get historical social + market metrics over time.
+    
+    **Available Data:**
+    - Price history (OHLC)
+    - Social volume evolution
+    - Sentiment trends
+    - Galaxy Score changes
+    
+    **Intervals:**
+    - `1h` - Hourly data (good for 7-30 days)
+    - `1d` - Daily data (good for 30-365 days)
+    - `1w` - Weekly data (good for long-term trends)
+    
+    **Use Cases:**
+    - Trend analysis
+    - Historical pattern detection
+    - Correlation studies
+    - Backtesting signals
+    
+    **Example:** `GET /narratives/timeseries/ETH?interval=1d&days_back=90`
+    """
+    try:
+        result = await lunarcrush_comprehensive.get_time_series(
+            symbol=symbol.upper(),
+            interval=interval,
+            days_back=days_back
+        )
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=404,
+                detail=f"No time-series data for {symbol}"
+            )
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching time-series for {symbol}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== SOCIAL CHANGE DETECTION ====================
+
+@router.get("/change/{symbol}")
+async def get_social_change(
+    symbol: str,
+    timeframe: str = Query(
+        "24h",
+        description="Timeframe: 1h, 24h, 7d"
+    )
+):
+    """
+    **Social Metrics Change Detection**
+    
+    Detect sudden spikes or drops in social activity.
+    
+    **Returns:**
+    - Social volume % change
+    - Sentiment shift
+    - Galaxy Score delta
+    - Engagement change
+    - Spike level classification
+    
+    **Spike Levels:**
+    - `normal`: < 50% change
+    - `moderate`: 50-100% change
+    - `high`: 100-300% change
+    - `extreme`: > 300% change
+    
+    **Use Case:**
+    Detect viral moments or coordinated pumps early.
+    
+    **Example:** `GET /narratives/change/DOGE?timeframe=24h`
+    """
+    try:
+        result = await lunarcrush_comprehensive.get_social_change(
+            symbol=symbol.upper(),
+            timeframe=timeframe
+        )
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=404,
+                detail=f"No change data for {symbol}"
+            )
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching change data for {symbol}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ==================== COMPREHENSIVE COIN DATA ====================
+
+@router.get("/coin/{symbol}")
+async def get_comprehensive_coin_data(
+    symbol: str
+):
+    """
+    **Complete Coin Social + Market Data**
+    
+    Get ALL available LunarCrush data for a specific coin (60+ metrics).
+    
+    **Includes:**
+    - Galaxy Score & AltRank
+    - Social volume, engagement, dominance
+    - Sentiment analysis
+    - Tweet/Reddit volumes
+    - Price, volume, market cap
+    - 24h/7d price changes
+    - Volatility metrics
+    - Categories/tags
+    
+    **Use Case:**
+    Deep dive into single coin's complete social profile.
+    
+    **Example:** `GET /narratives/coin/BTC`
+    """
+    try:
+        result = await lunarcrush_comprehensive.get_coin_comprehensive(symbol.upper())
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=404,
+                detail=f"Coin {symbol} not found or no data available"
+            )
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error fetching comprehensive data for {symbol}: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
 # ==================== INFO ENDPOINT ====================
 
 @router.get("/info")
-async def get_narratives_info():
+async def get_lunarcrush_info():
     """
-    **Narratives & Market Intelligence System Info**
+    **LunarCrush Builder Tier - Feature Overview**
     
-    Overview of available endpoints and capabilities.
+    Information about available endpoints and capabilities.
     """
     return {
-        "system": "Narratives & Market Intelligence API",
-        "version": "1.0.0",
-        "description": "Advanced market analysis using LunarCrush Builder tier",
-        "capabilities": {
-            "narratives": {
-                "description": "Detect trending topics before price pumps",
-                "endpoints": [
-                    "GET /narratives/topics/trending",
-                    "GET /narratives/topics/{slug}",
-                    "GET /narratives/topics/opportunities"
-                ],
-                "use_cases": [
-                    "Early narrative detection (AI Agents, RWA, DePIN)",
-                    "Narrative-driven trading opportunities",
-                    "Trend following before retail"
-                ]
-            },
-            "sectors": {
-                "description": "Sector rotation analysis for portfolio management",
-                "endpoints": [
-                    "GET /narratives/sectors/list",
-                    "GET /narratives/sectors/{slug}",
-                    "GET /narratives/sectors/rotation"
-                ],
-                "use_cases": [
-                    "Identify heating/cooling sectors",
-                    "Portfolio rebalancing signals",
-                    "Risk management across sectors"
-                ]
-            },
-            "influencers": {
-                "description": "Track whale sentiment via top crypto influencers",
-                "endpoints": [
-                    "GET /narratives/influencers/top"
-                ],
-                "use_cases": [
-                    "Whale sentiment analysis",
-                    "Early alpha from influencer mentions",
-                    "Track KOL activity"
-                ]
-            },
+        "system": "LunarCrush Real-Time Discovery API",
+        "version": "2.0.0",
+        "tier": "Builder ($240/month)",
+        "description": "Optimized for real-time crypto discovery with Builder tier subscription",
+        
+        "key_feature": {
+            "name": "Real-Time Coin Discovery",
+            "endpoint": "GET /narratives/discover/realtime",
+            "advantage": "Uses Coins List v2 (NO CACHE!) vs v1 (1-hour delay)",
+            "impact": "Detect gems immediately, not 1 hour later!",
+            "perfect_for": "MSS scanning, social momentum tracking, live monitoring"
+        },
+        
+        "available_endpoints": {
             "discovery": {
-                "description": "Real-time coin discovery (no cache)",
-                "endpoints": [
-                    "GET /narratives/discover/realtime"
-                ],
-                "use_cases": [
-                    "Live social momentum tracking",
-                    "Better MSS scanning",
-                    "Instant data (no 1h cache delay)"
-                ]
+                "endpoint": "GET /narratives/discover/realtime",
+                "description": "Real-time coin list (instant data, no cache)",
+                "key_benefit": "Better & faster MSS scanning"
             },
-            "ai_insights": {
-                "description": "LunarCrush AI-powered analysis",
-                "endpoints": [
-                    "GET /narratives/ai/topic/{topic}"
-                ],
-                "use_cases": [
-                    "Automated market intelligence",
-                    "Topic summaries and trends",
-                    "AI-generated insights"
-                ]
+            "momentum": {
+                "endpoint": "GET /narratives/momentum/{symbol}",
+                "description": "Advanced social momentum analysis",
+                "key_benefit": "Quick health check before trading"
+            },
+            "timeseries": {
+                "endpoint": "GET /narratives/timeseries/{symbol}",
+                "description": "Historical social + market data",
+                "key_benefit": "Trend analysis & backtesting"
+            },
+            "change": {
+                "endpoint": "GET /narratives/change/{symbol}",
+                "description": "Social metrics change detection",
+                "key_benefit": "Detect viral spikes early"
+            },
+            "coin": {
+                "endpoint": "GET /narratives/coin/{symbol}",
+                "description": "Complete coin data (60+ metrics)",
+                "key_benefit": "Deep dive social profile"
             }
         },
-        "rate_limits": {
-            "tier": "Builder ($240/month)",
+        
+        "not_available_in_builder": {
+            "note": "Following features require Enterprise tier",
+            "features": [
+                "Topics/Narratives API",
+                "Categories/Sectors API",
+                "Creators/Influencers API",
+                "AI Insights API"
+            ],
+            "alternative": "Use real-time discovery + comprehensive coin data for similar insights"
+        },
+        
+        "api_limits": {
             "requests_per_minute": 100,
             "requests_per_day": 20000,
-            "note": "All endpoints fit comfortably within limits"
+            "estimated_utilization": "~45-60% with typical usage patterns (not measured)",
+            "headroom": "Comfortable margin for production use",
+            "note": "Actual utilization depends on polling frequency and coin count"
         },
-        "value_proposition": "Maximize LunarCrush API subscription - from 25% to 85% utilization"
+        
+        "integration_tips": {
+            "mss_scanning": "Use /discover/realtime with min_galaxy_score=60 for pre-filtered gems",
+            "monitoring": "Call /change/{symbol} hourly to detect social spikes",
+            "analysis": "Combine /coin/{symbol} + /momentum/{symbol} for complete picture",
+            "backtesting": "Use /timeseries with 90+ days for pattern detection"
+        }
     }
