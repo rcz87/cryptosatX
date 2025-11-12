@@ -937,6 +937,55 @@ async def get_gpt_action_schema():
                         }
                     }
                 }
+            },
+            "/alerts/send/{symbol}": {
+                "post": {
+                    "summary": "Send Telegram Alert",
+                    "description": "Generate trading signal and send formatted alert to Telegram. Perfect for manual alert triggers. Alert includes signal (LONG/SHORT/NEUTRAL), score, price, top factors, and recommendations. Only LONG/SHORT signals are sent (NEUTRAL filtered). Alert auto-saves to database.",
+                    "operationId": "sendAlert",
+                    "parameters": [
+                        {
+                            "name": "symbol",
+                            "in": "path",
+                            "required": True,
+                            "description": "Cryptocurrency symbol (e.g., BTC, ETH, SOL). Supports all major cryptocurrencies.",
+                            "schema": {
+                                "type": "string",
+                                "example": "BTC"
+                            }
+                        },
+                        {
+                            "name": "alert_type",
+                            "in": "query",
+                            "required": False,
+                            "description": "Type of alert to send. Options: 'signal' (trading signal), 'mss' (MSS analysis), 'smart_money' (whale activity). Default: signal.",
+                            "schema": {
+                                "type": "string",
+                                "enum": ["signal", "mss", "smart_money"],
+                                "default": "signal"
+                            }
+                        }
+                    ],
+                    "responses": {
+                        "200": {
+                            "description": "Alert sent successfully",
+                            "content": {
+                                "application/json": {
+                                    "schema": {
+                                        "type": "object",
+                                        "properties": {
+                                            "success": {"type": "boolean"},
+                                            "message": {"type": "string"},
+                                            "alert_type": {"type": "string"},
+                                            "signal": {"type": "object"},
+                                            "telegram_status": {"type": "string"}
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
