@@ -1252,6 +1252,26 @@ async def get_cdri_index():
         await service.close()
 
 
+@router.get("/indicators/golden-ratio")
+async def get_golden_ratio_multiplier():
+    """🌟 ENDPOINT #55: Golden Ratio Multiplier - BTC Fibonacci levels!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_golden_ratio_multiplier()
+    finally:
+        await service.close()
+
+
+@router.get("/indicators/fear-greed")
+async def get_fear_greed_index():
+    """😱 ENDPOINT #56: Fear & Greed Index - Market sentiment!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_fear_greed_index()
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,

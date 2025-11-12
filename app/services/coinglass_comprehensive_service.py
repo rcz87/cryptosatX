@@ -4289,6 +4289,70 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_golden_ratio_multiplier(self) -> Dict:
+        """Get Golden Ratio Multiplier - BTC price levels! (55TH ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/index/golden-ratio-multiplier"
+            
+            response = await client.get(url, headers=self.headers)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                latest = history[-1] if history else {}
+                
+                return {
+                    "success": True,
+                    "current": {
+                        "price": float(latest.get("price", 0)),
+                        "ma350": float(latest.get("ma_350", 0)),
+                        "x3": float(latest.get("x_3", 0)),
+                        "x5": float(latest.get("x_5", 0)),
+                        "x8": float(latest.get("x_8", 0)),
+                        "x13": float(latest.get("x_13", 0)),
+                        "x21": float(latest.get("x_21", 0))
+                    },
+                    "history": [{"timestamp": h.get("timestamp"), "price": float(h.get("price", 0)), 
+                                 "ma350": float(h.get("ma_350", 0)), "x3": float(h.get("x_3", 0))} for h in history],
+                    "note": "BTC Golden Ratio levels based on 350-day MA. Fibonacci-based support/resistance.",
+                    "source": "golden_ratio_multiplier"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_fear_greed_index(self) -> Dict:
+        """Get Fear & Greed Index History! (56TH ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/index/fear-greed-history"
+            
+            response = await client.get(url, headers=self.headers)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                result = data["data"]
+                data_list = result.get("data_list", [])
+                
+                if not data_list:
+                    return {"success": False, "error": "No fear & greed data"}
+                
+                latest_value = int(data_list[-1])
+                risk_level = "EXTREME_FEAR" if latest_value < 25 else "FEAR" if latest_value < 45 else "NEUTRAL" if latest_value < 55 else "GREED" if latest_value < 75 else "EXTREME_GREED"
+                
+                return {
+                    "success": True,
+                    "currentIndex": latest_value,
+                    "sentiment": risk_level,
+                    "history": [{"index": int(v)} for v in data_list],
+                    "note": "Crypto Fear & Greed Index (0-100). <25 extreme fear, >75 extreme greed. Market sentiment indicator.",
+                    "source": "fear_greed_index"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
     async def get_long_short_ratio(self, symbol: str = "BTC") -> Dict:
