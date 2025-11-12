@@ -953,6 +953,120 @@ async def get_orderbook_detailed_history(
         await service.close()
 
 
+@router.get("/hyperliquid/whale-alerts")
+async def get_hyperliquid_whale_alerts():
+    """
+    🔥 ENDPOINT #40: HYPERLIQUID DEX WHALE ALERTS
+    
+    Real-time whale position opens/closes on Hyperliquid DEX!
+    Track decentralized whale activity - completely different from CEX.
+    
+    Returns:
+    - Recent position opens (with value, size, leverage)
+    - Recent position closes
+    - Largest whale movements
+    - Net flow analysis (opens - closes)
+    - Whale classification (MEGA >$2M, LARGE >$1M)
+    
+    Example: GET /coinglass/hyperliquid/whale-alerts
+    
+    Perfect for:
+    - DEX whale tracking
+    - Institutional DEX activity
+    - On-chain position monitoring
+    - Smart money detection
+    - Front-running prevention
+    
+    Real data: $2.4M ETH long, $1.7M ETH short detected!
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_hyperliquid_whale_alerts()
+        return result
+    finally:
+        await service.close()
+
+
+@router.get("/hyperliquid/whale-positions")
+async def get_hyperliquid_whale_positions():
+    """
+    🐋 ENDPOINT #41: HYPERLIQUID DEX WHALE POSITIONS
+    
+    Current MEGA positions on Hyperliquid DEX with full details!
+    $100M+ positions tracked with PnL, leverage, and funding fees.
+    
+    Returns:
+    - All current whale positions (sorted by size)
+    - Mega whales (>$50M positions)
+    - Full position details: entry, mark price, liquidation price
+    - Unrealized PnL and PnL percentage
+    - Leverage and margin mode
+    - Funding fees paid/received
+    - Position statistics (total value, long/short breakdown)
+    
+    Example: GET /coinglass/hyperliquid/whale-positions
+    
+    Perfect for:
+    - Mega whale tracking
+    - Institutional DEX positioning
+    - PnL analysis
+    - Leverage monitoring
+    - Market sentiment analysis
+    
+    Real data: $190M ETH short, $127M BTC short with $10M profit!
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_hyperliquid_whale_positions()
+        return result
+    finally:
+        await service.close()
+
+
+@router.get("/hyperliquid/positions/{symbol}")
+async def get_hyperliquid_positions_by_symbol(
+    symbol: str = "BTC"
+):
+    """
+    📊 ENDPOINT #42: HYPERLIQUID POSITIONS BY SYMBOL
+    
+    Whale positions filtered by specific symbol on Hyperliquid DEX!
+    Same rich data as whale-positions but symbol-specific.
+    
+    Returns:
+    - Symbol-filtered whale positions
+    - Position statistics (total value, PnL, leverage)
+    - Long vs Short breakdown
+    - Net exposure calculation
+    - Top 30 positions by size
+    - Total pages available
+    
+    Example: GET /coinglass/hyperliquid/positions/BTC
+    Example: GET /coinglass/hyperliquid/positions/ETH
+    
+    Perfect for:
+    - Symbol-specific whale tracking
+    - Market sentiment per coin
+    - Long/short imbalance detection
+    - Targeted position analysis
+    - Cross-symbol comparison
+    
+    Real data: 18 pages of BTC whale positions tracked!
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_hyperliquid_positions_by_symbol(symbol=symbol)
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,

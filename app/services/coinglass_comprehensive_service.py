@@ -3518,6 +3518,264 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    # ==================== HYPERLIQUID DEX WHALE TRACKING ====================
+    
+    async def get_hyperliquid_whale_alerts(self) -> Dict:
+        """
+        Get HYPERLIQUID WHALE ALERTS - Real-time DEX whale movements! (40TH ENDPOINT!)
+        Endpoint: /api/hyperliquid/whale-alert
+        
+        Track whale position opens/closes on Hyperliquid DEX in REAL-TIME!
+        This is different from CEX data - shows decentralized whale activity.
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/hyperliquid/whale-alert"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                alerts = data["data"]
+                
+                if not alerts:
+                    return {"success": False, "error": "No whale alerts"}
+                
+                # Classify alerts by action
+                opens = []
+                closes = []
+                
+                for alert in alerts:
+                    action = alert.get("position_action")
+                    value = float(alert.get("position_value_usd", 0))
+                    
+                    formatted = {
+                        "user": alert.get("user"),
+                        "symbol": alert.get("symbol"),
+                        "positionSize": float(alert.get("position_size", 0)),
+                        "entryPrice": float(alert.get("entry_price", 0)),
+                        "liqPrice": float(alert.get("liq_price", 0)),
+                        "valueUsd": value,
+                        "side": "LONG" if alert.get("position_size", 0) > 0 else "SHORT",
+                        "timestamp": alert.get("create_time"),
+                        "classification": "MEGA" if value > 2_000_000 else "LARGE" if value > 1_000_000 else "MEDIUM"
+                    }
+                    
+                    if action == 1:
+                        opens.append(formatted)
+                    elif action == 2:
+                        closes.append(formatted)
+                
+                # Find largest alerts
+                all_alerts = opens + closes
+                largest = sorted(all_alerts, key=lambda x: x["valueUsd"], reverse=True)[:20]
+                
+                # Calculate totals
+                total_open_value = sum(a["valueUsd"] for a in opens)
+                total_close_value = sum(a["valueUsd"] for a in closes)
+                
+                return {
+                    "success": True,
+                    "totalAlerts": len(alerts),
+                    "summary": {
+                        "opensCount": len(opens),
+                        "closesCount": len(closes),
+                        "totalOpenValue": total_open_value,
+                        "totalCloseValue": total_close_value,
+                        "netFlow": total_open_value - total_close_value
+                    },
+                    "largestAlerts": largest,
+                    "recentOpens": opens[:20],
+                    "recentCloses": closes[:20],
+                    "note": "Hyperliquid DEX whale alerts - Real-time decentralized whale tracking!",
+                    "source": "hyperliquid_whale_alerts"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_hyperliquid_whale_positions(self) -> Dict:
+        """
+        Get HYPERLIQUID WHALE POSITIONS - Current DEX mega positions! (41ST ENDPOINT!)
+        Endpoint: /api/hyperliquid/whale-position
+        
+        Track MASSIVE current positions on Hyperliquid with PnL, leverage, funding!
+        Real institutional DEX positions - $100M+ positions tracked!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/hyperliquid/whale-position"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                positions = data["data"]
+                
+                if not positions:
+                    return {"success": False, "error": "No whale positions"}
+                
+                # Format positions with full details
+                formatted_positions = []
+                for pos in positions:
+                    value = float(pos.get("position_value_usd", 0))
+                    size = float(pos.get("position_size", 0))
+                    pnl = float(pos.get("unrealized_pnl", 0))
+                    
+                    formatted_positions.append({
+                        "user": pos.get("user"),
+                        "symbol": pos.get("symbol"),
+                        "positionSize": size,
+                        "side": "LONG" if size > 0 else "SHORT",
+                        "entryPrice": float(pos.get("entry_price", 0)),
+                        "markPrice": float(pos.get("mark_price", 0)),
+                        "liqPrice": float(pos.get("liq_price", 0)),
+                        "leverage": int(pos.get("leverage", 1)),
+                        "marginBalance": float(pos.get("margin_balance", 0)),
+                        "positionValue": value,
+                        "unrealizedPnl": pnl,
+                        "pnlPercent": (pnl / value * 100) if value > 0 else 0,
+                        "fundingFee": float(pos.get("funding_fee", 0)),
+                        "marginMode": pos.get("margin_mode"),
+                        "createTime": pos.get("create_time"),
+                        "updateTime": pos.get("update_time"),
+                        "classification": "MEGA_WHALE" if value > 50_000_000 else "LARGE_WHALE" if value > 10_000_000 else "WHALE"
+                    })
+                
+                # Sort by value
+                formatted_positions.sort(key=lambda x: x["positionValue"], reverse=True)
+                
+                # Calculate statistics
+                total_value = sum(p["positionValue"] for p in formatted_positions)
+                total_pnl = sum(p["unrealizedPnl"] for p in formatted_positions)
+                long_positions = [p for p in formatted_positions if p["side"] == "LONG"]
+                short_positions = [p for p in formatted_positions if p["side"] == "SHORT"]
+                
+                mega_whales = [p for p in formatted_positions if p["classification"] == "MEGA_WHALE"]
+                
+                return {
+                    "success": True,
+                    "totalPositions": len(positions),
+                    "summary": {
+                        "totalValue": total_value,
+                        "totalPnl": total_pnl,
+                        "longCount": len(long_positions),
+                        "shortCount": len(short_positions),
+                        "megaWhaleCount": len(mega_whales),
+                        "avgLeverage": sum(p["leverage"] for p in formatted_positions) / len(formatted_positions) if formatted_positions else 0
+                    },
+                    "megaWhales": mega_whales[:20],
+                    "topPositions": formatted_positions[:30],
+                    "note": "Hyperliquid DEX whale positions - Mega institutional DEX positions with PnL tracking!",
+                    "source": "hyperliquid_whale_positions"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_hyperliquid_positions_by_symbol(self, symbol: str = "BTC") -> Dict:
+        """
+        Get HYPERLIQUID POSITIONS BY SYMBOL - Symbol-filtered whale tracking! (42ND ENDPOINT!)
+        Endpoint: /api/hyperliquid/position
+        
+        Track whale positions for a specific symbol on Hyperliquid DEX!
+        Same data as whale-position but filtered by symbol.
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/hyperliquid/position"
+            params = {"symbol": symbol.upper()}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                result = data["data"]
+                positions = result.get("list", [])
+                
+                if not positions:
+                    return {"success": False, "error": f"No positions for {symbol}"}
+                
+                # Format positions
+                formatted_positions = []
+                for pos in positions:
+                    value = float(pos.get("position_value_usd", 0))
+                    size = float(pos.get("position_size", 0))
+                    pnl = float(pos.get("unrealized_pnl", 0))
+                    
+                    formatted_positions.append({
+                        "user": pos.get("user"),
+                        "symbol": pos.get("symbol"),
+                        "positionSize": size,
+                        "side": "LONG" if size > 0 else "SHORT",
+                        "entryPrice": float(pos.get("entry_price", 0)),
+                        "markPrice": float(pos.get("mark_price", 0)),
+                        "liqPrice": float(pos.get("liq_price", 0)),
+                        "leverage": int(pos.get("leverage", 1)),
+                        "marginBalance": float(pos.get("margin_balance", 0)),
+                        "positionValue": value,
+                        "unrealizedPnl": pnl,
+                        "pnlPercent": (pnl / value * 100) if value > 0 else 0,
+                        "fundingFee": float(pos.get("funding_fee", 0)),
+                        "marginMode": pos.get("margin_mode"),
+                        "createTime": pos.get("create_time"),
+                        "updateTime": pos.get("update_time"),
+                        "classification": "MEGA_WHALE" if value > 50_000_000 else "LARGE_WHALE" if value > 10_000_000 else "WHALE"
+                    })
+                
+                # Sort by value
+                formatted_positions.sort(key=lambda x: x["positionValue"], reverse=True)
+                
+                # Statistics
+                total_value = sum(p["positionValue"] for p in formatted_positions)
+                total_pnl = sum(p["unrealizedPnl"] for p in formatted_positions)
+                long_pos = [p for p in formatted_positions if p["side"] == "LONG"]
+                short_pos = [p for p in formatted_positions if p["side"] == "SHORT"]
+                
+                long_value = sum(p["positionValue"] for p in long_pos)
+                short_value = sum(p["positionValue"] for p in short_pos)
+                
+                return {
+                    "success": True,
+                    "symbol": symbol.upper(),
+                    "totalPages": result.get("total_pages", 1),
+                    "positionCount": len(positions),
+                    "summary": {
+                        "totalValue": total_value,
+                        "totalPnl": total_pnl,
+                        "longCount": len(long_pos),
+                        "shortCount": len(short_pos),
+                        "longValue": long_value,
+                        "shortValue": short_value,
+                        "netExposure": long_value - short_value,
+                        "avgLeverage": sum(p["leverage"] for p in formatted_positions) / len(formatted_positions) if formatted_positions else 0
+                    },
+                    "topPositions": formatted_positions[:30],
+                    "note": f"Hyperliquid {symbol} whale positions - DEX institutional tracking by symbol!",
+                    "source": "hyperliquid_positions_by_symbol"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
     async def get_long_short_ratio(self, symbol: str = "BTC") -> Dict:
