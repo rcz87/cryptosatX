@@ -3,6 +3,12 @@
 ## Overview
 This project is a production-ready FastAPI backend for generating real-time cryptocurrency futures trading signals. It aggregates diverse market data (price action, funding rates, open interest, social sentiment) to provide LONG/SHORT/NEUTRAL recommendations based on a multi-factor weighted scoring system. The API is designed for compatibility with GPT Actions, aiming to provide a robust tool for informed trading decisions with significant market potential. Key features include an advanced Multi-Modal Signal Score (MSS) system for identifying high-potential emerging cryptocurrencies and a Binance New Listings Monitor for early detection of fresh perpetual futures listings.
 
+## Recent Changes (November 12, 2025)
+- **Fixed Premium Data Detection**: Changed premium data availability logic from strict AND (all endpoints required) to flexible OR (accepts 2+ out of 4 endpoints). This resolves false negatives when OI Trend endpoint returns 404 for certain coins.
+- **Added Response Flags**: Added `premiumDataAvailable`, `comprehensiveDataAvailable`, `lunarcrushDataAvailable`, and `coinapiDataAvailable` flags to API responses for better GPT Actions compatibility.
+- **OKX Fallback**: Implemented automatic fallback to OKX Public API for funding rate and open interest when Coinglass data is unavailable, with source tracking.
+- **Enhanced Logging**: Added detailed logging for premium endpoint success/failure to improve debugging and monitoring.
+
 ## User Preferences
 - Clean, modular code structure
 - Comprehensive error handling with safe defaults
