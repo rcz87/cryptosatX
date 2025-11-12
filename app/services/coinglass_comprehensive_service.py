@@ -2955,6 +2955,196 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    # ==================== ORDERBOOK DEPTH ENDPOINTS ====================
+    
+    async def get_orderbook_ask_bids_history(self, exchange: str = "Binance", 
+                                              symbol: str = "BTCUSDT", interval: str = "1d", 
+                                              limit: int = 100,
+                                              start_time: int = None,
+                                              end_time: int = None) -> Dict:
+        """
+        Get ORDERBOOK ASK/BIDS DEPTH HISTORY (35TH ENDPOINT!)
+        Endpoint: /api/futures/orderbook/ask-bids-history
+        
+        Parameters:
+        - exchange: Exchange name (e.g., Binance, OKX)
+        - symbol: Trading pair (e.g., BTCUSDT, ETHUSDT)
+        - interval: Time interval (1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w)
+        - limit: Number of data points (max 1000)
+        - start_time: Start timestamp in milliseconds (optional)
+        - end_time: End timestamp in milliseconds (optional)
+        
+        Returns TIME-SERIES orderbook depth data:
+        - Bid liquidity (USD value & quantity)
+        - Ask liquidity (USD value & quantity)
+        - Liquidity imbalance analysis
+        - Order book pressure detection
+        
+        This is CRITICAL for understanding market depth and predicting price movements!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/orderbook/ask-bids-history"
+            params = {
+                "exchange": exchange,
+                "symbol": symbol,
+                "interval": interval,
+                "limit": limit
+            }
+            
+            if start_time:
+                params["start_time"] = start_time
+            if end_time:
+                params["end_time"] = end_time
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                
+                if not history:
+                    return {"success": False, "error": "No historical data"}
+                
+                # Calculate statistics
+                total_bids_usd = sum(float(h.get("bids_usd", 0)) for h in history)
+                total_asks_usd = sum(float(h.get("asks_usd", 0)) for h in history)
+                avg_bids_usd = total_bids_usd / len(history)
+                avg_asks_usd = total_asks_usd / len(history)
+                
+                # Analyze liquidity imbalance
+                imbalance_ratio = avg_bids_usd / avg_asks_usd if avg_asks_usd > 0 else 0
+                
+                if imbalance_ratio > 1.5:
+                    liquidity_bias = "STRONG_BUY_PRESSURE"
+                    bias_desc = f"Bids {imbalance_ratio:.2f}x larger than asks - Strong buying pressure/support"
+                elif imbalance_ratio > 1.2:
+                    liquidity_bias = "MODERATE_BUY_PRESSURE"
+                    bias_desc = f"Bids {imbalance_ratio:.2f}x larger than asks - Moderate buying pressure"
+                elif imbalance_ratio < 0.67:
+                    liquidity_bias = "STRONG_SELL_PRESSURE"
+                    bias_desc = f"Asks {1/imbalance_ratio:.2f}x larger than bids - Strong selling pressure/resistance"
+                elif imbalance_ratio < 0.83:
+                    liquidity_bias = "MODERATE_SELL_PRESSURE"
+                    bias_desc = f"Asks {1/imbalance_ratio:.2f}x larger than bids - Moderate selling pressure"
+                else:
+                    liquidity_bias = "BALANCED"
+                    bias_desc = f"Balanced liquidity (ratio {imbalance_ratio:.2f}) - Neutral market"
+                
+                # Find largest imbalances (potential breakout points)
+                imbalance_events = []
+                for h in history:
+                    bids_usd = float(h.get("bids_usd", 0))
+                    asks_usd = float(h.get("asks_usd", 0))
+                    ratio = bids_usd / asks_usd if asks_usd > 0 else 0
+                    
+                    # Track significant imbalances
+                    if ratio > 1.5 or ratio < 0.67:
+                        if ratio > 1.5:
+                            event_type = "BID_WALL"
+                            description = f"Massive bid wall - {ratio:.2f}x more bids (potential support)"
+                        else:
+                            event_type = "ASK_WALL"
+                            description = f"Massive ask wall - {1/ratio:.2f}x more asks (potential resistance)"
+                        
+                        imbalance_events.append({
+                            "timestamp": h.get("time"),
+                            "type": event_type,
+                            "ratio": ratio,
+                            "bidsUsd": bids_usd,
+                            "asksUsd": asks_usd,
+                            "description": description
+                        })
+                
+                # Sort by most extreme imbalances
+                imbalance_events.sort(key=lambda x: abs(x["ratio"] - 1), reverse=True)
+                
+                # Calculate depth trend (growing or shrinking liquidity)
+                if len(history) >= 2:
+                    first_total = float(history[0].get("bids_usd", 0)) + float(history[0].get("asks_usd", 0))
+                    last_total = float(history[-1].get("bids_usd", 0)) + float(history[-1].get("asks_usd", 0))
+                    depth_change_pct = ((last_total - first_total) / first_total * 100) if first_total > 0 else 0
+                    
+                    if depth_change_pct > 20:
+                        depth_trend = "GROWING_LIQUIDITY"
+                        depth_desc = f"Liquidity +{depth_change_pct:.1f}% - Market depth increasing (healthier market)"
+                    elif depth_change_pct > 5:
+                        depth_trend = "MODERATE_GROWTH"
+                        depth_desc = f"Liquidity +{depth_change_pct:.1f}% - Gradual depth increase"
+                    elif depth_change_pct < -20:
+                        depth_trend = "SHRINKING_LIQUIDITY"
+                        depth_desc = f"Liquidity {depth_change_pct:.1f}% - Market depth decreasing (risk of volatility!)"
+                    elif depth_change_pct < -5:
+                        depth_trend = "MODERATE_DECLINE"
+                        depth_desc = f"Liquidity {depth_change_pct:.1f}% - Gradual depth decrease"
+                    else:
+                        depth_trend = "STABLE"
+                        depth_desc = f"Liquidity change {depth_change_pct:.1f}% - Stable market depth"
+                else:
+                    depth_trend = "INSUFFICIENT_DATA"
+                    depth_desc = "Not enough data points"
+                    depth_change_pct = 0
+                
+                # Format history
+                formatted_history = []
+                for h in history:
+                    bids_usd = float(h.get("bids_usd", 0))
+                    asks_usd = float(h.get("asks_usd", 0))
+                    bids_qty = float(h.get("bids_quantity", 0))
+                    asks_qty = float(h.get("asks_quantity", 0))
+                    total_liquidity = bids_usd + asks_usd
+                    ratio = bids_usd / asks_usd if asks_usd > 0 else 0
+                    
+                    formatted_history.append({
+                        "timestamp": h.get("time"),
+                        "bidsUsd": bids_usd,
+                        "asksUsd": asks_usd,
+                        "bidsQuantity": bids_qty,
+                        "asksQuantity": asks_qty,
+                        "totalLiquidity": total_liquidity,
+                        "bidAskRatio": ratio,
+                        "bidsPercent": (bids_usd / total_liquidity * 100) if total_liquidity > 0 else 0,
+                        "asksPercent": (asks_usd / total_liquidity * 100) if total_liquidity > 0 else 0
+                    })
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "dataPoints": len(history),
+                    "summary": {
+                        "avgBidsUsd": avg_bids_usd,
+                        "avgAsksUsd": avg_asks_usd,
+                        "totalAvgLiquidity": avg_bids_usd + avg_asks_usd,
+                        "bidAskRatio": imbalance_ratio,
+                        "bidsPercent": (avg_bids_usd / (avg_bids_usd + avg_asks_usd) * 100) if (avg_bids_usd + avg_asks_usd) > 0 else 0,
+                        "asksPercent": (avg_asks_usd / (avg_bids_usd + avg_asks_usd) * 100) if (avg_bids_usd + avg_asks_usd) > 0 else 0
+                    },
+                    "liquidityBias": {
+                        "bias": liquidity_bias,
+                        "description": bias_desc
+                    },
+                    "depthTrend": {
+                        "trend": depth_trend,
+                        "description": depth_desc,
+                        "changePct": depth_change_pct
+                    },
+                    "imbalanceEvents": imbalance_events[:10],
+                    "history": formatted_history,
+                    "note": "Orderbook depth over time. Shows bid/ask liquidity and market pressure.",
+                    "source": "coinglass_orderbook_history"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
     async def get_long_short_ratio(self, symbol: str = "BTC") -> Dict:

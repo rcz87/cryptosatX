@@ -612,6 +612,165 @@ async def get_liquidation_history(
         await service.close()
 
 
+@router.get("/orderbook/ask-bids-history")
+async def get_orderbook_ask_bids_history(
+    exchange: str = Query("Binance", description="Exchange name (e.g., Binance, OKX)"),
+    symbol: str = Query("BTCUSDT", description="Trading pair (e.g., BTCUSDT, ETHUSDT)"),
+    interval: str = Query("1d", description="Time interval: 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w"),
+    limit: int = Query(100, description="Number of data points (max 1000)"),
+    start_time: int = Query(None, description="Start timestamp in milliseconds (optional)"),
+    end_time: int = Query(None, description="End timestamp in milliseconds (optional)")
+):
+    """
+    Get ORDERBOOK ASK/BIDS DEPTH HISTORY (35TH ENDPOINT!)
+    
+    Returns TIME-SERIES orderbook depth data showing bid/ask liquidity over time.
+    This is CRITICAL for understanding market depth and predicting price movements!
+    
+    Why This Matters:
+    
+    1. **Liquidity Imbalance Detection**:
+       - Bid wall (high bids) = Strong buying support
+       - Ask wall (high asks) = Strong selling resistance
+       - Imbalance predicts breakout direction
+       - Critical for large position entries/exits
+    
+    2. **Market Depth Analysis**:
+       - Growing liquidity = Healthier, more stable market
+       - Shrinking liquidity = Risk of flash crashes/pumps
+       - Depth changes precede volatility
+       - Essential for risk management
+    
+    3. **Order Book Pressure**:
+       - More bids than asks = Upward price pressure
+       - More asks than bids = Downward price pressure
+       - Leading indicator for price movements
+       - Whale accumulation/distribution detection
+    
+    4. **Support/Resistance Levels**:
+       - Large bid walls = Strong support zones
+       - Large ask walls = Strong resistance zones
+       - Identify breakout vs bounce scenarios
+       - Optimize entry/exit timing
+    
+    Trading Signals:
+    
+    1. **Liquidity Bias**:
+       - STRONG_BUY_PRESSURE = Bids >1.5x asks (bullish)
+       - MODERATE_BUY_PRESSURE = Bids >1.2x asks
+       - BALANCED = Neutral (ratio ~1.0)
+       - MODERATE_SELL_PRESSURE = Asks >1.2x bids
+       - STRONG_SELL_PRESSURE = Asks >1.5x bids (bearish)
+    
+    2. **Depth Trend**:
+       - GROWING_LIQUIDITY = +20% depth (healthy market)
+       - STABLE = Consistent depth (normal conditions)
+       - SHRINKING_LIQUIDITY = -20% depth (volatility warning!)
+       - Critical for position sizing
+    
+    3. **Imbalance Events**:
+       - BID_WALL = Massive buy support detected
+       - ASK_WALL = Massive sell resistance detected
+       - Track historical walls for breakout patterns
+       - Whale activity indicator
+    
+    4. **Breakout Prediction**:
+       - Bid wall + shrinking asks = Likely upside breakout
+       - Ask wall + shrinking bids = Likely downside breakdown
+       - Balanced but shrinking = Expect volatility
+       - Use for directional trades
+    
+    Example Use Cases:
+    
+    **Whale Detection**:
+    ```
+    Normal: Bids $120M, Asks $130M (balanced)
+    Today: Bids $310M, Asks $145M (2.1x ratio!)
+    → Massive bid wall = Whale accumulation
+    → Strong support, likely upward move
+    → Enter long position with stop below wall
+    ```
+    
+    **Liquidity Crisis Warning**:
+    ```
+    Week 1: Total liquidity $300M
+    Week 2: Total liquidity $150M (-50%!)
+    → SHRINKING_LIQUIDITY detected
+    → High risk of flash crashes
+    → Reduce position sizes, tighten stops
+    ```
+    
+    **Breakout Setup**:
+    ```
+    Observation:
+    - Ask wall at $95K (200 BTC)
+    - Bids growing ($200M → $350M)
+    - Asks shrinking ($180M → $100M)
+    
+    Signal:
+    → Buyers accumulating below resistance
+    → Once ask wall absorbed, breakout likely
+    → Set buy order above $95K with confirmation
+    ```
+    
+    **Support/Resistance**:
+    ```
+    Historical pattern:
+    - Bid walls at $90K always held (3x occurrences)
+    - Price never broke below with wall present
+    
+    Strategy:
+    → Current bid wall at $91K ($280M)
+    → Strong support zone identified
+    → Enter long near $91K, tight stop below
+    ```
+    
+    Current Data Example (BTCUSDT Binance, 1d, 10 days):
+    - Avg bids: $157M (48%)
+    - Avg asks: $172M (52%)
+    - Bias: BALANCED (ratio 0.91)
+    - Trend: MODERATE_GROWTH (+8% liquidity)
+    - Peak bid wall: $317M on Nov 9 (2.2x asks!)
+    
+    Response includes:
+    - Summary (avg bids/asks, ratio, percentages)
+    - Liquidity bias (buy/sell pressure analysis)
+    - Depth trend (growing/shrinking liquidity)
+    - Top 10 imbalance events (bid/ask walls)
+    - Complete time-series history
+    
+    Use Cases:
+    - Detect whale accumulation/distribution
+    - Predict breakout direction
+    - Identify support/resistance zones
+    - Assess market health and stability
+    - Optimize large position entries/exits
+    - Time trades around liquidity changes
+    
+    Perfect for:
+    - Large traders needing deep liquidity
+    - Market makers assessing depth
+    - Whale watchers tracking smart money
+    - Risk managers monitoring market health
+    - Breakout traders timing entries
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_orderbook_ask_bids_history(
+            exchange=exchange,
+            symbol=symbol,
+            interval=interval,
+            limit=limit,
+            start_time=start_time,
+            end_time=end_time
+        )
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,
