@@ -3,9 +3,24 @@ GPT Actions integration routes
 Provides OpenAPI schema for connecting this API to OpenAI GPT Actions
 """
 import os
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from typing import Optional
+from datetime import datetime
 
 router = APIRouter()
+
+# Import services (lazy loaded to avoid circular imports)
+def get_services():
+    """Lazy load services to avoid circular imports"""
+    from app.core.signal_engine import signal_engine
+    from app.services.telegram_notifier import telegram_notifier
+    from app.services.mss_service import MSSService
+    from app.services.smart_money_service import smart_money_service
+    
+    # Create MSS service instance if needed
+    mss_service = MSSService()
+    
+    return signal_engine, telegram_notifier, mss_service, smart_money_service
 
 
 @router.get("/gpt/action-schema")
@@ -991,3 +1006,243 @@ async def get_gpt_action_schema():
     }
     
     return schema
+
+
+@router.post("/alerts/send/{symbol}")
+async def send_telegram_alert(
+    symbol: str,
+    alert_type: str = "signal"
+):
+    """
+    📱 Send Telegram Alert
+    
+    Generate and send formatted alert to Telegram.
+    Supports 3 alert types:
+    - signal: Trading signal (8-factor scoring)
+    - mss: MSS analysis (3-phase Diamond tier discovery)
+    - smart_money: Whale accumulation/distribution
+    
+    Only LONG/SHORT signals are sent (NEUTRAL filtered).
+    Alerts auto-save to database.
+    """
+    signal_engine, telegram_notifier, mss_service, smart_money_scanner = get_services()
+    
+    try:
+        symbol = symbol.upper()
+        
+        # Check if Telegram is configured
+        if not telegram_notifier.enabled:
+            return {
+                "success": False,
+                "message": "Telegram notifications not configured. Please set TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID.",
+                "symbol": symbol,
+                "alert_type": alert_type
+            }
+        
+        # Generate alert based on type
+        if alert_type == "signal":
+            # Trading signal alert
+            signal = await signal_engine.build_signal(symbol, debug=False)
+            
+            # Filter NEUTRAL signals
+            if signal.get("signal") == "NEUTRAL":
+                return {
+                    "success": False,
+                    "message": f"{symbol} has NEUTRAL signal (score: {signal.get('score')}). Only LONG/SHORT signals are sent to Telegram.",
+                    "symbol": symbol,
+                    "alert_type": alert_type,
+                    "signal": signal.get("signal"),
+                    "score": signal.get("score")
+                }
+            
+            # Send to Telegram
+            telegram_result = await telegram_notifier.send_signal_alert(signal)
+            
+            return {
+                "success": telegram_result.get("success", False),
+                "message": telegram_result.get("message", "Alert sent"),
+                "symbol": symbol,
+                "alert_type": alert_type,
+                "signal": signal.get("signal"),
+                "score": signal.get("score"),
+                "confidence": signal.get("confidence"),
+                "telegram_status": "sent" if telegram_result.get("success") else "failed"
+            }
+        
+        elif alert_type == "mss":
+            # MSS analysis alert
+            mss_result = await mss_service.calculate_mss_score(symbol)
+            
+            mss_score = mss_result.get("mss_score", 0)
+            tier = mss_result.get("tier", "bronze")
+            signal_strength = mss_result.get("signal", "NEUTRAL")
+            
+            # Format MSS alert message
+            message = _format_mss_alert(symbol, mss_result)
+            
+            # Send to Telegram
+            telegram_result = await telegram_notifier._send_telegram_message(message)
+            
+            return {
+                "success": True,
+                "message": "MSS alert sent to Telegram",
+                "symbol": symbol,
+                "alert_type": alert_type,
+                "mss_score": mss_score,
+                "tier": tier,
+                "signal": signal_strength,
+                "telegram_status": "sent"
+            }
+        
+        elif alert_type == "smart_money":
+            # Smart money whale activity alert
+            scan_result = await smart_money_service.scan_markets(
+                coins=[symbol],
+                min_accumulation_score=5,
+                min_distribution_score=5
+            )
+            
+            accumulation = scan_result.get("accumulation", [])
+            distribution = scan_result.get("distribution", [])
+            
+            # Format smart money alert
+            message = _format_smart_money_alert(symbol, accumulation, distribution)
+            
+            # Send to Telegram
+            telegram_result = await telegram_notifier._send_telegram_message(message)
+            
+            return {
+                "success": True,
+                "message": "Smart money alert sent to Telegram",
+                "symbol": symbol,
+                "alert_type": alert_type,
+                "accumulation_signals": len(accumulation),
+                "distribution_signals": len(distribution),
+                "telegram_status": "sent"
+            }
+        
+        else:
+            raise HTTPException(status_code=400, detail=f"Invalid alert_type: {alert_type}. Use 'signal', 'mss', or 'smart_money'.")
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to send alert: {str(e)}",
+            "symbol": symbol,
+            "alert_type": alert_type
+        }
+
+
+def _format_mss_alert(symbol: str, mss_result: dict) -> str:
+    """Format MSS analysis alert for Telegram"""
+    mss_score = mss_result.get("mss_score", 0)
+    tier = mss_result.get("tier", "bronze").upper()
+    signal = mss_result.get("signal", "NEUTRAL")
+    confidence = mss_result.get("confidence", "low")
+    
+    phases = mss_result.get("phases", {})
+    discovery = phases.get("discovery", {})
+    social = phases.get("social_confirmation", {})
+    institutional = phases.get("institutional_validation", {})
+    
+    # Tier emoji
+    tier_emoji = {"DIAMOND": "💎", "GOLD": "🥇", "SILVER": "🥈", "BRONZE": "🥉"}.get(tier, "📊")
+    
+    message = f"""🚀 <b>MSS DISCOVERY ALERT</b> 🚀
+━━━━━━━━━━━━━━━━━━━━━━━
+{tier_emoji} <b>{symbol}/USDT</b>
+📊 MSS Score: <b>{mss_score:.1f}/100</b> ({tier} Tier)
+📈 Signal: <b>{signal}</b>
+⚡ Confidence: {confidence.upper()}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+📊 <b>3-Phase Analysis</b>
+
+<b>Phase 1 - Discovery:</b> {discovery.get('score', 0):.1f}/100
+• Market Cap: ${discovery.get('market_cap', 0):,.0f}
+• FDV: ${discovery.get('fdv', 0):,.0f}
+• Volume 24h: ${discovery.get('volume_24h', 0):,.0f}
+
+<b>Phase 2 - Social Confirmation:</b> {social.get('score', 0):.1f}/100
+• Galaxy Score: {social.get('galaxy_score', 0):.1f}/100
+• Social Volume: {social.get('social_volume', 0):,.0f}
+• Sentiment: {social.get('sentiment', 0):.1f}/100
+
+<b>Phase 3 - Institutional Validation:</b> {institutional.get('score', 0):.1f}/100
+• Funding Rate: {institutional.get('funding_rate', 0):.4f}%
+• Open Interest: ${institutional.get('open_interest', 0):,.0f}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+💡 <b>Why This Matters:</b>
+{tier} tier MSS score indicates {"STRONG hidden gem potential! 💎" if tier == "DIAMOND" else "good opportunity" if tier == "GOLD" else "moderate opportunity" if tier == "SILVER" else "limited opportunity"}
+
+🕐 Alert Time: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC
+⚙️ Source: MSS 3-Phase Analysis Engine
+
+━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Powered by CryptoSatX MSS Discovery
+#CryptoSatX #MSSDiscovery #HiddenGems
+"""
+    return message
+
+
+def _format_smart_money_alert(symbol: str, accumulation: list, distribution: list) -> str:
+    """Format smart money alert for Telegram"""
+    
+    message = f"""🐋 <b>SMART MONEY ALERT</b> 🐋
+━━━━━━━━━━━━━━━━━━━━━━━
+💎 <b>{symbol}/USDT</b>
+
+"""
+    
+    if accumulation:
+        acc = accumulation[0]
+        message += f"""🟢 <b>ACCUMULATION DETECTED</b>
+📊 Score: {acc.get('accumulation_score', 0):.1f}/10
+💡 Signal: Whales buying before retail!
+
+<b>Indicators:</b>
+• Funding Rate: {acc.get('funding_rate', 0):.4f}% (negative = longs paying shorts)
+• Price Action: Sideways accumulation phase
+• Social Activity: Low (stealth accumulation)
+• Whale Activity: BUYING
+
+"""
+    
+    if distribution:
+        dist = distribution[0]
+        message += f"""🔴 <b>DISTRIBUTION DETECTED</b>
+📊 Score: {dist.get('distribution_score', 0):.1f}/10
+⚠️ Signal: Whales selling to retail!
+
+<b>Indicators:</b>
+• Funding Rate: {dist.get('funding_rate', 0):.4f}% (positive = overcrowded longs)
+• Price Action: Recent pump / top formation
+• Social Activity: High FOMO
+• Whale Activity: SELLING
+
+"""
+    
+    if not accumulation and not distribution:
+        message += """⚪ <b>NEUTRAL</b>
+No significant whale accumulation or distribution detected.
+
+"""
+    
+    message += f"""━━━━━━━━━━━━━━━━━━━━━━━
+💡 <b>Smart Money Strategy:</b>
+{"BUY during accumulation (before retail FOMO)" if accumulation else ""}
+{"AVOID/SHORT during distribution (whales exit to retail)" if distribution else ""}
+{"Monitor for clearer signals" if not accumulation and not distribution else ""}
+
+🕐 Alert Time: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC
+⚙️ Source: Smart Money Pattern Recognition
+
+━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Powered by CryptoSatX Whale Tracker
+#CryptoSatX #SmartMoney #WhaleAlert
+"""
+    
+    return message
