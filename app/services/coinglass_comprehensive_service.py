@@ -2338,6 +2338,131 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_liquidation_exchange_list(self, range: str = "1h") -> Dict:
+        """
+        Get liquidation data PER EXCHANGE (32ND ENDPOINT!)
+        Endpoint: /api/futures/liquidation/exchange-list
+        
+        Parameters:
+        - range: Time range (5m, 15m, 30m, 1h, 4h, 12h, 24h)
+        
+        Returns aggregate liquidations by exchange:
+        - Total liquidations per exchange
+        - Long vs short breakdown
+        - Exchange comparison
+        - Market-wide liquidation summary
+        
+        Shows WHERE liquidations are happening!
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/liquidation/exchange-list"
+            params = {"range": range}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                exchanges = data["data"]
+                
+                # Find "All" summary
+                all_summary = next((e for e in exchanges if e.get("exchange") == "All"), None)
+                
+                # Process individual exchanges (exclude "All")
+                exchange_list = []
+                for ex in exchanges:
+                    if ex.get("exchange") != "All":
+                        total_liq = float(ex.get("liquidation_usd", 0))
+                        long_liq = float(ex.get("longLiquidation_usd", 0))
+                        short_liq = float(ex.get("shortLiquidation_usd", 0))
+                        
+                        # Calculate percentages
+                        long_pct = (long_liq / total_liq * 100) if total_liq > 0 else 0
+                        short_pct = (short_liq / total_liq * 100) if total_liq > 0 else 0
+                        
+                        exchange_list.append({
+                            "exchange": ex.get("exchange"),
+                            "totalLiquidation": total_liq,
+                            "longLiquidation": long_liq,
+                            "shortLiquidation": short_liq,
+                            "longPercent": long_pct,
+                            "shortPercent": short_pct,
+                            "netFlow": long_liq - short_liq
+                        })
+                
+                # Sort by total liquidation
+                exchange_sorted = sorted(exchange_list, 
+                                        key=lambda x: x["totalLiquidation"], 
+                                        reverse=True)
+                
+                # Market summary
+                if all_summary:
+                    market_total = float(all_summary.get("liquidation_usd", 0))
+                    market_long = float(all_summary.get("longLiquidation_usd", 0))
+                    market_short = float(all_summary.get("shortLiquidation_usd", 0))
+                    
+                    # Determine market sentiment
+                    if market_long > market_short * 2:
+                        sentiment = "STRONG_BEARISH"
+                        sentiment_desc = f"Heavy long liquidations (${market_long:,.0f}) - Strong downtrend"
+                    elif market_long > market_short * 1.5:
+                        sentiment = "MODERATE_BEARISH"
+                        sentiment_desc = f"More long liquidations (${market_long:,.0f}) - Bearish pressure"
+                    elif market_short > market_long * 2:
+                        sentiment = "STRONG_BULLISH"
+                        sentiment_desc = f"Heavy short liquidations (${market_short:,.0f}) - Strong uptrend/squeeze"
+                    elif market_short > market_long * 1.5:
+                        sentiment = "MODERATE_BULLISH"
+                        sentiment_desc = f"More short liquidations (${market_short:,.0f}) - Bullish pressure"
+                    else:
+                        sentiment = "BALANCED"
+                        sentiment_desc = f"Balanced liquidations (${market_long:,.0f} long, ${market_short:,.0f} short)"
+                    
+                    market_summary = {
+                        "totalLiquidation": market_total,
+                        "longLiquidation": market_long,
+                        "shortLiquidation": market_short,
+                        "longPercent": (market_long / market_total * 100) if market_total > 0 else 0,
+                        "shortPercent": (market_short / market_total * 100) if market_total > 0 else 0,
+                        "sentiment": sentiment,
+                        "sentimentDescription": sentiment_desc
+                    }
+                else:
+                    # Calculate from individual exchanges
+                    total = sum(e["totalLiquidation"] for e in exchange_list)
+                    long_total = sum(e["longLiquidation"] for e in exchange_list)
+                    short_total = sum(e["shortLiquidation"] for e in exchange_list)
+                    
+                    market_summary = {
+                        "totalLiquidation": total,
+                        "longLiquidation": long_total,
+                        "shortLiquidation": short_total,
+                        "longPercent": (long_total / total * 100) if total > 0 else 0,
+                        "shortPercent": (short_total / total * 100) if total > 0 else 0,
+                        "sentiment": "UNKNOWN",
+                        "sentimentDescription": "Data calculated from individual exchanges"
+                    }
+                
+                return {
+                    "success": True,
+                    "range": range,
+                    "marketSummary": market_summary,
+                    "topExchanges": exchange_sorted[:10],
+                    "allExchanges": exchange_sorted,
+                    "exchangeCount": len(exchange_sorted),
+                    "note": "Aggregate liquidations per exchange. Shows WHERE liquidations happening.",
+                    "source": "coinglass_liq_exchange_list"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_liquidation_map(self, symbol: str = "BTC") -> Dict:
         """
         Get liquidation heatmap data

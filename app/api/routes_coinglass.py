@@ -174,6 +174,126 @@ async def get_liquidation_order(
         await service.close()
 
 
+@router.get("/liquidation/exchange-list")
+async def get_liquidation_exchange_list(
+    range: str = Query("1h", description="Time range: 5m, 15m, 30m, 1h, 4h, 12h, 24h")
+):
+    """
+    Get liquidation data PER EXCHANGE (32ND ENDPOINT!)
+    
+    Returns aggregate liquidations by exchange:
+    - Total liquidations per exchange
+    - Long vs short breakdown
+    - Exchange comparison
+    - Market-wide summary
+    
+    Why This Matters:
+    
+    1. **Exchange Risk Assessment**:
+       - High liquidations = High leverage/volatility on exchange
+       - Compare safety across exchanges
+       - Identify risky trading venues
+    
+    2. **Liquidity Analysis**:
+       - More liquidations = More activity
+       - Shows where traders are most active
+       - Indicates deep vs shallow markets
+    
+    3. **Market Pressure Distribution**:
+       - See which exchanges driving market moves
+       - Identify where cascades starting
+       - Track cross-exchange contagion
+    
+    4. **Trading Venue Selection**:
+       - Avoid exchanges with cascade risks
+       - Choose stable platforms
+       - Understand market dynamics per venue
+    
+    Trading Signals:
+    
+    1. **Cascade Risk**:
+       - High liquidations on major exchange = Cascade risk
+       - Binance high = Market-wide impact likely
+       - Smaller exchange high = Isolated issue
+    
+    2. **Market Sentiment**:
+       - Heavy long liquidations = Bearish across market
+       - Heavy short liquidations = Bullish/squeeze
+       - Shows market-wide direction
+    
+    3. **Exchange Arbitrage**:
+       - Different liquidation patterns = Price divergence
+       - Arbitrage opportunities between exchanges
+       - Track which exchange leading/lagging
+    
+    4. **Volatility Prediction**:
+       - Spiking liquidations = Incoming volatility
+       - Prepare for rapid price moves
+       - Risk management critical
+    
+    Example Use Cases:
+    
+    **Exchange Safety**:
+    ```
+    Binance: $50M liquidations (1h)
+    OKX: $5M liquidations (1h)
+    → Binance 10x more volatile
+    → Consider OKX for safer trading
+    ```
+    
+    **Market-Wide Cascade**:
+    ```
+    All exchanges showing heavy long liquidations
+    → Market-wide selling pressure
+    → Not isolated to one venue
+    → Confirmed downtrend
+    ```
+    
+    **Isolated Event**:
+    ```
+    Small exchange: $20M liquidations
+    Major exchanges: Normal activity
+    → Isolated to one platform
+    → Not systemic risk
+    ```
+    
+    **Short Squeeze Detection**:
+    ```
+    All exchanges: Heavy short liquidations
+    → Market-wide short squeeze
+    → Forced buying across venues
+    → Strong upward pressure
+    ```
+    
+    Current Data Example (1h):
+    - Total market: $2.86M liquidations
+    - Binance: $1.89M (66% of total)
+    - More longs liquidated ($1.67M vs $1.19M)
+    - Signal: Binance driving market, bearish pressure
+    
+    Response includes:
+    - Market summary (total longs/shorts, sentiment)
+    - Top 10 exchanges by liquidation volume
+    - All exchanges sorted by volume
+    - Per-exchange long/short breakdown
+    
+    Use Cases:
+    - Compare exchange risk levels
+    - Identify cascade sources
+    - Track market-wide vs isolated events
+    - Select safer trading venues
+    - Predict volatility spikes
+    
+    Gracefully returns success:false if data unavailable
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        result = await service.get_liquidation_exchange_list(range=range)
+        return result
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,
