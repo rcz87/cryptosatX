@@ -64,9 +64,25 @@ class WebSocketStabilityTester:
                             # Display sample data
                             if self.stats["messages_received"] <= 3:
                                 print(f"Message #{self.stats['messages_received']}:")
-                                print(f"  Type: {data.get('type', 'unknown')}")
-                                if 'data' in data:
-                                    print(f"  Data keys: {list(data['data'].keys())}")
+                                
+                                # Safely extract message type
+                                if 'status' in data:
+                                    print(f"  Type: connection_status")
+                                    print(f"  Status: {data.get('status')}")
+                                elif 'channel' in data:
+                                    print(f"  Type: data_update")
+                                    print(f"  Channel: {data.get('channel')}")
+                                    # Handle data field (can be list or dict)
+                                    if 'data' in data:
+                                        data_field = data['data']
+                                        if isinstance(data_field, list):
+                                            print(f"  Data count: {len(data_field)} items")
+                                            if len(data_field) > 0 and isinstance(data_field[0], dict):
+                                                print(f"  First item keys: {list(data_field[0].keys())}")
+                                        elif isinstance(data_field, dict):
+                                            print(f"  Data keys: {list(data_field.keys())}")
+                                else:
+                                    print(f"  Type: unknown")
                                 print()
                             elif self.stats["messages_received"] % 10 == 0:
                                 # Progress indicator every 10 messages
@@ -131,10 +147,19 @@ class WebSocketStabilityTester:
         if self.stats["data_samples"]:
             print(f"\n📦 DATA QUALITY:")
             print(f"  Sample Messages Collected: {len(self.stats['data_samples'])}")
-            print(f"  First Message Type: {self.stats['data_samples'][0].get('type', 'unknown')}")
             
-            if 'data' in self.stats['data_samples'][0]:
-                print(f"  Data Structure: {list(self.stats['data_samples'][0]['data'].keys())}")
+            # Analyze first message
+            first_msg = self.stats['data_samples'][0]
+            if 'status' in first_msg:
+                print(f"  First Message: Connection status")
+            elif 'channel' in first_msg:
+                print(f"  First Message: Data update (channel: {first_msg.get('channel')})")
+                if 'data' in first_msg:
+                    data_field = first_msg['data']
+                    if isinstance(data_field, list):
+                        print(f"  Data Structure: List with {len(data_field)} items")
+                    elif isinstance(data_field, dict):
+                        print(f"  Data Structure: Dict with keys {list(data_field.keys())}")
         
         # Assessment
         print(f"\n💡 ASSESSMENT:")

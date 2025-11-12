@@ -1,0 +1,94 @@
+{
+  "timestamp": "2025-11-12T10:06:03.837306",
+  "summary": {
+    "total": 12,
+    "passed": 1,
+    "failed": 11,
+    "success_rate": 8.333333333333332
+  },
+  "details": [
+    {
+      "name": "Market Data - All Coins",
+      "success": true,
+      "fields_validated": [
+        "symbol",
+        "current_price",
+        "market_cap_usd",
+        "open_interest_usd"
+      ],
+      "additional_fields": [
+        "avg_funding_rate_by_oi",
+        "avg_funding_rate_by_vol",
+        "open_interest_market_cap_ratio",
+        "open_interest_quantity",
+        "open_interest_volume_ratio"
+      ]
+    },
+    {
+      "name": "Liquidations - History",
+      "success": false,
+      "error": "Missing fields: ['createTime', 'longLiquidationUsd', 'shortLiquidationUsd']",
+      "found_fields": []
+    },
+    {
+      "name": "Funding Rate - History",
+      "success": false,
+      "error": "Missing fields: ['rate', 'time']",
+      "found_fields": []
+    },
+    {
+      "name": "Open Interest - History",
+      "success": false,
+      "error": "Missing fields: ['createTime', 'h', 'openInterest']",
+      "found_fields": []
+    },
+    {
+      "name": "Long/Short - Account Ratio",
+      "success": false,
+      "error": "Missing fields: ['longAccount', 'shortAccount', 'time']",
+      "found_fields": []
+    },
+    {
+      "name": "Taker Volume",
+      "success": false,
+      "error": "Missing fields: ['symbol', 'buyRatio', 'sellRatio']",
+      "found_fields": []
+    },
+    {
+      "name": "Orderbook - Whale Walls",
+      "success": false,
+      "error": "Missing fields: ['symbol', 'price', 'size']",
+      "found_fields": []
+    },
+    {
+      "name": "Hyperliquid - Whale Alerts",
+      "success": false,
+      "error": "Missing fields: ['symbol', 'side', 'size', 'price', 'timestamp']",
+      "found_fields": []
+    },
+    {
+      "name": "Indicators - RSI List",
+      "success": false,
+      "error": "Missing fields: ['symbol', 'rsi']",
+      "found_fields": []
+    },
+    {
+      "name": "Indicators - Fear & Greed",
+      "success": false,
+      "error": "Missing fields: ['value', 'classification', 'timestamp']",
+      "found_fields": []
+    },
+    {
+      "name": "Options - Open Interest",
+      "success": false,
+      "error": "Missing fields: ['symbol', 'openInterest', 'timestamp']",
+      "found_fields": []
+    },
+    {
+      "name": "Supported Coins",
+      "success": false,
+      "error": "Missing fields: ['symbol']",
+      "found_fields": []
+    }
+  ]
+}
