@@ -43,7 +43,7 @@ class LunarCrushComprehensiveService:
     async def get_coin_comprehensive(self, symbol: str) -> Dict:
         """
         Get comprehensive social + market metrics for a coin
-        Endpoint: /coins/{symbol} or /coins/{symbol}/v1
+        Endpoint: /coins/{symbol}/v2 (real-time data, updated every few seconds)
         
         Returns 60+ metrics including:
         - Galaxy Score™, AltRank™
@@ -56,7 +56,7 @@ class LunarCrushComprehensiveService:
         try:
             client = await self._get_client()
             symbol = symbol.upper()
-            url = f"{self.base_url}/coins/{symbol}/v1"
+            url = f"{self.base_url}/coins/{symbol}/v2"
             
             response = await client.get(url, headers=self.headers)
             

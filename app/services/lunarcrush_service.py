@@ -30,8 +30,8 @@ class LunarCrushService:
             # Normalize symbol
             symbol = symbol.upper()
 
-            # LunarCrush endpoint for coin metrics
-            url = f"{self.base_url}/coins/{symbol}/v1"
+            # LunarCrush endpoint for coin metrics (v2 = real-time, v1 = cached up to 1hr)
+            url = f"{self.base_url}/coins/{symbol}/v2"
 
             async with httpx.AsyncClient(timeout=10.0) as client:
                 response = await client.get(url, headers=self.headers)
