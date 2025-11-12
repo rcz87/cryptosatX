@@ -160,7 +160,15 @@ class TelegramNotifier:
         return msg
     
     async def _send_telegram_message(self, message: str) -> Dict:
-        """Send message via Telegram Bot API"""
+        """
+        Send message via Telegram Bot API
+        
+        Returns:
+            Dict with Telegram API response
+            
+        Raises:
+            Exception: If HTTP request fails or Telegram API returns error
+        """
         url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
         
         payload = {
@@ -172,7 +180,20 @@ class TelegramNotifier:
         
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.post(url, json=payload)
-            return response.json()
+            
+            # Check HTTP status
+            if response.status_code != 200:
+                raise Exception(f"Telegram API returned HTTP {response.status_code}: {response.text}")
+            
+            # Parse JSON response
+            result = response.json()
+            
+            # Check Telegram 'ok' field
+            if not result.get("ok", False):
+                error_description = result.get("description", "Unknown error")
+                raise Exception(f"Telegram API error: {error_description}")
+            
+            return result
     
     async def send_custom_alert(self, title: str, message: str, emoji: str = "📢") -> Dict:
         """
