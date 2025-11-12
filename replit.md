@@ -22,7 +22,9 @@ The API provides clean JSON responses and offers a debug mode (`?debug=true`) fo
 - **Smart Money Concept (SMC) Analyzer**: Detects institutional trading patterns (BOS, CHoCH, FVG, swing points, liquidity zones) across multiple timeframes.
 - **Dynamic Coin Discovery**: Integrates Binance Futures and CoinGecko for dynamic coin discovery, allowing analysis of any cryptocurrency and filtering by market cap, volume, and category.
 - **Concurrent Data Fetching**: Utilizes `asyncio.gather` for performance.
-- **API Endpoints**: Includes endpoints for enhanced trading signals (`/signals/{symbol}`), aggregated raw market data (`/market/{symbol}`), GPT Actions schema (`/gpt/action-schema`), direct Coinglass and LunarCrush data access, Smart Money analysis (`/smart-money/*`), MSS functionality (`/mss/*`), and Binance New Listings.
+- **Comprehensive Coinglass Integration**: 60 production endpoints covering liquidations, funding rates, open interest, trader positioning, orderbook depth, Hyperliquid DEX, on-chain tracking, technical indicators (12 indicators across 535 coins), market sentiment, macro calendar, news feed, order flow analysis, and real-time WebSocket streaming.
+- **Real-Time WebSocket Streaming**: WebSocket endpoint for live liquidation data across all exchanges with auto-reconnect and ping/pong keepalive.
+- **API Endpoints**: Includes endpoints for enhanced trading signals (`/signals/{symbol}`), aggregated raw market data (`/market/{symbol}`), GPT Actions schema (`/gpt/action-schema`), direct Coinglass and LunarCrush data access, Smart Money analysis (`/smart-money/*`), MSS functionality (`/mss/*`), Binance New Listings, and WebSocket streaming (`/ws/liquidations`).
 - **Signal History Storage**: Stores LONG/SHORT signals and high-scoring MSS signals in a PostgreSQL database (Neon) with JSON file backup, using `asyncpg`.
 - **Telegram Notifier**: Provides human-friendly signal alerts for both core signals and MSS discoveries.
 
@@ -46,8 +48,15 @@ The PostgreSQL `signals` table stores:
 
 ## External Dependencies
 - **CoinAPI Startup**: Market data, OHLCV, order book depth, recent trades, real-time quotes, multi-exchange price aggregation, and whale detection.
-- **Coinglass v4**: Funding rates, open interest, liquidations, long/short ratios, top trader positioning, options data, ETF flows, exchange reserves, and Bitcoin-specific indicators (Rainbow Chart, Stock-to-Flow).
-- **LunarCrush**: Social sentiment, community engagement metrics, social momentum analysis, and real-time coin discovery.
+- **Coinglass v4 Standard ($299/month)**: 60 production endpoints covering:
+  - **Market Data**: Liquidations (7 endpoints), funding rates (6 endpoints), open interest (6 endpoints)
+  - **Positioning**: Trader ratios (4 endpoints), taker buy/sell volume (1 endpoint)
+  - **Whale Intelligence**: Orderbook depth (5 endpoints), Hyperliquid DEX (3 endpoints), on-chain tracking (2 endpoints)
+  - **Technical Analysis**: RSI list (535 coins), 11 technical indicators including Whale Index, CGDI, CDRI, Golden Ratio
+  - **Macro & News**: Fear & Greed Index, Economic Calendar (675+ events), News Feed (20+ sources)
+  - **Real-Time Streaming**: WebSocket API for live liquidation data across all exchanges
+- **Coinglass WebSocket**: Real-time liquidation streaming at wss://open-ws.coinglass.com/ws-api with ping/pong keepalive every 20 seconds.
+- **LunarCrush Builder ($240/month)**: Social sentiment, community engagement metrics, social momentum analysis, and real-time coin discovery.
 - **OKX Public API**: Candlestick/OHLCV data.
 - **Binance Futures API**: Public API for futures market data, coin discovery, 24hr statistics, funding rates, open interest, and new listings information.
 - **CoinGecko API**: Coin discovery, market cap filtering, volume analysis, and category-based coin search.

@@ -2,9 +2,12 @@
 Coinglass Data Routes
 Exposes comprehensive Coinglass market data to maximize Standard plan value
 """
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, WebSocket, WebSocketDisconnect
 from typing import Optional
 from app.services.coinglass_comprehensive_service import CoinglassComprehensiveService
+from app.services.coinglass_websocket_service import CoinglassWebSocketService
+import json
+import asyncio
 
 router = APIRouter(prefix="/coinglass", tags=["Coinglass Data"])
 
@@ -2862,3 +2865,63 @@ async def get_trading_dashboard(symbol: str):
         }
     finally:
         await service.close()
+
+
+@router.websocket("/ws/liquidations")
+async def websocket_liquidations(websocket: WebSocket):
+    """
+    🔌 ENDPOINT #60: WebSocket - Real-time Liquidation Stream!
+    
+    Connect to this WebSocket endpoint to receive live liquidation data
+    across all exchanges in real-time.
+    
+    Connection URL: ws://localhost:8000/coinglass/ws/liquidations
+    
+    Message format:
+    {
+        "channel": "liquidationOrders",
+        "data": [{
+            "baseAsset": "BTC",
+            "exName": "Binance",
+            "price": 103500.00,
+            "side": 2,
+            "symbol": "BTCUSDT",
+            "time": 1762931820000,
+            "volUsd": 45000.00
+        }]
+    }
+    """
+    await websocket.accept()
+    
+    ws_service = CoinglassWebSocketService()
+    
+    async def forward_to_client(data: dict):
+        """Forward Coinglass data to connected WebSocket client."""
+        try:
+            await websocket.send_json(data)
+        except Exception as e:
+            print(f"Error forwarding to client: {e}")
+    
+    try:
+        print("Client connected to WebSocket")
+        await websocket.send_json({
+            "status": "connected",
+            "message": "Real-time liquidation stream active",
+            "channels": ["liquidationOrders"]
+        })
+        
+        await ws_service.stream_liquidations(forward_to_client)
+        
+    except WebSocketDisconnect:
+        print("Client disconnected from WebSocket")
+    except Exception as e:
+        print(f"WebSocket error: {e}")
+        try:
+            await websocket.send_json({
+                "status": "error",
+                "message": str(e)
+            })
+        except:
+            pass
+    finally:
+        await ws_service.close()

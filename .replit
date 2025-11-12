@@ -13,17 +13,7 @@ modules = ["python-3.11"]
 
 [nix]
 channel = "stable-24_05"
-packages = [
-  "cargo", 
-  "glibcLocales", 
-  "libiconv", 
-  "libxcrypt", 
-  "openssl", 
-  "pkg-config", 
-  "postgresql", 
-  "rustc",
-  "postgresql_15"  # For database support
-]
+packages = ["cargo", "glibcLocales", "libiconv", "libxcrypt", "openssl", "pkg-config", "postgresql", "postgresql_15", "rustc"]
 
 [deployment]
 run = ["sh", "-c", "PORT=$PORT python3 main.py"]
@@ -85,7 +75,3 @@ externalPort = 6379
 [[ports]]
 localPort = 8000
 externalPort = 80
-
-[[ports]]
-localPort = 36589
-externalPort = 3001
