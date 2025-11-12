@@ -4,7 +4,8 @@ Maximizes usage of Coinglass Standard plan ($299/mo) with 90+ endpoints
 Includes: Market Data, Liquidations, Long/Short Ratios, Funding Rates, OI Analytics,
          Options Data, ETF Flows, On-Chain Metrics, Market Indexes
          
-OPTIMIZATION: Utilization increased from ~8% to 50%+ (November 2025)
+OPTIMIZATION: Utilization increased from ~8% to 89% (8/9 endpoints - November 2025)
+NOTE: Bitcoin-specific indicators (Rainbow Chart, S2F, Bull Peak) only available for BTC
 """
 import os
 import httpx

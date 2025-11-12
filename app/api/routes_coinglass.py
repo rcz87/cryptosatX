@@ -19,14 +19,12 @@ async def get_markets_data(symbol: Optional[str] = Query(None, description="Filt
     - Funding Rates (OI-weighted & Volume-weighted)
     - Price changes across multiple timeframes (5m to 24h)
     - OI/Market Cap and OI/Volume ratios
+    
+    Gracefully returns success:false if data unavailable
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_coins_markets(symbol=symbol)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error", "Failed to fetch market data"))
-        
         return result
     finally:
         await service.close()
@@ -34,14 +32,14 @@ async def get_markets_data(symbol: Optional[str] = Query(None, description="Filt
 
 @router.get("/markets/{symbol}")
 async def get_market_by_symbol(symbol: str):
-    """Get detailed market data for a specific symbol"""
+    """
+    Get detailed market data for a specific symbol
+    
+    Gracefully returns success:false if data unavailable
+    """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_coins_markets(symbol=symbol)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=404, detail=f"Market data not found for {symbol}")
-        
         return result
     finally:
         await service.close()
@@ -85,14 +83,11 @@ async def get_liquidation_heatmap(symbol: str):
     Get liquidation heatmap showing price levels with high liquidation clusters
     
     Useful for identifying potential support/resistance zones
+    Gracefully returns success:false if data unavailable
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_liquidation_map(symbol=symbol)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail="Failed to fetch liquidation heatmap")
-        
         return result
     finally:
         await service.close()
@@ -100,14 +95,14 @@ async def get_liquidation_heatmap(symbol: str):
 
 @router.get("/perpetual-market/{symbol}")
 async def get_perpetual_market(symbol: str):
-    """Get perpetual futures market data for a symbol"""
+    """
+    Get perpetual futures market data for a symbol
+    
+    Gracefully returns success:false if data unavailable
+    """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_perpetual_market(symbol=symbol)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail="Failed to fetch perpetual market data")
-        
         return result
     finally:
         await service.close()
@@ -115,14 +110,14 @@ async def get_perpetual_market(symbol: str):
 
 @router.get("/supported-coins")
 async def get_supported_coins():
-    """Get list of all supported cryptocurrency symbols"""
+    """
+    Get list of all supported cryptocurrency symbols
+    
+    Gracefully returns success:false if data unavailable
+    """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_supported_coins()
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail="Failed to fetch supported coins")
-        
         return result
     finally:
         await service.close()
@@ -134,14 +129,11 @@ async def get_exchanges():
     Get all supported exchanges and their trading pairs
     
     Returns comprehensive list of exchanges and available markets
+    Gracefully returns success:false if data unavailable
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_supported_exchange_pairs()
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail="Failed to fetch exchanges")
-        
         return result
     finally:
         await service.close()
@@ -159,14 +151,11 @@ async def get_options_oi():
     
     Update frequency: 30 seconds
     Critical for detecting smart money positioning before major moves
+    Gracefully returns success:false if data unavailable
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_options_open_interest()
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error", "Failed to fetch options data"))
-        
         return result
     finally:
         await service.close()
@@ -178,14 +167,11 @@ async def get_options_volume():
     Get Bitcoin/Crypto options trading volume (24h)
     
     Returns volume by exchange - high volume = increased hedging activity
+    Gracefully returns success:false if data unavailable
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_options_volume()
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error", "Failed to fetch options volume"))
-        
         return result
     finally:
         await service.close()
@@ -202,14 +188,11 @@ async def get_etf_flows(asset: str = "BTC"):
     - Sentiment (accumulation vs distribution)
     
     Critical for detecting when institutions are buying or selling
+    Gracefully returns success:false if data unavailable
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_etf_flows(asset=asset)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error", "Failed to fetch ETF flows"))
-        
         return result
     finally:
         await service.close()
@@ -227,14 +210,11 @@ async def get_exchange_reserves(symbol: str = "BTC"):
     
     Large outflows = whales accumulating (bullish)
     Large inflows = whales preparing to sell (bearish)
+    Gracefully returns success:false if data unavailable
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_exchange_reserves(symbol=symbol)
-        
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error", "Failed to fetch exchange reserves"))
-        
         return result
     finally:
         await service.close()
@@ -244,12 +224,11 @@ async def get_exchange_reserves(symbol: str = "BTC"):
 async def get_bull_market_peak():
     """
     Bull Market Peak Indicators - Multi-metric positioning signals
+    Gracefully returns success:false if data unavailable
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_bull_market_indicators()
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error"))
         return result
     finally:
         await service.close()
@@ -259,12 +238,11 @@ async def get_bull_market_peak():
 async def get_rainbow_chart():
     """
     Bitcoin Rainbow Chart - Long-term valuation bands
+    Gracefully returns success:false if data unavailable
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_rainbow_chart()
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error"))
         return result
     finally:
         await service.close()
@@ -274,12 +252,11 @@ async def get_rainbow_chart():
 async def get_stock_to_flow():
     """
     Bitcoin Stock-to-Flow Model - Scarcity valuation
+    Gracefully returns success:false if data unavailable
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_stock_to_flow()
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error"))
         return result
     finally:
         await service.close()
@@ -289,12 +266,13 @@ async def get_stock_to_flow():
 async def get_borrow_interest_rate():
     """
     Borrow Interest Rate History - Leverage demand indicator
+    
+    Returns HTTP 200 even when no data available (graceful degradation)
     """
     service = CoinglassComprehensiveService()
     try:
         result = await service.get_borrow_interest_rate()
-        if not result.get("success"):
-            raise HTTPException(status_code=500, detail=result.get("error"))
+        # Graceful degradation: Return result even if no data
         return result
     finally:
         await service.close()
