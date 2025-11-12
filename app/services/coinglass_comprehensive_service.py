@@ -3969,6 +3969,326 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    # ==================== TECHNICAL INDICATORS ====================
+    
+    async def get_rsi_list(self) -> Dict:
+        """
+        Get RSI LIST - Multi-timeframe RSI for all major coins! (45TH ENDPOINT!)
+        Endpoint: /api/futures/rsi/list
+        
+        Shows RSI across 15m, 1h, 4h, 12h, 24h, 1w for BTC, ETH, SOL, etc!
+        Perfect for scanning overbought/oversold conditions across the market.
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/rsi/list"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                rsi_data = data["data"]
+                
+                formatted = []
+                for coin in rsi_data:
+                    rsi_24h = float(coin.get("rsi_24h", 50))
+                    signal = "OVERSOLD" if rsi_24h < 30 else "OVERBOUGHT" if rsi_24h > 70 else "NEUTRAL"
+                    
+                    formatted.append({
+                        "symbol": coin.get("symbol"),
+                        "currentPrice": float(coin.get("current_price", 0)),
+                        "rsi15m": float(coin.get("rsi_15m", 0)),
+                        "rsi1h": float(coin.get("rsi_1h", 0)),
+                        "rsi4h": float(coin.get("rsi_4h", 0)),
+                        "rsi12h": float(coin.get("rsi_12h", 0)),
+                        "rsi24h": rsi_24h,
+                        "rsi1w": float(coin.get("rsi_1w", 0)),
+                        "priceChange15m": float(coin.get("price_change_percent_15m", 0)),
+                        "priceChange1h": float(coin.get("price_change_percent_1h", 0)),
+                        "priceChange4h": float(coin.get("price_change_percent_4h", 0)),
+                        "priceChange24h": float(coin.get("price_change_percent_24h", 0)),
+                        "signal": signal
+                    })
+                
+                return {
+                    "success": True,
+                    "coinCount": len(formatted),
+                    "coins": formatted,
+                    "note": "Multi-timeframe RSI for all major coins. Scan for overbought/oversold conditions!",
+                    "source": "rsi_list"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_rsi_indicator(self, exchange: str = "Binance", symbol: str = "BTCUSDT", interval: str = "1h") -> Dict:
+        """
+        Get RSI INDICATOR - Historical RSI values! (46TH ENDPOINT!)
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/indicators/rsi"
+            params = {"exchange": exchange, "symbol": symbol, "interval": interval}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                latest = history[-1] if history else {}
+                latest_rsi = float(latest.get("rsi_value", 50))
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "currentRsi": latest_rsi,
+                    "signal": "OVERSOLD" if latest_rsi < 30 else "OVERBOUGHT" if latest_rsi > 70 else "NEUTRAL",
+                    "history": [{"timestamp": h.get("time"), "rsi": float(h.get("rsi_value", 0))} for h in history],
+                    "source": "rsi_indicator"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_ma_indicator(self, exchange: str = "Binance", symbol: str = "BTCUSDT", interval: str = "1h") -> Dict:
+        """Get MA (Moving Average) indicator (47TH ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/indicators/ma"
+            params = {"exchange": exchange, "symbol": symbol, "interval": interval}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "currentMA": float(history[-1].get("ma_value", 0)) if history else 0,
+                    "history": [{"timestamp": h.get("time"), "ma": float(h.get("ma_value", 0))} for h in history],
+                    "source": "ma_indicator"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_ema_indicator(self, exchange: str = "Binance", symbol: str = "BTCUSDT", interval: str = "1h") -> Dict:
+        """Get EMA (Exponential Moving Average) indicator (48TH ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/indicators/ema"
+            params = {"exchange": exchange, "symbol": symbol, "interval": interval}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "currentEMA": float(history[-1].get("ema_value", 0)) if history else 0,
+                    "history": [{"timestamp": h.get("time"), "ema": float(h.get("ema_value", 0))} for h in history],
+                    "source": "ema_indicator"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_bollinger_bands(self, exchange: str = "Binance", symbol: str = "BTCUSDT", interval: str = "1h") -> Dict:
+        """Get Bollinger Bands indicator (49TH ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/indicators/boll"
+            params = {"exchange": exchange, "symbol": symbol, "interval": interval}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                latest = history[-1] if history else {}
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "current": {
+                        "upper": float(latest.get("ub_value", 0)),
+                        "middle": float(latest.get("mb_value", 0)),
+                        "lower": float(latest.get("lb_value", 0))
+                    },
+                    "history": [{"timestamp": h.get("time"), "upper": float(h.get("ub_value", 0)), 
+                                 "middle": float(h.get("mb_value", 0)), "lower": float(h.get("lb_value", 0))} for h in history],
+                    "source": "bollinger_bands"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_macd_indicator(self, exchange: str = "Binance", symbol: str = "BTCUSDT", interval: str = "1h") -> Dict:
+        """Get MACD indicator (50TH ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/indicators/macd"
+            params = {"exchange": exchange, "symbol": symbol, "interval": interval}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                latest = history[-1] if history else {}
+                histogram = float(latest.get("histogram", 0))
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "current": {
+                        "macd": float(latest.get("macd_value", 0)),
+                        "signal": float(latest.get("signal", 0)),
+                        "histogram": histogram
+                    },
+                    "crossover": "BULLISH" if histogram > 0 else "BEARISH" if histogram < 0 else "NEUTRAL",
+                    "history": [{"timestamp": h.get("time"), "macd": float(h.get("macd_value", 0)),
+                                 "signal": float(h.get("signal", 0)), "histogram": float(h.get("histogram", 0))} for h in history if h.get("histogram") is not None],
+                    "source": "macd_indicator"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_basis_history(self, exchange: str = "Binance", symbol: str = "BTCUSDT", interval: str = "1h") -> Dict:
+        """Get Basis History - Futures vs Spot spread! (51ST ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/basis/history"
+            params = {"exchange": exchange, "symbol": symbol, "interval": interval}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                latest = history[-1] if history else {}
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "current": {
+                        "openBasis": float(latest.get("open_basis", 0)),
+                        "closeBasis": float(latest.get("close_basis", 0)),
+                        "openChange": float(latest.get("open_change", 0)),
+                        "closeChange": float(latest.get("close_change", 0))
+                    },
+                    "history": [{"timestamp": h.get("time"), "openBasis": float(h.get("open_basis", 0)),
+                                 "closeBasis": float(h.get("close_basis", 0))} for h in history],
+                    "note": "Futures-Spot basis spread. Positive = futures premium (contango).",
+                    "source": "basis_history"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_whale_index(self, exchange: str = "Binance", symbol: str = "BTCUSDT", interval: str = "1d") -> Dict:
+        """Get Whale Index - Whale sentiment indicator! (52ND ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/whale-index/history"
+            params = {"exchange": exchange, "symbol": symbol, "interval": interval}
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                latest_value = float(history[-1].get("whale_index_value", 0)) if history else 0
+                
+                return {
+                    "success": True,
+                    "exchange": exchange,
+                    "symbol": symbol,
+                    "interval": interval,
+                    "currentIndex": latest_value,
+                    "sentiment": "BULLISH" if latest_value > 20 else "BEARISH" if latest_value < -20 else "NEUTRAL",
+                    "history": [{"timestamp": h.get("time"), "index": float(h.get("whale_index_value", 0))} for h in history],
+                    "note": "Whale sentiment: >20 bullish, <-20 bearish. Tracks large trader positioning.",
+                    "source": "whale_index"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_cgdi_index(self) -> Dict:
+        """Get CGDI Index - Coinglass Derivatives Index! (53RD ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/cgdi-index/history"
+            
+            response = await client.get(url, headers=self.headers)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                latest_value = float(history[-1].get("cgdi_index_value", 1000)) if history else 1000
+                
+                return {
+                    "success": True,
+                    "currentIndex": latest_value,
+                    "change": ((latest_value - 1000) / 1000 * 100) if latest_value else 0,
+                    "history": [{"timestamp": h.get("time"), "index": float(h.get("cgdi_index_value", 0))} for h in history],
+                    "note": "Coinglass Derivatives Index. Baseline 1000. Tracks overall derivatives market performance.",
+                    "source": "cgdi_index"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_cdri_index(self) -> Dict:
+        """Get CDRI Index - Crypto Derivative Risk Index! (54TH ENDPOINT!)"""
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/cdri-index/history"
+            
+            response = await client.get(url, headers=self.headers)
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                history = data["data"]
+                latest_value = int(history[-1].get("cdri_index_value", 50)) if history else 50
+                
+                risk_level = "EXTREME_FEAR" if latest_value < 25 else "FEAR" if latest_value < 45 else "NEUTRAL" if latest_value < 55 else "GREED" if latest_value < 75 else "EXTREME_GREED"
+                
+                return {
+                    "success": True,
+                    "currentIndex": latest_value,
+                    "riskLevel": risk_level,
+                    "history": [{"timestamp": h.get("time"), "index": int(h.get("cdri_index_value", 0))} for h in history],
+                    "note": "Crypto Derivative Risk Index (0-100). <25 extreme fear, >75 extreme greed.",
+                    "source": "cdri_index"
+                }
+            return {"success": False, "error": "No data"}
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== LONG/SHORT RATIO ENDPOINTS ====================
     
     async def get_long_short_ratio(self, symbol: str = "BTC") -> Dict:

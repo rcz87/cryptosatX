@@ -1145,6 +1145,113 @@ async def get_exchange_chain_transactions(
         await service.close()
 
 
+@router.get("/indicators/rsi-list")
+async def get_rsi_list():
+    """📊 ENDPOINT #45: RSI LIST - Multi-timeframe RSI for all major coins!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_rsi_list()
+    finally:
+        await service.close()
+
+
+@router.get("/indicators/rsi")
+async def get_rsi_indicator(
+    exchange: str = Query("Binance"), symbol: str = Query("BTCUSDT"), interval: str = Query("1h")):
+    """📊 ENDPOINT #46: RSI Indicator - Historical RSI values!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_rsi_indicator(exchange, symbol, interval)
+    finally:
+        await service.close()
+
+
+@router.get("/indicators/ma")
+async def get_ma_indicator(
+    exchange: str = Query("Binance"), symbol: str = Query("BTCUSDT"), interval: str = Query("1h")):
+    """📊 ENDPOINT #47: MA Indicator - Moving Average!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_ma_indicator(exchange, symbol, interval)
+    finally:
+        await service.close()
+
+
+@router.get("/indicators/ema")
+async def get_ema_indicator(
+    exchange: str = Query("Binance"), symbol: str = Query("BTCUSDT"), interval: str = Query("1h")):
+    """📊 ENDPOINT #48: EMA Indicator - Exponential Moving Average!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_ema_indicator(exchange, symbol, interval)
+    finally:
+        await service.close()
+
+
+@router.get("/indicators/bollinger")
+async def get_bollinger_bands(
+    exchange: str = Query("Binance"), symbol: str = Query("BTCUSDT"), interval: str = Query("1h")):
+    """📊 ENDPOINT #49: Bollinger Bands - Upper/Middle/Lower bands!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_bollinger_bands(exchange, symbol, interval)
+    finally:
+        await service.close()
+
+
+@router.get("/indicators/macd")
+async def get_macd_indicator(
+    exchange: str = Query("Binance"), symbol: str = Query("BTCUSDT"), interval: str = Query("1h")):
+    """📊 ENDPOINT #50: MACD Indicator - MACD line/signal/histogram!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_macd_indicator(exchange, symbol, interval)
+    finally:
+        await service.close()
+
+
+@router.get("/indicators/basis")
+async def get_basis_history(
+    exchange: str = Query("Binance"), symbol: str = Query("BTCUSDT"), interval: str = Query("1h")):
+    """📊 ENDPOINT #51: Basis History - Futures vs Spot spread!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_basis_history(exchange, symbol, interval)
+    finally:
+        await service.close()
+
+
+@router.get("/indicators/whale-index")
+async def get_whale_index(
+    exchange: str = Query("Binance"), symbol: str = Query("BTCUSDT"), interval: str = Query("1d")):
+    """📊 ENDPOINT #52: Whale Index - Whale sentiment indicator!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_whale_index(exchange, symbol, interval)
+    finally:
+        await service.close()
+
+
+@router.get("/indicators/cgdi")
+async def get_cgdi_index():
+    """📊 ENDPOINT #53: CGDI Index - Coinglass Derivatives Index!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_cgdi_index()
+    finally:
+        await service.close()
+
+
+@router.get("/indicators/cdri")
+async def get_cdri_index():
+    """📊 ENDPOINT #54: CDRI Index - Crypto Derivative Risk Index!"""
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_cdri_index()
+    finally:
+        await service.close()
+
+
 @router.get("/liquidations/{symbol}")
 async def get_liquidations(
     symbol: str,
