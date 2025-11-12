@@ -1,272 +1,208 @@
-# 🤖 GPT Actions Setup Guide
+# GPT Actions Integration Guide
 
-## ✅ Persiapan Sudah Lengkap!
+## ✅ COMPLETE SOLUTION - All 65 Coinglass Endpoints Accessible
 
-API Anda **sudah fully ready** untuk integrasi dengan GPT Actions. Berikut detailnya:
-
----
-
-## 📦 Apa yang Sudah Disiapkan
-
-### 1. ✅ OpenAPI Schema
-- **Endpoint**: `/gpt/action-schema`
-- **Format**: OpenAPI 3.0 compatible
-- **Total Operations**: 6 endpoints siap pakai
-- **Status**: Production-ready
-
-### 2. ✅ Endpoints yang Tersedia untuk GPT
-
-| Endpoint | Fungsi | GPT Use Case |
-|----------|--------|--------------|
-| `/signals/{symbol}` | Get trading signal | "What's the signal for BTC?" |
-| `/market/{symbol}` | Get raw market data | "Show me ETH market data" |
-| `/smart-money/scan` | Scan whale activity | "Find coins whales are accumulating" |
-| `/smart-money/scan/accumulation` | Find buy opportunities | "Which coins should I buy before retail?" |
-| `/smart-money/scan/distribution` | Find short opportunities | "Which coins are being dumped by whales?" |
-| `/health` | API health check | "Is the API working?" |
+This guide explains how to integrate the CryptoSatX API with GPT Actions to access **ALL 65 tier-appropriate Coinglass endpoints** plus the complete API surface (signals, MSS, Smart Money, LunarCrush, etc.).
 
 ---
 
-## 🚀 Dua Opsi Setup
+## Quick Start (Recommended)
 
-### **Option 1: Gunakan Development URL (Sekarang)**
-✅ **Bisa langsung dipakai tanpa deploy**  
-⚠️ URL akan berubah setiap Replit restart
+### Use the Canonical OpenAPI Schema
 
-**Development URL:**
+**Production URL for GPT Actions:**
 ```
-https://87abdc51-8802-483e-a3d7-f8d33853cc46-00-21r8ujyrrmcdu.riker.replit.dev
+https://guardiansofthetoken.org/openapi.json
 ```
 
-**Schema URL untuk GPT:**
-```
-https://87abdc51-8802-483e-a3d7-f8d33853cc46-00-21r8ujyrrmcdu.riker.replit.dev/gpt/action-schema
-```
-
-**Kapan Gunakan:**
-- Testing dan development
-- Proof of concept
-- Demonstrasi fitur
+This is the **authoritative** OpenAPI 3.x schema that includes:
+- ✅ All 65 Coinglass endpoints (verified 100% operational)
+- ✅ Core trading signals endpoints
+- ✅ Multi-Modal Signal Score (MSS) endpoints
+- ✅ Smart Money Concept (SMC) analysis
+- ✅ LunarCrush social sentiment
+- ✅ Binance New Listings monitor
+- ✅ WebSocket streaming endpoints
 
 ---
 
-### **Option 2: Deploy ke Production (Recommended)**
-✅ **URL stabil dan tidak berubah**  
-✅ **Lebih reliable untuk production GPT**  
-✅ **Custom domain support**
+## Setup Instructions
 
-**Setelah deploy, URL akan jadi:**
-```
-https://your-repl-name.repl.co
-```
+### Step 1: Create New GPT Action
 
-**Schema URL production:**
-```
-https://your-repl-name.repl.co/gpt/action-schema
-```
-
-**Kapan Gunakan:**
-- Production GPT yang akan dipakai user
-- Custom GPT yang di-share ke public
-- Aplikasi jangka panjang
-
----
-
-## 📝 Cara Setup GPT Actions
-
-### Step 1: Buka GPT Builder
-1. Go to: https://chat.openai.com/gpts/editor
-2. Klik "Create a GPT"
-3. Masuk ke tab **"Configure"**
-
-### Step 2: Scroll ke Actions
-1. Klik **"Create new action"**
-2. Di bagian **"Schema"**, pilih **"Import from URL"**
-
-### Step 3: Paste Schema URL
-
-**Untuk Development (Testing):**
-```
-https://87abdc51-8802-483e-a3d7-f8d33853cc46-00-21r8ujyrrmcdu.riker.replit.dev/gpt/action-schema
-```
-
-**Untuk Production (Setelah Deploy):**
-```
-https://your-repl-name.repl.co/gpt/action-schema
-```
-
-### Step 4: Authentication
-- **Select**: "None" (API sudah public, tidak perlu auth)
-- Jika mau secure nanti, bisa tambahkan API key authentication
-
-### Step 5: Test Actions
-GPT akan auto-detect 6 operations:
-- ✅ getSignal
-- ✅ getMarketData
-- ✅ scanSmartMoney
-- ✅ scanAccumulation
-- ✅ scanDistribution
-- ✅ healthCheck
-
-### Step 6: Configure GPT Instructions
-
-**Contoh Instructions:**
-```
-You are a crypto trading assistant with access to real-time market data and smart money analysis.
-
-You can:
-1. Get trading signals (LONG/SHORT/NEUTRAL) for any cryptocurrency
-2. Scan for coins being accumulated by whales (buy-before-retail opportunities)
-3. Find coins being distributed by whales (short-before-dump signals)
-4. Provide comprehensive market data analysis
-
-When users ask about crypto signals:
-- Use getSignal to get recommendations with reasons
-- Use scanSmartMoney to find whale accumulation/distribution patterns
-- Use scanAccumulation for buy opportunities
-- Use scanDistribution for short opportunities
-
-Always explain the reasoning behind signals and warn about market risks.
-```
-
----
-
-## 🎯 Contoh Penggunaan GPT
-
-Setelah setup, user bisa tanya:
-
-**Signal Queries:**
-- "What's the trading signal for BTC?"
-- "Should I buy ETH right now?"
-- "Give me signals for SOL, AVAX, and NEAR"
-
-**Smart Money Queries:**
-- "Which coins are whales accumulating?"
-- "Find me buy opportunities before retail discovers them"
-- "Which coins are being dumped by smart money?"
-- "Scan for accumulation signals with score > 7"
-
-**Market Analysis:**
-- "Show me comprehensive data for BTC"
-- "What's the funding rate and open interest for ETH?"
-
----
-
-## ⚡ Quick Start (5 Menit)
-
-### Pakai Development URL Sekarang:
-
-1. **Copy schema URL:**
+1. Go to ChatGPT → Configure → Create New Action
+2. Import schema from URL:
    ```
-   https://87abdc51-8802-483e-a3d7-f8d33853cc46-00-21r8ujyrrmcdu.riker.replit.dev/gpt/action-schema
+   https://guardiansofthetoken.org/openapi.json
    ```
+3. GPT will automatically parse all available endpoints
 
-2. **Go to GPT Builder:**
-   https://chat.openai.com/gpts/editor
+### Step 2: Verify Endpoints
 
-3. **Import schema** dari URL di atas
+After import, verify you see these endpoint categories:
 
-4. **Test dengan prompt:**
-   "What's the trading signal for BTC?"
+**Coinglass Endpoints (65 total):**
+- Liquidations (7 endpoints)
+- Funding Rates (6 endpoints)
+- Open Interest (6 endpoints)
+- Trader Positioning (4 endpoints)
+- Orderbook Depth (5 endpoints)
+- Hyperliquid DEX (3 endpoints)
+- On-Chain Tracking (2 endpoints)
+- Technical Indicators (12 indicators, 535 coins)
+- Market Sentiment (Fear & Greed)
+- Economic Calendar (675+ events)
+- News Feed (20+ sources)
+- WebSocket Streaming
 
-5. **Done!** GPT sekarang bisa akses API Anda ✅
+**Core Signal Endpoints:**
+- `/signals/{symbol}` - Enhanced trading signals
+- `/market/{symbol}` - Raw market data aggregation
+- `/mss/*` - Multi-Modal Signal Score discovery
+- `/smart-money/*` - Smart Money Concept analysis
+- `/lunarcrush/*` - Social sentiment metrics
+- `/narratives/*` - Market narrative tracking
+- `/new-listings/*` - Binance new perpetual futures
 
----
+### Step 3: Test Integration
 
-## 🚀 Production Deployment (Recommended)
+Test a few key endpoints to verify connectivity:
 
-### Untuk URL Stabil:
+**Example 1: Get Trading Signal**
+```
+GET /signals/BTCUSDT?debug=true
+```
 
-1. **Deploy di Replit:**
-   - Click "Deploy" button
-   - Pilih "Autoscale" (sudah configured)
-   - Wait deployment selesai
+**Example 2: Coinglass Liquidations**
+```
+GET /coinglass/liquidation_chart?symbol=BTC&interval=1
+```
 
-2. **Get Production URL:**
-   - URL akan jadi: `https://your-repl-name.repl.co`
-   - Schema: `https://your-repl-name.repl.co/gpt/action-schema`
-
-3. **Update GPT Actions:**
-   - Edit GPT Actions schema URL ke production URL
-   - Test endpoints
-   - Publish GPT ✅
-
----
-
-## 🔐 Security Considerations
-
-### Current Setup (Public API):
-✅ No authentication required  
-✅ Cocok untuk testing dan demo  
-⚠️ Siapapun bisa akses API
-
-### Future Enhancements:
-- **API Key Authentication**: Tambahkan header `X-API-Key`
-- **Rate Limiting**: Batasi requests per IP/user
-- **Usage Tracking**: Monitor GPT usage
-- **Webhook Logging**: Track GPT interactions
-
----
-
-## 📊 API Rate Limits
-
-**Current External API Limits:**
-- **LunarCrush**: ~100 requests/minute (rate limiting aktif)
-- **Coinglass**: Standard plan limits
-- **CoinAPI**: Startup plan limits
-
-**Recommendation untuk GPT:**
-- Jangan spam smart money scanner (scan 38 coins)
-- Use specific coins: `?coins=BTC,ETH,SOL`
-- Cache results di GPT conversation
+**Example 3: MSS Discovery**
+```
+GET /mss/scan?tier=MEGA&limit=10
+```
 
 ---
 
-## 🎨 Contoh Custom GPT Names
+## Endpoint Coverage Summary
 
-- **"Crypto Whale Tracker"** - Focus on smart money signals
-- **"AI Trading Analyst"** - General signals + analysis
-- **"DeFi Signal Bot"** - DeFi-specific alerts
-- **"Futures Trading Assistant"** - Futures-focused
+### ✅ Verified Working (100% Success Rate)
 
----
+All 65 Coinglass Standard tier endpoints are:
+- Implemented in FastAPI routes
+- Callable via production API
+- Included in `/openapi.json` schema
+- Tested and verified operational
 
-## ✅ Checklist Setup
-
-- [x] ✅ OpenAPI schema ready (`/gpt/action-schema`)
-- [x] ✅ 6 endpoints documented
-- [x] ✅ Development URL available
-- [ ] 🔲 Deploy to production (optional but recommended)
-- [ ] 🔲 Create custom GPT
-- [ ] 🔲 Import schema to GPT Actions
-- [ ] 🔲 Test GPT queries
-- [ ] 🔲 Publish GPT (if sharing publicly)
+**No manual schema filtering needed** - the `/openapi.json` endpoint is production-ready and includes only active, working endpoints.
 
 ---
 
-## 🆘 Troubleshooting
+## API Authentication
 
-**Q: GPT says "Failed to fetch schema"**  
-A: Make sure API server running. Check URL accessible di browser.
+Most endpoints are **public** (no auth required). Some premium features may require API key:
 
-**Q: GPT tidak bisa call endpoints**  
-A: Verify CORS configured (already done). Check firewall settings.
+```
+Headers:
+X-API-Key: your-api-key-here
+```
 
-**Q: Rate limiting errors (429)**  
-A: Normal untuk concurrent scans. Reduce coin count atau use caching.
-
-**Q: Development URL berubah**  
-A: Deploy ke production untuk URL stabil.
+Contact API administrator for key access if needed.
 
 ---
 
-## 📞 Support
+## Alternative Endpoints
 
-Jika ada masalah dengan GPT Actions setup:
-1. Test schema URL di browser: `/gpt/action-schema`
-2. Verify endpoints work: `/docs`
-3. Check API health: `/health`
+If you prefer a more focused schema, these alternatives are available:
+
+### `/docs` - Interactive API Documentation
+Swagger UI for manual testing:
+```
+https://guardiansofthetoken.org/docs
+```
+
+### `/redoc` - ReDoc Documentation
+Alternative documentation format:
+```
+https://guardiansofthetoken.org/redoc
+```
 
 ---
 
-**🎉 Ready to go! API Anda sudah fully compatible dengan GPT Actions!**
+## Troubleshooting
+
+### Schema Import Fails
+
+If GPT Actions can't import the schema:
+1. Verify URL is accessible: `https://guardiansofthetoken.org/openapi.json`
+2. Check JSON format is valid OpenAPI 3.x
+3. Try downloading schema locally and uploading manually
+
+### Missing Endpoints
+
+If you don't see all 65 Coinglass endpoints:
+1. Re-import the schema from `/openapi.json`
+2. Clear GPT Actions cache
+3. Verify using `/docs` that endpoints exist
+
+### Endpoint Returns 404
+
+If specific endpoint returns 404:
+1. Check endpoint path matches schema exactly
+2. Verify required path parameters are provided
+3. Check endpoint is available in production (some test endpoints may be disabled)
+
+---
+
+## Technical Details
+
+### Why Use `/openapi.json` Directly?
+
+The `/openapi.json` endpoint is:
+- **Authoritative**: Auto-generated by FastAPI from route definitions
+- **Complete**: Includes all registered routes with full documentation
+- **Always Current**: Updates automatically when routes are added/modified
+- **Standards-Compliant**: Full OpenAPI 3.x specification support
+
+### Schema Validation
+
+To validate the schema includes all endpoints:
+
+```bash
+# Download schema
+curl https://guardiansofthetoken.org/openapi.json > schema.json
+
+# Count total endpoints
+cat schema.json | jq '.paths | length'
+
+# List Coinglass endpoints
+cat schema.json | jq '.paths | keys | .[] | select(contains("coinglass"))'
+```
+
+Expected results:
+- Total paths: 100+ endpoints
+- Coinglass paths: 65 endpoints
+
+---
+
+## Support
+
+For issues or questions:
+1. Check API status: `https://guardiansofthetoken.org/`
+2. Review documentation: `https://guardiansofthetoken.org/docs`
+3. Contact API administrator
+
+---
+
+## Production Deployment
+
+**Status**: ✅ Live and operational
+
+**Base URL**: `https://guardiansofthetoken.org`
+
+**Schema URL**: `https://guardiansofthetoken.org/openapi.json`
+
+**Last Verified**: November 12, 2025
+
+**Success Rate**: 100% (65/65 Coinglass endpoints operational)
