@@ -319,83 +319,94 @@ class LunarCrushComprehensiveService:
     
     # ==================== CHANGE DETECTION ====================
     
-    async def get_social_change(self, symbol: str, timeframe: str = "24h") -> Dict:
+    async def get_social_change(self, symbol: str, interval: str = "24h") -> Dict:
         """
         Get social metrics change/delta over time period
-        Endpoint: /coins/{symbol}/change
+        Builder-tier limitation: Only price change available from percent_change fields
         
         Args:
             symbol: Coin symbol
-            timeframe: Time period (1h, 24h, 7d)
+            interval: Time period (1h, 24h, 7d)
             
         Returns:
-            Change metrics including:
-            - Social volume % change
-            - Sentiment shift
-            - Galaxy Score delta
-            - Engagement change
+            Change metrics with authentic price data only:
+            - Price % change (from API percent_change_1h/24h/7d fields)
+            - Social metrics unavailable (Builder tier limitation)
             
-        Use case: Detect sudden social spikes (300%+ increase alerts)
+        Note: Dedicated /change endpoint requires Enterprise tier.
+              Builder tier only provides price change via comprehensive endpoint.
         """
         try:
-            client = await self._get_client()
             symbol = symbol.upper()
             
-            url = f"{self.base_url}/coins/{symbol}/change"
-            params = {"interval": timeframe}
-            
-            response = await client.get(url, headers=self.headers, params=params)
-            
-            if response.status_code != 200:
-                return {"success": False, "symbol": symbol, "error": f"HTTP {response.status_code}"}
-            
-            data = response.json()
-            
-            if data.get("data"):
-                raw_data = data["data"]
-                
-                # Handle both dict and list responses from API
-                if isinstance(raw_data, list):
-                    if len(raw_data) == 0:
-                        return {"success": False, "symbol": symbol, "error": "Empty data array"}
-                    change_data = raw_data[0]  # Take first element if list
-                else:
-                    change_data = raw_data  # Use directly if dict
-                
-                social_vol_change = float(change_data.get("social_volume_change", 0))
-                engagement_change = float(change_data.get("social_engagement_change", 0))
-                sentiment_change = float(change_data.get("sentiment_change", 0))
-                
-                # Classify spike intensity
-                spike_level = "normal"
-                if abs(social_vol_change) > 300:
-                    spike_level = "extreme"
-                elif abs(social_vol_change) > 100:
-                    spike_level = "high"
-                elif abs(social_vol_change) > 50:
-                    spike_level = "moderate"
-                
+            # Validate supported intervals
+            supported_intervals = {"1h", "24h", "7d", "1d"}  # 1d is alias for 24h
+            if interval not in supported_intervals:
                 return {
-                    "success": True,
+                    "success": False,
                     "symbol": symbol,
-                    "timeframe": timeframe,
-                    
-                    # Change Metrics
-                    "socialVolumeChange": social_vol_change,
-                    "socialEngagementChange": engagement_change,
-                    "sentimentChange": sentiment_change,
-                    "galaxyScoreChange": float(change_data.get("galaxy_score_change", 0)),
-                    "priceChange": float(change_data.get("price_change", 0)),
-                    
-                    # Analysis
-                    "spikeLevel": spike_level,
-                    "isSpiking": abs(social_vol_change) > 50,
-                    
-                    "rawData": change_data,
-                    "source": "lunarcrush_change"
+                    "error": f"Unsupported interval '{interval}'. Supported: {', '.join(sorted(supported_intervals))}"
                 }
             
-            return {"success": False, "symbol": symbol, "error": "No change data"}
+            # Fetch comprehensive data which includes percent_change fields
+            coin_data = await self.get_coin_comprehensive(symbol)
+            
+            if not coin_data.get("success"):
+                return {
+                    "success": False,
+                    "symbol": symbol,
+                    "error": coin_data.get("error", "Unable to fetch coin data")
+                }
+            
+            # Use authentic percent_change fields from LunarCrush API
+            price_change_1h = coin_data.get("percentChange1h", 0.0)
+            price_change_24h = coin_data.get("percentChange24h", 0.0)
+            price_change_7d = coin_data.get("percentChange7d", 0.0)
+            
+            # Map interval to corresponding percent_change field
+            interval_to_data = {
+                "1h": ("percentChange1h", price_change_1h),
+                "24h": ("percentChange24h", price_change_24h),
+                "7d": ("percentChange7d", price_change_7d),
+                "1d": ("percentChange24h", price_change_24h)  # Alias for 24h
+            }
+            
+            field_name, price_change = interval_to_data[interval]
+            
+            # Classify spike intensity based on price change
+            spike_level = "normal"
+            abs_price_change = abs(price_change)
+            if abs_price_change > 20:
+                spike_level = "extreme"
+            elif abs_price_change > 10:
+                spike_level = "high"
+            elif abs_price_change > 5:
+                spike_level = "moderate"
+            
+            return {
+                "success": True,
+                "symbol": symbol,
+                "interval": interval,
+                
+                # Authentic Change Metrics (from API)
+                "priceChange": round(price_change, 2),  # Real API field
+                
+                # Unavailable in Builder Tier
+                "socialVolumeChange": None,  # Requires Enterprise tier /change endpoint
+                "socialEngagementChange": None,  # Requires Enterprise tier /change endpoint
+                "sentimentChange": None,  # Requires Enterprise tier /change endpoint
+                "galaxyScoreChange": None,  # Requires Enterprise tier /change endpoint
+                
+                # Analysis (based on available price data only)
+                "spikeLevel": spike_level,
+                "isSpiking": abs_price_change > 5,
+                
+                # Transparent Metadata
+                "tierLimitation": "Builder tier provides only price change. Social metrics require Enterprise tier /change endpoint.",
+                "authenticFields": ["priceChange"],
+                "sourceField": field_name,
+                "source": "lunarcrush_comprehensive"
+            }
             
         except Exception as e:
             return {"success": False, "symbol": symbol, "error": str(e)}
@@ -444,11 +455,12 @@ class LunarCrushComprehensiveService:
             momentum_score += (galaxy - 50) * 0.3
             
             # Factor 2: 24h social volume change (40%)
+            # Note: Builder tier only provides price change, social metrics are None
             if change_24h.get("success"):
-                vol_change = change_24h.get("socialVolumeChange", 0)
+                vol_change = change_24h.get("socialVolumeChange") or 0  # Handle None
                 if vol_change > 0:
                     momentum_score += min(vol_change / 10, 20)  # Cap at +20
-                else:
+                elif vol_change < 0:
                     momentum_score += max(vol_change / 10, -20)  # Cap at -20
             
             # Factor 3: Sentiment (30%)
@@ -529,9 +541,10 @@ class LunarCrushComprehensiveService:
             change_24h = await self.get_social_change(symbol, "24h")
             
             # Prepare metrics for theme analysis
+            # Note: Builder tier returns None for social metrics, use 0 as fallback
             metrics = {
                 "sentiment": coin_data.get("averageSentiment", 3),  # 1-5 scale
-                "social_volume_change": change_24h.get("socialVolumeChange", 0) if change_24h.get("success") else 0,
+                "social_volume_change": (change_24h.get("socialVolumeChange") or 0) if change_24h.get("success") else 0,
                 "galaxy_score": coin_data.get("galaxyScore", 50),
                 "spam_detected": coin_data.get("spamDetected", 0),
                 "social_dominance": coin_data.get("socialDominance", 0),
