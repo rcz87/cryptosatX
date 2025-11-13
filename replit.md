@@ -33,7 +33,7 @@ The API provides clean JSON responses and offers a debug mode (`?debug=true`) fo
 
 ### Feature Specifications
 - **Comprehensive Integrations**: Leverages Coinglass v4, LunarCrush v4, CoinAPI, Binance Futures, and CoinGecko.
-- **LunarCrush v4 Features**: Coins Discovery endpoint with Galaxy Score and AltRank filtering, and a Topics API for social metrics.
+- **LunarCrush v4 Features**: Coins Discovery endpoint with Galaxy Score and AltRank filtering, Topics API for individual coin social metrics, and **Topics List** endpoint for real-time trending topics discovery (viral detection, momentum analysis, auto-discovery of 1000+ social topics with 1h/24h rank changes).
 - **Output**: Signals include recommendation, composite score, confidence level, top contributing factors, and raw metrics (in debug mode). MSS alerts include a 3-phase breakdown and tier classification.
 
 ### System Design Choices

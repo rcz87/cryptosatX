@@ -296,6 +296,101 @@ class LunarCrushService:
                 "topic": topic,
             }
 
+    async def get_topics_list(self) -> Dict:
+        """
+        Get list of trending social topics across crypto markets
+        
+        This endpoint discovers what's trending NOW in crypto social media.
+        Perfect for auto-discovering viral moments and emerging narratives.
+        
+        Returns:
+            Dict with trending topics list including:
+            - topic: LunarCrush social topic (can include letters, numbers, spaces, #, $)
+            - title: Case sensitive title of the topic/category
+            - topic_rank: Current ranking among all social topics
+            - topic_rank_1h_previous: Rank from 1 hour ago (trend detection)
+            - topic_rank_24h_previous: Rank from 24 hours ago (momentum)
+            - num_contributors: Unique social contributors to topic
+            - num_posts: Total posts with interactions (24h)
+            - interactions_24h: Total social interactions in 24h
+        
+        Use Cases:
+        - Viral detection: Find breaking news moments
+        - Coin discovery: Identify socially trending coins
+        - Smart scanning: Dynamic watchlist based on actual trends
+        - Momentum analysis: Compare rank changes (1h, 24h)
+        """
+        try:
+            url = f"{self.base_url}/topics/list/v1"
+            
+            async with httpx.AsyncClient(timeout=15.0) as client:
+                response = await client.get(url, headers=self.headers)
+                response.raise_for_status()
+                
+                data = response.json()
+                
+                if data.get("error"):
+                    return {
+                        "success": False,
+                        "error": data["error"],
+                    }
+                
+                topics = data.get("data", [])
+                
+                # Analyze trends
+                trending_up = []
+                trending_down = []
+                
+                for topic in topics:
+                    current_rank = topic.get("topic_rank", 9999)
+                    rank_1h_ago = topic.get("topic_rank_1h_previous", 9999)
+                    rank_24h_ago = topic.get("topic_rank_24h_previous", 9999)
+                    
+                    # Detect momentum (lower rank = better)
+                    if rank_1h_ago > current_rank:
+                        rank_change_1h = rank_1h_ago - current_rank
+                        if rank_change_1h >= 5:  # Significant 1h jump
+                            trending_up.append({
+                                "topic": topic.get("topic"),
+                                "rank": current_rank,
+                                "momentum_1h": f"+{rank_change_1h} ranks",
+                            })
+                    
+                    if current_rank > rank_1h_ago:
+                        rank_drop = current_rank - rank_1h_ago
+                        if rank_drop >= 5:
+                            trending_down.append({
+                                "topic": topic.get("topic"),
+                                "rank": current_rank,
+                                "momentum_1h": f"-{rank_drop} ranks",
+                            })
+                
+                # Extract and format response
+                return {
+                    "success": True,
+                    "totalTopics": len(topics),
+                    "topics": topics,
+                    "analysis": {
+                        "trending_up_1h": trending_up[:10],  # Top 10 gainers
+                        "trending_down_1h": trending_down[:10],  # Top 10 decliners
+                        "hottest_topic": topics[0] if topics else None,
+                    },
+                    "note": "Topics ranked by social activity. Lower rank = more trending. Compare rank changes for momentum detection.",
+                }
+        
+        except httpx.HTTPStatusError as e:
+            print(f"LunarCrush topics list HTTP error: {e}")
+            return {
+                "success": False,
+                "error": f"HTTP error: {e.response.status_code}",
+            }
+        except Exception as e:
+            print(f"LunarCrush topics list error: {e}")
+            return {
+                "success": False,
+                "error": str(e),
+            }
+
 
 # Singleton instance
 lunarcrush_service = LunarCrushService()

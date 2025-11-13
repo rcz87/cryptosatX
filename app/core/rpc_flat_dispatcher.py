@@ -338,6 +338,10 @@ class FlatRPCDispatcher:
                 limit=limit
             )
 
+        elif operation == "lunarcrush.topics_list":
+            from app.services.lunarcrush_service import lunarcrush_service
+            return await lunarcrush_service.get_topics_list()
+
         # ===================================================================
         # COINAPI
         # ===================================================================

@@ -243,3 +243,81 @@ async def get_topic_social_metrics(topic: str):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/topics/list")
+async def get_trending_topics_list():
+    """
+    🔥 GET TRENDING TOPICS LIST - Discover what's viral NOW in crypto social media
+    
+    **What This Does:**
+    - Returns ALL trending social topics ranked by activity
+    - Real-time social momentum detection
+    - Perfect for auto-discovering viral coins and narratives
+    - Includes 1h and 24h rank changes for trend analysis
+    
+    **Key Metrics:**
+    - `topic_rank`: Current ranking (lower = more trending)
+    - `topic_rank_1h_previous`: Rank 1 hour ago
+    - `topic_rank_24h_previous`: Rank 24 hours ago
+    - `num_contributors`: Unique social contributors
+    - `num_posts`: Total posts with interactions (24h)
+    - `interactions_24h`: Total social interactions
+    
+    **Analysis Included:**
+    - `trending_up_1h`: Topics gaining momentum (rank improving)
+    - `trending_down_1h`: Topics losing momentum
+    - `hottest_topic`: #1 most trending topic right now
+    
+    **Use Cases:**
+    - 🔥 Viral Detection: Find breaking news moments
+    - 📊 Coin Discovery: Identify socially trending coins automatically
+    - 🎯 Smart Scanning: Build dynamic watchlists based on actual trends
+    - 📈 Momentum Analysis: Track rank changes for early entries
+    
+    **Example Response:**
+    ```json
+    {
+      "success": true,
+      "totalTopics": 150,
+      "topics": [
+        {
+          "topic": "bitcoin",
+          "title": "Bitcoin",
+          "topic_rank": 1,
+          "topic_rank_1h_previous": 2,
+          "topic_rank_24h_previous": 5,
+          "num_contributors": 50000,
+          "num_posts": 125000,
+          "interactions_24h": 5000000
+        }
+      ],
+      "analysis": {
+        "trending_up_1h": [...],
+        "trending_down_1h": [...],
+        "hottest_topic": {...}
+      }
+    }
+    ```
+    
+    **Integration Ideas:**
+    - Combine with `/signals/{symbol}` for trending coins
+    - Use for Social Spike Monitor automation
+    - Feed into MSS discovery pipeline
+    - Alert system for viral moments
+    """
+    try:
+        result = await lunarcrush_service.get_topics_list()
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=500,
+                detail=result.get("error", "Failed to fetch topics list")
+            )
+        
+        return result
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
