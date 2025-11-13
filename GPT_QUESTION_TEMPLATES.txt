@@ -1,10 +1,30 @@
-# 🎯 5 TEMPLATE PERTANYAAN GPT - CRYPTOSATX (OPTIMIZED)
-Pertanyaan yang dirancang untuk memaksimalkan penggunaan 192+ API endpoints yang tersedia
+# 🎯 CRYPTOSATX - COMPLETE USER GUIDE & TEMPLATES
+Master guide untuk menggunakan 192+ API operations via GPT Actions
 
+═══════════════════════════════════════════════════════════════════════
+📚 TABLE OF CONTENTS
+═══════════════════════════════════════════════════════════════════════
+
+PART 1: QUICK START TEMPLATES (5 Main + 5 Bonus)
+PART 2: FEATURE DEEP DIVE (8 Features Explained)
+PART 3: REAL-WORLD WORKFLOWS (Trading Scenarios)
+PART 4: INTERPRETATION GUIDE (Reading Results)
+PART 5: DECISION TREES (When to Use What)
+PART 6: COMMON MISTAKES & PRO TIPS
+PART 7: ADVANCED STRATEGIES
+
+═══════════════════════════════════════════════════════════════════════
+PART 1: QUICK START TEMPLATES
 ═══════════════════════════════════════════════════════════════════════
 
 ## 📊 TEMPLATE 1: ANALISIS TRADING SIGNAL KOMPREHENSIF
 **Trigger:** signals.get + coinglass.liquidations.symbol + coinglass.funding_rate.history + coinglass.indicators.fear_greed
+
+### 🎯 USE CASE:
+Gunakan ini ketika mau trading decision quick & comprehensive. Perfect untuk:
+- ✅ Morning market check (cek kondisi market hari ini)
+- ✅ Before entering position (verify signal strength)
+- ✅ Risk assessment (understand current sentiment)
 
 ### Pertanyaan:
 "Analisis lengkap BTC sekarang: sinyal trading, liquidation data, funding rate, dan sentimen pasar (fear & greed index)"
@@ -22,17 +42,33 @@ Pertanyaan yang dirancang untuk memaksimalkan penggunaan 192+ API endpoints yang
 
 ### Expected Response:
 - Trading signal (LONG/SHORT/NEUTRAL)
-- Score & confidence level
+- Score & confidence level (0-100)
 - Liquidation volumes (longs vs shorts)
-- Funding rate (positive/negative)
-- Fear & Greed index
+- Funding rate (positive/negative %)
+- Fear & Greed index (0-100)
 - Top 3 contributing factors
-- Risk analysis
+- Risk analysis & recommendations
+
+### 📖 HOW TO INTERPRET:
+**Signal LONG + Score 60+ + Confidence Medium/High:**
+→ Good entry point jika faktor lain mendukung
+
+**High Liquidations on Longs + Positive Funding:**
+→ Overcrowded trade, potential reversal
+
+**Fear & Greed < 25 (Extreme Fear):**
+→ Often best time to buy (contrarian)
 
 ═══════════════════════════════════════════════════════════════════════
 
 ## 🐋 TEMPLATE 2: SMART MONEY & WHALE TRACKING
 **Trigger:** smart_money.scan + coinglass.open_interest.history + coinglass.hyperliquid.whale_alerts
+
+### 🎯 USE CASE:
+Detect whale accumulation BEFORE retail enters. Perfect untuk:
+- ✅ Finding early entry opportunities
+- ✅ Spotting institutional buying before pumps
+- ✅ Identifying distribution (exit signals)
 
 ### Pertanyaan:
 "Scan smart money untuk 10 coins teratas, fokus yang whale lagi akumulasi. Sama cek open interest BTC juga"
@@ -50,15 +86,35 @@ Pertanyaan yang dirancang untuk memaksimalkan penggunaan 192+ API endpoints yang
 
 ### Expected Response:
 - List 10-15 coins dengan smart money activity
-- Accumulation/distribution bias per coin
-- Open interest trends
+- Accumulation score (0-10) per coin
+- Distribution score (0-10) per coin
+- Dominant pattern (accumulation/distribution)
+- Open interest trends (rising/falling)
 - Whale alerts dari Hyperliquid
 - Recommended coins untuk watch
+
+### 📖 HOW TO INTERPRET:
+**Accumulation Score 7-10:**
+→ Very strong signal, whales buying aggressively
+→ Entry sebelum retail FOMO
+
+**Distribution Score 7-10:**
+→ Whales selling, avoid/short
+→ Potential dump incoming
+
+**Rising OI + Accumulation:**
+→ Confirmation, new whale positions opening
 
 ═══════════════════════════════════════════════════════════════════════
 
 ## 🚀 TEMPLATE 3: MSS DISCOVERY - EMERGING COINS
 **Trigger:** mss.discover + lunarcrush.coin + new_listings.binance
+
+### 🎯 USE CASE:
+Find next 10x-100x gems before mainstream. Perfect untuk:
+- ✅ Small-cap gem hunting
+- ✅ Early project discovery
+- ✅ Portfolio diversification dengan high-risk/high-reward
 
 ### Pertanyaan:
 "Discover emerging cryptocurrencies dengan MSS score 75+. Cari coins yang punya social buzz tinggi dan baru listing di Binance"
@@ -77,17 +133,36 @@ Pertanyaan yang dirancang untuk memaksimalkan penggunaan 192+ API endpoints yang
 
 ### Expected Response:
 - 5-10 emerging coins dengan MSS breakdown
-- Discovery phase scores (tokenomics)
-- Social Confirmation scores (community momentum)
-- Institutional Validation scores (whale activity)
+- Discovery phase scores (tokenomics 0-100)
+- Social Confirmation scores (community 0-100)
+- Institutional Validation scores (whale 0-100)
 - Market cap & volume data
 - New Binance listings (jika ada)
-- Tier classification
+- Tier classification (Tier 1/2/3)
+
+### 📖 HOW TO INTERPRET:
+**MSS 75-85 + Tier 2:**
+→ Good potential, moderate risk
+
+**MSS 85-95 + Tier 1:**
+→ Excellent opportunity, strong fundamentals
+
+**MSS 95+ + New Binance Listing:**
+→ Prime candidate, institutional interest confirmed
+
+**Low Social + High MSS:**
+→ Hidden gem, retail belum aware
 
 ═══════════════════════════════════════════════════════════════════════
 
 ## 📈 TEMPLATE 4: TECHNICAL ANALYSIS ADVANCED
 **Trigger:** coinglass.indicators.rsi + coinglass.indicators.macd + coinglass.indicators.whale_index + market.get
+
+### 🎯 USE CASE:
+Confirm trend & find entry/exit zones. Perfect untuk:
+- ✅ Timing entries (oversold/overbought)
+- ✅ Trend confirmation
+- ✅ Spotting divergences
 
 ### Pertanyaan:
 "Technical analysis BTC: RSI, MACD, Whale Index, dan semua indicator dari Coinglass. Plus cek trader positioning (long/short ratio)"
@@ -109,18 +184,37 @@ Pertanyaan yang dirancang untuk memaksimalkan penggunaan 192+ API endpoints yang
 
 ### Expected Response:
 - RSI value & interpretation (oversold/overbought)
-- MACD crossover signals
-- Whale Index (institutional activity)
-- CGDI (market health)
-- Golden Ratio (trend strength)
-- Long/Short ratio (retail sentiment)
+- MACD crossover signals (bullish/bearish)
+- Whale Index (institutional sentiment)
+- CGDI (overall market health)
+- Golden Ratio (BTC specific trend)
+- Long/Short ratio (retail positioning)
 - Combined technical outlook
 - Entry/exit zones
+
+### 📖 HOW TO INTERPRET:
+**RSI < 30:**
+→ Oversold, potential bounce
+
+**RSI > 70:**
+→ Overbought, potential correction
+
+**MACD Bullish Crossover + RSI > 50:**
+→ Strong uptrend confirmation
+
+**Whale Index Rising + Retail Long Ratio > 70%:**
+→ Smart money buying while retail overleveraged
 
 ═══════════════════════════════════════════════════════════════════════
 
 ## 🔥 TEMPLATE 5: MARKET OVERVIEW & MULTI-COIN COMPARISON
 **Trigger:** multiple signals.get + coinglass.liquidation.aggregated_history + market.get (batch)
+
+### 🎯 USE CASE:
+Compare opportunities & find strongest plays. Perfect untuk:
+- ✅ Portfolio rotation decisions
+- ✅ Sector comparison (L1s vs DeFi vs Memes)
+- ✅ Finding relative strength
 
 ### Pertanyaan:
 "Compare BTC, ETH, SOL, AVAX, MATIC: mana yang paling bullish hari ini? Kasih signal, score, liquidations, sama funding rate semua coins"
@@ -148,6 +242,16 @@ Pertanyaan yang dirancang untuk memaksimalkan penggunaan 192+ API endpoints yang
 - Best coin untuk SHORT (dengan reasoning)
 - Market sentiment overview
 
+### 📖 HOW TO INTERPRET:
+**Highest Score in Group:**
+→ Leader, strongest momentum
+
+**Lowest Funding in Group:**
+→ Most room to grow, not crowded
+
+**High Liq Longs vs Low Liq Shorts:**
+→ Retail trapped long, potential dump
+
 ═══════════════════════════════════════════════════════════════════════
 
 ## 💡 BONUS TEMPLATES (Advanced Users)
@@ -155,72 +259,2216 @@ Pertanyaan yang dirancang untuk memaksimalkan penggunaan 192+ API endpoints yang
 ### Template 6: Real-Time Liquidation Alert
 "Pantau liquidations real-time untuk BTC di semua exchanges. Highlight kalau ada long/short liquidation spike >$10M"
 
-API: {"operation": "coinglass.liquidation.aggregated_history"} + websocket streaming
+**WHEN:** Volatile market, looking for cascade signals
+**API:** {"operation": "coinglass.liquidation.aggregated_history"} + websocket streaming
 
 ### Template 7: News & Events Impact
 "Cek economic calendar hari ini + crypto news feed. Ada event penting yang bisa impact BTC/ETH?"
 
-API: {"operation": "coinglass.calendar.economic"} + {"operation": "coinglass.news.feed"}
+**WHEN:** Before major announcements, fundamental analysis
+**API:** {"operation": "coinglass.calendar.economic"} + {"operation": "coinglass.news.feed"}
 
 ### Template 8: Hyperliquid DEX Analysis
 "Whale activity di Hyperliquid: top positions, recent whale alerts untuk BTC-PERP"
 
-API: {"operation": "coinglass.hyperliquid.whale_alerts"} + {"operation": "coinglass.hyperliquid.whale_positions"}
+**WHEN:** DEX-focused trading, whale tracking
+**API:** {"operation": "coinglass.hyperliquid.whale_alerts"} + {"operation": "coinglass.hyperliquid.whale_positions"}
 
 ### Template 9: ETF Flow Tracking
 "BTC & ETH ETF flows minggu ini: ada net inflow atau outflow? Impact ke price?"
 
-API: {"operation": "coinglass.etf.flows"}
+**WHEN:** Institutional flow analysis, macro trends
+**API:** {"operation": "coinglass.etf.flows"}
 
 ### Template 10: Full Market Scan
 "Full scan market: signals untuk top 20 coins, highlight yang extreme bullish/bearish, plus MSS discovery emerging coins"
 
-API: {"operation": "signals.get"} (batch) + {"operation": "mss.discover"} + {"operation": "coinglass.indicators.fear_greed"} + {"operation": "smart_money.scan"}
+**WHEN:** Weekly review, finding new opportunities
+**API:** {"operation": "signals.get"} (batch) + {"operation": "mss.discover"} + {"operation": "coinglass.indicators.fear_greed"} + {"operation": "smart_money.scan"}
+
+═══════════════════════════════════════════════════════════════════════
+PART 2: FEATURE DEEP DIVE
+═══════════════════════════════════════════════════════════════════════
+
+## 📊 FEATURE 1: TRADING SIGNALS (8-Factor Scoring System)
+
+### WHAT IT IS:
+Composite score (0-100) dari 8 faktor market data untuk generate LONG/SHORT/NEUTRAL signals dengan confidence levels.
+
+### 8 FACTORS EXPLAINED:
+
+**1. Liquidations (Weight: 25%)**
+- Tracks longs vs shorts liquidated
+- High long liq = bearish (retail trapped)
+- High short liq = bullish (squeeze potential)
+
+**2. Funding Rate (Weight: 18%)**
+- Cost untuk hold perpetual positions
+- Positive = longs pay shorts (overcrowded longs)
+- Negative = shorts pay longs (bearish sentiment)
+
+**3. Price Momentum (Weight: 20%)**
+- Multi-timeframe trend analysis (5m to 24h)
+- Confirms direction & strength
+- Detects reversals early
+
+**4. Long/Short Ratio (Weight: 12%)**
+- Retail trader positioning
+- >70% longs = overcrowded (contrarian bearish)
+- >60% shorts = potential squeeze
+
+**5. Smart Money (Weight: 12%)**
+- Top trader positioning
+- Whale accumulation/distribution
+- Institutional bias
+
+**6. OI Trend (Weight: 8%)**
+- Open interest growth/decline
+- Rising OI + price up = healthy uptrend
+- Falling OI + price up = weak rally
+
+**7. Social Sentiment (Weight: 8%)**
+- LunarCrush social metrics
+- High social + high funding = FOMO top
+- Low social + accumulation = early stage
+
+**8. Fear & Greed (Weight: 7%)**
+- Market-wide sentiment index
+- Extreme Fear (0-25) = buy opportunity
+- Extreme Greed (75-100) = sell signal
+
+### CONFIDENCE LEVELS:
+- **High (70-100)**: All factors align, strong conviction
+- **Medium (40-69)**: Mixed signals, proceed with caution
+- **Low (0-39)**: Conflicting data, wait for clarity
+
+### WHEN TO USE:
+- ✅ Quick market sentiment check
+- ✅ Entry/exit decision validation
+- ✅ Risk assessment before position
+- ✅ Daily trading routine
+
+### BEST PRACTICES:
+1. Don't trade on score alone - verify with other features
+2. High confidence signals more reliable
+3. Contrarian approach often works (buy fear, sell greed)
+4. Combine with technical analysis for timing
 
 ═══════════════════════════════════════════════════════════════════════
 
-## 🎯 TIPS UNTUK USER:
+## 🐋 FEATURE 2: SMART MONEY & WHALE TRACKING
 
-1. **Specific is better** - Sebutkan coin symbols jelas (BTC, ETH, SOL)
-2. **Combine features** - Minta multiple data points (signal + liq + funding)
-3. **Set parameters** - Kasih limit, threshold (MSS 75+, top 10 coins)
-4. **Ask comparisons** - Compare multiple coins untuk insight lebih dalam
-5. **Time ranges** - Specify "hari ini", "7 hari", "30 hari" untuk historical data
+### WHAT IT IS:
+Detects whale accumulation/distribution patterns based on 6 indicators, before retail traders enter/exit.
+
+### ACCUMULATION SIGNALS (Score 0-10):
+**What Whales Do When Accumulating:**
+- ✅ High buy pressure (>65%)
+- ✅ Low funding rate (<0.1%)
+- ✅ Low social activity (<45)
+- ✅ Sideways price action
+- ✅ Rising open interest
+- ✅ Negative news ignored
+
+**Score 7-10:** Very strong accumulation ⭐⭐⭐
+**Score 4-6:** Moderate accumulation
+**Score 0-3:** Weak/no accumulation
+
+### DISTRIBUTION SIGNALS (Score 0-10):
+**What Whales Do When Distributing:**
+- ✅ High sell pressure (>65%)
+- ✅ High funding rate (>0.3%)
+- ✅ High social activity (>70)
+- ✅ Recent price pump
+- ✅ Declining open interest
+- ✅ Positive news = sell opportunity
+
+**Score 7-10:** Very strong distribution 🚨
+**Score 4-6:** Moderate distribution
+**Score 0-3:** Weak/no distribution
+
+### REAL EXAMPLE:
+```
+ETH - Accumulation Score: 8
+Reasons:
+- Very high buy pressure (78.2%)
+- Low funding (0.05%) - market not crowded
+- Low social (32) - retail unaware
+- Sideways 4h chart
+- Rising OI (+15% week)
+
+→ INTERPRETATION: Whales quietly accumulating before pump
+→ ACTION: Good entry point for swing trade
+```
+
+### WHEN TO USE:
+- ✅ Finding early entries (before FOMO)
+- ✅ Spotting tops (distribution signals)
+- ✅ Confirming trend strength
+- ✅ Avoiding retail traps
+
+### BEST PRACTICES:
+1. Accumulation score 7+ = strong buy signal
+2. Distribution score 7+ = exit/short signal
+3. Combine with price action for timing
+4. Don't fight whale direction
+5. Patience - accumulation can take weeks
 
 ═══════════════════════════════════════════════════════════════════════
 
-## ✅ ENDPOINT COVERAGE (VERIFIED LIVE)
+## 🚀 FEATURE 3: MSS DISCOVERY (Multi-Modal Signal Score)
 
-Template-template ini cover:
-✅ Core Signals (8-factor scoring) - `signals.get`
-✅ Smart Money Analysis (whale tracking) - `smart_money.scan`
-✅ MSS Discovery (emerging coins) - `mss.discover`
-✅ Coinglass Data (63/65 endpoints verified):
-   - Liquidations: `coinglass.liquidations.symbol`, `coinglass.liquidation.aggregated_history`
-   - Funding Rates: `coinglass.funding_rate.history`
-   - Open Interest: `coinglass.open_interest.history`
-   - Technical Indicators (11 indicators): `coinglass.indicators.rsi`, `coinglass.indicators.macd`, `coinglass.indicators.whale_index`, `coinglass.indicators.cgdi`, `coinglass.indicators.golden_ratio`, `coinglass.indicators.fear_greed`
-   - Trader Positioning: `coinglass.long_short_ratio.position_history`
-   - Hyperliquid DEX: `coinglass.hyperliquid.whale_alerts`, `coinglass.hyperliquid.whale_positions`
-   - News & Calendar: `coinglass.calendar.economic`, `coinglass.news.feed`
-   - ETF Flows: `coinglass.etf.flows`
-✅ LunarCrush Social - `lunarcrush.coin`
-✅ New Listings - `new_listings.binance`
-✅ Market Data - `market.get`
-✅ Multi-coin batch analysis
-✅ Real-time data streaming
+### WHAT IT IS:
+3-phase framework untuk discover emerging coins dengan 10x-100x potential, before mainstream adoption.
 
-Total: 50+ unique endpoint combinations covered dengan 192+ operations tersedia!
+### 3 PHASES EXPLAINED:
+
+**PHASE 1: DISCOVERY (Tokenomics)**
+Score: 0-100
+Checks:
+- ✅ Market cap < $500M (room to grow)
+- ✅ Volume > $500K (liquidity exists)
+- ✅ Futures available (institutional interest)
+- ✅ Token distribution (not too centralized)
+- ✅ Vesting schedule (no major unlocks soon)
+
+**PHASE 2: SOCIAL CONFIRMATION (Community)**
+Score: 0-100
+Checks:
+- ✅ Social momentum rising
+- ✅ Community engagement growing
+- ✅ Organic buzz (not paid shills)
+- ✅ Developer activity
+- ✅ Real use cases emerging
+
+**PHASE 3: INSTITUTIONAL VALIDATION (Whale Activity)**
+Score: 0-100
+Checks:
+- ✅ Whale accumulation detected
+- ✅ Smart money buying
+- ✅ Exchange listings (Binance/Coinbase)
+- ✅ Partnership announcements
+- ✅ Institutional investment
+
+### TIER CLASSIFICATION:
+
+**Tier 1 (MSS 85-100):**
+- All 3 phases strong
+- Highest conviction
+- Best risk/reward
+- Prime candidates
+
+**Tier 2 (MSS 70-84):**
+- 2 phases strong, 1 developing
+- Good potential
+- Moderate risk
+- Watch closely
+
+**Tier 3 (MSS 60-69):**
+- 1-2 phases strong
+- Speculative
+- High risk
+- Small position only
+
+### WHEN TO USE:
+- ✅ Portfolio diversification
+- ✅ High-risk/high-reward hunting
+- ✅ Early project discovery
+- ✅ Finding next narratives
+
+### BEST PRACTICES:
+1. MSS 75+ minimum for consideration
+2. Tier 1 = larger position
+3. Tier 2/3 = small speculation
+4. Monitor for phase upgrades
+5. Exit if phases deteriorate
+
+### RISK WARNING:
+Small caps are HIGHLY volatile. Only allocate 5-10% of portfolio to MSS discoveries. DYOR always.
 
 ═══════════════════════════════════════════════════════════════════════
 
-## 🔧 API FORMAT NOTES
+## 📈 FEATURE 4: TECHNICAL INDICATORS (11 Coinglass Indicators)
+
+### AVAILABLE INDICATORS:
+
+**1. RSI (Relative Strength Index)**
+- Range: 0-100
+- <30 = Oversold (buy zone)
+- >70 = Overbought (sell zone)
+- Divergences = reversal signals
+
+**2. MACD (Moving Average Convergence Divergence)**
+- Bullish cross = buy signal
+- Bearish cross = sell signal
+- Histogram shows momentum
+
+**3. Moving Averages (MA/EMA)**
+- Price above MA = uptrend
+- Price below MA = downtrend
+- Golden/Death cross signals
+
+**4. Bollinger Bands**
+- Price at lower band = oversold
+- Price at upper band = overbought
+- Squeeze = volatility coming
+
+**5. Whale Index**
+- Institutional sentiment indicator
+- Rising = whales buying
+- Falling = whales selling
+
+**6. CGDI (Coinglass Derivative Index)**
+- Overall derivatives market health
+- High = healthy market
+- Low = weak/risky
+
+**7. CDRI (Coinglass Derivative Risk Index)**
+- Market risk assessment
+- High CDRI = high risk
+- Use for position sizing
+
+**8. Golden Ratio Multiplier (BTC)**
+- Long-term trend indicator
+- Identifies macro tops/bottoms
+- BTC specific
+
+**9. Basis**
+- Futures vs spot premium
+- High basis = bullish
+- Negative basis = bearish
+
+**10. Fear & Greed Index**
+- 0-25 = Extreme Fear (buy)
+- 75-100 = Extreme Greed (sell)
+
+**11. Long/Short Ratio**
+- Retail positioning
+- Contrarian indicator
+- >70% = overcrowded
+
+### COMBINING INDICATORS:
+
+**For LONG Entry:**
+✅ RSI < 40
+✅ MACD bullish cross
+✅ Whale Index rising
+✅ Fear & Greed < 30
+
+**For SHORT Entry:**
+✅ RSI > 70
+✅ MACD bearish cross
+✅ Whale Index falling
+✅ Fear & Greed > 75
+
+### WHEN TO USE:
+- ✅ Timing entries/exits
+- ✅ Confirming trends
+- ✅ Spotting divergences
+- ✅ Risk assessment
+
+═══════════════════════════════════════════════════════════════════════
+
+## 💰 FEATURE 5: LIQUIDATION TRACKING
+
+### WHAT IT IS:
+Monitors forced closures of leveraged positions across all exchanges. Critical for understanding market dynamics.
+
+### KEY METRICS:
+
+**Long Liquidations:**
+- Longs forced to close (price went down)
+- High long liq = retail trapped
+- Cascade potential
+
+**Short Liquidations:**
+- Shorts forced to close (price went up)
+- High short liq = short squeeze
+- Bullish signal
+
+**Liquidation Imbalance:**
+- Longs > Shorts = bearish pressure
+- Shorts > Longs = bullish momentum
+
+### LIQUIDATION LEVELS:
+
+**$1-5M:** Normal market action
+**$5-20M:** Significant move, watch closely
+**$20-50M:** Major liquidation event
+**$50M+:** Cascade, extreme volatility
+
+### TRADING LIQUIDATIONS:
+
+**Strategy 1: Fade the Cascade**
+- Large liq spike often = temporary extreme
+- Counter-trade after spike settles
+- Quick scalp opportunity
+
+**Strategy 2: Follow the Squeeze**
+- Shorts liquidating = squeeze momentum
+- Ride the momentum
+- Set tight stops
+
+**Strategy 3: Hunt the Stops**
+- Whales target known liq levels
+- Price sweeps then reverses
+- Wait for confirmation
+
+### WHEN TO USE:
+- ✅ Volatile market conditions
+- ✅ Identifying trapped traders
+- ✅ Spotting cascades
+- ✅ Understanding pressure points
+
+### BEST PRACTICES:
+1. Large liq events = opportunity
+2. Liquidation cascades can be violent
+3. Don't catch falling knives
+4. Wait for stabilization
+5. Use tight risk management
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 FEATURE 6: SMART MONEY CONCEPTS (SMC)
+
+### WHAT IT IS:
+Detects institutional trading patterns using price action analysis. Identifies order blocks, FVGs, and structure breaks.
+
+### KEY PATTERNS:
+
+**BOS (Break of Structure)**
+- Price breaks previous high/low
+- Confirms trend continuation
+- Entry signal in trend direction
+
+**CHoCH (Change of Character)**
+- Price fails to make new high/low
+- Early reversal signal
+- Prepare for trend change
+
+**FVG (Fair Value Gap)**
+- Price imbalance/inefficiency
+- Often gets filled later
+- Target zones for entry/exit
+
+**Order Blocks**
+- Where institutions entered
+- Strong support/resistance
+- High probability reversal zones
+
+**Liquidity Zones**
+- Where stops are clustered
+- Whales hunt these levels
+- Price sweeps then reverses
+
+### SMC STRATEGY:
+
+**For LONG:**
+1. Wait for CHoCH (bullish)
+2. Identify bullish order block
+3. Enter on retest of OB
+4. Target above previous high (BOS)
+5. Stop below order block
+
+**For SHORT:**
+1. Wait for CHoCH (bearish)
+2. Identify bearish order block
+3. Enter on retest of OB
+4. Target below previous low (BOS)
+5. Stop above order block
+
+### WHEN TO USE:
+- ✅ Precise entry timing
+- ✅ Understanding whale moves
+- ✅ Identifying true reversals
+- ✅ Setting stop losses
+
+### BEST PRACTICES:
+1. Multi-timeframe analysis
+2. Confirm with volume
+3. Patience for setups
+4. Respect order blocks
+5. Don't fade BOS without confirmation
+
+═══════════════════════════════════════════════════════════════════════
+
+## 📰 FEATURE 7: NEWS & ECONOMIC CALENDAR
+
+### WHAT IT IS:
+Aggregated crypto news from 20+ sources + economic events calendar with 675+ events.
+
+### NEWS FEED:
+
+**Sources:**
+- Major crypto news sites
+- Exchange announcements
+- Regulatory updates
+- Project developments
+- Market analysis
+
+**Use Cases:**
+- ✅ Stay informed on developments
+- ✅ Anticipate market moves
+- ✅ Find narrative plays
+- ✅ Risk management
+
+### ECONOMIC CALENDAR:
+
+**Event Types:**
+- Central bank decisions (Fed, ECB)
+- Inflation reports (CPI, PPI)
+- Employment data
+- GDP releases
+- Regulatory hearings
+
+**Impact Levels:**
+- 🔴 High: Major market moving
+- 🟡 Medium: Moderate impact
+- 🟢 Low: Minor impact
+
+### TRADING THE NEWS:
+
+**Before Event:**
+- Reduce leverage
+- Tighten stops
+- Take partial profits
+
+**During Event:**
+- Expect high volatility
+- Watch for fakeouts
+- Let dust settle
+
+**After Event:**
+- Analyze reaction
+- Look for opportunities
+- Trade the trend not the news
+
+### WHEN TO USE:
+- ✅ Daily market prep
+- ✅ Risk management
+- ✅ Fundamental analysis
+- ✅ Narrative trading
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🌊 FEATURE 8: REAL-TIME LIQUIDATION STREAMS
+
+### WHAT IT IS:
+WebSocket connection streaming live liquidation data from all exchanges in real-time.
+
+### DATA PROVIDED:
+
+**Per Liquidation:**
+- Symbol
+- Exchange
+- Side (long/short)
+- Size ($USD)
+- Timestamp
+- Price level
+
+### USE CASES:
+
+**1. Cascade Detection**
+- Watch for clustering
+- Multiple liq in short time = cascade
+- Expect continuation
+
+**2. Support/Resistance**
+- Heavy liq at level = strong S/R
+- Future price magnet
+- Plan entries around levels
+
+**3. Momentum Trading**
+- Shorts liquidating = squeeze
+- Ride the momentum
+- Exit when slows
+
+**4. Market Sentiment**
+- Liq distribution shows sentiment
+- More longs = bearish bias
+- More shorts = bullish bias
+
+### WHEN TO USE:
+- ✅ Active trading sessions
+- ✅ Volatile markets
+- ✅ Scalping opportunities
+- ✅ Real-time sentiment
+
+### BEST PRACTICES:
+1. Monitor during key levels
+2. Use alerts for large liq
+3. Don't overtrade
+4. Combine with other data
+5. Manage risk strictly
+
+═══════════════════════════════════════════════════════════════════════
+PART 3: REAL-WORLD WORKFLOWS
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 WORKFLOW 1: FINDING EARLY ENTRY (Before Retail)
+
+**GOAL:** Enter positions before retail FOMO, maximize profit potential
+
+**STEPS:**
+
+**1. Morning Scan (Start of Day)**
+```
+"Scan smart money untuk top 10 coins, minimum accumulation score 7"
+```
+→ Get list of coins with whale buying
+
+**2. Filter Top Candidates**
+Look for:
+- ✅ Accumulation score 7+
+- ✅ Low social momentum (<40)
+- ✅ Low funding rate (<0.2%)
+- ✅ Sideways price action last 7 days
+
+**3. Deep Dive Top 3**
+```
+"Analisis lengkap [COIN]: signal, liquidations, funding, 
+technical indicators, sama SMC analysis"
+```
+→ Comprehensive check
+
+**4. Confirm Entry Criteria**
+ALL must be true:
+- ✅ Signal = LONG
+- ✅ Confidence = Medium or High
+- ✅ Accumulation score 7+
+- ✅ RSI < 60
+- ✅ No bearish CHoCH on SMC
+
+**5. Execute Entry**
+- Enter position 50% size
+- Set stop below recent support
+- Add 25% on confirmation (BOS)
+- Final 25% on breakout
+
+**6. Monitor**
+```
+"Update smart money analysis [COIN] setiap 2 hari"
+```
+→ Watch for distribution signals (exit)
+
+**EXPECTED RESULT:**
+Entry 15-30% before retail discovers coin. Exit when distribution score rises above 7.
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 WORKFLOW 2: CONFIRMING TREND REVERSAL
+
+**GOAL:** Catch trend reversals early with high confidence
+
+**STEPS:**
+
+**1. Identify Potential Reversal**
+Look for:
+- ✅ Price at key S/R level
+- ✅ Divergence forming
+- ✅ Sentiment extreme
+
+**2. Check Multiple Timeframes**
+```
+"Technical analysis [COIN]: RSI, MACD, Whale Index, 
+all indicators plus long/short ratio"
+```
+
+**3. Reversal Checklist**
+For BOTTOM (LONG):
+- ✅ RSI < 30 (oversold)
+- ✅ MACD bullish divergence
+- ✅ Fear & Greed < 30
+- ✅ Whale Index rising
+- ✅ Long ratio > 70% (overcrowded)
+
+For TOP (SHORT):
+- ✅ RSI > 70 (overbought)
+- ✅ MACD bearish divergence
+- ✅ Fear & Greed > 75
+- ✅ Whale Index falling
+- ✅ Short ratio > 60% (squeeze exhausted)
+
+**4. SMC Confirmation**
+```
+"SMC analysis [COIN] - cari CHoCH signal"
+```
+→ Wait for Change of Character
+
+**5. Execute**
+- Enter small position (25%)
+- Add on BOS confirmation (50%)
+- Final add on retest (25%)
+- Tight stop opposite side of reversal
+
+**6. Monitor Invalidation**
+Exit if:
+- ❌ CHoCH reverses back
+- ❌ Stop hit
+- ❌ Fundamentals change
+
+**EXPECTED RESULT:**
+High probability reversal trade with strong R:R ratio (3:1 or better).
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 WORKFLOW 3: SPOTTING DISTRIBUTION (Exit Signals)
+
+**GOAL:** Exit before dump, preserve profits
+
+**STEPS:**
+
+**1. Weekly Profit Check**
+Review open positions, check:
+```
+"Smart money analysis [POSITIONS] - cek distribution score"
+```
+
+**2. Distribution Red Flags**
+ALERT if any:
+- 🚨 Distribution score rising above 6
+- 🚨 Funding rate > 0.5%
+- 🚨 Social buzz spiking (>70)
+- 🚨 Price pump >20% in 48h
+
+**3. Confirmation Analysis**
+```
+"Analisis [COIN]: signal, liquidations, technical indicators"
+```
+
+Check:
+- Signal changed to SHORT/NEUTRAL?
+- High long liquidations?
+- RSI > 75 overbought?
+- MACD bearish cross?
+
+**4. Decision Matrix**
+
+**FULL EXIT if:**
+- Distribution score 8+
+- Signal = SHORT
+- RSI > 80
+- Social spike + funding > 0.8%
+
+**PARTIAL EXIT (50%) if:**
+- Distribution score 6-7
+- Signal = NEUTRAL
+- RSI 70-80
+- Mixed signals
+
+**HOLD if:**
+- Distribution score < 6
+- Signal = LONG
+- Healthy correction
+- Accumulation still present
+
+**5. Execute Exit**
+- Take profits in stages
+- Don't wait for absolute top
+- Preserve 70-80% of gains
+
+**EXPECTED RESULT:**
+Exit top 20% of move, preserve majority of profits, avoid dumps.
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 WORKFLOW 4: DISCOVERING NEXT 10X GEM
+
+**GOAL:** Find small-cap gems before 10x-100x pump
+
+**STEPS:**
+
+**1. MSS Discovery Scan**
+```
+"Discover emerging coins MSS 75+, market cap under $300M, 
+social momentum naik, futures available"
+```
+
+**2. Filter Results**
+Keep only coins with:
+- ✅ MSS score 75+
+- ✅ Tier 1 or Tier 2
+- ✅ All 3 phases >60
+- ✅ Market cap $50M - $300M
+- ✅ Daily volume >$1M
+
+**3. Research Phase**
+For each candidate:
+- Check project website
+- Read whitepaper
+- Verify team
+- Understand use case
+- Check token distribution
+
+**4. Deep Analysis Top 3**
+```
+"Smart money analysis [COIN] + 
+Technical indicators + 
+Social sentiment LunarCrush"
+```
+
+Ideal signals:
+- ✅ Accumulation score 6+
+- ✅ Low social (<40) but rising
+- ✅ Whale Index rising
+- ✅ Recent Binance listing
+
+**5. Entry Strategy**
+- Start tiny (1-2% portfolio)
+- DCA if thesis holds
+- Set alerts for distribution
+- Max position 5% portfolio
+
+**6. Monitor Monthly**
+```
+"MSS update [POSITIONS] - check tier changes"
+```
+
+Exit if:
+- ❌ MSS drops below 70
+- ❌ Tier downgrades
+- ❌ Distribution detected
+- ❌ Fundamentals change
+
+**EXPECTED RESULT:**
+1-2 gems per quarter with 5x-20x potential over 6-12 months. High risk, high reward.
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 WORKFLOW 5: DAILY TRADING ROUTINE (Professional Approach)
+
+**GOAL:** Systematic daily approach for consistent results
+
+**STEPS:**
+
+**MORNING (Pre-Market):**
+
+**1. Market Overview (5 min)**
+```
+"Market overview: BTC ETH signal + fear greed + 
+economic calendar hari ini"
+```
+
+**2. News Check (5 min)**
+```
+"Crypto news feed hari ini - highlight major events"
+```
+
+**3. Portfolio Review (10 min)**
+```
+"Smart money scan [POSITIONS] - distribution check"
+```
+
+**MIDDAY (Active Trading):**
+
+**4. Opportunity Scan (15 min)**
+```
+"Compare top 10 volume coins - rank signal strength"
+```
+
+**5. Technical Setup (20 min)**
+For interesting coins:
+```
+"Technical analysis [COIN]: RSI, MACD, SMC patterns"
+```
+
+**6. Execute Trades**
+- Only take A+ setups
+- Risk max 1-2% per trade
+- Set stops immediately
+
+**EVENING (Review):**
+
+**7. Performance Review (10 min)**
+- Review trades taken
+- What worked/didn't
+- Learn from mistakes
+
+**8. Tomorrow Prep (5 min)**
+```
+"Economic calendar besok + 
+any high-impact events?"
+```
+
+**9. Alerts Setup**
+Set alerts for:
+- Key price levels
+- Liquidation spikes
+- Distribution signals
+
+**WEEKLY (Weekend):**
+
+**10. Deep Dive Analysis**
+```
+"MSS discovery + Smart money weekly scan +
+Compare sector performance"
+```
+
+**11. Strategy Adjustment**
+- Review performance
+- Adjust risk
+- Update watchlist
+
+**EXPECTED RESULT:**
+Consistent, systematic approach. Better decisions, less FOMO, higher win rate.
+
+═══════════════════════════════════════════════════════════════════════
+PART 4: INTERPRETATION GUIDE
+═══════════════════════════════════════════════════════════════════════
+
+## 📊 READING SIGNAL SCORES
+
+### SCORE RANGES:
+
+**80-100: VERY STRONG**
+```
+BTC Signal: LONG, Score: 87/100, Confidence: High
+
+INTERPRETATION:
+→ All factors strongly aligned
+→ High probability trade
+→ Can use higher position size
+→ Strong conviction entry
+
+ACTION: Enter with full planned size
+RISK: Tight stop OK
+```
+
+**60-79: STRONG**
+```
+ETH Signal: LONG, Score: 68/100, Confidence: Medium
+
+INTERPRETATION:
+→ Most factors aligned
+→ Good probability trade
+→ Normal position size
+→ Some mixed signals
+
+ACTION: Enter with 75% planned size
+RISK: Normal stop distance
+```
+
+**40-59: MODERATE**
+```
+SOL Signal: NEUTRAL, Score: 52/100, Confidence: Low
+
+INTERPRETATION:
+→ Mixed signals
+→ Unclear direction
+→ Wait for clarity
+→ Risk:reward not favorable
+
+ACTION: Stay sidelined or small position
+RISK: Wide stop or skip
+```
+
+**0-39: WEAK**
+```
+AVAX Signal: SHORT, Score: 35/100, Confidence: Low
+
+INTERPRETATION:
+→ Conflicting data
+→ Low conviction
+→ Too risky
+→ Better opportunities exist
+
+ACTION: Skip this trade
+RISK: Don't trade unclear setups
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 CONFIDENCE LEVEL MEANINGS
+
+### HIGH CONFIDENCE (Score usually 70+)
+```
+Characteristics:
+✅ All 8 factors aligned same direction
+✅ Clear trend established
+✅ Low conflicting signals
+✅ Historical pattern confirms
+
+Trading Approach:
+→ Can use larger position size
+→ Tighter stops acceptable
+→ Higher win probability
+→ Worth full allocation
+
+Example:
+"Signal: LONG, Score: 82, Confidence: HIGH
+All factors bullish: liquidations favor longs,
+funding negative, whale accumulation, 
+RSI oversold, fear extreme low"
+```
+
+### MEDIUM CONFIDENCE (Score usually 40-69)
+```
+Characteristics:
+✅ 5-6 factors aligned
+❌ 2-3 factors neutral/opposite
+✅ Moderate conviction
+⚠️ Some uncertainty
+
+Trading Approach:
+→ Normal position size
+→ Standard stop distance
+→ Monitor closely
+→ Be ready to adjust
+
+Example:
+"Signal: LONG, Score: 58, Confidence: MEDIUM
+Mixed signals: whales accumulating but
+funding high, social buzz rising,
+some profit taking detected"
+```
+
+### LOW CONFIDENCE (Score usually 0-39)
+```
+Characteristics:
+❌ Factors heavily mixed
+❌ No clear direction
+❌ High uncertainty
+⚠️ Conflicting data
+
+Trading Approach:
+→ Skip or very small size
+→ Wide stops if trading
+→ Easy to invalidate
+→ Better to wait
+
+Example:
+"Signal: NEUTRAL, Score: 35, Confidence: LOW
+Conflicting signals: price up but
+longs liquidating, funding unclear,
+sentiment mixed, no clear pattern"
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🐋 READING ACCUMULATION/DISTRIBUTION SCORES
+
+### ACCUMULATION SCORE GUIDE:
+
+**9-10: VERY STRONG ACCUMULATION ⭐⭐⭐**
+```
+Example: ETH Accumulation Score: 9/10
+
+Reasons:
+- Very high buy pressure (82%)
+- Negative funding (-0.02%)
+- Very low social (28)
+- Sideways 7 days
+- Rising OI +18%
+
+MEANING:
+→ Whales aggressively buying
+→ Market completely unaware
+→ Perfect stealth accumulation
+→ Pump likely imminent (days to weeks)
+
+ACTION: 
+→ Strong buy signal
+→ Enter full position
+→ Hold through noise
+→ Exit on distribution 7+
+```
+
+**6-8: STRONG ACCUMULATION ⭐⭐**
+```
+Example: SOL Accumulation Score: 7/10
+
+Reasons:
+- High buy pressure (71%)
+- Low funding (0.08%)
+- Low social (35)
+- Price consolidating
+
+MEANING:
+→ Solid whale buying
+→ Retail starting to notice
+→ Still early but less stealth
+→ Good opportunity
+
+ACTION:
+→ Good entry point
+→ 75% position size
+→ Monitor for confirmation
+→ Be patient
+```
+
+**4-5: MODERATE ACCUMULATION ⭐**
+```
+Example: AVAX Accumulation Score: 5/10
+
+Reasons:
+- Moderate buy pressure (62%)
+- Neutral funding (0.15%)
+- Moderate social (48)
+
+MEANING:
+→ Some buying interest
+→ Not convincing yet
+→ Could be noise
+→ Wait for stronger signal
+
+ACTION:
+→ Watchlist addition
+→ Small position if taking
+→ Need more confirmation
+→ Monitor closely
+```
+
+**0-3: WEAK/NO ACCUMULATION**
+```
+MEANING: No clear whale buying
+ACTION: Skip, look elsewhere
+```
+
+### DISTRIBUTION SCORE GUIDE:
+
+**9-10: VERY STRONG DISTRIBUTION 🚨🚨🚨**
+```
+Example: SHIB Distribution Score: 9/10
+
+Reasons:
+- Very high sell pressure (85%)
+- Very high funding (0.9%)
+- Social spike (88)
+- Recent 40% pump
+- OI declining -12%
+
+MEANING:
+→ Whales dumping aggressively
+→ Retail FOMO buying
+→ Top likely in
+→ Dump imminent
+
+ACTION:
+→ FULL EXIT immediately
+→ Don't hold for "one more leg"
+→ Consider short position
+→ Preserve profits
+```
+
+**6-8: STRONG DISTRIBUTION 🚨🚨**
+```
+Example: DOGE Distribution Score: 7/10
+
+Reasons:
+- High sell pressure (76%)
+- High funding (0.6%)
+- High social (75)
+- Recent pump
+
+MEANING:
+→ Whales taking profits
+→ Retail buying the top
+→ Risk increasing
+→ Correction likely
+
+ACTION:
+→ Exit 50-75% position
+→ Tighten stops on remainder
+→ Don't add to position
+→ Monitor for acceleration
+```
+
+**4-5: MODERATE DISTRIBUTION 🚨**
+```
+MEANING: Some profit taking
+ACTION: Take partial profits, be cautious
+```
+
+**0-3: WEAK/NO DISTRIBUTION**
+```
+MEANING: No significant selling
+ACTION: Can continue holding
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## 📊 READING MSS SCORES & TIERS
+
+### MSS SCORE BREAKDOWN:
+
+**85-100: EXCEPTIONAL (Tier 1)**
+```
+Example: NEW Coin MSS: 92/100
+
+Phase Scores:
+- Discovery: 95 (excellent tokenomics)
+- Social: 88 (strong community)
+- Institutional: 93 (heavy whale buying)
+
+Classification: Tier 1
+
+MEANING:
+→ All fundamentals excellent
+→ Strong across all phases
+→ Highest conviction play
+→ Best risk:reward
+
+ACTION:
+→ Priority allocation
+→ Can go up to 5% portfolio
+→ Long-term hold (3-12 months)
+→ Expect 5x-20x potential
+
+RISK: Still 30-50% drawdown possible
+```
+
+**70-84: STRONG (Tier 2)**
+```
+Example: ALT Coin MSS: 77/100
+
+Phase Scores:
+- Discovery: 82
+- Social: 68
+- Institutional: 81
+
+Classification: Tier 2
+
+MEANING:
+→ Strong fundamentals
+→ One phase developing
+→ Good potential
+→ Solid opportunity
+
+ACTION:
+→ Good allocation (2-3% portfolio)
+→ Medium-term hold (1-6 months)
+→ Expect 3x-10x potential
+→ Monitor phase progression
+
+RISK: 40-60% drawdown possible
+```
+
+**60-69: MODERATE (Tier 3)**
+```
+Example: SPEC Coin MSS: 64/100
+
+Phase Scores:
+- Discovery: 72
+- Social: 55
+- Institutional: 66
+
+Classification: Tier 3
+
+MEANING:
+→ Mixed fundamentals
+→ Early/speculative
+→ Higher risk
+→ Watch development
+
+ACTION:
+→ Small position (1-2% max)
+→ High risk tolerance only
+→ Could 2x-5x or fail
+→ Monitor closely for upgrades
+
+RISK: 60-80% drawdown possible
+```
+
+**Below 60: NOT RECOMMENDED**
+```
+MEANING: Too risky, fundamentals weak
+ACTION: Skip, too many red flags
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 COMBINING SIGNALS FOR DECISIONS
+
+### PERFECT ENTRY (Green Light 🟢):
+```
+✅ Signal: LONG, Score 70+, Confidence: High
+✅ Accumulation Score: 7+
+✅ RSI: <50
+✅ Funding Rate: <0.2%
+✅ SMC: Bullish BOS detected
+✅ Fear & Greed: <40
+
+INTERPRETATION:
+→ All systems go
+→ Maximum conviction
+→ Highest probability setup
+→ Can use full size
+
+EXAMPLE ACTION:
+"Enter BTC LONG, full position size (5% portfolio),
+stop below recent swing low, target +30%"
+```
+
+### GOOD ENTRY (Yellow Light 🟡):
+```
+✅ Signal: LONG, Score 55-69, Confidence: Medium
+✅ Accumulation Score: 5-6
+⚠️ RSI: 50-60
+⚠️ Funding Rate: 0.2-0.4%
+✅ SMC: No clear CHoCH
+✅ Fear & Greed: 40-60
+
+INTERPRETATION:
+→ Decent setup
+→ Some concerns
+→ Moderate conviction
+→ Smaller size prudent
+
+EXAMPLE ACTION:
+"Enter ETH LONG, 50% intended size,
+wider stop, scale in on confirmation"
+```
+
+### RISKY/SKIP (Red Light 🔴):
+```
+❌ Signal: NEUTRAL, Score <50, Confidence: Low
+❌ Accumulation Score: <4
+❌ Distribution Score: 6+
+❌ RSI: >70
+❌ Funding Rate: >0.6%
+⚠️ SMC: Bearish CHoCH
+❌ Fear & Greed: >75
+
+INTERPRETATION:
+→ Too many red flags
+→ High risk, low probability
+→ Better opportunities exist
+→ Patience required
+
+EXAMPLE ACTION:
+"Skip trade, wait for clarity.
+If desperate: max 1% size, very tight stop"
+```
+
+═══════════════════════════════════════════════════════════════════════
+PART 5: DECISION TREES
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 DECISION TREE 1: WHAT TO TRADE TODAY?
+
+```
+START: What's your trading goal today?
+
+├─ GOAL: Quick Profit (Scalping/Day Trade)
+│  │
+│  ├─ Check: Market Volatility
+│  │  ├─ High Vol → Use Liquidation Tracking
+│  │  │  └─ "Pantau liquidations real-time BTC, 
+│  │  │      highlight spikes >$10M"
+│  │  │
+│  │  └─ Normal Vol → Use Technical Analysis
+│  │     └─ "Technical analysis BTC: RSI, MACD,
+│  │         support/resistance levels"
+│  │
+│  └─ Best Features: Liquidations + SMC + Technicals
+│
+├─ GOAL: Swing Trade (1-7 days)
+│  │
+│  ├─ Step 1: Find Candidates
+│  │  └─ "Smart money scan 10 coins, 
+│  │      accumulation score 7+"
+│  │
+│  ├─ Step 2: Verify Signal
+│  │  └─ "Analisis lengkap [TOP 3]: 
+│  │      signal + liq + funding + indicators"
+│  │
+│  └─ Step 3: Time Entry
+│     └─ "SMC analysis [COIN] - 
+│         cari entry di order block"
+│
+├─ GOAL: Position Trade (1-4 weeks)
+│  │
+│  ├─ Step 1: Market Overview
+│  │  └─ "Compare top 20 coins by volume,
+│  │      rank by signal strength"
+│  │
+│  ├─ Step 2: Deep Analysis Top 5
+│  │  └─ "Full analysis [COIN]: 
+│  │      all indicators + whale tracking"
+│  │
+│  └─ Step 3: News/Events
+│     └─ "Economic calendar next 30 days,
+│         any high impact events?"
+│
+└─ GOAL: Long-term Investment (3+ months)
+   │
+   ├─ Step 1: Gem Discovery
+   │  └─ "MSS discover emerging coins 75+,
+   │      market cap under $500M"
+   │
+   ├─ Step 2: Due Diligence
+   │  └─ Research fundamentals, team, use case
+   │
+   └─ Step 3: Accumulation
+      └─ "Smart money analysis [GEMS],
+          DCA during accumulation phases"
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 DECISION TREE 2: SIGNAL SAYS LONG, BUT...
+
+```
+START: Signal = LONG, Score 65, but you're unsure
+
+├─ CHECK 1: Confidence Level?
+│  │
+│  ├─ High Confidence
+│  │  └─ PROCEED → Good sign, most factors align
+│  │
+│  ├─ Medium Confidence
+│  │  └─ CHECK FURTHER → Need more confirmation
+│  │
+│  └─ Low Confidence
+│     └─ SKIP → Too risky, unclear setup
+│
+├─ CHECK 2: Accumulation or Distribution?
+│  │
+│  ├─ Accumulation 7+ 🟢
+│  │  └─ PROCEED → Whales buying, good sign
+│  │
+│  ├─ Accumulation 4-6 🟡
+│  │  └─ SMALLER SIZE → Some buying, be cautious
+│  │
+│  └─ Distribution 6+ 🔴
+│     └─ SKIP → Conflicting signal, whales selling
+│
+├─ CHECK 3: Technical Indicators?
+│  │
+│  ├─ RSI < 60 + MACD Bullish 🟢
+│  │  └─ PROCEED → Technicals confirm
+│  │
+│  ├─ RSI 60-70 + Mixed MACD 🟡
+│  │  └─ WAIT → Need pullback for entry
+│  │
+│  └─ RSI > 70 + MACD Bearish 🔴
+│     └─ SKIP → Overbought, divergence possible
+│
+├─ CHECK 4: Funding Rate?
+│  │
+│  ├─ < 0.2% 🟢
+│  │  └─ PROCEED → Not crowded, room to grow
+│  │
+│  ├─ 0.2-0.5% 🟡
+│  │  └─ CAREFUL → Getting crowded
+│  │
+│  └─ > 0.5% 🔴
+│     └─ SKIP → Overcrowded, high risk
+│
+└─ FINAL DECISION:
+   │
+   ├─ 3-4 Green Lights 🟢🟢🟢
+   │  └─ FULL ENTRY → High conviction
+   │
+   ├─ 2 Green, 2 Yellow 🟢🟡
+   │  └─ HALF SIZE → Moderate conviction
+   │
+   ├─ Any Red Light 🔴
+   │  └─ SKIP or MICRO SIZE → Too risky
+   │
+   └─ Mostly Yellow 🟡🟡
+      └─ WAIT → Need clearer setup
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 DECISION TREE 3: WHEN TO EXIT?
+
+```
+START: You're in profit, when to exit?
+
+├─ SCENARIO 1: Green Candles, Feeling Greedy
+│  │
+│  ├─ CHECK: Distribution Score
+│  │  │
+│  │  ├─ Score 8+ 🚨
+│  │  │  └─ EXIT 100% NOW
+│  │  │      Reason: Whales dumping hard
+│  │  │
+│  │  ├─ Score 6-7 🚨
+│  │  │  └─ EXIT 75%
+│  │  │      Reason: Distribution starting
+│  │  │
+│  │  └─ Score <6 🟢
+│  │     └─ HOLD but watch closely
+│  │
+│  └─ CHECK: Funding Rate
+│     │
+│     ├─ > 0.8% 🚨
+│     │  └─ EXIT 100%
+│     │      Reason: Extreme overcrowding
+│     │
+│     ├─ 0.5-0.8% 🚨
+│     │  └─ EXIT 50%
+│     │      Reason: Getting dangerous
+│     │
+│     └─ < 0.5% 🟢
+│        └─ Can hold
+│
+├─ SCENARIO 2: Hit Your Target
+│  │
+│  ├─ Take Profits Plan
+│  │  │
+│  │  ├─ +20% → Exit 33%
+│  │  ├─ +40% → Exit another 33%
+│  │  └─ +60% → Exit final 33%
+│  │
+│  └─ Trail Remaining with Stop
+│
+├─ SCENARIO 3: Price Consolidating
+│  │
+│  ├─ CHECK: Still Accumulating?
+│  │  │
+│  │  ├─ Yes (Score 6+) 🟢
+│  │  │  └─ HOLD → Consolidation healthy
+│  │  │
+│  │  └─ No (Score <4) 🔴
+│  │     └─ EXIT 50% → Trend weakening
+│  │
+│  └─ CHECK: RSI
+│     │
+│     ├─ RSI > 70 🚨
+│     │  └─ TAKE PROFITS
+│     │
+│     └─ RSI < 70 🟢
+│        └─ Can hold
+│
+└─ SCENARIO 4: Going Red (Losing Position)
+   │
+   ├─ Down 5% or Less
+   │  │
+   │  ├─ Signal Still LONG? 🟢
+   │  │  └─ HOLD → Normal volatility
+   │  │
+   │  └─ Signal Changed? 🔴
+   │     └─ CUT LOSS → Thesis invalidated
+   │
+   ├─ Down 5-10%
+   │  │
+   │  ├─ Hit Stop Loss
+   │  │  └─ EXIT → Risk management
+   │  │
+   │  └─ Still Accumulating?
+   │     └─ Can hold if conviction high
+   │
+   └─ Down 10%+
+      └─ EXIT IMMEDIATELY
+          Reason: Something wrong, cut losses
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 DECISION TREE 4: MARKET CRASHED, WHAT NOW?
+
+```
+START: Market dumped 10%+ in hours
+
+├─ STEP 1: DON'T PANIC
+│  │
+│  └─ Breathe, avoid revenge trading
+│
+├─ STEP 2: Assess Damage
+│  │
+│  ├─ Check Positions
+│  │  └─ "Smart money analysis [POSITIONS] -
+│  │      check distribution scores"
+│  │
+│  └─ Evaluate Each:
+│     ├─ Distribution 8+ → Cut now
+│     ├─ Distribution 5-7 → Cut 50%
+│     └─ Distribution <5 → Can hold
+│
+├─ STEP 3: Understand Crash
+│  │
+│  ├─ Check News
+│  │  └─ "Crypto news feed + economic calendar -
+│  │      what triggered crash?"
+│  │
+│  └─ Classify:
+│     ├─ Black Swan (unexpected)
+│     ├─ Liquidation Cascade
+│     ├─ Macro Event (Fed, etc)
+│     └─ Market Manipulation
+│
+├─ STEP 4: Look for Opportunity
+│  │
+│  ├─ Check Fear & Greed
+│  │  │
+│  │  ├─ <20 (Extreme Fear) 🟢
+│  │  │  └─ GOOD → Bottoming soon
+│  │  │
+│  │  └─ >20 🔴
+│  │     └─ WAIT → Can go lower
+│  │
+│  ├─ Check Liquidations
+│  │  └─ "Liquidation data - 
+│  │      berapa total longs liquidated?"
+│  │
+│  └─ Check Whale Activity
+│     └─ "Smart money scan - 
+│         ada accumulation muncul?"
+│
+└─ STEP 5: Action Plan
+   │
+   ├─ Extreme Fear + Whale Buying
+   │  └─ START BUYING (small, scale in)
+   │
+   ├─ Still Uncertain
+   │  └─ WAIT 24-48 hours
+   │
+   └─ More Dumps Coming
+      └─ STAY CASH (preserve capital)
+```
+
+═══════════════════════════════════════════════════════════════════════
+PART 6: COMMON MISTAKES & PRO TIPS
+═══════════════════════════════════════════════════════════════════════
+
+## ❌ MISTAKE 1: Trading on Signal Score Alone
+
+**WRONG:**
+```
+"BTC signal LONG score 65, saya masuk FULL SIZE!"
+```
+
+**WHY IT'S BAD:**
+- Score doesn't tell full story
+- Missing context
+- No risk management
+- One data point insufficient
+
+**CORRECT APPROACH:**
+```
+"BTC signal LONG score 65. Let me verify:
+- Accumulation score? (Check whale activity)
+- RSI level? (Check if overbought)
+- Funding rate? (Check if overcrowded)
+- SMC patterns? (Check for confirmation)
+
+THEN decide size based on confluence."
+```
+
+**PRO TIP:**
+Never trade on single indicator. Need minimum 3-4 confirming factors.
+
+═══════════════════════════════════════════════════════════════════════
+
+## ❌ MISTAKE 2: Ignoring Distribution Signals
+
+**WRONG:**
+```
+"Distribution score 8 tapi harga masih naik,
+saya hold untuk gain lebih!"
+```
+
+**WHY IT'S BAD:**
+- Whales already selling
+- You're exit liquidity
+- Greed clouds judgment
+- Will dump hard soon
+
+**CORRECT APPROACH:**
+```
+"Distribution score 8 = RED ALERT.
+Whales selling means:
+- Exit 75-100% immediately
+- Don't wait for "one more leg"
+- Preserve my 60% gains
+- Can always re-enter later
+
+Better to exit early than hold through dump."
+```
+
+**PRO TIP:**
+Distribution 7+ = EXIT. No exceptions. Protect capital > maximize gains.
+
+═══════════════════════════════════════════════════════════════════════
+
+## ❌ MISTAKE 3: Over-Trading on Every Signal
+
+**WRONG:**
+```
+"Ada 5 coins accumulation score 6+, 
+masuk semua dengan size besar!"
+```
+
+**WHY IT'S BAD:**
+- Portfolio overconcentration
+- No risk management
+- Can't monitor all positions
+- One bad move wipes account
+
+**CORRECT APPROACH:**
+```
+"5 coins accumulation score 6+, tapi:
+- Rank by confidence
+- Take top 2-3 only
+- Max 5% per position
+- Keep 30% cash reserve
+- Quality over quantity"
+```
+
+**PRO TIP:**
+Better to have 3 high-conviction trades than 10 mediocre ones.
+
+═══════════════════════════════════════════════════════════════════════
+
+## ❌ MISTAKE 4: Buying During High Social Buzz
+
+**WRONG:**
+```
+"Coin viral di Twitter, social score 90,
+everyone talking! FOMO buy!"
+```
+
+**WHY IT'S BAD:**
+- High social = late to party
+- Whales already selling
+- Retail FOMO = top signal
+- You're the exit liquidity
+
+**CORRECT APPROACH:**
+```
+"Social score 90 = WARNING:
+- Check distribution score (probably high)
+- Check funding rate (probably high)
+- Check when accumulation started (weeks ago)
+- SKIP or SHORT, don't FOMO buy
+
+Best entries = LOW social (<40)"
+```
+
+**PRO TIP:**
+Buy when no one talks (accumulation). Sell when everyone talks (distribution).
+
+═══════════════════════════════════════════════════════════════════════
+
+## ❌ MISTAKE 5: Not Setting Stop Losses
+
+**WRONG:**
+```
+"Signal confident, no need stop loss.
+Will ride it out!"
+```
+
+**WHY IT'S BAD:**
+- Hope is not a strategy
+- Small loss becomes big loss
+- Revenge trading follows
+- Account blown
+
+**CORRECT APPROACH:**
+```
+"EVERY trade needs stop loss:
+- Set before entry
+- Based on invalidation point
+- Max 2-3% account risk
+- Honor it, no moving wider
+- Cut loss = save capital for next trade"
+```
+
+**PRO TIP:**
+Stop loss = insurance. Would you drive without insurance?
+
+═══════════════════════════════════════════════════════════════════════
+
+## ✅ PRO TIP 1: Scale In & Scale Out
+
+**STRATEGY:**
+```
+Entry Plan (Total 100%):
+- 25% on initial signal
+- 25% on SMC confirmation (BOS)
+- 25% on breakout above resistance
+- 25% reserve (never use if setup fails)
+
+Exit Plan:
+- 33% at +20% profit
+- 33% at +40% profit
+- 33% trail with stop
+
+BENEFIT:
+- Average better entry
+- Reduce FOMO
+- Lock profits progressively
+- Never all-in or all-out
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## ✅ PRO TIP 2: Contrarian Mindset
+
+**THINK OPPOSITE:**
+```
+Everyone Bullish → Be cautious (check distribution)
+Everyone Bearish → Look for entries (check accumulation)
+High Funding → Don't long (or short)
+Low/Negative Funding → Good long setup
+Fear < 25 → Best buy time
+Greed > 75 → Best sell time
+```
+
+**EXAMPLE:**
+```
+Market dumps 30%, everyone panic selling.
+
+DON'T: Panic sell with crowd
+DO: Check smart money scan
+
+If accumulation appearing → BUY
+If distribution continuing → Wait
+
+Best trades = opposite of crowd sentiment
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## ✅ PRO TIP 3: Multi-Timeframe Confirmation
+
+**FRAMEWORK:**
+```
+Higher TF (Daily/4H): Trend direction
+Mid TF (1H): Entry refinement  
+Lower TF (15M): Precise entry
+
+Example BTC LONG:
+✅ Daily: Uptrend, above MA
+✅ 4H: Bullish BOS, SMC structure good
+✅ 1H: Pullback to order block
+✅ 15M: Entry on bullish candle
+
+ALL align = high probability trade
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## ✅ PRO TIP 4: Keep Trading Journal
+
+**TRACK:**
+```
+For Every Trade:
+- Date & Time
+- Coin
+- Entry Price
+- Exit Price
+- Position Size
+- Reason for Entry
+- Signals Used:
+  * Signal Score
+  * Accumulation/Distribution
+  * RSI
+  * Funding Rate
+  * SMC Pattern
+- Result (Win/Loss %)
+- What Worked
+- What Didn't
+- Lesson Learned
+
+Review Monthly:
+- Win rate
+- Average R:R
+- Best setups
+- Worst mistakes
+- Adjust strategy
+```
+
+**BENEFIT:**
+Consistent improvement through data-driven learning.
+
+═══════════════════════════════════════════════════════════════════════
+
+## ✅ PRO TIP 5: Risk Management Rules
+
+**GOLDEN RULES:**
+```
+1. Never risk >2% per trade
+2. Never hold >5% in single position
+3. Max 30% portfolio in crypto
+4. Keep 20-30% cash always
+5. Diversify across coins/sectors
+6. Set stops BEFORE entry
+7. Take profits progressively
+8. Cut losses quickly
+9. Let winners run (with trailing stop)
+10. Review & adjust monthly
+```
+
+**POSITION SIZING:**
+```
+Signal Score 80+ → 5% max
+Signal Score 60-79 → 3% max
+Signal Score 40-59 → 1-2% max
+Signal Score <40 → Skip
+
+Accumulation 8+ → Can go higher %
+Distribution 6+ → Reduce or exit
+```
+
+═══════════════════════════════════════════════════════════════════════
+PART 7: ADVANCED STRATEGIES
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 STRATEGY 1: Smart Money Divergence Play
+
+**CONCEPT:**
+When smart money and retail move opposite directions = opportunity.
+
+**SETUP:**
+```
+Find:
+✅ Accumulation Score 7+ (whales buying)
+❌ BUT Long Ratio >70% (retail overleveraged)
+✅ Funding Rate >0.5% (longs paying high)
+✅ Price consolidating/slight down
+
+MEANING:
+- Retail trapped in longs
+- Whales quietly buying
+- Liquidation cascade potential
+- Then pump (short squeeze)
+```
+
+**EXECUTION:**
+```
+Entry:
+- After liquidation cascade (longs flushed)
+- When accumulation still present
+- SMC bullish BOS forms
+
+Targets:
+- +30% move typical
+- Exit on distribution signals
+
+Stop:
+- Below cascade low
+```
+
+**EXAMPLE:**
+```
+ETH scenario:
+- Retail 75% long (overcrowded)
+- Funding 0.6% (expensive to long)
+- Whale accumulation score 8
+- Price drops 10% → long liquidations
+- Whales buy the dip aggressively
+- Price pumps 35% (short squeeze)
+
+WIN: Entered after cascade, exited on distribution
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 STRATEGY 2: MSS Tier Upgrade Play
+
+**CONCEPT:**
+Buy Tier 2/3 MSS coins early, sell when upgraded to Tier 1.
+
+**SETUP:**
+```
+Find:
+✅ MSS 65-75 (Tier 2/3)
+✅ One phase weak but improving
+✅ Catalyst incoming (listing, partnership)
+✅ Low price (accumulation opportunity)
+
+Monitor Weekly:
+- Phase scores improving?
+- Social momentum building?
+- Whale accumulation starting?
+```
+
+**EXECUTION:**
+```
+Entry:
+- Small position (1-2%) in Tier 3
+- Medium position (3%) if Tier 2
+- When MSS first appears
+
+Hold:
+- Monitor for tier upgrades
+- Add on confirmation
+- Scale in as phases improve
+
+Exit:
+- Tier 1 achieved = major exit
+- Distribution appears = full exit
+- If degrades to lower tier = cut
+```
+
+**EXAMPLE:**
+```
+NEW coin:
+Week 1: MSS 67, Tier 3
+- Discovery 75, Social 58, Institutional 68
+- Entry 1% portfolio
+
+Week 4: MSS 73, Tier 2
+- Discovery 80, Social 72, Institutional 70
+- Add 2% more
+
+Week 8: MSS 87, Tier 1
+- Discovery 88, Social 85, Institutional 88
+- Binance listing announced
+- Exit 50% (4x profit)
+
+Week 12: Distribution 8
+- Exit remaining (6x total)
+
+WIN: Rode tier upgrades, exited on distribution
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 STRATEGY 3: Liquidation Cascade Reversal
+
+**CONCEPT:**
+Extreme liquidations create temporary bottoms/tops = fade opportunity.
+
+**LONG SETUP (After Cascade Down):**
+```
+Wait for:
+✅ >$50M long liquidations in <1 hour
+✅ Price dumps 10-15% rapidly
+✅ Accumulation score still 6+ (whales buying dip)
+✅ RSI <25 (extreme oversold)
+✅ Funding drops sharply
+✅ Fear & Greed <30
+
+Entry Signal:
+- Volume spike slows
+- First bullish candle >2%
+- Whale accumulation accelerates
+
+Targets:
+- +10-15% quick bounce
+- Back to pre-cascade level
+
+Stop:
+- If dumps another 5%
+```
+
+**SHORT SETUP (After Cascade Up):**
+```
+Wait for:
+✅ >$50M short liquidations in <1 hour
+✅ Price pumps 15-20% rapidly
+✅ Distribution score rising to 7+
+✅ RSI >75 (extreme overbought)
+✅ Funding spikes >0.8%
+
+Entry Signal:
+- Volume spike slows
+- First bearish rejection candle
+- Whales selling into pump
+
+Targets:
+- -10-15% correction
+- Back to pre-cascade level
+
+Stop:
+- If pumps another 5%
+```
+
+**PRO TIPS:**
+- These are scalp trades (quick in/out)
+- Don't hold for "big move"
+- Take profits fast
+- Tight stops critical
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 STRATEGY 4: Fear & Greed Extremes
+
+**CONCEPT:**
+Extreme sentiment = best contrarian opportunities.
+
+**EXTREME FEAR (<20) - BUY SETUP:**
+```
+When Fear & Greed < 20:
+
+Check:
+✅ Smart money accumulation appearing?
+✅ Whale Index rising?
+✅ Funding negative or low?
+✅ RSI oversold?
+
+If YES to 3+:
+→ START BUYING (scale in)
+
+Method:
+- Buy 25% position
+- Add 25% each week if:
+  * Fear stays low
+  * Accumulation continues
+  * No distribution appearing
+
+Exit When:
+- Greed >60 (sentiment shifted)
+- Distribution score 7+
+- Target profit hit
+
+Historical:
+Fear <20 = excellent buy zone
+Average gain 40-80% in 1-3 months
+```
+
+**EXTREME GREED (>80) - SELL SETUP:**
+```
+When Fear & Greed > 80:
+
+Check:
+✅ Distribution score 6+?
+✅ Funding rate >0.6%?
+✅ RSI >70?
+✅ Social buzz extreme?
+
+If YES to 3+:
+→ START SELLING (scale out)
+
+Method:
+- Sell 33% position
+- Sell 33% more if:
+  * Greed stays extreme
+  * Distribution accelerates
+  * Technical breakdown
+
+Re-enter When:
+- Fear <40 (sentiment cooled)
+- Accumulation reappears
+- Healthy correction
+
+Historical:
+Greed >80 = excellent sell zone
+Average drop 30-60% in 1-2 months
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 STRATEGY 5: Whale Front-Running
+
+**CONCEPT:**
+Detect whale accumulation early, front-run the pump.
+
+**SETUP:**
+```
+Daily Scan:
+"Smart money scan 20 coins, accumulation score 7+"
+
+Filter Results:
+✅ Accumulation 7-10
+✅ Social score <40 (retail unaware)
+✅ Price flat last 2 weeks (consolidation)
+✅ Funding <0.2% (not crowded)
+✅ Volume steady (not declining)
+
+Deep Dive Top 3:
+- Check news (any catalysts?)
+- Check technicals (near support?)
+- Check MSS (fundamentals strong?)
+```
+
+**ENTRY:**
+```
+When to Enter:
+- Accumulation score confirmed 7+
+- SMC bullish structure forms
+- Volume starts increasing
+- First breakout attempt
+
+Position Sizing:
+- 3-5% portfolio
+- Stop below accumulation zone
+- Target +30-50%
+```
+
+**MONITORING:**
+```
+Hold While:
+✅ Accumulation score stays 6+
+✅ No distribution appearing
+✅ Price respects SMC structure
+✅ Funding stays reasonable
+
+Exit When:
+❌ Distribution score 7+
+❌ Funding >0.7%
+❌ Social buzz >75
+❌ Target hit
+❌ SMC breakdown
+```
+
+**EXAMPLE:**
+```
+SOL scenario:
+Day 1: Accumulation 8, Social 32, Funding 0.08%
+→ Enter 4% position at $22
+
+Day 14: Accumulation 7, Social 45, Funding 0.25%
+→ Hold, still accumulating
+
+Day 21: Price +28%, Distribution 5, Social 65
+→ Exit 50% at $28
+
+Day 28: Distribution 8, Social 82, Funding 0.75%
+→ Exit remaining at $30
+
+Result: +36% average exit
+```
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 FINAL WORDS: PUTTING IT ALL TOGETHER
+
+**YOUR TRADING SYSTEM:**
+```
+Morning (Pre-Market):
+1. Market overview (BTC/ETH sentiment)
+2. News check (any events?)
+3. Portfolio review (distribution checks)
+
+Active Hours:
+4. Opportunity scan (smart money)
+5. Technical confirmation (indicators)
+6. Execute A+ setups only
+
+Evening:
+7. Performance review
+8. Plan tomorrow
+9. Set alerts
+
+Weekly:
+10. Deep analysis (MSS discovery)
+11. Strategy adjustment
+12. Learn from mistakes
+```
+
+**REMEMBER:**
+- Quality > Quantity (trades)
+- Confluence > Single indicator
+- Risk Management > Being right
+- Patience > FOMO
+- Process > Results
+- Learning > Winning
+
+**YOU HAVE ACCESS TO:**
+- 192+ Operations
+- 8 Feature categories
+- Premium data ($540/month worth)
+- Institutional-grade analysis
+
+**USE IT WISELY.**
+
+Good luck trading! 🚀
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🔧 API FORMAT REFERENCE
 
 **Base URL:** https://guardiansofthetoken.org
 **Endpoint:** POST /invoke
-**Format:** JSON dengan operation + args (flat/nested both supported)
+**Format:** Flat parameters (GPT Actions compatible)
 
-**Example Call:**
+**Example:**
 ```json
 {
   "operation": "signals.get",
@@ -228,16 +2476,7 @@ Total: 50+ unique endpoint combinations covered dengan 192+ operations tersedia!
 }
 ```
 
-**Alternative Format:**
-```json
-{
-  "operation": "signals.get", 
-  "args": {
-    "symbol": "BTC"
-  }
-}
-```
-
-System auto-detects format - gunakan yang lebih mudah!
+**Operations:** 192+ total available
+**Schema:** https://guardiansofthetoken.org/invoke/schema
 
 ═══════════════════════════════════════════════════════════════════════
