@@ -1,7 +1,4 @@
-# CryptoSatX Enhanced Configuration for Replit
-# Supports MSS System, Database, and all new features
-
-modules = ["python-3.11"]
+modules = ["python-3.11", "postgresql-16"]
 
 [build]
 system = "uvicorn[standard]"

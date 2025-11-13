@@ -8,6 +8,10 @@ from datetime import datetime, timedelta
 
 from app.storage.signal_db import signal_db
 
+# ADDED FOR PHASE 2 - Verdict performance analytics
+from app.services.verdict_analyzer import verdict_analyzer
+from app.services.outcome_tracker import outcome_tracker
+
 router = APIRouter(prefix="/analytics", tags=["Analytics & Insights"])
 
 
@@ -224,3 +228,188 @@ async def get_overall_stats():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get overview: {str(e)}")
+
+
+# ============================================================================
+# PHASE 2: VERDICT PERFORMANCE ANALYTICS
+# Track AI verdict accuracy and effectiveness
+# ============================================================================
+
+@router.get("/verdict-performance")
+async def get_verdict_performance(
+    verdict: Optional[str] = Query(None, description="Filter by verdict: CONFIRM, DOWNSIZE, SKIP, WAIT"),
+    interval: str = Query("24h", description="Time interval to analyze: 1h, 4h, 24h"),
+    days: int = Query(30, description="Number of days to analyze")
+):
+    """
+    **AI Verdict Performance Metrics**
+    
+    Answers key questions:
+    - Does CONFIRM really lead to profits?
+    - Does SKIP avoid losses?
+    - Does DOWNSIZE reduce drawdown?
+    
+    Returns:
+    - Win rate per verdict type
+    - Average P&L percentage
+    - Total signals tracked
+    - Min/max P&L
+    - Standard deviation
+    """
+    try:
+        if interval not in ["1h", "4h", "24h"]:
+            raise HTTPException(status_code=400, detail="Invalid interval. Use: 1h, 4h, or 24h")
+        
+        if verdict and verdict not in ["CONFIRM", "DOWNSIZE", "SKIP", "WAIT"]:
+            raise HTTPException(status_code=400, detail="Invalid verdict type")
+        
+        if days < 1 or days > 365:
+            raise HTTPException(status_code=400, detail="Days must be between 1 and 365")
+        
+        result = await verdict_analyzer.get_verdict_performance(
+            verdict=verdict,
+            interval=interval,
+            days_back=days
+        )
+        
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
+        
+        return result
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Analytics error: {str(e)}")
+
+
+@router.get("/verdict-comparison")
+async def compare_verdicts(
+    interval: str = Query("24h", description="Time interval: 1h, 4h, 24h"),
+    days: int = Query(30, description="Number of days to analyze")
+):
+    """
+    **Compare All Verdict Types**
+    
+    Provides comparative analysis showing:
+    - Which verdicts perform best
+    - Effectiveness of AI risk management
+    - Data-driven insights and recommendations
+    """
+    try:
+        if interval not in ["1h", "4h", "24h"]:
+            raise HTTPException(status_code=400, detail="Invalid interval")
+        
+        result = await verdict_analyzer.compare_verdicts(
+            interval=interval,
+            days_back=days
+        )
+        
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
+        
+        return result
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Comparison error: {str(e)}")
+
+
+@router.get("/outcomes-history")
+async def get_outcomes_history(
+    symbol: Optional[str] = Query(None, description="Filter by symbol (BTC, ETH, etc)"),
+    verdict: Optional[str] = Query(None, description="Filter by verdict type"),
+    limit: int = Query(100, description="Number of records to return")
+):
+    """
+    **Detailed Signal Outcomes History**
+    
+    Useful for:
+    - Debugging tracking system
+    - Detailed analysis of specific signals
+    - Reviewing individual outcomes across all timeframes
+    """
+    try:
+        if limit < 1 or limit > 1000:
+            raise HTTPException(status_code=400, detail="Limit must be between 1 and 1000")
+        
+        results = await verdict_analyzer.get_signal_outcomes_history(
+            symbol=symbol,
+            verdict=verdict,
+            limit=limit
+        )
+        
+        return {
+            "total_returned": len(results),
+            "filters": {
+                "symbol": symbol,
+                "verdict": verdict
+            },
+            "outcomes": results
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"History error: {str(e)}")
+
+
+@router.post("/process-pending-outcomes")
+async def process_pending_outcomes():
+    """
+    **Manually Process Pending Outcomes**
+    
+    Triggers immediate processing of all pending outcome tracking:
+    - Finds signals needing 1h/4h/24h price updates
+    - Fetches current prices
+    - Calculates P&L
+    - Updates outcomes in database
+    
+    Normally runs automatically in background
+    """
+    try:
+        await outcome_tracker.process_pending_outcomes()
+        
+        return {
+            "success": True,
+            "message": "Pending outcomes processed successfully",
+            "note": "Check logs for detailed results"
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Processing error: {str(e)}")
+
+
+@router.get("/tracking-stats")
+async def get_tracking_stats():
+    """
+    **Outcome Tracking System Statistics**
+    
+    Shows:
+    - Total outcomes tracked
+    - Pending tracking jobs per interval
+    - Completion rates
+    - System health
+    """
+    try:
+        # Get counts for each tracking interval
+        pending_1h = await outcome_tracker.get_pending_outcomes("1h")
+        pending_4h = await outcome_tracker.get_pending_outcomes("4h")
+        pending_24h = await outcome_tracker.get_pending_outcomes("24h")
+        
+        return {
+            "tracking_system": "operational",
+            "pending_tracking": {
+                "1h": len(pending_1h),
+                "4h": len(pending_4h),
+                "24h": len(pending_24h)
+            },
+            "thresholds": {
+                "win_threshold": f"{outcome_tracker.win_threshold}%",
+                "loss_threshold": f"{outcome_tracker.loss_threshold}%"
+            }
+        }
+    
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Stats error: {str(e)}")

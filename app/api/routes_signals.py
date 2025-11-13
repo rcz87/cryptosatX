@@ -16,7 +16,84 @@ import asyncio
 # ADDED FOR AI VALIDATION - OpenAI integration
 from app.services.openai_service import get_openai_service
 
+# ADDED FOR PHASE 2 - Outcome tracking
+from app.services.outcome_tracker import outcome_tracker
+from datetime import datetime
+
 router = APIRouter()
+
+
+async def persist_signal_with_tracking(signal: dict):
+    """
+    Helper coroutine to persist signal and initiate outcome tracking
+    Runs in background without blocking API response
+    
+    Flow:
+    1. Save signal to database (await to get signal_id)
+    2. Extract AI verdict metadata
+    3. Record outcome entry for tracking
+    4. Schedule background tracking at 1h, 4h, 24h intervals
+    """
+    try:
+        # Step 1: Save signal and get signal_id
+        save_result = await signal_history.save_signal(signal)
+        
+        if not save_result.get("success"):
+            print(f"[ERROR] Failed to save signal: {save_result.get('message')}")
+            return
+        
+        signal_id = save_result.get("signal_id")
+        if not signal_id:
+            print("[ERROR] No signal_id returned from save_signal")
+            return
+        
+        print(f"[SUCCESS] Signal saved with ID: {signal_id}")
+        
+        # Step 2: Extract AI verdict metadata (with safe defaults)
+        ai_verdict = signal.get("aiVerdictLayer", {})
+        verdict = ai_verdict.get("verdict", "UNKNOWN")
+        risk_mode = ai_verdict.get("riskMode", "NORMAL")
+        
+        # Skip tracking if verdict is SKIP/WAIT (not actionable)
+        if verdict in ["SKIP", "WAIT"]:
+            print(f"[INFO] Skipping outcome tracking for {verdict} verdict")
+            return
+        
+        # Step 3: Record outcome entry
+        # Extract price (signals use "price" field, not "currentPrice")
+        entry_price = float(signal.get("price") or signal.get("currentPrice") or 0)
+        
+        # Validate non-zero price (critical for P&L calculation)
+        if entry_price <= 0:
+            print(f"[ERROR] Invalid entry price ({entry_price}) for {signal.get('symbol')} - cannot track outcome")
+            return
+        
+        entry_timestamp = datetime.utcnow()
+        
+        outcome_id = await outcome_tracker.record_signal_entry(
+            signal_id=signal_id,
+            symbol=signal.get("symbol", ""),
+            signal_type=signal.get("signal", ""),
+            verdict=verdict,
+            risk_mode=risk_mode,
+            entry_price=entry_price,
+            entry_timestamp=entry_timestamp
+        )
+        
+        if not outcome_id:
+            print("[ERROR] Failed to record outcome entry")
+            return
+        
+        print(f"[SUCCESS] Outcome entry recorded: {outcome_id}")
+        
+        # Step 4: Schedule background tracking
+        await outcome_tracker.schedule_outcome_tracking(outcome_id)
+        print(f"[SUCCESS] Outcome tracking scheduled for {signal.get('symbol')}")
+        
+    except Exception as e:
+        print(f"[ERROR] persist_signal_with_tracking failed: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 @router.get("/signals/{symbol}")
@@ -41,10 +118,10 @@ async def get_signal(symbol: str, debug: bool = False, include_ai_validation: bo
     try:
         signal = await signal_engine.build_signal(symbol, debug=debug)
         
-        # ADDED FOR CRYPTOSATX ENHANCEMENT - Auto-save signal to history (non-blocking)
-        # Only save actionable signals (LONG/SHORT) that would be sent to Telegram
-        if signal.get("signal") in ["LONG", "SHORT"]:
-            asyncio.create_task(signal_history.save_signal(signal))
+        # PHASE 2: Persist signal and initiate outcome tracking (non-blocking)
+        # Only track actionable signals (LONG/SHORT) with AI verdict
+        if signal.get("signal") in ["LONG", "SHORT"] and signal.get("aiVerdictLayer"):
+            asyncio.create_task(persist_signal_with_tracking(signal))
         
         # ADDED FOR AI VALIDATION - Get OpenAI GPT-4 validation if requested
         if include_ai_validation:
