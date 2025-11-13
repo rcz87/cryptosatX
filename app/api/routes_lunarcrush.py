@@ -321,3 +321,90 @@ async def get_trending_topics_list():
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/coin/{symbol}/themes")
+async def get_coin_themes(symbol: str):
+    """
+    🎯 GET COIN THEMES - AI-Free Theme Analysis for Crypto Assets
+    
+    **What This Does:**
+    - Analyzes social metrics to detect market themes
+    - Alternative to Enterprise-only AI Whatsup endpoint
+    - Uses Builder tier metrics (no extra cost!)
+    - Detects bullish/bearish signals automatically
+    
+    **Themes Detected:**
+    - ✅ **Positive:** Viral momentum, strong community, market leadership
+    - ⚠️ **Negative:** Declining interest, spam risk, negative sentiment
+    - 📊 **Risk Assessment:** Low, moderate, or high risk signals
+    - 🎯 **Confidence Score:** 0-100 based on signal strength
+    
+    **Key Metrics Used:**
+    - Galaxy Score (community quality)
+    - Social Volume Change (momentum)
+    - Sentiment (1-100 scale)
+    - Spam Detection (fake engagement)
+    - Social Dominance (% of total crypto buzz)
+    
+    **Example Response:**
+    ```json
+    {
+      "success": true,
+      "symbol": "BTC",
+      "positive": ["strong_community", "positive_sentiment"],
+      "negative": [],
+      "confidence": 85,
+      "sentiment_label": "Very Positive",
+      "summary": "Bullish: Strong Community, Positive Sentiment",
+      "risk_level": "low",
+      "basedOn": {
+        "galaxyScore": 75,
+        "sentiment": 82,
+        "socialVolumeChange": 150
+      }
+    }
+    ```
+    
+    **Use Cases:**
+    - 🔍 Signal Validation: Confirm price moves with social themes
+    - ⚠️ Risk Detection: Identify spam/scam patterns
+    - 📊 Sentiment Analysis: Understand market mood
+    - 🎯 Trade Confidence: Higher confidence = stronger conviction
+    
+    **Integration:**
+    - Combines with `/signals/{symbol}` for enhanced analysis
+    - Feeds into AI Signal Judge for verdict validation
+    - Can boost social sentiment weight (8% → 12%) with theme confirmation
+    
+    **Builder Tier Advantage:**
+    - FREE feature using existing metrics
+    - 80% value of Enterprise AI Whatsup
+    - Fully customizable detection logic
+    - No additional API costs
+    
+    **Parameters:**
+    - `symbol`: Crypto symbol (BTC, ETH, SOL, etc.)
+    
+    **Examples:**
+    - `/lunarcrush/coin/BTC/themes` - Bitcoin theme analysis
+    - `/lunarcrush/coin/ETH/themes` - Ethereum theme analysis
+    - `/lunarcrush/coin/DOGE/themes` - Dogecoin theme analysis
+    """
+    from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+    
+    try:
+        result = await lunarcrush_comprehensive.analyze_coin_themes(symbol)
+        
+        if not result.get("success"):
+            raise HTTPException(
+                status_code=404,
+                detail=result.get("error", f"Unable to analyze themes for {symbol}")
+            )
+        
+        return result
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))

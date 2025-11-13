@@ -496,6 +496,67 @@ class LunarCrushComprehensiveService:
             
         except Exception as e:
             return {"success": False, "error": str(e)}
+    
+    # ==================== THEME ANALYSIS ====================
+    
+    async def analyze_coin_themes(self, symbol: str) -> Dict:
+        """
+        Analyze market themes for a coin using Builder tier metrics
+        
+        Alternative to Enterprise-only AI Whatsup endpoint.
+        Uses existing social metrics to detect:
+        - Viral momentum
+        - Community strength
+        - Sentiment trends
+        - Risk signals
+        
+        Args:
+            symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH')
+        
+        Returns:
+            Dict with detected themes, confidence, summary, and risk level
+        """
+        from app.utils.theme_analyzer import analyze_themes
+        
+        try:
+            # Fetch comprehensive metrics
+            coin_data = await self.get_coin_comprehensive(symbol)
+            
+            if not coin_data.get("success"):
+                return {"success": False, "error": coin_data.get("error", "Failed to fetch coin data")}
+            
+            # Fetch 24h change for momentum
+            change_24h = await self.get_social_change(symbol, "24h")
+            
+            # Prepare metrics for theme analysis
+            metrics = {
+                "sentiment": coin_data.get("averageSentiment", 3),  # 1-5 scale
+                "social_volume_change": change_24h.get("socialVolumeChange", 0) if change_24h.get("success") else 0,
+                "galaxy_score": coin_data.get("galaxyScore", 50),
+                "spam_detected": coin_data.get("spamDetected", 0),
+                "social_dominance": coin_data.get("socialDominance", 0),
+                "social_volume": coin_data.get("socialVolume", 0),
+                "social_contributors": coin_data.get("socialContributors", 0),
+            }
+            
+            # Analyze themes
+            themes = analyze_themes(metrics)
+            
+            # Add metadata
+            themes["success"] = True
+            themes["symbol"] = symbol
+            themes["source"] = "lunarcrush_theme_analyzer"
+            themes["basedOn"] = {
+                "galaxyScore": metrics["galaxy_score"],
+                "sentiment": metrics["sentiment"],
+                "socialVolumeChange": metrics["social_volume_change"],
+                "socialDominance": metrics["social_dominance"]
+            }
+            
+            return themes
+            
+        except Exception as e:
+            return {"success": False, "error": str(e), "symbol": symbol}
 
 
 # Global instance for easy import

@@ -145,6 +145,7 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "lunarcrush.coins_discovery": OperationMetadata("lunarcrush.coins_discovery", "lunarcrush", "/coins/discovery", "GET", "Discover coins via LunarCrush"),
     "lunarcrush.topics_list": OperationMetadata("lunarcrush.topics_list", "lunarcrush", "/topics/list", "GET", "Get trending topics list - discover viral crypto moments"),
     "lunarcrush.topic": OperationMetadata("lunarcrush.topic", "lunarcrush", "/topic/{topic}", "GET", "Get topic metrics", requires_topic=True),
+    "lunarcrush.coin_themes": OperationMetadata("lunarcrush.coin_themes", "lunarcrush", "/coin/{symbol}/themes", "GET", "Analyze coin themes (AI-free) - detect bullish/bearish signals, sentiment, and risk", requires_symbol=True),
     
     "narratives.discover_realtime": OperationMetadata("narratives.discover_realtime", "narratives", "/discover/realtime", "GET", "Discover realtime narratives"),
     "narratives.momentum": OperationMetadata("narratives.momentum", "narratives", "/momentum/{symbol}", "GET", "Get narrative momentum", requires_symbol=True),

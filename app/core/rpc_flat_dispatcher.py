@@ -341,6 +341,11 @@ class FlatRPCDispatcher:
         elif operation == "lunarcrush.topics_list":
             from app.services.lunarcrush_service import lunarcrush_service
             return await lunarcrush_service.get_topics_list()
+        
+        elif operation == "lunarcrush.coin_themes":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            symbol = args["symbol"]
+            return await lunarcrush_comprehensive.analyze_coin_themes(symbol)
 
         # ===================================================================
         # COINAPI
