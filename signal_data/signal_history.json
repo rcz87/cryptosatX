@@ -24006,5 +24006,127 @@
         }
       }
     }
+  },
+  {
+    "id": "sig_20251113120435120531",
+    "saved_at": "2025-11-13T12:04:35.120568",
+    "data": {
+      "symbol": "ALGO",
+      "timestamp": "2025-11-13T12:04:29.393166",
+      "signal": "LONG",
+      "score": 52.8,
+      "confidence": "low",
+      "price": 0.1767,
+      "reasons": [
+        "High funding rate (0.366%) - longs overleveraged",
+        "Price trend: neutral",
+        "Social sentiment: 38/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.00366,
+        "openInterest": 48111284.1771,
+        "socialScore": 38.4,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": true,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "bearish",
+        "priceChanges": {
+          "5m": -0.11,
+          "15m": -0.39,
+          "1h": -0.28,
+          "4h": -0.23,
+          "24h": -2.91
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0308,
+          "oiVolumeRatio": 0.4867
+        },
+        "fundingRates": {
+          "oiWeighted": 0.00366,
+          "volumeWeighted": 0.007744
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 473,
+        "socialMetrics": {
+          "volume": 0,
+          "engagement": 0,
+          "dominance": 0.0,
+          "tweetVolume": 0,
+          "redditVolume": 0,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 0.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 24.0,
+          "momentumLevel": "very_weak",
+          "volumeChange24h": 0.0,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 43.51,
+          "sellPressure": 56.49,
+          "avgTradeSize": 840.74
+        },
+        "volatility7d": 22.52
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the bearish trend across multiple timeframes and the overleveraged long positions indicated by the high funding rate, it's advised to skip ALGO long trades for now. Despite some bullish sentiment, the risks outweigh potential gains.",
+        "layerChecks": {
+          "agreements": [
+            "smartMoneyBias: long",
+            "longShortSentiment: very_bullish",
+            "fearGreedIndex: 50"
+          ],
+          "conflicts": [
+            "multiTimeframeTrend: bearish",
+            "high funding rate indicates longs overleveraged",
+            "social sentiment: very low"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.1646,
+          "recommendedPositionSize": 1.1646,
+          "stopLossPrice": 0.16302858,
+          "stopLossDistancePct": 7.7371,
+          "takeProfitPrice": 0.19720713,
+          "takeProfitDistancePct": 11.6056,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00455714,
+          "atrPercentage": 2.5761,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 116% of base | SL: 7.74% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
   }
 ]
