@@ -1,0 +1,120 @@
+🔧 Endpoints Khusus untuk Batch Crypto Analysis
+Untuk analisis semua coin (seperti yang kamu mau), fokus ke discovery/list dulu buat dapat overview batch (top 100-1000 coin), lalu drill down ke detail/historical per coin. Ini cara efisien batch tanpa overload API. Nggak ada single endpoint batch, tapi kombinasi ini = batch analysis (misalnya, proses 50 coin dalam 1 script).
+
+• Batch Discovery/List Semua Coin (Core untuk Batch Overview)
+Endpoint: GET /list/cryptocurrencies/{sector}/{sort}/{limit}
+Deskripsi: Dapat list batch coin (sampai 1000 item) dengan metrics dasar (AltRank, Galaxy Score, price, % change, sentiment, interactions). Ini buat scan seluruh market cepat.
+Parameters (semua opsional): 
+• sector: null (semua coin) atau enum seperti "meme", "defi", "ai", "layer-1", "solana-ecosystem" (50+ options – lihat docs untuk full list). 
+• sort: "alt_rank" (social rank), "galaxy_score", "market_cap", "percent_change_24h", "sentiment", "interactions" (default: alt_rank). 
+• limit: 1-1000 (default 100).
+Contoh Call: /list/cryptocurrencies//alt_rank/100 – Top 100 coin by social rank.
+Response Snippet (JSON):
+
+{
+  "data": [
+    {
+      "symbol": "BTC",
+      "name": "Bitcoin",
+      "alt_rank": 1,
+      "galaxy_score": 85.2,
+      "price": 65000,
+      "percent_change_24h": 2.5,
+      "sentiment": 0.82,
+      "interactions": 5000000,
+      "market_cap": 1280000000000
+    },
+    // ... 99 coin lainnya
+  ],
+  "total": 100
+}
+Batch Use Case: Fetch ini sekali, lalu analisis batch (e.g., hitung average sentiment semua coin, detect top 10 rising stars). Dari search, dev sering pakai ini untuk "top mentioned cryptocurrencies" automation.
+• Detail Batch per Coin (Setelah List)
+Endpoint: GET /topic/{topic} (loop untuk multiple topics).
+Deskripsi: Full metrics untuk 1 coin, tapi buat batch: Fetch list dulu, lalu loop ke 10-50 coin teratas. Metrics lengkap: social (posts_active, contributors, sentiment), market (volume_24h, circulating_supply), posts viral.
+Parameters: topic = "btc", "$eth", "solana-ecosystem" (untuk sector).
+Contoh: /topic/btc + /topic/eth secara berurutan.
+Batch Tip: Batasi ke top 20-50 biar < rate limit. Response mirip contoh sebelumnya.
+• Historical Batch (Time Series untuk Multiple Coin)
+Endpoint: GET /topic/{topic}/time-series/{interval}/{metrics}
+Deskripsi: Data historis batch per coin (e.g., trend sentiment 1 bulan untuk top 10 coin).
+Parameters: 
+• interval: "1d", "1w", "1m", "3m", "6m", "1y", "all". 
+• metrics: Array seperti ["price", "sentiment", "alt_rank", "interactions"] atau null (semua).
+Contoh Batch: Loop untuk top coin dari list: /topic/btc/time-series/1m?metrics=sentiment,price.
+Response: Array timestamped, e.g., [{"date": "2025-11-01", "sentiment": 0.80, "price": 64000}, ...].
+Batch Use Case: Analisis trend massal, seperti "coin mana yang sentiment naik >20% bulan ini".
+• Posts Batch (Social Buzz untuk Semua Coin)
+Endpoint: GET /topic/{topic}/posts/{interval}/{from_date}/{to_date}
+Deskripsi: Popular posts untuk coin/sector. Gunakan topic: "_cryptocurrencies" buat batch overview semua coin.
+Parameters: interval: "1d", "1w"; date range opsional.
+Contoh: /topic/_cryptocurrencies/posts/1d – Top posts crypto global.
+• Search untuk Dynamic Batch
+Endpoint: GET /search/{query}
+Deskripsi: Query fleksibel untuk batch, e.g., "cryptocurrencies with high sentiment 1m" – dapat list coin + metrics.
+Contoh: /search/top ai coins by interactions – Output batch coin relevan.
+• Authentication & Utils
+Endpoint: GET /authentication – Cek limits, test key. Parameter: apiKey (opsional).
+Response: {"rate_limit": 100, "subscription": "free"}.
+
+💻 Contoh Code untuk Batch Crypto Analysis (Python)
+Ini script sederhana buat batch: Fetch top 10 coin, lalu detail + basic analysis (average sentiment). Pakai requests (atau SDK).
+
+import requests
+import json
+from statistics import mean  # Untuk average
+
+API_KEY = "YOUR_API_KEY"  # Ganti dengan key-mu
+BASE_URL = "https://api.lunarcrush.com/v2"
+HEADERS = {"Authorization": f"Bearer {API_KEY}"}
+
+def fetch_top_coins(limit=10, sort="alt_rank"):
+    url = f"{BASE_URL}/list/cryptocurrencies//{sort}/{limit}"
+    resp = requests.get(url, headers=HEADERS)
+    if resp.status_code == 200:
+        return resp.json()["data"]
+    else:
+        print(f"Error: {resp.status_code}")
+        return []
+
+def fetch_coin_details(topic):
+    url = f"{BASE_URL}/topic/{topic}"
+    resp = requests.get(url, headers=HEADERS)
+    if resp.status_code == 200:
+        return resp.json()["data"]
+    return None
+
+# Batch Analysis: Top 10 coin
+top_coins = fetch_top_coins(limit=10)
+analysis = {}
+
+for coin in top_coins:
+    symbol = coin["symbol"].lower()  # e.g., "btc"
+    details = fetch_coin_details(symbol)
+    if details:
+        analysis[symbol] = {
+            "alt_rank": details.get("alt_rank"),
+            "galaxy_score": details.get("galaxy_score"),
+            "sentiment": details.get("sentiment"),
+            "price": details.get("price"),
+            "interactions_24h": details.get("interactions")
+        }
+
+# Contoh Output: Average Sentiment Semua Top Coin
+sentiments = [data["sentiment"] for data in analysis.values() if data["sentiment"]]
+avg_sentiment = mean(sentiments) if sentiments else 0
+print(f"Batch Analysis - Top 10 Coins:")
+print(json.dumps(analysis, indent=2))
+print(f"Average Sentiment: {avg_sentiment:.2f} (Positif jika >0.5)")
+
+• Output Contoh: Dict dengan 10 coin, plus average (e.g., 0.78 – bullish market).
+• Ekstensi: Tambah time-series loop untuk historical batch. Jalankan via cron untuk daily report.
+• Error Handling: Tambah try/except untuk rate limit (sleep 1s antar call).
+
+📈 Insights dari Search untuk Batch Analysis
+• Scalable Automation: Banyak dev pakai untuk "real-time social + market intelligence" – e.g., build dashboard yang auto-batch top mentioned coins (dari post  @LunarCrush).
+• Use Cases Populer: Sentiment analysis batch (e.g., "top 100 coin by interactions"), predict pumps via Galaxy Score changes, integrate ke AI (feed JSON ke Claude/Grok untuk deep insights).
+• Tips dari Community: Gunakan sector filter buat batch spesifik (e.g., "meme coins batch"). Hindari over-fetch; cache data 1 jam. Dari Reddit: "LunarCrush API great for social media analysis of top 100 cryptocurrencies".
+• Limitasi: Historical data paid-only untuk full interval. Kalau batch besar (>1000), upgrade subscription.
+
+Kalau ini masih kurang lengkap, bilang spesifik: Misalnya, "contoh batch untuk meme coins" atau "fetch docs untuk /time-series". Aku bisa jalankan tool lagi (e.g., Fetch path spesifik) atau kasih cURL examples. Mau aku test script di atas dengan data real? Yuk, lanjut! 🚀
