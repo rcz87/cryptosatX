@@ -33,6 +33,7 @@ from app.api import (
     routes_analytics,  # ADDED FOR DATABASE ANALYTICS
     routes_rpc,  # ADDED FOR UNIFIED RPC ENDPOINT
     routes_gpt_actions,  # ADDED FOR GPT ACTIONS FLAT PARAMS
+    routes_advanced_analytics,  # ADDED FOR ADVANCED ANALYTICS & ML
 )
 
 # Load environment variables
@@ -44,7 +45,7 @@ async def lifespan(app: FastAPI):
     """Application lifespan manager for startup and shutdown events"""
     # Import database here to avoid circular imports
     from app.storage.database import db
-    
+
     print("=" * 50)
     print("CryptoSatX - Enhanced Crypto Signal API Starting...")
     print("=" * 50)
@@ -59,16 +60,25 @@ async def lifespan(app: FastAPI):
         f"  - API_KEYS: {'✓' if os.getenv('API_KEYS') else '✗ (public mode)'}"
     )  # ADDED
     print(f"  - OPENAI_API_KEY: {'✓' if os.getenv('OPENAI_API_KEY') else '✗'}")  # ADDED
-    print(f"  - DATABASE_URL: {'✓' if os.getenv('DATABASE_URL') else '✗'}")  # ADDED FOR DATABASE
+    print(
+        f"  - DATABASE_URL: {'✓' if os.getenv('DATABASE_URL') else '✗'}"
+    )  # ADDED FOR DATABASE
     print(f"  - BASE_URL: {os.getenv('BASE_URL', 'Not set')}")
     print("=" * 50)
     print(
         "🚀 Enhanced Features: SMC Analysis | Signal History | Telegram Alerts | OpenAI GPT-4 | PostgreSQL Database"
     )  # UPDATED
     print("=" * 50)
-    
+
     # Initialize database connection
     await db.connect()
+
+    # Initialize performance optimization service
+    from app.services.performance_optimization_service import (
+        performance_optimization_service,
+    )
+
+    await performance_optimization_service.initialize()
 
     yield
 
@@ -114,12 +124,30 @@ app.include_router(routes_openai.router, tags=["OpenAI GPT-4 Integration"])
 app.include_router(
     routes_optimized_gpt.router, tags=["Optimized GPT Actions - MAXIMAL"]
 )
-app.include_router(routes_analytics.router, tags=["Analytics & Insights"])  # ADDED FOR DATABASE ANALYTICS
-app.include_router(routes_mss.router, prefix="/mss", tags=["MSS Alpha System"])  # ADDED FOR MSS SYSTEM
-app.include_router(routes_new_listings.router, tags=["Binance New Listings"])  # ADDED FOR NEW LISTINGS MONITOR
-app.include_router(routes_narratives.router, prefix="/narratives", tags=["Narratives & Market Intelligence"])  # ADDED FOR NARRATIVE DETECTION
-app.include_router(routes_rpc.router, tags=["Unified RPC - GPT Actions"])  # ADDED FOR UNIFIED RPC ENDPOINT - GPT ACTIONS
-app.include_router(routes_gpt_actions.router, tags=["GPT Actions (Flat Params)"])  # ADDED FOR GPT ACTIONS COMPATIBILITY
+app.include_router(
+    routes_analytics.router, tags=["Analytics & Insights"]
+)  # ADDED FOR DATABASE ANALYTICS
+app.include_router(
+    routes_mss.router, prefix="/mss", tags=["MSS Alpha System"]
+)  # ADDED FOR MSS SYSTEM
+app.include_router(
+    routes_new_listings.router, tags=["Binance New Listings"]
+)  # ADDED FOR NEW LISTINGS MONITOR
+app.include_router(
+    routes_narratives.router,
+    prefix="/narratives",
+    tags=["Narratives & Market Intelligence"],
+)  # ADDED FOR NARRATIVE DETECTION
+app.include_router(
+    routes_rpc.router, tags=["Unified RPC - GPT Actions"]
+)  # ADDED FOR UNIFIED RPC ENDPOINT - GPT ACTIONS
+app.include_router(
+    routes_gpt_actions.router, tags=["GPT Actions (Flat Params)"]
+)  # ADDED FOR GPT ACTIONS COMPATIBILITY
+app.include_router(
+    routes_advanced_analytics.router, tags=["Advanced Analytics & ML"]
+)  # ADDED FOR ADVANCED ANALYTICS & PERFORMANCE OPTIMIZATION
+
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility
 # This MUST be done AFTER all routes are registered to ensure proper schema generation
@@ -127,6 +155,7 @@ def custom_openapi():
     if app.openapi_schema:
         return app.openapi_schema
     from fastapi.openapi.utils import get_openapi
+
     openapi_schema = get_openapi(
         title=app.title,
         version=app.version,
@@ -135,13 +164,11 @@ def custom_openapi():
     )
     # Inject servers field required by GPT Actions
     openapi_schema["servers"] = [
-        {
-            "url": "https://guardiansofthetoken.org",
-            "description": "Production server"
-        }
+        {"url": "https://guardiansofthetoken.org", "description": "Production server"}
     ]
     app.openapi_schema = openapi_schema
     return app.openapi_schema
+
 
 app.openapi = custom_openapi
 
