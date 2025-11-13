@@ -117,6 +117,53 @@ class Database:
                     CREATE INDEX IF NOT EXISTS idx_signals_mss_score ON signals(score DESC) WHERE signal LIKE 'MSS_%';
                 """
                 )
+                
+                # Create signal_outcomes table for accuracy tracking (Phase 2 - Nov 2025)
+                await conn.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS signal_outcomes (
+                        id SERIAL PRIMARY KEY,
+                        signal_id INTEGER REFERENCES signals(id) ON DELETE CASCADE,
+                        symbol VARCHAR(20) NOT NULL,
+                        signal_type VARCHAR(10) NOT NULL,
+                        verdict VARCHAR(10) NOT NULL,
+                        risk_mode VARCHAR(20),
+                        
+                        -- Entry data
+                        entry_price DECIMAL(20,8) NOT NULL,
+                        entry_timestamp TIMESTAMP NOT NULL,
+                        
+                        -- Price tracking at different intervals
+                        price_1h DECIMAL(20,8),
+                        price_4h DECIMAL(20,8),
+                        price_24h DECIMAL(20,8),
+                        
+                        -- Outcome classification
+                        outcome_1h VARCHAR(10),
+                        outcome_4h VARCHAR(10),
+                        outcome_24h VARCHAR(10),
+                        
+                        -- Performance metrics (percentage)
+                        pnl_1h DECIMAL(10,4),
+                        pnl_4h DECIMAL(10,4),
+                        pnl_24h DECIMAL(10,4),
+                        
+                        -- Tracking timestamps
+                        tracked_at_1h TIMESTAMP,
+                        tracked_at_4h TIMESTAMP,
+                        tracked_at_24h TIMESTAMP,
+                        
+                        created_at TIMESTAMP DEFAULT NOW()
+                    );
+                    
+                    -- Indexes for performance queries
+                    CREATE INDEX IF NOT EXISTS idx_outcomes_verdict ON signal_outcomes(verdict);
+                    CREATE INDEX IF NOT EXISTS idx_outcomes_symbol_verdict ON signal_outcomes(symbol, verdict);
+                    CREATE INDEX IF NOT EXISTS idx_outcomes_timestamp ON signal_outcomes(entry_timestamp DESC);
+                    CREATE INDEX IF NOT EXISTS idx_outcomes_24h ON signal_outcomes(outcome_24h) WHERE outcome_24h IS NOT NULL;
+                    CREATE INDEX IF NOT EXISTS idx_outcomes_signal_id ON signal_outcomes(signal_id);
+                """
+                )
         else:
             # SQLite schema
             await self.sqlite_conn.execute(
@@ -144,6 +191,43 @@ class Database:
                 );
             """
             )
+            
+            # Create signal_outcomes table for accuracy tracking (SQLite)
+            await self.sqlite_conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS signal_outcomes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    signal_id INTEGER,
+                    symbol TEXT NOT NULL,
+                    signal_type TEXT NOT NULL,
+                    verdict TEXT NOT NULL,
+                    risk_mode TEXT,
+                    
+                    entry_price REAL NOT NULL,
+                    entry_timestamp TEXT NOT NULL,
+                    
+                    price_1h REAL,
+                    price_4h REAL,
+                    price_24h REAL,
+                    
+                    outcome_1h TEXT,
+                    outcome_4h TEXT,
+                    outcome_24h TEXT,
+                    
+                    pnl_1h REAL,
+                    pnl_4h REAL,
+                    pnl_24h REAL,
+                    
+                    tracked_at_1h TEXT,
+                    tracked_at_4h TEXT,
+                    tracked_at_24h TEXT,
+                    
+                    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+                    
+                    FOREIGN KEY (signal_id) REFERENCES signals(id) ON DELETE CASCADE
+                );
+            """
+            )
 
             # Create indexes for SQLite
             indexes = [
@@ -152,6 +236,10 @@ class Database:
                 "CREATE INDEX IF NOT EXISTS idx_signals_signal ON signals(signal);",
                 "CREATE INDEX IF NOT EXISTS idx_signals_created_at ON signals(created_at DESC);",
                 "CREATE INDEX IF NOT EXISTS idx_signals_symbol_timestamp ON signals(symbol, timestamp DESC);",
+                "CREATE INDEX IF NOT EXISTS idx_outcomes_verdict ON signal_outcomes(verdict);",
+                "CREATE INDEX IF NOT EXISTS idx_outcomes_symbol_verdict ON signal_outcomes(symbol, verdict);",
+                "CREATE INDEX IF NOT EXISTS idx_outcomes_timestamp ON signal_outcomes(entry_timestamp DESC);",
+                "CREATE INDEX IF NOT EXISTS idx_outcomes_signal_id ON signal_outcomes(signal_id);",
             ]
 
             for index_sql in indexes:
