@@ -3,6 +3,7 @@ Database configuration and connection management
 Uses async PostgreSQL with asyncpg for optimal performance
 Falls back to SQLite for Replit compatibility
 """
+
 import os
 from contextlib import asynccontextmanager
 from typing import AsyncGenerator
@@ -11,26 +12,31 @@ from asyncpg import Pool
 import aiosqlite
 import sqlite3
 
+
 class Database:
     """
     Async database manager with PostgreSQL and SQLite support
     Handles connection pooling and schema initialization
     """
-    
+
     def __init__(self):
         self.pool: Pool | None = None
         self.sqlite_conn: aiosqlite.Connection | None = None
         self.database_url = os.getenv("DATABASE_URL")
-        self.use_postgres = bool(self.database_url and not self.database_url.startswith("sqlite"))
-        
+        self.use_postgres = bool(
+            self.database_url and not self.database_url.startswith("sqlite")
+        )
+
         # For Replit, use SQLite by default if no DATABASE_URL
         if not self.database_url:
             self.database_url = "sqlite:///cryptosatx.db"
             self.use_postgres = False
-            print("🔄 Using SQLite database for Replit compatibility")
+            print("[INFO] Using SQLite database for Replit compatibility")
         else:
-            print(f"🗄️ Using {'PostgreSQL' if self.use_postgres else 'SQLite'} database")
-    
+            print(
+                f"[INFO] Using {'PostgreSQL' if self.use_postgres else 'SQLite'} database"
+            )
+
     async def connect(self):
         """Initialize connection pool or SQLite connection"""
         if self.use_postgres:
@@ -40,9 +46,9 @@ class Database:
                     min_size=2,
                     max_size=10,
                     command_timeout=60,
-                    timeout=30
+                    timeout=30,
                 )
-                print("✅ PostgreSQL connection pool created")
+                print("[SUCCESS] PostgreSQL connection pool created")
         else:
             if self.sqlite_conn is None:
                 db_path = self.database_url.replace("sqlite:///", "")
@@ -50,24 +56,24 @@ class Database:
                 # Enable foreign keys and WAL mode for better performance
                 await self.sqlite_conn.execute("PRAGMA foreign_keys = ON")
                 await self.sqlite_conn.execute("PRAGMA journal_mode = WAL")
-                print("✅ SQLite connection established")
-        
+                print("[SUCCESS] SQLite connection established")
+
         # Initialize schema on first connect
         await self.init_schema()
-    
+
     async def disconnect(self):
         """Close connection pool or SQLite connection"""
         if self.use_postgres:
             if self.pool:
                 await self.pool.close()
                 self.pool = None
-                print("✅ PostgreSQL connection pool closed")
+                print("[SUCCESS] PostgreSQL connection pool closed")
         else:
             if self.sqlite_conn:
                 await self.sqlite_conn.close()
                 self.sqlite_conn = None
-                print("✅ SQLite connection closed")
-    
+                print("[SUCCESS] SQLite connection closed")
+
     async def init_schema(self):
         """
         Initialize database schema
@@ -75,7 +81,8 @@ class Database:
         """
         if self.use_postgres:
             async with self.pool.acquire() as conn:
-                await conn.execute("""
+                await conn.execute(
+                    """
                     CREATE TABLE IF NOT EXISTS signals (
                         id SERIAL PRIMARY KEY,
                         symbol VARCHAR(20) NOT NULL,
@@ -108,10 +115,12 @@ class Database:
                     -- MSS-specific indexes for optimal query performance (Nov 2025)
                     CREATE INDEX IF NOT EXISTS idx_signals_mss_timestamp ON signals(signal, timestamp DESC) WHERE signal LIKE 'MSS_%';
                     CREATE INDEX IF NOT EXISTS idx_signals_mss_score ON signals(score DESC) WHERE signal LIKE 'MSS_%';
-                """)
+                """
+                )
         else:
             # SQLite schema
-            await self.sqlite_conn.execute("""
+            await self.sqlite_conn.execute(
+                """
                 CREATE TABLE IF NOT EXISTS signals (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     symbol TEXT NOT NULL,
@@ -133,37 +142,38 @@ class Database:
                     -- Indexing for fast queries
                     created_at TEXT DEFAULT CURRENT_TIMESTAMP
                 );
-            """)
-            
+            """
+            )
+
             # Create indexes for SQLite
             indexes = [
                 "CREATE INDEX IF NOT EXISTS idx_signals_symbol ON signals(symbol);",
                 "CREATE INDEX IF NOT EXISTS idx_signals_timestamp ON signals(timestamp DESC);",
                 "CREATE INDEX IF NOT EXISTS idx_signals_signal ON signals(signal);",
                 "CREATE INDEX IF NOT EXISTS idx_signals_created_at ON signals(created_at DESC);",
-                "CREATE INDEX IF NOT EXISTS idx_signals_symbol_timestamp ON signals(symbol, timestamp DESC);"
+                "CREATE INDEX IF NOT EXISTS idx_signals_symbol_timestamp ON signals(symbol, timestamp DESC);",
             ]
-            
+
             for index_sql in indexes:
                 await self.sqlite_conn.execute(index_sql)
-            
+
             await self.sqlite_conn.commit()
-        
-        print("✅ Database schema initialized")
-    
+
+        print("[SUCCESS] Database schema initialized")
+
     @asynccontextmanager
     async def acquire(self) -> AsyncGenerator:
         """Get database connection from pool or SQLite connection"""
         if self.use_postgres:
             if not self.pool:
                 await self.connect()
-            
+
             async with self.pool.acquire() as connection:
                 yield connection
         else:
             if not self.sqlite_conn:
                 await self.connect()
-            
+
             yield self.sqlite_conn
 
 

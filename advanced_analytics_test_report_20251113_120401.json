@@ -1,0 +1,1301 @@
+{
+  "timestamp": "20251113_120401",
+  "summary": {
+    "total_tests": 22,
+    "successful": 17,
+    "failed": 5,
+    "success_rate": 77.27272727272727
+  },
+  "test_results": [
+    {
+      "endpoint": "/analytics/health/analytics",
+      "description": "Analytics Health Check",
+      "status_code": 200,
+      "response_time": 1.3388152122497559,
+      "success": true,
+      "data": {
+        "status": "healthy",
+        "services": {
+          "advanced_analytics": "operational",
+          "performance_optimization": "operational"
+        },
+        "timestamp": 17217.203,
+        "version": "1.0.0"
+      }
+    },
+    {
+      "endpoint": "/analytics/patterns/BTC?timeframe=1h",
+      "description": "Single Symbol Pattern Detection (BTC)",
+      "status_code": 200,
+      "response_time": 0.006793022155761719,
+      "success": true,
+      "data": {
+        "symbol": "BTC",
+        "timeframe": "1h",
+        "patterns_detected": 4,
+        "patterns": [
+          {
+            "pattern_type": "head_and_shoulders",
+            "confidence": 0.75,
+            "timeframe": "4h",
+            "entry_price": 49432.96798364348,
+            "targets": [
+              46961.31958446131,
+              44489.671185279134
+            ],
+            "stop_loss": 50421.62734331635,
+            "description": "Head and shoulders pattern detected, indicating potential bearish reversal"
+          },
+          {
+            "pattern_type": "double_top",
+            "confidence": 0.7,
+            "timeframe": "1h",
+            "entry_price": 49432.96798364348,
+            "targets": [
+              46961.31958446131
+            ],
+            "stop_loss": 50421.62734331635,
+            "description": "Double Top pattern detected"
+          },
+          {
+            "pattern_type": "descending_triangle",
+            "confidence": 0.65,
+            "timeframe": "2h",
+            "entry_price": 49432.96798364348,
+            "targets": [
+              50915.95702315278
+            ],
+            "stop_loss": 48444.30862397061,
+            "description": "Descending Triangle pattern detected"
+          },
+          {
+            "pattern_type": "falling_wedge",
+            "confidence": 0.55,
+            "timeframe": "4h",
+            "entry_price": 49432.96798364348,
+            "targets": [
+              51904.616382825654
+            ],
+            "stop_loss": 48444.30862397061,
+            "description": "Falling Wedge pattern detected"
+          }
+        ],
+        "analysis_time": "2025-11-13T04:59:50.363767"
+      }
+    },
+    {
+      "endpoint": "/analytics/patterns/batch?symbols=BTC&symbols=ETH&symbols=SOL&timeframe=1h",
+      "description": "Batch Pattern Detection",
+      "status_code": 200,
+      "response_time": 0.002521514892578125,
+      "success": true,
+      "data": {
+        "symbol": "batch",
+        "timeframe": "1h",
+        "patterns_detected": 3,
+        "patterns": [
+          {
+            "pattern_type": "head_and_shoulders",
+            "confidence": 0.75,
+            "timeframe": "4h",
+            "entry_price": 2519.5533944600566,
+            "targets": [
+              2393.5757247370534,
+              2267.598055014051
+            ],
+            "stop_loss": 2569.9444623492577,
+            "description": "Head and shoulders pattern detected, indicating potential bearish reversal"
+          },
+          {
+            "pattern_type": "descending_triangle",
+            "confidence": 0.65,
+            "timeframe": "2h",
+            "entry_price": 2519.5533944600566,
+            "targets": [
+              2595.1399962938585
+            ],
+            "stop_loss": 2469.1623265708554,
+            "description": "Descending Triangle pattern detected"
+          },
+          {
+            "pattern_type": "falling_wedge",
+            "confidence": 0.55,
+            "timeframe": "4h",
+            "entry_price": 2519.5533944600566,
+            "targets": [
+              2645.5310641830597
+            ],
+            "stop_loss": 2469.1623265708554,
+            "description": "Falling Wedge pattern detected"
+          }
+        ],
+        "analysis_time": "2025-11-13T04:59:50.363767"
+      }
+    },
+    {
+      "endpoint": "/analytics/patterns/ETH?timeframe=5m",
+      "description": "Pattern Detection - 5m timeframe",
+      "status_code": 200,
+      "response_time": 0.0009179115295410156,
+      "success": true,
+      "data": {
+        "symbol": "ETH",
+        "timeframe": "5m",
+        "patterns_detected": 3,
+        "patterns": [
+          {
+            "pattern_type": "head_and_shoulders",
+            "confidence": 0.75,
+            "timeframe": "4h",
+            "entry_price": 2421.5508617158875,
+            "targets": [
+              2300.473318630093,
+              2179.395775544299
+            ],
+            "stop_loss": 2469.9818789502056,
+            "description": "Head and shoulders pattern detected, indicating potential bearish reversal"
+          },
+          {
+            "pattern_type": "descending_triangle",
+            "confidence": 0.65,
+            "timeframe": "2h",
+            "entry_price": 2421.5508617158875,
+            "targets": [
+              2494.1973875673643
+            ],
+            "stop_loss": 2373.1198444815695,
+            "description": "Descending Triangle pattern detected"
+          },
+          {
+            "pattern_type": "falling_wedge",
+            "confidence": 0.55,
+            "timeframe": "4h",
+            "entry_price": 2421.5508617158875,
+            "targets": [
+              2542.628404801682
+            ],
+            "stop_loss": 2373.1198444815695,
+            "description": "Falling Wedge pattern detected"
+          }
+        ],
+        "analysis_time": "2025-11-13T04:59:50.862190"
+      }
+    },
+    {
+      "endpoint": "/analytics/patterns/ETH?timeframe=15m",
+      "description": "Pattern Detection - 15m timeframe",
+      "status_code": 200,
+      "response_time": 0.0,
+      "success": true,
+      "data": {
+        "symbol": "ETH",
+        "timeframe": "15m",
+        "patterns_detected": 3,
+        "patterns": [
+          {
+            "pattern_type": "head_and_shoulders",
+            "confidence": 0.75,
+            "timeframe": "4h",
+            "entry_price": 2573.559162476409,
+            "targets": [
+              2444.881204352588,
+              2316.203246228768
+            ],
+            "stop_loss": 2625.030345725937,
+            "description": "Head and shoulders pattern detected, indicating potential bearish reversal"
+          },
+          {
+            "pattern_type": "descending_triangle",
+            "confidence": 0.65,
+            "timeframe": "2h",
+            "entry_price": 2573.559162476409,
+            "targets": [
+              2650.7659373507013
+            ],
+            "stop_loss": 2522.0879792268806,
+            "description": "Descending Triangle pattern detected"
+          },
+          {
+            "pattern_type": "falling_wedge",
+            "confidence": 0.55,
+            "timeframe": "4h",
+            "entry_price": 2573.559162476409,
+            "targets": [
+              2702.2371206002294
+            ],
+            "stop_loss": 2522.0879792268806,
+            "description": "Falling Wedge pattern detected"
+          }
+        ],
+        "analysis_time": "2025-11-13T04:59:50.883165"
+      }
+    },
+    {
+      "endpoint": "/analytics/patterns/ETH?timeframe=1h",
+      "description": "Pattern Detection - 1h timeframe",
+      "status_code": 200,
+      "response_time": 0.0,
+      "success": true,
+      "data": {
+        "symbol": "ETH",
+        "timeframe": "1h",
+        "patterns_detected": 3,
+        "patterns": [
+          {
+            "pattern_type": "head_and_shoulders",
+            "confidence": 0.75,
+            "timeframe": "4h",
+            "entry_price": 2726.2763378561963,
+            "targets": [
+              2589.9625209633864,
+              2453.6487040705765
+            ],
+            "stop_loss": 2780.80186461332,
+            "description": "Head and shoulders pattern detected, indicating potential bearish reversal"
+          },
+          {
+            "pattern_type": "descending_triangle",
+            "confidence": 0.65,
+            "timeframe": "2h",
+            "entry_price": 2726.2763378561963,
+            "targets": [
+              2808.0646279918824
+            ],
+            "stop_loss": 2671.7508110990725,
+            "description": "Descending Triangle pattern detected"
+          },
+          {
+            "pattern_type": "falling_wedge",
+            "confidence": 0.55,
+            "timeframe": "4h",
+            "entry_price": 2726.2763378561963,
+            "targets": [
+              2862.590154749006
+            ],
+            "stop_loss": 2671.7508110990725,
+            "description": "Falling Wedge pattern detected"
+          }
+        ],
+        "analysis_time": "2025-11-13T04:59:50.883165"
+      }
+    },
+    {
+      "endpoint": "/analytics/patterns/ETH?timeframe=4h",
+      "description": "Pattern Detection - 4h timeframe",
+      "status_code": 200,
+      "response_time": 0.006154537200927734,
+      "success": true,
+      "data": {
+        "symbol": "ETH",
+        "timeframe": "4h",
+        "patterns_detected": 3,
+        "patterns": [
+          {
+            "pattern_type": "head_and_shoulders",
+            "confidence": 0.75,
+            "timeframe": "4h",
+            "entry_price": 2377.905118713204,
+            "targets": [
+              2259.0098627775437,
+              2140.114606841884
+            ],
+            "stop_loss": 2425.4632210874684,
+            "description": "Head and shoulders pattern detected, indicating potential bearish reversal"
+          },
+          {
+            "pattern_type": "descending_triangle",
+            "confidence": 0.65,
+            "timeframe": "2h",
+            "entry_price": 2377.905118713204,
+            "targets": [
+              2449.2422722746
+            ],
+            "stop_loss": 2330.3470163389397,
+            "description": "Descending Triangle pattern detected"
+          },
+          {
+            "pattern_type": "falling_wedge",
+            "confidence": 0.55,
+            "timeframe": "4h",
+            "entry_price": 2377.905118713204,
+            "targets": [
+              2496.8003746488644
+            ],
+            "stop_loss": 2330.3470163389397,
+            "description": "Falling Wedge pattern detected"
+          }
+        ],
+        "analysis_time": "2025-11-13T04:59:50.893565"
+      }
+    },
+    {
+      "endpoint": "/analytics/prediction/BTC?horizon=1h",
+      "description": "Price Prediction - 1h horizon",
+      "status_code": 200,
+      "response_time": 0.0,
+      "success": true,
+      "data": {
+        "symbol": "BTC",
+        "prediction_horizon": "1h",
+        "consensus_prediction": {
+          "prediction": "neutral",
+          "confidence": 0.5375,
+          "expected_move": 0.00816239584073438,
+          "factors_consensus": [
+            "momentum",
+            "volume_confirmation",
+            "price_deviation",
+            "support_resistance",
+            "price_trend",
+            "price_position",
+            "volatility_regime",
+            "z_score",
+            "historical_volatility",
+            "sentiment",
+            "current_volatility",
+            "historical_patterns"
+          ]
+        },
+        "individual_predictions": [
+          {
+            "prediction_type": "trend_continuation",
+            "probability": 0.5,
+            "time_horizon": "12h",
+            "expected_move": -0.0036869056176724356,
+            "confidence_interval": [
+              -0.0019663496627586323,
+              -0.005407461572586239
+            ],
+            "factors": [
+              "price_trend",
+              "volume_confirmation",
+              "momentum"
+            ]
+          },
+          {
+            "prediction_type": "mean_reversion",
+            "probability": 0.3,
+            "time_horizon": "6h",
+            "expected_move": 0,
+            "confidence_interval": [
+              0.0,
+              0.0
+            ],
+            "factors": [
+              "z_score",
+              "historical_volatility",
+              "price_deviation"
+            ]
+          },
+          {
+            "prediction_type": "volatility_forecast",
+            "probability": 0.7,
+            "time_horizon": "24h",
+            "expected_move": 0.012400582706149169,
+            "confidence_interval": [
+              0.009920466164919336,
+              0.014880699247379002
+            ],
+            "factors": [
+              "current_volatility",
+              "volatility_regime",
+              "historical_patterns"
+            ]
+          },
+          {
+            "prediction_type": "price_target",
+            "probability": 0.65,
+            "time_horizon": "48h",
+            "expected_move": 0.016480301495554954,
+            "confidence_interval": [
+              0.011536211046888466,
+              0.02142439194422144
+            ],
+            "factors": [
+              "support_resistance",
+              "sentiment",
+              "price_position"
+            ]
+          }
+        ],
+        "confidence_score": 0.5375,
+        "analysis_time": "2025-11-13T04:59:51.109706"
+      }
+    },
+    {
+      "endpoint": "/analytics/prediction/BTC?horizon=4h",
+      "description": "Price Prediction - 4h horizon",
+      "status_code": 200,
+      "response_time": 0.003734111785888672,
+      "success": true,
+      "data": {
+        "symbol": "BTC",
+        "prediction_horizon": "4h",
+        "consensus_prediction": {
+          "prediction": "neutral",
+          "confidence": 0.5375,
+          "expected_move": 0.010212794992823414,
+          "factors_consensus": [
+            "momentum",
+            "volume_confirmation",
+            "price_deviation",
+            "support_resistance",
+            "price_trend",
+            "price_position",
+            "volatility_regime",
+            "z_score",
+            "historical_volatility",
+            "sentiment",
+            "current_volatility",
+            "historical_patterns"
+          ]
+        },
+        "individual_predictions": [
+          {
+            "prediction_type": "trend_continuation",
+            "probability": 0.5,
+            "time_horizon": "12h",
+            "expected_move": 0.0046600259201570755,
+            "confidence_interval": [
+              0.002485347157417107,
+              0.006834704682897044
+            ],
+            "factors": [
+              "price_trend",
+              "volume_confirmation",
+              "momentum"
+            ]
+          },
+          {
+            "prediction_type": "mean_reversion",
+            "probability": 0.3,
+            "time_horizon": "6h",
+            "expected_move": 0,
+            "confidence_interval": [
+              0.0,
+              0.0
+            ],
+            "factors": [
+              "z_score",
+              "historical_volatility",
+              "price_deviation"
+            ]
+          },
+          {
+            "prediction_type": "volatility_forecast",
+            "probability": 0.7,
+            "time_horizon": "24h",
+            "expected_move": 0.013584006347476144,
+            "confidence_interval": [
+              0.010867205077980916,
+              0.016300807616971374
+            ],
+            "factors": [
+              "current_volatility",
+              "volatility_regime",
+              "historical_patterns"
+            ]
+          },
+          {
+            "prediction_type": "price_target",
+            "probability": 0.65,
+            "time_horizon": "48h",
+            "expected_move": 0.015567218201936156,
+            "confidence_interval": [
+              0.010897052741355308,
+              0.020237383662517004
+            ],
+            "factors": [
+              "support_resistance",
+              "sentiment",
+              "price_position"
+            ]
+          }
+        ],
+        "confidence_score": 0.5375,
+        "analysis_time": "2025-11-13T04:59:51.122161"
+      }
+    },
+    {
+      "endpoint": "/analytics/prediction/BTC?horizon=24h",
+      "description": "Price Prediction - 24h horizon",
+      "status_code": 200,
+      "response_time": 0.0,
+      "success": true,
+      "data": {
+        "symbol": "BTC",
+        "prediction_horizon": "24h",
+        "consensus_prediction": {
+          "prediction": "neutral",
+          "confidence": 0.5375,
+          "expected_move": 0.012961027814688966,
+          "factors_consensus": [
+            "momentum",
+            "volume_confirmation",
+            "price_deviation",
+            "support_resistance",
+            "price_trend",
+            "price_position",
+            "volatility_regime",
+            "z_score",
+            "historical_volatility",
+            "sentiment",
+            "current_volatility",
+            "historical_patterns"
+          ]
+        },
+        "individual_predictions": [
+          {
+            "prediction_type": "trend_continuation",
+            "probability": 0.5,
+            "time_horizon": "12h",
+            "expected_move": 0.004195079216547922,
+            "confidence_interval": [
+              0.0022373755821588916,
+              0.006152782850936953
+            ],
+            "factors": [
+              "price_trend",
+              "volume_confirmation",
+              "momentum"
+            ]
+          },
+          {
+            "prediction_type": "mean_reversion",
+            "probability": 0.3,
+            "time_horizon": "6h",
+            "expected_move": 0,
+            "confidence_interval": [
+              0.0,
+              0.0
+            ],
+            "factors": [
+              "z_score",
+              "historical_volatility",
+              "price_deviation"
+            ]
+          },
+          {
+            "prediction_type": "volatility_forecast",
+            "probability": 0.7,
+            "time_horizon": "24h",
+            "expected_move": 0.019045367819140162,
+            "confidence_interval": [
+              0.01523629425531213,
+              0.022854441382968195
+            ],
+            "factors": [
+              "current_volatility",
+              "volatility_regime",
+              "historical_patterns"
+            ]
+          },
+          {
+            "prediction_type": "price_target",
+            "probability": 0.65,
+            "time_horizon": "48h",
+            "expected_move": 0.01913371187678338,
+            "confidence_interval": [
+              0.013393598313748365,
+              0.024873825439818396
+            ],
+            "factors": [
+              "support_resistance",
+              "sentiment",
+              "price_position"
+            ]
+          }
+        ],
+        "confidence_score": 0.5375,
+        "analysis_time": "2025-11-13T04:59:51.122161"
+      }
+    },
+    {
+      "endpoint": "/analytics/prediction/BTC?horizon=7d",
+      "description": "Price Prediction - 7d horizon",
+      "status_code": 200,
+      "response_time": 0.00643610954284668,
+      "success": true,
+      "data": {
+        "symbol": "BTC",
+        "prediction_horizon": "7d",
+        "consensus_prediction": {
+          "prediction": "neutral",
+          "confidence": 0.5375,
+          "expected_move": 0.010378202082810584,
+          "factors_consensus": [
+            "momentum",
+            "volume_confirmation",
+            "price_deviation",
+            "support_resistance",
+            "price_trend",
+            "price_position",
+            "volatility_regime",
+            "z_score",
+            "historical_volatility",
+            "sentiment",
+            "current_volatility",
+            "historical_patterns"
+          ]
+        },
+        "individual_predictions": [
+          {
+            "prediction_type": "trend_continuation",
+            "probability": 0.5,
+            "time_horizon": "12h",
+            "expected_move": 0.002163669356081523,
+            "confidence_interval": [
+              0.0011539569899101454,
+              0.0031733817222529
+            ],
+            "factors": [
+              "price_trend",
+              "volume_confirmation",
+              "momentum"
+            ]
+          },
+          {
+            "prediction_type": "mean_reversion",
+            "probability": 0.3,
+            "time_horizon": "6h",
+            "expected_move": 0,
+            "confidence_interval": [
+              0.0,
+              0.0
+            ],
+            "factors": [
+              "z_score",
+              "historical_volatility",
+              "price_deviation"
+            ]
+          },
+          {
+            "prediction_type": "volatility_forecast",
+            "probability": 0.7,
+            "time_horizon": "24h",
+            "expected_move": 0.01461025241498642,
+            "confidence_interval": [
+              0.011688201931989136,
+              0.0175323028979837
+            ],
+            "factors": [
+              "current_volatility",
+              "volatility_regime",
+              "historical_patterns"
+            ]
+          },
+          {
+            "prediction_type": "price_target",
+            "probability": 0.65,
+            "time_horizon": "48h",
+            "expected_move": 0.016929420168479238,
+            "confidence_interval": [
+              0.011850594117935466,
+              0.02200824621902301
+            ],
+            "factors": [
+              "support_resistance",
+              "sentiment",
+              "price_position"
+            ]
+          }
+        ],
+        "confidence_score": 0.5375,
+        "analysis_time": "2025-11-13T04:59:51.132930"
+      }
+    },
+    {
+      "endpoint": "/analytics/sentiment/BTC",
+      "description": "Sentiment Analysis - BTC",
+      "status_code": 200,
+      "response_time": 0.0009777545928955078,
+      "success": true,
+      "data": {
+        "symbol": "BTC",
+        "overall_sentiment": "neutral",
+        "sentiment_score": 0.12128920968410094,
+        "confidence": 0.8048472134092488,
+        "sources": [
+          {
+            "source": "social_media",
+            "sentiment": "bullish",
+            "score": 0.2479780051517737,
+            "confidence": 0.8456995269613854,
+            "mentions": 414
+          },
+          {
+            "source": "news",
+            "sentiment": "bullish",
+            "score": -0.2280878751029034,
+            "confidence": 0.8236893266756101,
+            "articles": 29
+          },
+          {
+            "source": "orderbook",
+            "sentiment": "bullish",
+            "score": 0.20996211386598151,
+            "confidence": 0.8,
+            "bid_ask_ratio": 1.1049810569329908
+          },
+          {
+            "source": "funding_rate",
+            "sentiment": "neutral",
+            "score": 0.2675548069911304,
+            "confidence": 0.75,
+            "funding_rate": -0.002675548069911304
+          }
+        ],
+        "analysis_time": "2025-11-13T04:59:51.164127"
+      }
+    },
+    {
+      "endpoint": "/analytics/sentiment/ETH",
+      "description": "Sentiment Analysis - ETH",
+      "status_code": 200,
+      "response_time": 0.0,
+      "success": true,
+      "data": {
+        "symbol": "ETH",
+        "overall_sentiment": "bullish",
+        "sentiment_score": 0.5363127945725541,
+        "confidence": 0.8250216864386171,
+        "sources": [
+          {
+            "source": "social_media",
+            "sentiment": "bullish",
+            "score": 0.7340561048028125,
+            "confidence": 0.8709094220087319,
+            "mentions": 912
+          },
+          {
+            "source": "news",
+            "sentiment": "bullish",
+            "score": 0.42311267016907705,
+            "confidence": 0.8791773237457363,
+            "articles": 10
+          },
+          {
+            "source": "orderbook",
+            "sentiment": "neutral",
+            "score": 0.03147261387515954,
+            "confidence": 0.8,
+            "bid_ask_ratio": 1.0157363069375798
+          },
+          {
+            "source": "funding_rate",
+            "sentiment": "bullish",
+            "score": 0.9778842811857826,
+            "confidence": 0.75,
+            "funding_rate": -0.009778842811857827
+          }
+        ],
+        "analysis_time": "2025-11-13T04:59:51.195449"
+      }
+    },
+    {
+      "endpoint": "/analytics/sentiment/SOL",
+      "description": "Sentiment Analysis - SOL",
+      "status_code": 200,
+      "response_time": 0.0,
+      "success": true,
+      "data": {
+        "symbol": "SOL",
+        "overall_sentiment": "neutral",
+        "sentiment_score": 0.010441852471379576,
+        "confidence": 0.7203483068146864,
+        "sources": [
+          {
+            "source": "social_media",
+            "sentiment": "bearish",
+            "score": -0.8646764924504617,
+            "confidence": 0.6168935591997716,
+            "mentions": 465
+          },
+          {
+            "source": "news",
+            "sentiment": "bearish",
+            "score": 0.00942848704739685,
+            "confidence": 0.714499668058974,
+            "articles": 9
+          },
+          {
+            "source": "orderbook",
+            "sentiment": "neutral",
+            "score": -0.1505994288356356,
+            "confidence": 0.8,
+            "bid_ask_ratio": 0.9247002855821822
+          },
+          {
+            "source": "funding_rate",
+            "sentiment": "bullish",
+            "score": 0.9029911122374041,
+            "confidence": 0.75,
+            "funding_rate": -0.009029911122374041
+          }
+        ],
+        "analysis_time": "2025-11-13T04:59:51.195449"
+      }
+    },
+    {
+      "endpoint": "/analytics/anomalies/BTC",
+      "description": "Anomaly Detection - BTC",
+      "status_code": 200,
+      "response_time": 0.009757041931152344,
+      "success": true,
+      "data": {
+        "symbol": "BTC",
+        "anomalies_detected": 0,
+        "anomalies": [],
+        "risk_level": "low",
+        "analysis_time": "2025-11-13T05:04:01.381814"
+      }
+    },
+    {
+      "endpoint": "/analytics/comprehensive/BTC?timeframe=1h&horizon=24h",
+      "description": "Comprehensive Analysis - BTC",
+      "status_code": 200,
+      "response_time": 0.0,
+      "success": true,
+      "data": {
+        "symbol": "BTC",
+        "timeframe": "1h",
+        "prediction_horizon": "24h",
+        "analysis_time": "2025-11-13T04:59:51.213180",
+        "patterns": {
+          "symbol": "BTC",
+          "timeframe": "1h",
+          "patterns_detected": 4,
+          "patterns": [
+            {
+              "pattern_type": "head_and_shoulders",
+              "confidence": 0.75,
+              "timeframe": "4h",
+              "entry_price": 49598.983781703995,
+              "targets": [
+                47119.034592618795,
+                44639.085403533594
+              ],
+              "stop_loss": 50590.963457338075,
+              "description": "Head and shoulders pattern detected, indicating potential bearish reversal"
+            },
+            {
+              "pattern_type": "double_top",
+              "confidence": 0.7,
+              "timeframe": "1h",
+              "entry_price": 49598.983781703995,
+              "targets": [
+                47119.034592618795
+              ],
+              "stop_loss": 50590.963457338075,
+              "description": "Double Top pattern detected"
+            },
+            {
+              "pattern_type": "descending_triangle",
+              "confidence": 0.65,
+              "timeframe": "2h",
+              "entry_price": 49598.983781703995,
+              "targets": [
+                51086.953295155115
+              ],
+              "stop_loss": 48607.004106069915,
+              "description": "Descending Triangle pattern detected"
+            },
+            {
+              "pattern_type": "falling_wedge",
+              "confidence": 0.55,
+              "timeframe": "4h",
+              "entry_price": 49598.983781703995,
+              "targets": [
+                52078.932970789196
+              ],
+              "stop_loss": 48607.004106069915,
+              "description": "Falling Wedge pattern detected"
+            }
+          ],
+          "analysis_time": "2025-11-13T04:59:51.213180"
+        },
+        "prediction": {
+          "symbol": "BTC",
+          "prediction_horizon": "24h",
+          "consensus_prediction": {
+            "prediction": "neutral",
+            "confidence": 0.5375,
+            "expected_move": 0.010903697664578606,
+            "factors_consensus": [
+              "momentum",
+              "volume_confirmation",
+              "price_deviation",
+              "support_resistance",
+              "price_trend",
+              "price_position",
+              "volatility_regime",
+              "z_score",
+              "historical_volatility",
+              "sentiment",
+              "current_volatility",
+              "historical_patterns"
+            ]
+          },
+          "individual_predictions": [
+            {
+              "prediction_type": "trend_continuation",
+              "probability": 0.5,
+              "time_horizon": "12h",
+              "expected_move": 0.0011778293318227908,
+              "confidence_interval": [
+                0.0006281756436388218,
+                0.00172748302000676
+              ],
+              "factors": [
+                "price_trend",
+                "volume_confirmation",
+                "momentum"
+              ]
+            },
+            {
+              "prediction_type": "mean_reversion",
+              "probability": 0.3,
+              "time_horizon": "6h",
+              "expected_move": 0,
+              "confidence_interval": [
+                0.0,
+                0.0
+              ],
+              "factors": [
+                "z_score",
+                "historical_volatility",
+                "price_deviation"
+              ]
+            },
+            {
+              "prediction_type": "volatility_forecast",
+              "probability": 0.7,
+              "time_horizon": "24h",
+              "expected_move": 0.014327047849840836,
+              "confidence_interval": [
+                0.01146163827987267,
+                0.017192457419809
+              ],
+              "factors": [
+                "current_volatility",
+                "volatility_regime",
+                "historical_patterns"
+              ]
+            },
+            {
+              "prediction_type": "price_target",
+              "probability": 0.65,
+              "time_horizon": "48h",
+              "expected_move": 0.019730925873913882,
+              "confidence_interval": [
+                0.013811648111739716,
+                0.025650203636088047
+              ],
+              "factors": [
+                "support_resistance",
+                "sentiment",
+                "price_position"
+              ]
+            }
+          ],
+          "confidence_score": 0.5375,
+          "analysis_time": "2025-11-13T04:59:51.213180"
+        },
+        "sentiment": {
+          "symbol": "BTC",
+          "overall_sentiment": "bullish",
+          "sentiment_score": 0.4144304896231122,
+          "confidence": 0.8038460950360893,
+          "sources": [
+            {
+              "source": "social_media",
+              "sentiment": "neutral",
+              "score": 0.9853558644153244,
+              "confidence": 0.8480761297721624,
+              "mentions": 127
+            },
+            {
+              "source": "news",
+              "sentiment": "bearish",
+              "score": -0.08373852278969673,
+              "confidence": 0.8173082503721945,
+              "articles": 10
+            },
+            {
+              "source": "orderbook",
+              "sentiment": "neutral",
+              "score": -0.03641139432319185,
+              "confidence": 0.8,
+              "bid_ask_ratio": 0.9817943028384041
+            },
+            {
+              "source": "funding_rate",
+              "sentiment": "bullish",
+              "score": 0.7926211147421786,
+              "confidence": 0.75,
+              "funding_rate": -0.007926211147421786
+            }
+          ],
+          "analysis_time": "2025-11-13T04:59:51.213180"
+        },
+        "anomalies": {
+          "symbol": "BTC",
+          "anomalies_detected": 0,
+          "anomalies": [],
+          "risk_level": "low",
+          "analysis_time": "2025-11-13T04:59:51.221243"
+        },
+        "summary": {
+          "patterns_detected": 4,
+          "prediction_confidence": 0.5375,
+          "sentiment_score": 0.4144304896231122,
+          "anomalies_count": 0,
+          "overall_risk": "low"
+        }
+      }
+    },
+    {
+      "endpoint": "/analytics/comprehensive/ETH?timeframe=1h&horizon=24h",
+      "description": "Comprehensive Analysis - ETH",
+      "status_code": 200,
+      "response_time": 0.0,
+      "success": true,
+      "data": {
+        "symbol": "ETH",
+        "timeframe": "1h",
+        "prediction_horizon": "24h",
+        "analysis_time": "2025-11-13T04:59:51.243156",
+        "patterns": {
+          "symbol": "ETH",
+          "timeframe": "1h",
+          "patterns_detected": 3,
+          "patterns": [
+            {
+              "pattern_type": "head_and_shoulders",
+              "confidence": 0.75,
+              "timeframe": "4h",
+              "entry_price": 2529.8949688976404,
+              "targets": [
+                2403.4002204527583,
+                2276.9054720078766
+              ],
+              "stop_loss": 2580.492868275593,
+              "description": "Head and shoulders pattern detected, indicating potential bearish reversal"
+            },
+            {
+              "pattern_type": "descending_triangle",
+              "confidence": 0.65,
+              "timeframe": "2h",
+              "entry_price": 2529.8949688976404,
+              "targets": [
+                2605.79181796457
+              ],
+              "stop_loss": 2479.2970695196877,
+              "description": "Descending Triangle pattern detected"
+            },
+            {
+              "pattern_type": "falling_wedge",
+              "confidence": 0.55,
+              "timeframe": "4h",
+              "entry_price": 2529.8949688976404,
+              "targets": [
+                2656.3897173425225
+              ],
+              "stop_loss": 2479.2970695196877,
+              "description": "Falling Wedge pattern detected"
+            }
+          ],
+          "analysis_time": "2025-11-13T04:59:51.243156"
+        },
+        "prediction": {
+          "symbol": "ETH",
+          "prediction_horizon": "24h",
+          "consensus_prediction": {
+            "prediction": "bullish",
+            "confidence": 0.5375,
+            "expected_move": 0.16009781712960147,
+            "factors_consensus": [
+              "momentum",
+              "volume_confirmation",
+              "price_deviation",
+              "support_resistance",
+              "price_trend",
+              "price_position",
+              "volatility_regime",
+              "z_score",
+              "historical_volatility",
+              "sentiment",
+              "current_volatility",
+              "historical_patterns"
+            ]
+          },
+          "individual_predictions": [
+            {
+              "prediction_type": "trend_continuation",
+              "probability": 0.5,
+              "time_horizon": "12h",
+              "expected_move": 0.07163223446412709,
+              "confidence_interval": [
+                0.03820385838086779,
+                0.10506061054738641
+              ],
+              "factors": [
+                "price_trend",
+                "volume_confirmation",
+                "momentum"
+              ]
+            },
+            {
+              "prediction_type": "mean_reversion",
+              "probability": 0.3,
+              "time_horizon": "6h",
+              "expected_move": 0,
+              "confidence_interval": [
+                0.0,
+                0.0
+              ],
+              "factors": [
+                "z_score",
+                "historical_volatility",
+                "price_deviation"
+              ]
+            },
+            {
+              "prediction_type": "volatility_forecast",
+              "probability": 0.7,
+              "time_horizon": "24h",
+              "expected_move": 0.25022601891313634,
+              "confidence_interval": [
+                0.2001808151305091,
+                0.3002712226957636
+              ],
+              "factors": [
+                "current_volatility",
+                "volatility_regime",
+                "historical_patterns"
+              ]
+            },
+            {
+              "prediction_type": "price_target",
+              "probability": 0.65,
+              "time_horizon": "48h",
+              "expected_move": 0.2049784251652065,
+              "confidence_interval": [
+                0.14348489761564454,
+                0.2664719527147685
+              ],
+              "factors": [
+                "support_resistance",
+                "sentiment",
+                "price_position"
+              ]
+            }
+          ],
+          "confidence_score": 0.5375,
+          "analysis_time": "2025-11-13T04:59:51.243156"
+        },
+        "sentiment": {
+          "symbol": "ETH",
+          "overall_sentiment": "neutral",
+          "sentiment_score": -0.18223661310395176,
+          "confidence": 0.764137410258066,
+          "sources": [
+            {
+              "source": "social_media",
+              "sentiment": "bearish",
+              "score": -0.04533893986474591,
+              "confidence": 0.7388626750938517,
+              "mentions": 644
+            },
+            {
+              "source": "news",
+              "sentiment": "neutral",
+              "score": 0.15147894887697388,
+              "confidence": 0.767686965938412,
+              "articles": 39
+            },
+            {
+              "source": "orderbook",
+              "sentiment": "neutral",
+              "score": -0.02187695012609936,
+              "confidence": 0.8,
+              "bid_ask_ratio": 0.9890615249369503
+            },
+            {
+              "source": "funding_rate",
+              "sentiment": "bearish",
+              "score": -0.829737144716611,
+              "confidence": 0.75,
+              "funding_rate": 0.00829737144716611
+            }
+          ],
+          "analysis_time": "2025-11-13T04:59:51.243156"
+        },
+        "anomalies": {
+          "symbol": "ETH",
+          "anomalies_detected": 0,
+          "anomalies": [],
+          "risk_level": "low",
+          "analysis_time": "2025-11-13T04:59:51.243156"
+        },
+        "summary": {
+          "patterns_detected": 3,
+          "prediction_confidence": 0.5375,
+          "sentiment_score": -0.18223661310395176,
+          "anomalies_count": 0,
+          "overall_risk": "low"
+        }
+      }
+    },
+    {
+      "endpoint": "/analytics/performance/metrics",
+      "description": "System Performance Metrics",
+      "status_code": 500,
+      "response_time": 0.01041722297668457,
+      "success": false,
+      "data": {
+        "detail": "Failed to analyze performance: 'Connection' object has no attribute 'fetchrow'"
+      }
+    },
+    {
+      "endpoint": "/analytics/performance/cache",
+      "description": "Cache Performance Metrics",
+      "status_code": 500,
+      "response_time": 0.0,
+      "success": false,
+      "data": {
+        "detail": "Failed to analyze performance: 'Connection' object has no attribute 'fetchrow'"
+      }
+    },
+    {
+      "endpoint": "/analytics/performance/recommendations",
+      "description": "Auto-scale Recommendations",
+      "status_code": 500,
+      "response_time": 0.004176139831542969,
+      "success": false,
+      "data": {
+        "detail": "Failed to analyze performance: 'Connection' object has no attribute 'fetchrow'"
+      }
+    },
+    {
+      "endpoint": "/analytics/performance/load-balance?servers=server1&servers=server2&servers=server3",
+      "description": "Load Balancing Test",
+      "status_code": 500,
+      "response_time": 0.0,
+      "success": false,
+      "data": {
+        "detail": "Failed to analyze performance: 'Connection' object has no attribute 'fetchrow'"
+      }
+    },
+    {
+      "endpoint": "/analytics/performance/rate-limit/test_client?limit=10&window=60",
+      "description": "Rate Limiting Test",
+      "status_code": 405,
+      "response_time": 0.0048274993896484375,
+      "success": false,
+      "data": {
+        "detail": "Method Not Allowed"
+      }
+    }
+  ]
+}
