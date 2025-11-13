@@ -23278,5 +23278,126 @@
         }
       }
     }
+  },
+  {
+    "id": "sig_20251113084921392667",
+    "saved_at": "2025-11-13T08:49:21.392702",
+    "data": {
+      "symbol": "BTC",
+      "timestamp": "2025-11-13T08:49:15.253934",
+      "signal": "LONG",
+      "score": 53.3,
+      "confidence": "low",
+      "price": 103670.8,
+      "reasons": [
+        "High funding rate (0.625%) - longs overleveraged",
+        "Overcrowded longs (69.2%) - contrarian bearish",
+        "Price trend: neutral"
+      ],
+      "metrics": {
+        "fundingRate": 0.006251,
+        "openInterest": 67586093132.9874,
+        "socialScore": 52.5,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": true,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "bullish",
+        "priceChanges": {
+          "5m": -0.1,
+          "15m": 0.04,
+          "1h": 0.14,
+          "4h": 1.72,
+          "24h": -0.39
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0327,
+          "oiVolumeRatio": 0.5606
+        },
+        "fundingRates": {
+          "oiWeighted": 0.006251,
+          "volumeWeighted": 0.00578
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 219,
+        "socialMetrics": {
+          "volume": 0,
+          "engagement": 0,
+          "dominance": 0.0,
+          "tweetVolume": 0,
+          "redditVolume": 0,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 0.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 28.2,
+          "momentumLevel": "very_weak",
+          "volumeChange24h": 0.0,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 9.82,
+          "sellPressure": 90.18,
+          "avgTradeSize": 0.0
+        },
+        "volatility7d": 8.3
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "BTC trading signal analysis suggests skipping this long opportunity. High funding rate and overcrowded longs present significant risks, despite a bullish trend. Caution advised.",
+        "layerChecks": {
+          "agreements": [
+            "multiTimeframeTrend is bullish",
+            "smartMoneyBias is long",
+            "premiumMetrics indicate a very bullish longShortSentiment"
+          ],
+          "conflicts": [
+            "High funding rate indicates longs are overleveraged",
+            "Overcrowded longs suggest a contrarian bearish view"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 2.0,
+          "recommendedPositionSize": 2.0,
+          "stopLossPrice": 99338.30714287,
+          "stopLossDistancePct": 4.1791,
+          "takeProfitPrice": 110169.5392857,
+          "takeProfitDistancePct": 6.2686,
+          "riskRewardRatio": 1.5,
+          "atrValue": 1444.16428571,
+          "atrPercentage": 1.3931,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 200% of base | SL: 4.18% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
   }
 ]
