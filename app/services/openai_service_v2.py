@@ -64,7 +64,7 @@ class OpenAIServiceV2:
         self,
         symbol: str,
         signal_data: Dict[str, Any],
-        comprehensive_metrics: Dict[str, Any] = None,
+        comprehensive_metrics: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
         Phase 1: Enhanced signal validation with verdict system
@@ -188,7 +188,7 @@ Be strict. If in doubt, choose SKIP or WAIT."""
         self,
         symbol: str,
         signal_data: Dict[str, Any],
-        comprehensive_metrics: Dict[str, Any] = None,
+        comprehensive_metrics: Optional[Dict[str, Any]] = None,
     ) -> str:
         """Build comprehensive prompt for Signal Judge"""
         

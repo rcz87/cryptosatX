@@ -4,9 +4,10 @@ Combines data from multiple sources to generate advanced trading signals
 Uses premium Coinglass endpoints and weighted scoring system
 """
 
+import os
 import asyncio
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
 from dataclasses import dataclass, asdict
 
 from app.services.coinapi_service import coinapi_service
@@ -18,6 +19,8 @@ from app.services.lunarcrush_service import lunarcrush_service
 from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
 from app.services.okx_service import okx_service
 from app.services.telegram_notifier import telegram_notifier
+from app.services.openai_service_v2 import get_openai_service_v2
+from app.utils import risk_rules
 
 
 @dataclass
@@ -242,9 +245,25 @@ class SignalEngine:
                 "allMetrics": asdict(context),
             }
 
+        # Apply AI Verdict Layer (OpenAI V2 with rule-based fallback)
+        enable_ai_judge = os.getenv("ENABLE_AI_JUDGE", "true").lower() == "true"
+        if enable_ai_judge:
+            response = await self._apply_ai_verdict(response)
+
         # Auto-send Telegram alert for actionable signals (LONG/SHORT only)
-        print(f"🟢 Signal={signal}, Telegram enabled={telegram_notifier.enabled}")
-        if signal in ["LONG", "SHORT"] and telegram_notifier.enabled:
+        # Respect AI verdict: skip sending if verdict is SKIP and auto_skip is enabled
+        auto_skip_avoid = os.getenv("AUTO_SKIP_AVOID_SIGNALS", "true").lower() == "true"
+        ai_verdict = response.get("aiVerdictLayer", {}).get("verdict", "CONFIRM")
+        
+        should_send_telegram = (
+            signal in ["LONG", "SHORT"] 
+            and telegram_notifier.enabled
+            and not (auto_skip_avoid and ai_verdict == "SKIP")
+        )
+        
+        print(f"🟢 Signal={signal}, Verdict={ai_verdict}, Telegram enabled={telegram_notifier.enabled}, Should send={should_send_telegram}")
+        
+        if should_send_telegram:
             print(f"🟡 Attempting to send Telegram alert for {symbol} {signal}")
             try:
                 result = await telegram_notifier.send_signal_alert(response)
@@ -254,6 +273,103 @@ class SignalEngine:
                 print(f"⚠️ Telegram notification failed: {e}")
 
         return response
+
+    async def _apply_ai_verdict(self, signal_data: Dict) -> Dict:
+        """
+        Apply AI verdict layer using OpenAI V2 Signal Judge with rule-based fallback
+        
+        Enhances signal with:
+        - verdict: CONFIRM/DOWNSIZE/SKIP/WAIT
+        - riskMode: NORMAL/REDUCED/AVOID/AGGRESSIVE
+        - riskMultiplier: 0.0-1.5x position size
+        - aiSummary: Telegram-ready summary
+        - layerChecks: Key agreements and conflicts
+        
+        Falls back to rule-based assessment if OpenAI fails/times out
+        """
+        symbol = signal_data.get("symbol", "UNKNOWN")
+        ai_timeout = int(os.getenv("AI_JUDGE_TIMEOUT", "15"))
+        
+        try:
+            print(f"🤖 Calling OpenAI V2 Signal Judge for {symbol}...")
+            
+            openai_v2 = await asyncio.wait_for(
+                get_openai_service_v2(),
+                timeout=ai_timeout
+            )
+            
+            validation_result = await asyncio.wait_for(
+                openai_v2.validate_signal_with_verdict(
+                    symbol=symbol,
+                    signal_data=signal_data,
+                    comprehensive_metrics={
+                        "premiumMetrics": signal_data.get("premiumMetrics", {}),
+                        "comprehensiveMetrics": signal_data.get("comprehensiveMetrics", {}),
+                        "lunarCrushMetrics": signal_data.get("lunarCrushMetrics", {}),
+                        "coinAPIMetrics": signal_data.get("coinAPIMetrics", {}),
+                    }
+                ),
+                timeout=ai_timeout
+            )
+            
+            if validation_result.get("success"):
+                print(f"✅ OpenAI V2 verdict: {validation_result.get('verdict')} (confidence: {validation_result.get('ai_confidence')}%)")
+                
+                risk_suggestion = validation_result.get("adjusted_risk_suggestion", {})
+                verdict = validation_result.get("verdict", "SKIP")
+                
+                signal_data["aiVerdictLayer"] = {
+                    "verdict": verdict,
+                    "riskMode": risk_suggestion.get("risk_factor", "NORMAL"),
+                    "riskMultiplier": risk_suggestion.get("position_size_multiplier", 1.0),
+                    "aiConfidence": validation_result.get("ai_confidence", 50),
+                    "aiSummary": validation_result.get("telegram_summary", ""),
+                    "layerChecks": {
+                        "agreements": validation_result.get("key_agreements", []),
+                        "conflicts": validation_result.get("key_conflicts", []),
+                    },
+                    "source": "openai_v2",
+                    "model": validation_result.get("model_used", "gpt-4-turbo"),
+                }
+                
+                return signal_data
+            
+            else:
+                error_msg = validation_result.get("error", "Unknown error")
+                print(f"⚠️  OpenAI V2 validation failed: {error_msg}. Falling back to rule-based.")
+                raise Exception(f"V2 validation failed: {error_msg}")
+        
+        except asyncio.TimeoutError:
+            print(f"⏱️  OpenAI V2 timeout after {ai_timeout}s. Falling back to rule-based assessment.")
+        except Exception as e:
+            print(f"⚠️  OpenAI V2 error: {e}. Falling back to rule-based assessment.")
+        
+        print(f"🔧 Using rule-based risk assessment for {symbol}")
+        verdict = risk_rules.rule_based_verdict(signal_data)
+        risk_mode = risk_rules.rule_based_risk_mode(signal_data)
+        risk_multiplier = risk_rules.rule_based_multiplier(signal_data)
+        warnings, agreements = risk_rules.get_risk_warnings(signal_data)
+        summary = risk_rules.generate_rule_based_summary(
+            signal_data, verdict, risk_mode, warnings, agreements
+        )
+        
+        signal_data["aiVerdictLayer"] = {
+            "verdict": verdict,
+            "riskMode": risk_mode,
+            "riskMultiplier": risk_multiplier,
+            "aiConfidence": None,
+            "aiSummary": summary,
+            "layerChecks": {
+                "agreements": agreements[:3],
+                "conflicts": warnings[:3],
+            },
+            "source": "rule_fallback",
+            "model": None,
+        }
+        
+        print(f"🔧 Rule-based verdict: {verdict}, Risk mode: {risk_mode}, Multiplier: {risk_multiplier}x")
+        
+        return signal_data
 
     async def _get_funding_and_oi_with_fallback(self, symbol: str, cg_data: Dict, comp_markets: Dict, comprehensive_available: bool) -> Dict:
         """
