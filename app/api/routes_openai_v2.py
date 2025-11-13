@@ -117,9 +117,10 @@ async def validate_signal_with_verdict_endpoint(
         }
         
         log_api_call(
+            logger=default_logger,
             endpoint="/openai/v2/validate",
             symbol=symbol,
-            response_time_ms=elapsed,
+            duration=elapsed / 1000,
             status="success",
         )
         
@@ -128,9 +129,10 @@ async def validate_signal_with_verdict_endpoint(
     except Exception as e:
         default_logger.error(f"❌ Signal Judge V2 error for {symbol}: {e}")
         log_api_call(
+            logger=default_logger,
             endpoint="/openai/v2/validate",
             symbol=symbol,
-            response_time_ms=round((time.time() - start_time) * 1000),
+            duration=(time.time() - start_time),
             status="error",
         )
         raise HTTPException(
