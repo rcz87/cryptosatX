@@ -33,7 +33,6 @@ from app.api import (
     routes_analytics,  # ADDED FOR DATABASE ANALYTICS
     routes_rpc,  # ADDED FOR UNIFIED RPC ENDPOINT
     routes_gpt_actions,  # ADDED FOR GPT ACTIONS FLAT PARAMS
-    routes_advanced_analytics,  # ADDED FOR ADVANCED ANALYTICS & ML
 )
 
 # Load environment variables
@@ -72,13 +71,6 @@ async def lifespan(app: FastAPI):
 
     # Initialize database connection
     await db.connect()
-
-    # Initialize performance optimization service
-    from app.services.performance_optimization_service import (
-        performance_optimization_service,
-    )
-
-    await performance_optimization_service.initialize()
 
     yield
 
@@ -144,9 +136,6 @@ app.include_router(
 app.include_router(
     routes_gpt_actions.router, tags=["GPT Actions (Flat Params)"]
 )  # ADDED FOR GPT ACTIONS COMPATIBILITY
-app.include_router(
-    routes_advanced_analytics.router, tags=["Advanced Analytics & ML"]
-)  # ADDED FOR ADVANCED ANALYTICS & PERFORMANCE OPTIMIZATION
 
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility
