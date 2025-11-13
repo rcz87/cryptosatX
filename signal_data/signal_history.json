@@ -23885,5 +23885,126 @@
         }
       }
     }
+  },
+  {
+    "id": "sig_20251113114033866733",
+    "saved_at": "2025-11-13T11:40:33.866761",
+    "data": {
+      "symbol": "SOL",
+      "timestamp": "2025-11-13T11:40:28.173176",
+      "signal": "LONG",
+      "score": 52.8,
+      "confidence": "low",
+      "price": 156.07,
+      "reasons": [
+        "High funding rate (0.442%) - longs overleveraged",
+        "Overcrowded longs (81.2%) - contrarian bearish",
+        "Price trend: neutral"
+      ],
+      "metrics": {
+        "fundingRate": 0.004418,
+        "openInterest": 7699870928.2,
+        "socialScore": 46.3,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": true,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "bullish",
+        "priceChanges": {
+          "5m": 0.22,
+          "15m": -0.06,
+          "1h": 0.61,
+          "4h": 0.18,
+          "24h": -2.18
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.089,
+          "oiVolumeRatio": 0.3984
+        },
+        "fundingRates": {
+          "oiWeighted": 0.004418,
+          "volumeWeighted": 0.004002
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 97,
+        "socialMetrics": {
+          "volume": 0,
+          "engagement": 0,
+          "dominance": 0.0,
+          "tweetVolume": 0,
+          "redditVolume": 0,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 0.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 26.4,
+          "momentumLevel": "very_weak",
+          "volumeChange24h": 0.0,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 95.61,
+          "sellPressure": 4.39,
+          "avgTradeSize": 3.72
+        },
+        "volatility7d": 14.76
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the high funding rate and overcrowded long positions against SOL, it's advised to skip this long signal. The market conditions indicate a high risk of a pullback, despite some bullish indicators. Better to wait for a clearer opportunity.",
+        "layerChecks": {
+          "agreements": [
+            "multiTimeframeTrend is bullish",
+            "smartMoneyBias is long",
+            "buyPressure is significantly higher than sellPressure"
+          ],
+          "conflicts": [
+            "High funding rate indicates longs are overleveraged",
+            "Overcrowded longs suggest a contrarian bearish view"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.1632,
+          "recommendedPositionSize": 1.1632,
+          "stopLossPrice": 143.98857142,
+          "stopLossDistancePct": 7.741,
+          "takeProfitPrice": 174.19214287,
+          "takeProfitDistancePct": 11.6115,
+          "riskRewardRatio": 1.5,
+          "atrValue": 4.02714286,
+          "atrPercentage": 2.5792,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 116% of base | SL: 7.74% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
   }
 ]
