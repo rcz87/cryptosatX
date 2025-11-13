@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CryptoSatX - AI Trading Signals Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <!-- Custom Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3b82f6',
+                        secondary: '#8b5cf6',
+                        success: '#10b981',
+                        danger: '#ef4444',
+                        warning: '#f59e0b',
+                        dark: {
+                            100: '#1e293b',
+                            200: '#0f172a',
+                            300: '#020617'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .gradient-bg-2 {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .gradient-bg-3 {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .gradient-bg-4 {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        }
+
+        .card-hover {
+            transition: all 0.3s ease;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        }
+
+        .pulse-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                opacity: 1;
+            }
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .signal-long {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+
+        .signal-short {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+
+        .signal-neutral {
+            background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%);
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-dark-300">
+
+    <!-- Top Navigation -->
+    <nav class="bg-white dark:bg-dark-100 shadow-lg sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <i class="fas fa-satellite text-3xl text-primary mr-3"></i>
+                    <div>
+                        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">CryptoSatX</h1>
+                        <p class="text-xs text-gray-500 dark:text-gray-400">AI Trading Signals</p>
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-4">
+                    <!-- Live Status -->
+                    <div class="flex items-center space-x-2">
+                        <div class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
+                        <span class="text-sm text-gray-600 dark:text-gray-300">Live</span>
+                    </div>
+
+                    <!-- Dark Mode Toggle -->
+                    <button id="darkModeToggle" class="p-2 rounded-lg bg-gray-100 dark:bg-dark-200 hover:bg-gray-200 dark:hover:bg-gray-700 transition">
+                        <i class="fas fa-moon dark:hidden text-gray-700"></i>
+                        <i class="fas fa-sun hidden dark:block text-yellow-400"></i>
+                    </button>
+
+                    <!-- Refresh Button -->
+                    <button id="refreshBtn" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-blue-600 transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <!-- Total Signals -->
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Signals</p>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white" id="totalSignals">-</h3>
+                        <p class="text-xs text-green-500 mt-1" id="totalSignalsChange">-</p>
+                    </div>
+                    <div class="w-14 h-14 gradient-bg rounded-xl flex items-center justify-center">
+                        <i class="fas fa-chart-line text-2xl text-white"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Win Rate -->
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">AI Win Rate</p>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white" id="winRate">-</h3>
+                        <p class="text-xs text-blue-500 mt-1">24h Performance</p>
+                    </div>
+                    <div class="w-14 h-14 gradient-bg-2 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-trophy text-2xl text-white"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active Positions -->
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Active Signals</p>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white" id="activeSignals">-</h3>
+                        <p class="text-xs text-purple-500 mt-1">Being Tracked</p>
+                    </div>
+                    <div class="w-14 h-14 gradient-bg-3 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-bolt text-2xl text-white"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Avg P&L -->
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 card-hover">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Avg P&L (24h)</p>
+                        <h3 class="text-3xl font-bold text-gray-900 dark:text-white" id="avgPnl">-</h3>
+                        <p class="text-xs text-green-500 mt-1">Per Signal</p>
+                    </div>
+                    <div class="w-14 h-14 gradient-bg-4 rounded-xl flex items-center justify-center">
+                        <i class="fas fa-dollar-sign text-2xl text-white"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+            <!-- Latest Signals -->
+            <div class="lg:col-span-2 bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                        <i class="fas fa-signal mr-2 text-primary"></i>Latest Signals
+                    </h2>
+                    <select id="assetFilter" class="px-3 py-2 bg-gray-100 dark:bg-dark-200 rounded-lg text-sm text-gray-700 dark:text-gray-300 border-0">
+                        <option value="all">All Assets</option>
+                        <option value="BTC">BTC</option>
+                        <option value="ETH">ETH</option>
+                        <option value="SOL">SOL</option>
+                    </select>
+                </div>
+
+                <div id="latestSignals" class="space-y-4 max-h-96 overflow-y-auto scrollbar-hide">
+                    <!-- Signals will be loaded here -->
+                    <div class="text-center py-12">
+                        <i class="fas fa-spinner fa-spin text-4xl text-gray-400 mb-4"></i>
+                        <p class="text-gray-500 dark:text-gray-400">Loading signals...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Signal Generator -->
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    <i class="fas fa-rocket mr-2 text-primary"></i>Quick Signal
+                </h2>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Symbol</label>
+                        <input type="text" id="symbolInput" placeholder="BTC, ETH, SOL..."
+                               class="w-full px-4 py-3 bg-gray-100 dark:bg-dark-200 border-0 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-primary">
+                    </div>
+
+                    <button id="generateSignalBtn" class="w-full py-3 bg-gradient-to-r from-primary to-secondary text-white rounded-lg font-semibold hover:shadow-lg transition">
+                        <i class="fas fa-chart-line mr-2"></i>Generate Signal
+                    </button>
+
+                    <!-- Signal Result -->
+                    <div id="signalResult" class="hidden mt-6 p-4 rounded-lg border-2">
+                        <!-- Result will be shown here -->
+                    </div>
+                </div>
+
+                <!-- Popular Assets -->
+                <div class="mt-8">
+                    <p class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Popular Assets</p>
+                    <div class="flex flex-wrap gap-2">
+                        <button class="quick-symbol px-3 py-1.5 bg-gray-100 dark:bg-dark-200 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white transition">BTC</button>
+                        <button class="quick-symbol px-3 py-1.5 bg-gray-100 dark:bg-dark-200 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white transition">ETH</button>
+                        <button class="quick-symbol px-3 py-1.5 bg-gray-100 dark:bg-dark-200 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white transition">SOL</button>
+                        <button class="quick-symbol px-3 py-1.5 bg-gray-100 dark:bg-dark-200 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white transition">AVAX</button>
+                        <button class="quick-symbol px-3 py-1.5 bg-gray-100 dark:bg-dark-200 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white transition">MATIC</button>
+                        <button class="quick-symbol px-3 py-1.5 bg-gray-100 dark:bg-dark-200 rounded-lg text-sm text-gray-700 dark:text-gray-300 hover:bg-primary hover:text-white transition">LINK</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+
+            <!-- AI Verdict Performance Chart -->
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    <i class="fas fa-brain mr-2 text-primary"></i>AI Verdict Performance
+                </h2>
+                <canvas id="verdictChart" height="250"></canvas>
+            </div>
+
+            <!-- Signal Distribution Chart -->
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    <i class="fas fa-pie-chart mr-2 text-primary"></i>Signal Distribution
+                </h2>
+                <canvas id="distributionChart" height="250"></canvas>
+            </div>
+        </div>
+
+        <!-- Performance Timeline -->
+        <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                <i class="fas fa-clock mr-2 text-primary"></i>Performance Timeline
+            </h2>
+            <canvas id="timelineChart" height="100"></canvas>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-dark-100 shadow-lg mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <p class="text-sm text-gray-500 dark:text-gray-400">
+                    &copy; 2025 CryptoSatX. AI-Powered Crypto Trading Signals.
+                </p>
+                <div class="flex space-x-4 mt-4 md:mt-0">
+                    <a href="/docs" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary">API Docs</a>
+                    <a href="/redoc" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary">ReDoc</a>
+                    <a href="https://github.com/rcz87/cryptosatX" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary">GitHub</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white dark:bg-dark-100 rounded-xl p-8 flex flex-col items-center">
+            <i class="fas fa-spinner fa-spin text-5xl text-primary mb-4"></i>
+            <p class="text-lg font-semibold text-gray-900 dark:text-white">Generating Signal...</p>
+        </div>
+    </div>
+
+    <!-- Dashboard JavaScript -->
+    <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

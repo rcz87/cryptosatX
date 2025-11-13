@@ -7,6 +7,7 @@ import os
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
 
 from app.api import (
@@ -34,6 +35,7 @@ from app.api import (
     routes_analytics,  # ADDED FOR DATABASE ANALYTICS
     routes_rpc,  # ADDED FOR UNIFIED RPC ENDPOINT
     routes_gpt_actions,  # ADDED FOR GPT ACTIONS FLAT PARAMS
+    routes_dashboard,  # ADDED FOR INTERACTIVE DASHBOARD
 )
 
 # Load environment variables
@@ -104,7 +106,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static files for dashboard
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
 # Include routers (EXISTING - DO NOT MODIFY)
+# Dashboard router FIRST to handle root path "/"
+app.include_router(routes_dashboard.router, tags=["Dashboard"])
 app.include_router(routes_health.router, tags=["Health"])
 app.include_router(routes_signals.router, tags=["Signals"])
 app.include_router(routes_gpt.router, tags=["GPT Actions"])

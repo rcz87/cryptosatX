@@ -30,6 +30,7 @@ Production-ready FastAPI backend for generating real-time cryptocurrency futures
   - Risk-reward optimized take profit levels
 
 ### Additional Capabilities
+- **Interactive Dashboard**: Modern web UI for monitoring signals and analytics
 - **Smart Money Concepts (SMC)**: Institutional pattern detection
 - **Multi-Modal Signal Score (MSS)**: Emerging cryptocurrency discovery
 - **Real-Time WebSocket Streaming**: Live liquidation data
@@ -54,6 +55,29 @@ Production-ready FastAPI backend for generating real-time cryptocurrency futures
 ### Documentation
 - `GET /docs` - Interactive API documentation (Swagger UI)
 - `GET /redoc` - Alternative documentation (ReDoc)
+
+## 🎨 Interactive Dashboard
+
+**NEW**: Modern web dashboard for real-time signal monitoring and analytics!
+
+Access the dashboard at:
+- **Production**: `https://guardiansofthetoken.org/` or `/dashboard`
+- **Features**:
+  - 📊 Real-time signal monitoring with auto-refresh
+  - 📈 Interactive charts (AI verdict performance, signal distribution, P&L timeline)
+  - ⚡ Quick signal generator for any cryptocurrency
+  - 🌙 Dark mode with theme persistence
+  - 📱 Fully responsive mobile-friendly design
+  - 🎨 Modern UI inspired by LunarCrush and Coinglass
+
+Dashboard highlights:
+- Live stats cards (Total Signals, Win Rate, Active Positions, Avg P&L)
+- Latest signals panel with detailed outcome tracking
+- Chart.js visualizations for performance analytics
+- One-click signal generation for popular assets
+- Beautiful gradient color schemes and smooth animations
+
+See `static/dashboard/README.md` for full documentation.
 
 ## 🔧 Tech Stack
 
