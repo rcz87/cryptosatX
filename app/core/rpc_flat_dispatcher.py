@@ -324,11 +324,13 @@ class FlatRPCDispatcher:
 
         elif operation == "coinglass.chain.whale_transfers":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            return await coinglass_comprehensive.get_chain_whale_transfers(**args)
+            limit = args.get("limit", 100)
+            return await coinglass_comprehensive.get_chain_whale_transfers(limit=limit)
 
         elif operation == "coinglass.chain.exchange_flows":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            return await coinglass_comprehensive.get_exchange_chain_transactions(**args)
+            limit = args.get("limit", 100)
+            return await coinglass_comprehensive.get_exchange_chain_transactions(limit=limit)
 
         # ===================================================================
         # COINGLASS - HYPERLIQUID
