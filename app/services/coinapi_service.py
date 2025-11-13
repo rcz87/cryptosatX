@@ -102,6 +102,18 @@ class CoinAPIService:
                 "error": price_data.get("error", "Unknown error"),
             }
 
+    async def get_quote(self, symbol: str) -> Dict:
+        """
+        Get current quote for a symbol (alias to get_spot_price for RPC compatibility)
+        
+        Args:
+            symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH')
+            
+        Returns:
+            Dict with symbol, price, and source
+        """
+        return await self.get_spot_price(symbol)
+
 
 # Singleton instance
 coinapi_service = CoinAPIService()

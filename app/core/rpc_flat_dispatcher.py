@@ -564,28 +564,70 @@ class FlatRPCDispatcher:
         # COINAPI
         # ===================================================================
         elif operation == "coinapi.quote":
-            from app.services.coinapi_service import coinapi_service
+            from app.services.coinapi_comprehensive_service import coinapi_comprehensive
             symbol = args["symbol"]
-            return await coinapi_service.get_quote(symbol)
+            exchange = args.get("exchange", "BINANCE")
+            return await coinapi_comprehensive.get_current_quote(symbol=symbol, exchange=exchange)
 
         elif operation == "coinapi.ohlcv.latest":
             from app.services.coinapi_comprehensive_service import coinapi_comprehensive
             symbol = args["symbol"]
-            interval = args.get("interval", "1HRS")
+            period = args.get("period", "1HRS")
+            exchange = args.get("exchange", "BINANCE")
             limit = args.get("limit", 100)
-            return await coinapi_comprehensive.get_ohlcv_latest(symbol, interval, limit)
+            return await coinapi_comprehensive.get_ohlcv_latest(symbol=symbol, period=period, exchange=exchange, limit=limit)
+        
+        elif operation == "coinapi.ohlcv.historical":
+            from app.services.coinapi_comprehensive_service import coinapi_comprehensive
+            symbol = args["symbol"]
+            period = args.get("period", "1HRS")
+            days_back = args.get("days_back", 7)
+            exchange = args.get("exchange", "BINANCE")
+            return await coinapi_comprehensive.get_ohlcv_historical(symbol=symbol, period=period, days_back=days_back, exchange=exchange)
 
         elif operation == "coinapi.orderbook":
             from app.services.coinapi_comprehensive_service import coinapi_comprehensive
             symbol = args["symbol"]
-            depth = args.get("limit", 20)
-            return await coinapi_comprehensive.get_orderbook_depth(symbol, depth)
+            exchange = args.get("exchange", "BINANCE")
+            limit = args.get("limit", 20)
+            return await coinapi_comprehensive.get_orderbook_depth(symbol=symbol, exchange=exchange, limit=limit)
 
         elif operation == "coinapi.trades":
             from app.services.coinapi_comprehensive_service import coinapi_comprehensive
             symbol = args["symbol"]
+            exchange = args.get("exchange", "BINANCE")
             limit = args.get("limit", 100)
-            return await coinapi_comprehensive.get_recent_trades(symbol, limit)
+            return await coinapi_comprehensive.get_recent_trades(symbol=symbol, exchange=exchange, limit=limit)
+        
+        elif operation == "coinapi.multi_exchange":
+            from app.services.coinapi_comprehensive_service import coinapi_comprehensive
+            symbol = args["symbol"]
+            exchanges = args.get("exchanges", ["BINANCE", "COINBASE", "KRAKEN"])
+            return await coinapi_comprehensive.get_multi_exchange_prices(symbol=symbol, exchanges=exchanges)
+        
+        elif operation == "coinapi.dashboard":
+            from app.services.coinapi_comprehensive_service import coinapi_comprehensive
+            symbol = args["symbol"]
+            # Dashboard aggregates multiple CoinAPI endpoints
+            import asyncio
+            ohlcv, orderbook, trades, quote = await asyncio.gather(
+                coinapi_comprehensive.get_ohlcv_latest(symbol=symbol, period="1HRS", limit=24),
+                coinapi_comprehensive.get_orderbook_depth(symbol=symbol, limit=20),
+                coinapi_comprehensive.get_recent_trades(symbol=symbol, limit=100),
+                coinapi_comprehensive.get_current_quote(symbol=symbol),
+                return_exceptions=True
+            )
+            return {
+                "success": True,
+                "symbol": symbol,
+                "dashboard": {
+                    "ohlcv": ohlcv if not isinstance(ohlcv, Exception) else {"success": False, "error": str(ohlcv)},
+                    "orderbook": orderbook if not isinstance(orderbook, Exception) else {"success": False, "error": str(orderbook)},
+                    "trades": trades if not isinstance(trades, Exception) else {"success": False, "error": str(trades)},
+                    "quote": quote if not isinstance(quote, Exception) else {"success": False, "error": str(quote)}
+                },
+                "source": "coinapi_dashboard"
+            }
 
         # ===================================================================
         # HEALTH
