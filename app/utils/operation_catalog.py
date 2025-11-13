@@ -81,7 +81,7 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "coinglass.volume.taker_buy_sell": OperationMetadata("coinglass.volume.taker_buy_sell", "coinglass", "/volume/taker-buy-sell", "GET", "Get taker buy/sell volume"),
     "coinglass.liquidations.symbol": OperationMetadata("coinglass.liquidations.symbol", "coinglass", "/liquidations/{symbol}", "GET", "Get liquidations for symbol", requires_symbol=True),
     "coinglass.liquidations.heatmap": OperationMetadata("coinglass.liquidations.heatmap", "coinglass", "/liquidations/{symbol}/heatmap", "GET", "Get liquidation heatmap", requires_symbol=True),
-    "coinglass.perpetual_market.symbol": OperationMetadata("coinglass.perpetual_market.symbol", "coinglass", "/perpetual-market/{symbol}", "GET", "Get perpetual market data", requires_symbol=True),
+    # Removed: coinglass.perpetual_market.symbol (Deprecated - HTTP 404 from Coinglass API)
     "coinglass.price_change": OperationMetadata("coinglass.price_change", "coinglass", "/price-change", "GET", "Get price changes"),
     "coinglass.price_history": OperationMetadata("coinglass.price_history", "coinglass", "/price-history", "GET", "Get price history"),
     "coinglass.delisted_pairs": OperationMetadata("coinglass.delisted_pairs", "coinglass", "/delisted-pairs", "GET", "Get delisted pairs"),

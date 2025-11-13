@@ -1363,19 +1363,11 @@ async def get_liquidation_heatmap(symbol: str):
         await service.close()
 
 
-@router.get("/perpetual-market/{symbol}")
-async def get_perpetual_market(symbol: str):
-    """
-    Get perpetual futures market data for a symbol
-    
-    Gracefully returns success:false if data unavailable
-    """
-    service = CoinglassComprehensiveService()
-    try:
-        result = await service.get_perpetual_market(symbol=symbol)
-        return result
-    finally:
-        await service.close()
+# Removed: /perpetual-market/{symbol} (Deprecated - HTTP 404 from Coinglass API)
+# @router.get("/perpetual-market/{symbol}")
+# async def get_perpetual_market(symbol: str):
+#     """Deprecated - Coinglass API returns HTTP 404"""
+#     pass
 
 
 @router.get("/price-change")

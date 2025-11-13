@@ -247,7 +247,9 @@ class FlatRPCDispatcher:
 
         elif operation == "coinglass.open_interest.exchange_history_chart":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            return await coinglass_comprehensive.get_oi_exchange_history_chart(**args)
+            # Filter to only accepted parameters
+            filtered_args = {k: v for k, v in args.items() if k in ['symbol', 'range', 'unit']}
+            return await coinglass_comprehensive.get_oi_exchange_history_chart(**filtered_args)
 
         # ===================================================================
         # COINGLASS - INDICATORS
@@ -305,7 +307,9 @@ class FlatRPCDispatcher:
         # ===================================================================
         elif operation == "coinglass.orderbook.whale_walls":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            return await coinglass_comprehensive.get_large_limit_orders(**args)
+            # Filter to only accepted parameters
+            filtered_args = {k: v for k, v in args.items() if k in ['exchange', 'symbol']}
+            return await coinglass_comprehensive.get_large_limit_orders(**filtered_args)
 
         elif operation == "coinglass.orderbook.whale_history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
@@ -374,10 +378,7 @@ class FlatRPCDispatcher:
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
             return await coinglass_comprehensive.get_supported_exchange_pairs()
 
-        elif operation == "coinglass.perpetual_market.symbol":
-            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            symbol = args.get("symbol", "BTC")
-            return await coinglass_comprehensive.get_perpetual_market(symbol)
+        # Removed: coinglass.perpetual_market.symbol (Deprecated - HTTP 404 from Coinglass API)
 
         elif operation == "coinglass.pairs_markets.symbol":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
@@ -606,6 +607,22 @@ class FlatRPCDispatcher:
         elif operation == "lunarcrush.system_status":
             from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
             return await lunarcrush_comprehensive.get_system_status()
+        
+        elif operation == "lunarcrush.coin_time_series":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            symbol = args.get("symbol")
+            if not symbol:
+                raise ValueError("Parameter 'symbol' is required for lunarcrush.coin_time_series")
+            interval = args.get("interval", "1d")
+            days_back = args.get("days_back", 30)
+            return await lunarcrush_comprehensive.get_time_series(symbol=symbol, interval=interval, days_back=days_back)
+        
+        elif operation == "lunarcrush.topic":
+            from app.services.lunarcrush_service import lunarcrush_service
+            topic = args.get("topic")
+            if not topic:
+                raise ValueError("Parameter 'topic' is required for lunarcrush.topic")
+            return await lunarcrush_service.get_topic_details(topic)
 
         # ===================================================================
         # COINAPI

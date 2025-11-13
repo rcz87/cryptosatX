@@ -195,7 +195,7 @@ async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
         "coinglass.chain.whale_transfers",
         "coinglass.markets",
         "coinglass.supported_coins",
-        "coinglass.perpetual_market.symbol",
+        # Removed: "coinglass.perpetual_market.symbol" (Deprecated - HTTP 404)
         "coinglass.etf.flows",
         "coinglass.onchain.reserves",
         "coinglass.long_short_ratio.account_history",
