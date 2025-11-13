@@ -82,8 +82,9 @@
       "response_keys": [
         "success",
         "symbol",
-        "dashboard",
-        "source"
+        "endpoints_total",
+        "endpoints_successful",
+        "dashboard"
       ]
     }
   ]

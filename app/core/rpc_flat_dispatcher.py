@@ -2,6 +2,7 @@
 Flat RPC Dispatcher - GPT Actions Compatible
 Maps flat parameters to existing service handlers
 """
+import json
 import time
 from typing import Dict, Any
 from pydantic import BaseModel
@@ -608,23 +609,84 @@ class FlatRPCDispatcher:
         elif operation == "coinapi.dashboard":
             from app.services.coinapi_comprehensive_service import coinapi_comprehensive
             symbol = args["symbol"]
-            # Dashboard aggregates multiple CoinAPI endpoints
+            
+            # Dashboard aggregates multiple CoinAPI endpoints with individual error isolation
             import asyncio
-            ohlcv, orderbook, trades, quote = await asyncio.gather(
+            
+            results = await asyncio.gather(
                 coinapi_comprehensive.get_ohlcv_latest(symbol=symbol, period="1HRS", limit=24),
                 coinapi_comprehensive.get_orderbook_depth(symbol=symbol, limit=20),
                 coinapi_comprehensive.get_recent_trades(symbol=symbol, limit=100),
                 coinapi_comprehensive.get_current_quote(symbol=symbol),
                 return_exceptions=True
             )
+            
+            ohlcv, orderbook, trades, quote = results
+            
+            # Helper to check if a result is successful
+            # Returns True only if result is a dict with success=True or success is missing (default True)
+            # Returns False for all Exceptions and dicts with success=False
+            def is_successful(result):
+                if isinstance(result, Exception):
+                    return False
+                if isinstance(result, dict):
+                    # Explicit check: success must be True or missing
+                    # If success=False, this is an API failure, return False
+                    return result.get("success", True) is True
+                # Non-dict, non-Exception results default to True
+                return True
+            
+            # Helper to format errors with metadata
+            def format_result(result, endpoint_name):
+                if isinstance(result, Exception):
+                    # Transport/network error
+                    return {
+                        "success": False,
+                        "error": str(result),
+                        "error_type": type(result).__name__,
+                        "failure_mode": "exception",
+                        "endpoint": endpoint_name
+                    }
+                elif isinstance(result, dict) and result.get("success") is False:
+                    # API-level error (service returned success=False)
+                    return {
+                        **result,
+                        "failure_mode": "api_error",
+                        "endpoint": endpoint_name
+                    }
+                # Success case - preserve original result
+                return result
+            
+            # Count successful endpoints (both exception and API failures count as failures)
+            successful_count = sum(1 for r in results if is_successful(r))
+            
+            # CRITICAL: If ALL endpoints failed (either via exception OR success=False),
+            # raise exception to ensure RPC ok=false
+            # This handles both network outages AND API-level failures
+            if successful_count == 0:
+                error_details = {
+                    "ohlcv": format_result(ohlcv, 'ohlcv.latest'),
+                    "orderbook": format_result(orderbook, 'orderbook'),
+                    "trades": format_result(trades, 'trades'),
+                    "quote": format_result(quote, 'quote')
+                }
+                raise RuntimeError(
+                    f"CoinAPI dashboard total failure for {symbol}: "
+                    f"All 4 endpoints failed (0/{len(results)} successful). "
+                    f"Error details: {json.dumps(error_details, indent=2)}"
+                )
+            
+            # Return aggregated data with success metrics
             return {
                 "success": True,
                 "symbol": symbol,
+                "endpoints_total": 4,
+                "endpoints_successful": successful_count,
                 "dashboard": {
-                    "ohlcv": ohlcv if not isinstance(ohlcv, Exception) else {"success": False, "error": str(ohlcv)},
-                    "orderbook": orderbook if not isinstance(orderbook, Exception) else {"success": False, "error": str(orderbook)},
-                    "trades": trades if not isinstance(trades, Exception) else {"success": False, "error": str(trades)},
-                    "quote": quote if not isinstance(quote, Exception) else {"success": False, "error": str(quote)}
+                    "ohlcv": format_result(ohlcv, "ohlcv.latest"),
+                    "orderbook": format_result(orderbook, "orderbook"),
+                    "trades": format_result(trades, "trades"),
+                    "quote": format_result(quote, "quote")
                 },
                 "source": "coinapi_dashboard"
             }
