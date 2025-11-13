@@ -29,6 +29,7 @@ from app.api import (
     routes_enhanced_gpt,
     routes_monitoring,
     routes_openai,
+    routes_openai_v2,  # ADDED FOR PHASE 1 DEVELOPMENT
     routes_optimized_gpt,
     routes_analytics,  # ADDED FOR DATABASE ANALYTICS
     routes_rpc,  # ADDED FOR UNIFIED RPC ENDPOINT
@@ -113,6 +114,7 @@ app.include_router(routes_history.router, tags=["Signal History"])
 app.include_router(routes_enhanced_gpt.router, tags=["Enhanced GPT Integration"])
 app.include_router(routes_monitoring.router, tags=["Automated Monitoring"])
 app.include_router(routes_openai.router, tags=["OpenAI GPT-4 Integration"])
+app.include_router(routes_openai_v2.router, tags=["OpenAI V2 (Development)"])  # PHASE 1 DEVELOPMENT
 app.include_router(
     routes_optimized_gpt.router, tags=["Optimized GPT Actions - MAXIMAL"]
 )
