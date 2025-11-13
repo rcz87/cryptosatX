@@ -24128,5 +24128,118 @@
         }
       }
     }
+  },
+  {
+    "id": "sig_20251113120747653066",
+    "saved_at": "2025-11-13T12:07:47.653103",
+    "data": {
+      "symbol": "LUNA",
+      "timestamp": "2025-11-13T12:07:41.447554",
+      "signal": "LONG",
+      "score": 54.4,
+      "confidence": "medium",
+      "price": 0.08582942690669487,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 53/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 12183410.0,
+        "socialScore": 53.3,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": false,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": true,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 671,
+        "socialMetrics": {
+          "volume": 0,
+          "engagement": 0,
+          "dominance": 0.0,
+          "tweetVolume": 0,
+          "redditVolume": 0,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 0.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 28.5,
+          "momentumLevel": "very_weak",
+          "volumeChange24h": 0.0,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 44.89,
+          "sellPressure": 55.11,
+          "avgTradeSize": 272.07
+        },
+        "volatility7d": 19.48
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Today's analysis on LUNA suggests a SKIP on the long signal. The market shows a neutral trend with moderate social sentiment, and key metrics do not support a bullish move. It's best to wait for stronger signals before entering a trade.",
+        "layerChecks": {
+          "agreements": [
+            "Neutral price trend indicates lack of clear direction",
+            "Social sentiment is moderate, not indicating strong market conviction",
+            "Overall market metrics show no significant momentum or volume changes"
+          ],
+          "conflicts": [
+            "Lack of positive funding rate to support a long position",
+            "Low social and market momentum scores do not support a bullish outlook"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.0226,
+          "recommendedPositionSize": 1.0226,
+          "stopLossPrice": 0.07824801,
+          "stopLossDistancePct": 8.8331,
+          "takeProfitPrice": 0.09720155,
+          "takeProfitDistancePct": 13.2497,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00252714,
+          "atrPercentage": 2.9338,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 102% of base | SL: 8.83% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
   }
 ]
