@@ -528,9 +528,9 @@ class FlatRPCDispatcher:
         # LUNARCRUSH
         # ===================================================================
         elif operation == "lunarcrush.coin":
-            from app.services.lunarcrush_service import lunarcrush_service
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
             symbol = args["symbol"]
-            return await lunarcrush_service.get_coin_metrics(symbol)
+            return await lunarcrush_comprehensive.get_coin_metrics(symbol)
 
         elif operation == "lunarcrush.coin_momentum":
             from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
@@ -544,10 +544,10 @@ class FlatRPCDispatcher:
             return await lunarcrush_comprehensive.get_social_change(symbol, interval)
 
         elif operation == "lunarcrush.coins_discovery":
-            from app.services.lunarcrush_service import lunarcrush_service
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
             min_galaxy = args.get("min_galaxy_score", 60)
             limit = args.get("limit", 20)
-            return await lunarcrush_service.discover_coins(
+            return await lunarcrush_comprehensive.discover_coins(
                 min_galaxy_score=min_galaxy,
                 limit=limit
             )

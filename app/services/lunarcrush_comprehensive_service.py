@@ -347,7 +347,7 @@ class LunarCrushComprehensiveService:
             response = await client.get(url, headers=self.headers, params=params)
             
             if response.status_code != 200:
-                return {"success": False, "error": f"HTTP {response.status_code}"}
+                return {"success": False, "symbol": symbol, "error": f"HTTP {response.status_code}"}
             
             data = response.json()
             
@@ -357,7 +357,7 @@ class LunarCrushComprehensiveService:
                 # Handle both dict and list responses from API
                 if isinstance(raw_data, list):
                     if len(raw_data) == 0:
-                        return {"success": False, "error": "Empty data array"}
+                        return {"success": False, "symbol": symbol, "error": "Empty data array"}
                     change_data = raw_data[0]  # Take first element if list
                 else:
                     change_data = raw_data  # Use directly if dict
@@ -395,10 +395,10 @@ class LunarCrushComprehensiveService:
                     "source": "lunarcrush_change"
                 }
             
-            return {"success": False, "error": "No change data"}
+            return {"success": False, "symbol": symbol, "error": "No change data"}
             
         except Exception as e:
-            return {"success": False, "error": str(e)}
+            return {"success": False, "symbol": symbol, "error": str(e)}
     
     # ==================== SOCIAL MOMENTUM ANALYSIS ====================
     
