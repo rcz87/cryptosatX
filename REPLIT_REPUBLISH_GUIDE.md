@@ -8,6 +8,24 @@ Repository GitHub sudah di-update dengan semua perubahan terbaru dari multiple b
 - ✅ Documentation lengkap
 - ✅ Environment variables terbaru
 
+## 🌐 **Production Domain & Endpoint Information:**
+
+**Base URL:** `https://guardiansofthetoken.org`
+
+**Key Endpoint Categories:**
+- **Health Check:** `/health` (GET)
+- **GPT Actions (Flat Params):** `/gpt/*` (GET/POST)
+- **Unified RPC:** `/invoke` (POST) - **Primary endpoint for all operations**
+- **OpenAI Analysis:** `/openai/analyze/{symbol}` (GET)
+- **Documentation:** `/docs` (Swagger UI)
+
+**Important Notes:**
+- ✅ All endpoints are live and tested
+- ✅ Domain `guardiansofthetoken.org` is correct
+- ✅ HTTPS is enforced
+- ✅ CORS is configured for production
+- ✅ Rate limiting is active
+
 ## 🚀 **Langkah-langkah Republish di Replit:**
 
 ### **1. Buka Replit Anda**
@@ -69,28 +87,126 @@ pkill -f python && python main.py
 ### **6. Test New Features**
 Setelah republish, test fitur-fitur baru:
 
-#### **A. Test GPT Actions RPC:**
+#### **A. Test Health Endpoint:**
 ```bash
-curl -X POST "https://your-repl-url.replit.app/invoke" \
+curl https://guardiansofthetoken.org/health
+```
+**Expected Response:**
+```json
+{
+  "status": "healthy",
+  "timestamp": "2025-11-13T02:27:23.959364",
+  "service": "Crypto Futures Signal API"
+}
+```
+
+#### **B. Test GPT Actions Signal (Flat Parameters):**
+```bash
+curl -X POST https://guardiansofthetoken.org/gpt/signal \
+  -H "Content-Type: application/json" \
+  -d '{"symbol": "BTC"}'
+```
+**Expected Response:**
+```json
+{
+  "ok": true,
+  "data": {
+    "symbol": "BTC",
+    "signal": "LONG",
+    "score": 53.0,
+    "confidence": "low",
+    "price": 102060.2,
+    "reasons": ["High funding rate (0.433%) - longs overleveraged"]
+  },
+  "operation": "signals.get"
+}
+```
+
+#### **C. Test Unified RPC Endpoint (All Operations):**
+```bash
+curl -X POST https://guardiansofthetoken.org/invoke \
   -H "Content-Type: application/json" \
   -d '{"operation": "signals.get", "args": {"symbol": "BTC"}}'
 ```
-
-#### **B. Test OpenAI Analysis:**
-```bash
-curl "https://your-repl-url.replit.app/openai/analyze/BTC"
+**Expected Response:**
+```json
+{
+  "ok": true,
+  "operation": "signals.get",
+  "data": {
+    "symbol": "BTC",
+    "signal": "LONG",
+    "score": 53.0,
+    "confidence": "low",
+    "price": 102060.2,
+    "reasons": ["High funding rate (0.433%) - longs overleveraged"]
+  },
+  "meta": {
+    "execution_time_ms": 245.67,
+    "namespace": "signals"
+  }
+}
 ```
 
-#### **C. Test Smart Money Scan:**
+#### **D. Test OpenAI GPT-4 Analysis:**
 ```bash
-curl -X POST "https://your-repl-url.replit.app/invoke" \
+curl "https://guardiansofthetoken.org/openai/analyze/BTC"
+```
+**Expected Response:**
+```json
+{
+  "symbol": "BTC",
+  "timestamp": "2025-11-13T02:28:01.718744",
+  "original_signal": {...},
+  "ai_analysis": {
+    "overall_sentiment": "neutral_bearish",
+    "key_factors": ["High funding rate", "Overleveraged longs"],
+    "recommendation": "WAIT_FOR_CLEARER_SIGNAL"
+  }
+}
+```
+
+#### **E. Test GPT Actions Health Check:**
+```bash
+curl https://guardiansofthetoken.org/gpt/health
+```
+**Expected Response:**
+```json
+{
+  "ok": true,
+  "data": {
+    "status": "healthy",
+    "version": "3.0.0",
+    "message": "CryptoSatX API is operational"
+  },
+  "operation": "health.check"
+}
+```
+
+#### **F. Test Smart Money Scan via RPC:**
+```bash
+curl -X POST https://guardiansofthetoken.org/invoke \
   -H "Content-Type: application/json" \
-  -d '{"operation": "smart_money.scan", "args": {"symbol": "BTC"}}'
+  -d '{"operation": "smart_money.scan", "args": {"min_accumulation_score": 7}}'
 ```
 
-#### **D. Test Health Endpoint:**
+#### **G. List All Available Operations:**
 ```bash
-curl "https://your-repl-url.replit.app/health"
+curl https://guardiansofthetoken.org/invoke/operations
+```
+**Expected Response:**
+```json
+{
+  "total_operations": 155,
+  "namespaces": ["admin", "analytics", "coinapi", "coinglass", "signals", "market", "smart_money", "mss", "lunarcrush", "narratives", "new_listings", "smc", "health", "history", "monitoring", "openai"],
+  "operations_by_namespace": {
+    "signals": ["signals.get", "signals.history"],
+    "coinglass": ["coinglass.markets", "coinglass.liquidations.symbol", ...],
+    "smart_money": ["smart_money.scan", "smart_money.analyze", ...],
+    "mss": ["mss.discover", "mss.analyze", ...],
+    ...
+  }
+}
 ```
 
 ## 🆕 **Fitur Baru yang Akan Tersedia:**

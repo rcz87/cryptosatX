@@ -1,0 +1,509 @@
+{
+  "timestamp": "2025-11-13T10:24:59.319833",
+  "schema_test": true,
+  "template_tests": {
+    "Template 1: Trading Signal Analysis": [
+      {
+        "success": true,
+        "duration_ms": 1799.7996807098389,
+        "data": {
+          "symbol": "BTC",
+          "timestamp": "2025-11-13T03:25:03.037328",
+          "signal": "NEUTRAL",
+          "score": 51.7,
+          "confidence": "low",
+          "price": 101817.8,
+          "reasons": [
+            "High funding rate (0.396%) - longs overleveraged",
+            "Overcrowded longs (73.2%) - contrarian bearish",
+            "Price trend: neutral"
+          ],
+          "metrics": {
+            "fundingRate": 0.003962,
+            "openInterest": 67032233802.5446,
+            "socialScore": 32.7,
+            "priceTrend": "neutral"
+          },
+          "premiumDataAvailable": true,
+          "comprehensiveDataAvailable": true,
+          "lunarcrushDataAvailable": true,
+          "coinapiDataAvailable": true,
+          "comprehensiveMetrics": {
+            "multiTimeframeTrend": "bearish",
+            "priceChanges": {
+              "5m": 0.13,
+              "15m": -0.13,
+              "1h": -0.33,
+              "4h": -0.05,
+              "24h": -1.45
+            },
+            "advancedRatios": {
+              "oiMarketCapRatio": 0.033,
+              "oiVolumeRatio": 0.6214
+            },
+            "fundingRates": {
+              "oiWeighted": 0.003962,
+              "volumeWeighted": 0.002225
+            }
+          },
+          "lunarCrushMetrics": {
+            "altRank": 232,
+            "socialMetrics": {
+              "volume": 0,
+              "engagement": 0,
+              "dominance": 0.0,
+              "tweetVolume": 0,
+              "redditVolume": 0,
+              "urlShares": 0
+            },
+            "sentiment": {
+              "averageSentiment": 0.0,
+              "correlationRank": 0.0
+            },
+            "momentum": {
+              "momentumScore": 22.3,
+              "momentumLevel": "very_weak",
+              "volumeChange24h": 0.0,
+              "spikeLevel": "normal"
+            }
+          },
+          "coinAPIMetrics": {
+            "orderbook": {
+              "imbalance": 0.0,
+              "spreadPercent": 0.0,
+              "whaleBids": 0,
+              "whaleAsks": 0
+            },
+            "trades": {
+              "buyPressure": 72.99,
+              "sellPressure": 27.01,
+              "avgTradeSize": 0.0
+            },
+            "volatility7d": 8.3
+          },
+          "premiumMetrics": {
+            "liquidationImbalance": "long",
+            "longShortSentiment": "very_bullish",
+            "oiTrend": "unknown",
+            "smartMoneyBias": "long",
+            "fearGreedIndex": 50
+          }
+        },
+        "operation": "signals.get"
+      },
+      {
+        "success": false,
+        "error": "AttributeError: 'CoinglassService' object has no attribute 'get_liquidations'"
+      },
+      {
+        "success": false,
+        "error": "TypeError: CoinglassComprehensiveService.get_funding_rate_history() got an unexpected keyword argument 'debug'"
+      },
+      {
+        "success": false,
+        "error": "AttributeError: 'CoinglassService' object has no attribute 'get_fear_greed_index'"
+      }
+    ],
+    "Template 2: Smart Money Scan": [
+      {
+        "success": true,
+        "duration_ms": 17176.5193939209,
+        "data": {
+          "success": true,
+          "timestamp": "2025-11-13T03:25:24.763073",
+          "coinsScanned": 38,
+          "coinsSuccessful": 38,
+          "coinsFailed": 0,
+          "summary": {
+            "accumulationSignals": 21,
+            "distributionSignals": 0,
+            "neutralCoins": 17
+          },
+          "accumulation": [
+            {
+              "symbol": "BNB",
+              "price": 955.83,
+              "signalType": "LONG",
+              "compositeScore": 62.5,
+              "accumulationScore": 9,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (89.8%)",
+                "Negative funding (-0.455%) - very quiet",
+                "Very low social activity (24.6) - retail unaware",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "SOL",
+              "price": 152.93,
+              "signalType": "LONG",
+              "compositeScore": 64.4,
+              "accumulationScore": 9,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (100.0%)",
+                "Negative funding (-0.464%) - very quiet",
+                "Very low social activity (22.6) - retail unaware",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "XRP",
+              "price": 2.416,
+              "signalType": "LONG",
+              "compositeScore": 65.5,
+              "accumulationScore": 9,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (89.0%)",
+                "Negative funding (-0.247%) - very quiet",
+                "Low social activity (31.2)",
+                "Sideways price action - no pump yet",
+                "Mild uptrend - healthy accumulation"
+              ]
+            },
+            {
+              "symbol": "AVAX",
+              "price": 17.118,
+              "signalType": "LONG",
+              "compositeScore": 65.4,
+              "accumulationScore": 9,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (98.1%)",
+                "Negative funding (-1.239%) - very quiet",
+                "Low social activity (30.7)",
+                "Sideways price action - no pump yet",
+                "Mild uptrend - healthy accumulation"
+              ]
+            },
+            {
+              "symbol": "LINK",
+              "price": 15.321,
+              "signalType": "LONG",
+              "compositeScore": 65.0,
+              "accumulationScore": 9,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (90.1%)",
+                "Negative funding (-0.624%) - very quiet",
+                "Very low social activity (24.7) - retail unaware",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "COMP",
+              "price": 33.034742720009454,
+              "signalType": "LONG",
+              "compositeScore": 59.4,
+              "accumulationScore": 8,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (98.7%)",
+                "Low funding (0.000%) - not crowded",
+                "Very low social activity (24.3) - retail unaware",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "ATOM",
+              "price": 2.928,
+              "signalType": "LONG",
+              "compositeScore": 64.8,
+              "accumulationScore": 8,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (95.0%)",
+                "Negative funding (-2.689%) - very quiet",
+                "Low social activity (33.2)",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "ADA",
+              "price": 0.5518,
+              "signalType": "LONG",
+              "compositeScore": 66.3,
+              "accumulationScore": 7,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Moderate buy pressure (55.8%)",
+                "Negative funding (-0.362%) - very quiet",
+                "Very low social activity (29.8) - retail unaware",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "APT",
+              "price": 3.0256,
+              "signalType": "LONG",
+              "compositeScore": 65.4,
+              "accumulationScore": 7,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (92.3%)",
+                "Negative funding (-0.830%) - very quiet",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "SHIB",
+              "price": 9.581e-06,
+              "signalType": "LONG",
+              "compositeScore": 61.0,
+              "accumulationScore": 7,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (99.5%)",
+                "Negative funding (-1.709%) - very quiet",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "HBAR",
+              "price": 0.1762,
+              "signalType": "LONG",
+              "compositeScore": 66.5,
+              "accumulationScore": 7,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (91.7%)",
+                "Negative funding (-0.697%) - very quiet",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "CRV",
+              "price": 0.458,
+              "signalType": "LONG",
+              "compositeScore": 57.4,
+              "accumulationScore": 6,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (80.5%)",
+                "Very low social activity (22.3) - retail unaware",
+                "Relatively stable price"
+              ]
+            },
+            {
+              "symbol": "SAND",
+              "price": 0.19714615006319522,
+              "signalType": "LONG",
+              "compositeScore": 61.5,
+              "accumulationScore": 6,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (100.0%)",
+                "Low funding (0.000%) - not crowded",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "MANA",
+              "price": 0.22173574512635583,
+              "signalType": "LONG",
+              "compositeScore": 60.6,
+              "accumulationScore": 6,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (85.8%)",
+                "Low funding (0.000%) - not crowded",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "GALA",
+              "price": 0.00973,
+              "signalType": "LONG",
+              "compositeScore": 61.0,
+              "accumulationScore": 6,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (82.0%)",
+                "Negative funding (-0.066%) - very quiet",
+                "Relatively stable price"
+              ]
+            },
+            {
+              "symbol": "ALGO",
+              "price": 0.1734,
+              "signalType": "LONG",
+              "compositeScore": 55.2,
+              "accumulationScore": 6,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (96.1%)",
+                "Low funding (0.063%) - not crowded",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "DOT",
+              "price": 2.956,
+              "signalType": "LONG",
+              "compositeScore": 64.6,
+              "accumulationScore": 5,
+              "distributionScore": 1,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Negative funding (-0.583%) - very quiet",
+                "Very low social activity (23.2) - retail unaware",
+                "Relatively stable price"
+              ]
+            },
+            {
+              "symbol": "UNI",
+              "price": 7.952,
+              "signalType": "LONG",
+              "compositeScore": 61.4,
+              "accumulationScore": 5,
+              "distributionScore": 1,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (83.2%)",
+                "Very low social activity (29.3) - retail unaware"
+              ]
+            },
+            {
+              "symbol": "AAVE",
+              "price": 207.38,
+              "signalType": "LONG",
+              "compositeScore": 55.3,
+              "accumulationScore": 5,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Moderate buy pressure (57.9%)",
+                "Very low social activity (29.0) - retail unaware",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "FTM",
+              "price": 0.14286585661527013,
+              "signalType": "LONG",
+              "compositeScore": 52.6,
+              "accumulationScore": 5,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Low funding (0.000%) - not crowded",
+                "Very low social activity (21.8) - retail unaware",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "XLM",
+              "price": 0.28195,
+              "signalType": "LONG",
+              "compositeScore": 64.5,
+              "accumulationScore": 5,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Moderate buy pressure (60.5%)",
+                "Negative funding (-1.558%) - very quiet",
+                "Sideways price action - no pump yet"
+              ]
+            }
+          ],
+          "distribution": [],
+          "neutral": [
+            {
+              "symbol": "BTC",
+              "price": 101860.3,
+              "signalType": "NEUTRAL",
+              "compositeScore": 51.7,
+              "accumulationScore": 4,
+              "distributionScore": 4,
+              "dominantPattern": "distribution",
+              "reasons": []
+            },
+            {
+              "symbol": "ETH",
+              "price": 3430.53,
+              "signalType": "LONG",
+              "compositeScore": 52.1,
+              "accumulationScore": 4,
+              "distributionScore": 1,
+              "dominantPattern": "accumulation",
+              "reasons": []
+            },
+            {
+              "symbol": "MATIC",
+              "price": 0.0,
+              "signalType": "LONG",
+              "compositeScore": 55.7,
+              "accumulationScore": 4,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": []
+            },
+            {
+              "symbol": "SUSHI",
+              "price": 0.4856629165079358,
+              "signalType": "LONG",
+              "compositeScore": 58.0,
+              "accumulationScore": 4,
+              "distributionScore": 3,
+              "dominantPattern": "accumulation",
+              "reasons": []
+            },
+            {
+              "symbol": "MKR",
+              "price": 1365.4739190474827,
+              "signalType": "LONG",
+              "compositeScore": 55.9,
+              "accumulationScore": 4,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": []
+            }
+          ],
+          "failed": []
+        },
+        "operation": "smart_money.scan"
+      },
+      {
+        "success": false,
+        "error": "TypeError: CoinglassComprehensiveService.get_open_interest_history() got an unexpected keyword argument 'debug'"
+      },
+      {
+        "success": false,
+        "error": "NotImplementedError: Operation 'coinglass.hyperliquid.whale_alerts' is registered in catalog but handler not implemented yet. Please add handler in _execute_operation method."
+      }
+    ],
+    "Template 3: MSS Discovery": [
+      {
+        "success": false,
+        "error": "AttributeError: 'MSSService' object has no attribute 'discover_high_potential'"
+      },
+      {
+        "success": false,
+        "error": "AttributeError: 'LunarCrushService' object has no attribute 'get_coin_metrics'"
+      },
+      {
+        "success": false,
+        "error": "NotImplementedError: Operation 'new_listings.binance' is registered in catalog but handler not implemented yet. Please add handler in _execute_operation method."
+      }
+    ]
+  },
+  "accuracy_analysis": true
+}
