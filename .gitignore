@@ -29,6 +29,12 @@ ENV/
 env/
 .venv
 
+# Replit Python Libraries & Cache (DO NOT DEPLOY)
+.pythonlibs/
+.cache/
+.upm/
+.config/
+
 # Environment variables
 .env
 
@@ -45,6 +51,8 @@ Thumbs.db
 
 # Logs
 *.log
+logs/
+/tmp/
 
 # Testing
 .pytest_cache/
