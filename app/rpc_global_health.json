@@ -1,0 +1,1123 @@
+{
+  "timestamp": "2025-11-13T15:58:23.591823",
+  "validation_mode": true,
+  "force_real_call": true,
+  "providers": {
+    "coinglass": {
+      "provider": "Coinglass",
+      "expected_total": 65,
+      "tested_total": 65,
+      "active": 60,
+      "stubbed": 0,
+      "empty": 2,
+      "error": 3,
+      "success_rate": 92.3,
+      "health": "\ud83d\udfe2 Stable",
+      "detailed_results": [
+        {
+          "operation": "coinglass.markets",
+          "status": "active",
+          "metadata": {
+            "path": "/markets",
+            "method": "GET",
+            "description": "Get all markets"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'data': [{'symbol': 'BTC', 'current_price': 101161.9, 'avg_funding_rate_by_oi': 0."
+          }
+        },
+        {
+          "operation": "coinglass.markets.symbol",
+          "status": "active",
+          "metadata": {
+            "path": "/markets/{symbol}",
+            "method": "GET",
+            "description": "Get market data for symbol"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'price': 101201.0, 'marketCap': 2021348009467.5134, 'openInterest"
+          }
+        },
+        {
+          "operation": "coinglass.liquidation.order",
+          "status": "active",
+          "metadata": {
+            "path": "/liquidation/order",
+            "method": "GET",
+            "description": "Get liquidation orders"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTC', 'minAmount': 10000, 'summary': {'longLiqui"
+          }
+        },
+        {
+          "operation": "coinglass.liquidation.exchange_list",
+          "status": "active",
+          "metadata": {
+            "path": "/liquidation/exchange-list",
+            "method": "GET",
+            "description": "Get liquidation exchange list"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'range': '1h', 'marketSummary': {'totalLiquidation': 35933500.50760699, 'longLiqui"
+          }
+        },
+        {
+          "operation": "coinglass.liquidation.aggregated_history",
+          "status": "active",
+          "metadata": {
+            "path": "/liquidation/aggregated-history",
+            "method": "GET",
+            "description": "Get aggregated liquidation history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'exchanges': 'Binance', 'interval': '1d', 'dataPoints': 10, 'summ"
+          }
+        },
+        {
+          "operation": "coinglass.liquidation.history",
+          "status": "active",
+          "metadata": {
+            "path": "/liquidation/history",
+            "method": "GET",
+            "description": "Get liquidation history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1d', 'dataPoints': 10, 's"
+          }
+        },
+        {
+          "operation": "coinglass.orderbook.ask_bids_history",
+          "status": "active",
+          "metadata": {
+            "path": "/orderbook/ask-bids-history",
+            "method": "GET",
+            "description": "Get ask/bids history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1d', 'dataPoints': 10, 's"
+          }
+        },
+        {
+          "operation": "coinglass.orderbook.aggregated_history",
+          "status": "active",
+          "metadata": {
+            "path": "/orderbook/aggregated-history",
+            "method": "GET",
+            "description": "Get aggregated orderbook history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchanges': 'Binance', 'symbol': 'BTC', 'interval': '1h', 'dataPoints': 10, 'summ"
+          }
+        },
+        {
+          "operation": "coinglass.orderbook.whale_walls",
+          "status": "error",
+          "metadata": {
+            "path": "/orderbook/whale-walls",
+            "method": "GET",
+            "description": "Get whale walls"
+          },
+          "details": {
+            "error": "TypeError: CoinglassComprehensiveService.get_large_limit_orders() got an unexpected keyword argument 'limit'"
+          }
+        },
+        {
+          "operation": "coinglass.orderbook.whale_history",
+          "status": "active",
+          "metadata": {
+            "path": "/orderbook/whale-history",
+            "method": "GET",
+            "description": "Get whale orderbook history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'state': 'ACTIVE', 'orderCount': 10, '"
+          }
+        },
+        {
+          "operation": "coinglass.orderbook.detailed_history",
+          "status": "active",
+          "metadata": {
+            "path": "/orderbook/detailed-history",
+            "method": "GET",
+            "description": "Get detailed orderbook history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1h', 'snapshotCount': 10,"
+          }
+        },
+        {
+          "operation": "coinglass.hyperliquid.whale_alerts",
+          "status": "active",
+          "metadata": {
+            "path": "/hyperliquid/whale-alerts",
+            "method": "GET",
+            "description": "Get Hyperliquid whale alerts"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'totalAlerts': 50, 'summary': {'opensCount': 15, 'closesCount': 35, 'totalOpenValu"
+          }
+        },
+        {
+          "operation": "coinglass.hyperliquid.whale_positions",
+          "status": "active",
+          "metadata": {
+            "path": "/hyperliquid/whale-positions",
+            "method": "GET",
+            "description": "Get Hyperliquid whale positions"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'totalPositions': 935, 'summary': {'totalValue': 5080547004.886595, 'totalPnl': 89"
+          }
+        },
+        {
+          "operation": "coinglass.hyperliquid.positions.symbol",
+          "status": "active",
+          "metadata": {
+            "path": "/hyperliquid/positions/{symbol}",
+            "method": "GET",
+            "description": "Get Hyperliquid positions for symbol"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'totalPages': 17, 'positionCount': 1000, 'summary': {'totalValue'"
+          }
+        },
+        {
+          "operation": "coinglass.chain.whale_transfers",
+          "status": "active",
+          "metadata": {
+            "path": "/chain/whale-transfers",
+            "method": "GET",
+            "description": "Get on-chain whale transfers"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'transferCount': 100, 'summary': {'totalValue': 3200096617.0415196, 'megaWhaleCoun"
+          }
+        },
+        {
+          "operation": "coinglass.chain.exchange_flows",
+          "status": "active",
+          "metadata": {
+            "path": "/chain/exchange-flows",
+            "method": "GET",
+            "description": "Get exchange inflows/outflows"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'transactionCount': 100, 'summary': {'depositCount': 16, 'withdrawalCount': 84, 't"
+          }
+        },
+        {
+          "operation": "coinglass.indicators.rsi_list",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/rsi-list",
+            "method": "GET",
+            "description": "Get RSI list for all coins"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'coinCount': 538, 'coins': [{'symbol': 'BTC', 'currentPrice': 101173.7, 'rsi15m': "
+          }
+        },
+        {
+          "operation": "coinglass.indicators.rsi",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/rsi",
+            "method": "GET",
+            "description": "Get RSI indicator"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1h', 'currentRsi': 33.904"
+          }
+        },
+        {
+          "operation": "coinglass.indicators.ma",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/ma",
+            "method": "GET",
+            "description": "Get Moving Average"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1h', 'currentMA': 102800."
+          }
+        },
+        {
+          "operation": "coinglass.indicators.ema",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/ema",
+            "method": "GET",
+            "description": "Get Exponential Moving Average"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1h', 'currentEMA': 102499"
+          }
+        },
+        {
+          "operation": "coinglass.indicators.bollinger",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/bollinger",
+            "method": "GET",
+            "description": "Get Bollinger Bands"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1h', 'current': {'upper':"
+          }
+        },
+        {
+          "operation": "coinglass.indicators.macd",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/macd",
+            "method": "GET",
+            "description": "Get MACD indicator"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1h', 'current': {'macd': "
+          }
+        },
+        {
+          "operation": "coinglass.indicators.basis",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/basis",
+            "method": "GET",
+            "description": "Get Basis indicator"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1h', 'current': {'openBas"
+          }
+        },
+        {
+          "operation": "coinglass.indicators.whale_index",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/whale-index",
+            "method": "GET",
+            "description": "Get Whale Index"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1d', 'currentIndex': -32."
+          }
+        },
+        {
+          "operation": "coinglass.indicators.cgdi",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/cgdi",
+            "method": "GET",
+            "description": "Get Coinglass Directional Index"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'currentIndex': 2151.6619, 'change': 115.16619000000001, 'history': [{'timestamp':"
+          }
+        },
+        {
+          "operation": "coinglass.indicators.cdri",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/cdri",
+            "method": "GET",
+            "description": "Get Coinglass Directional Relative Index"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'currentIndex': 54, 'riskLevel': 'NEUTRAL', 'history': [{'timestamp': 164643840000"
+          }
+        },
+        {
+          "operation": "coinglass.indicators.golden_ratio",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/golden-ratio",
+            "method": "GET",
+            "description": "Get Golden Ratio"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'current': {'price': 101522.0, 'ma350': 102910.68, 'x3': 0.0, 'x5': 0.0, 'x8': 0.0"
+          }
+        },
+        {
+          "operation": "coinglass.indicators.fear_greed",
+          "status": "active",
+          "metadata": {
+            "path": "/indicators/fear-greed",
+            "method": "GET",
+            "description": "Get Fear & Greed Index"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'currentIndex': 14, 'sentiment': 'EXTREME_FEAR', 'history': [{'index': 30}, {'inde"
+          }
+        },
+        {
+          "operation": "coinglass.calendar.economic",
+          "status": "active",
+          "metadata": {
+            "path": "/calendar/economic",
+            "method": "GET",
+            "description": "Get economic calendar events"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'totalEvents': 716, 'highImpactEvents': 501, 'events': [{'name': 'BRC Overall Reta"
+          }
+        },
+        {
+          "operation": "coinglass.news.feed",
+          "status": "active",
+          "metadata": {
+            "path": "/news/feed",
+            "method": "GET",
+            "description": "Get news feed"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'totalArticles': 20, 'articles': [{'title': 'What happens if the Fed cuts rates be"
+          }
+        },
+        {
+          "operation": "coinglass.volume.taker_buy_sell",
+          "status": "active",
+          "metadata": {
+            "path": "/volume/taker-buy-sell",
+            "method": "GET",
+            "description": "Get taker buy/sell volume"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'exchange': 'Binance', 'interval': 'h1', 'current': {'buyVolume':"
+          }
+        },
+        {
+          "operation": "coinglass.liquidations.symbol",
+          "status": "active",
+          "metadata": {
+            "path": "/liquidations/{symbol}",
+            "method": "GET",
+            "description": "Get liquidations for symbol"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'exchange': 'Binance', 'liquidation24h': 37372802.95938, 'longLiq"
+          }
+        },
+        {
+          "operation": "coinglass.liquidations.heatmap",
+          "status": "empty",
+          "metadata": {
+            "path": "/liquidations/{symbol}/heatmap",
+            "method": "GET",
+            "description": "Get liquidation heatmap"
+          },
+          "details": {
+            "error": "No data"
+          }
+        },
+        {
+          "operation": "coinglass.perpetual_market.symbol",
+          "status": "error",
+          "metadata": {
+            "path": "/perpetual-market/{symbol}",
+            "method": "GET",
+            "description": "Get perpetual market data"
+          },
+          "details": {
+            "error": "HTTP 404"
+          }
+        },
+        {
+          "operation": "coinglass.price_change",
+          "status": "active",
+          "metadata": {
+            "path": "/price-change",
+            "method": "GET",
+            "description": "Get price changes"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'coinCount': 918, 'topGainers24h': [{'symbol': 'JCT', 'price': 0.005555, 'change24"
+          }
+        },
+        {
+          "operation": "coinglass.price_history",
+          "status": "active",
+          "metadata": {
+            "path": "/price-history",
+            "method": "GET",
+            "description": "Get price history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1h', 'candleCount': 10, '"
+          }
+        },
+        {
+          "operation": "coinglass.delisted_pairs",
+          "status": "active",
+          "metadata": {
+            "path": "/delisted-pairs",
+            "method": "GET",
+            "description": "Get delisted pairs"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'totalDelisted': 409, 'exchangeCount': 3, 'topExchangesByDelistedCount': [{'exchan"
+          }
+        },
+        {
+          "operation": "coinglass.open_interest.history",
+          "status": "active",
+          "metadata": {
+            "path": "/open-interest/history",
+            "method": "GET",
+            "description": "Get open interest history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1d', 'unit': 'usd', 'data"
+          }
+        },
+        {
+          "operation": "coinglass.open_interest.aggregated_history",
+          "status": "active",
+          "metadata": {
+            "path": "/open-interest/aggregated-history",
+            "method": "GET",
+            "description": "Get aggregated OI history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'interval': '1d', 'unit': 'usd', 'aggregationType': 'ALL_EXCHANGE"
+          }
+        },
+        {
+          "operation": "coinglass.open_interest.aggregated_stablecoin_history",
+          "status": "active",
+          "metadata": {
+            "path": "/open-interest/aggregated-stablecoin-history",
+            "method": "GET",
+            "description": "Get stablecoin OI history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchangeList': 'Binance', 'symbol': 'BTC', 'interval': '1d', 'unit': 'COIN', 'dat"
+          }
+        },
+        {
+          "operation": "coinglass.open_interest.aggregated_coin_margin_history",
+          "status": "active",
+          "metadata": {
+            "path": "/open-interest/aggregated-coin-margin-history",
+            "method": "GET",
+            "description": "Get coin margin OI history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchangeList': 'Binance', 'symbol': 'BTC', 'interval': '1d', 'contractType': 'COI"
+          }
+        },
+        {
+          "operation": "coinglass.open_interest.exchange_list",
+          "status": "active",
+          "metadata": {
+            "path": "/open-interest/exchange-list/{symbol}",
+            "method": "GET",
+            "description": "Get OI exchange list"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'exchangeCount': 21, 'aggregate': {'totalOI': 66536514754.7905, '"
+          }
+        },
+        {
+          "operation": "coinglass.open_interest.exchange_history_chart",
+          "status": "error",
+          "metadata": {
+            "path": "/open-interest/exchange-history-chart",
+            "method": "GET",
+            "description": "Get OI exchange history chart"
+          },
+          "details": {
+            "error": "TypeError: CoinglassComprehensiveService.get_oi_exchange_history_chart() got an unexpected keyword argument 'limit'"
+          }
+        },
+        {
+          "operation": "coinglass.funding_rate.history",
+          "status": "active",
+          "metadata": {
+            "path": "/funding-rate/history",
+            "method": "GET",
+            "description": "Get funding rate history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': '1d', 'dataPointCount': 10"
+          }
+        },
+        {
+          "operation": "coinglass.funding_rate.oi_weight_history",
+          "status": "active",
+          "metadata": {
+            "path": "/funding-rate/oi-weight-history",
+            "method": "GET",
+            "description": "Get OI-weighted funding rate"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'interval': '1d', 'weightingMethod': 'OI_WEIGHTED', 'dataPointCou"
+          }
+        },
+        {
+          "operation": "coinglass.funding_rate.vol_weight_history",
+          "status": "active",
+          "metadata": {
+            "path": "/funding-rate/vol-weight-history",
+            "method": "GET",
+            "description": "Get volume-weighted funding rate"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'interval': '1d', 'weightingMethod': 'VOLUME_WEIGHTED', 'dataPoin"
+          }
+        },
+        {
+          "operation": "coinglass.funding_rate.exchange_list",
+          "status": "active",
+          "metadata": {
+            "path": "/funding-rate/exchange-list/{symbol}",
+            "method": "GET",
+            "description": "Get funding rate exchange list"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'stablecoinMargined': {'statistics': {'count': 16596, 'average': "
+          }
+        },
+        {
+          "operation": "coinglass.funding_rate.accumulated_exchange_list",
+          "status": "active",
+          "metadata": {
+            "path": "/funding-rate/accumulated-exchange-list",
+            "method": "GET",
+            "description": "Get accumulated funding rate"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'range': '1d', 'stablecoinMargined': {'statistics': {'count': 166"
+          }
+        },
+        {
+          "operation": "coinglass.long_short_ratio.account_history",
+          "status": "active",
+          "metadata": {
+            "path": "/top-long-short-account-ratio/history",
+            "method": "GET",
+            "description": "Get account ratio history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': 'h1', 'dataPointCount': 10"
+          }
+        },
+        {
+          "operation": "coinglass.long_short_ratio.position_history",
+          "status": "active",
+          "metadata": {
+            "path": "/top-long-short-position-ratio/history",
+            "method": "GET",
+            "description": "Get position ratio history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': 'h1', 'dataPointCount': 10"
+          }
+        },
+        {
+          "operation": "coinglass.taker_buy_sell.exchange_list",
+          "status": "active",
+          "metadata": {
+            "path": "/taker-buy-sell-volume/exchange-list",
+            "method": "GET",
+            "description": "Get taker buy/sell exchange list"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'range': 'h1', 'overall': {'buyRatio': 47.45, 'sellRatio': 52.55,"
+          }
+        },
+        {
+          "operation": "coinglass.net_position.history",
+          "status": "active",
+          "metadata": {
+            "path": "/net-position/history",
+            "method": "GET",
+            "description": "Get net position history"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'symbol': 'BTCUSDT', 'interval': 'h1', 'dataPointCount': 10"
+          }
+        },
+        {
+          "operation": "coinglass.pairs_markets.symbol",
+          "status": "active",
+          "metadata": {
+            "path": "/pairs-markets/{symbol}",
+            "method": "GET",
+            "description": "Get pairs markets"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'exchangeCount': 90, 'aggregates': {'totalVolumeUSD': 11357020670"
+          }
+        },
+        {
+          "operation": "coinglass.supported_coins",
+          "status": "active",
+          "metadata": {
+            "path": "/supported-coins",
+            "method": "GET",
+            "description": "Get supported coins"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'coins': ['BTC', 'ETH', 'SOL', 'XRP', 'HYPE', 'DOGE', 'BNB', 'ZEC', 'SUI', 'ADA', "
+          }
+        },
+        {
+          "operation": "coinglass.exchanges",
+          "status": "active",
+          "metadata": {
+            "path": "/exchanges",
+            "method": "GET",
+            "description": "Get exchanges"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'data': {'ApeX Omni': [{'instrument_id': 'BTCUSDT', 'base_asset': 'BTC', 'quote_as"
+          }
+        },
+        {
+          "operation": "coinglass.options.open_interest",
+          "status": "active",
+          "metadata": {
+            "path": "/options/open-interest",
+            "method": "GET",
+            "description": "Get options open interest"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'totalOptionsOI': 0.0, 'totalVolume24h': 0.0, 'topExchange': {'exchange': '', 'ope"
+          }
+        },
+        {
+          "operation": "coinglass.options.volume",
+          "status": "active",
+          "metadata": {
+            "path": "/options/volume",
+            "method": "GET",
+            "description": "Get options volume"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'totalOptionsOI': 0.0, 'totalVolume24h': 0.0, 'topExchange': {'exchange': '', 'ope"
+          }
+        },
+        {
+          "operation": "coinglass.etf.flows",
+          "status": "active",
+          "metadata": {
+            "path": "/etf/flows/{asset}",
+            "method": "GET",
+            "description": "Get ETF flows"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'asset': 'BTC', 'dailyFlow': 0.0, 'totalHoldings': 0.0, 'sentiment': 'neutral', 'h"
+          }
+        },
+        {
+          "operation": "coinglass.onchain.reserves",
+          "status": "active",
+          "metadata": {
+            "path": "/on-chain/reserves/{symbol}",
+            "method": "GET",
+            "description": "Get on-chain reserves"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'totalExchangeBalance': 0.0, 'change1h': 0.0, 'change7d': 0.0, 'c"
+          }
+        },
+        {
+          "operation": "coinglass.index.bull_market_peak",
+          "status": "active",
+          "metadata": {
+            "path": "/index/bull-market-peak",
+            "method": "GET",
+            "description": "Get bull market peak index"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'indicators': [{'indicator_name': 'Bitcoin Ahr999 Index', 'current_value': '0.71',"
+          }
+        },
+        {
+          "operation": "coinglass.index.rainbow_chart",
+          "status": "active",
+          "metadata": {
+            "path": "/index/rainbow-chart",
+            "method": "GET",
+            "description": "Get rainbow chart"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'data': [[0.07, 0.033065, 0.044064, 0.059892, 0.082219, 0.110996, 0.149845, 0.2058"
+          }
+        },
+        {
+          "operation": "coinglass.index.stock_to_flow",
+          "status": "active",
+          "metadata": {
+            "path": "/index/stock-to-flow",
+            "method": "GET",
+            "description": "Get stock-to-flow model"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'data': [{'timestamp': 1282003200000, 'price': 0.07, 'next_halving': 834}, {'times"
+          }
+        },
+        {
+          "operation": "coinglass.borrow.interest_rate",
+          "status": "empty",
+          "metadata": {
+            "path": "/borrow/interest-rate",
+            "method": "GET",
+            "description": "Get borrow interest rates"
+          },
+          "details": {
+            "error": "No data"
+          }
+        },
+        {
+          "operation": "coinglass.exchange.assets",
+          "status": "active",
+          "metadata": {
+            "path": "/exchange/assets/{exchange}",
+            "method": "GET",
+            "description": "Get exchange assets"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'exchange': 'Binance', 'totalValueUSD': 179438808824.91995, 'assetCount': 10, 'top"
+          }
+        },
+        {
+          "operation": "coinglass.dashboard.symbol",
+          "status": "active",
+          "metadata": {
+            "path": "/dashboard/{symbol}",
+            "method": "GET",
+            "description": "Get Coinglass dashboard"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'price': 101300.0, 'marketCap': 2021348009467.5134, 'openInterest"
+          }
+        }
+      ]
+    },
+    "coinapi": {
+      "provider": "CoinAPI",
+      "expected_total": 7,
+      "tested_total": 7,
+      "active": 6,
+      "stubbed": 0,
+      "empty": 0,
+      "error": 1,
+      "success_rate": 85.7,
+      "health": "\ud83d\udfe1 Degraded",
+      "detailed_results": [
+        {
+          "operation": "coinapi.ohlcv.latest",
+          "status": "active",
+          "metadata": {
+            "path": "/ohlcv/{symbol}/latest",
+            "method": "GET",
+            "description": "Get latest OHLCV data"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'exchange': 'BINANCE', 'period': '1HRS', 'dataPoints': 24, 'lates"
+          }
+        },
+        {
+          "operation": "coinapi.ohlcv.historical",
+          "status": "active",
+          "metadata": {
+            "path": "/ohlcv/{symbol}/historical",
+            "method": "GET",
+            "description": "Get historical OHLCV data"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'period': '1HRS', 'dataPoints': 168, 'timeRange': '7d', 'analysis"
+          }
+        },
+        {
+          "operation": "coinapi.orderbook",
+          "status": "error",
+          "metadata": {
+            "path": "/orderbook/{symbol}",
+            "method": "GET",
+            "description": "Get orderbook snapshot"
+          },
+          "details": {
+            "error": "No order book data"
+          }
+        },
+        {
+          "operation": "coinapi.trades",
+          "status": "active",
+          "metadata": {
+            "path": "/trades/{symbol}",
+            "method": "GET",
+            "description": "Get recent trades"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'exchange': 'BINANCE', 'tradesCount': 20, 'volume': {'total': 0.0"
+          }
+        },
+        {
+          "operation": "coinapi.quote",
+          "status": "active",
+          "metadata": {
+            "path": "/quote/{symbol}",
+            "method": "GET",
+            "description": "Get current quote"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'exchange': 'BINANCE', 'timestamp': '2025-11-13T15:58:49.8140000Z"
+          }
+        },
+        {
+          "operation": "coinapi.multi_exchange",
+          "status": "active",
+          "metadata": {
+            "path": "/multi-exchange/{symbol}",
+            "method": "GET",
+            "description": "Get multi-exchange aggregated data"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'exchangesQueried': 3, 'exchangesSuccessful': 3, 'priceAnalysis':"
+          }
+        },
+        {
+          "operation": "coinapi.dashboard",
+          "status": "active",
+          "metadata": {
+            "path": "/dashboard/{symbol}",
+            "method": "GET",
+            "description": "Get CoinAPI dashboard"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'endpoints_total': 4, 'endpoints_successful': 3, 'dashboard': {'o"
+          }
+        }
+      ]
+    },
+    "lunarcrush": {
+      "provider": "LunarCrush",
+      "expected_total": 17,
+      "tested_total": 17,
+      "active": 15,
+      "stubbed": 2,
+      "empty": 0,
+      "error": 0,
+      "success_rate": 88.2,
+      "health": "\ud83d\udfe1 Degraded",
+      "detailed_results": [
+        {
+          "operation": "lunarcrush.coin",
+          "status": "active",
+          "metadata": {
+            "path": "/coin/{symbol}",
+            "method": "GET",
+            "description": "Get LunarCrush coin data"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'galaxyScore': 35.6, 'altRank': 94, 'socialVolume': 0, 'socialEng"
+          }
+        },
+        {
+          "operation": "lunarcrush.coin_time_series",
+          "status": "stubbed",
+          "metadata": {
+            "path": "/coin/{symbol}/time-series",
+            "method": "GET",
+            "description": "Get coin time series"
+          },
+          "details": {
+            "error": "NotImplementedError: Operation 'lunarcrush.coin_time_series' is registered in catalog but handler not implemented yet. Please add handler in _execute_operation method."
+          }
+        },
+        {
+          "operation": "lunarcrush.coin_change",
+          "status": "active",
+          "metadata": {
+            "path": "/coin/{symbol}/change",
+            "method": "GET",
+            "description": "Get coin change metrics"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'interval': '24h', 'priceChange': -0.88, 'socialVolumeChange': No"
+          }
+        },
+        {
+          "operation": "lunarcrush.coin_momentum",
+          "status": "active",
+          "metadata": {
+            "path": "/coin/{symbol}/momentum",
+            "method": "GET",
+            "description": "Get coin momentum"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'momentumScore': 23.2, 'momentumLevel': 'very_weak', 'currentMetr"
+          }
+        },
+        {
+          "operation": "lunarcrush.coins_discovery",
+          "status": "active",
+          "metadata": {
+            "path": "/coins/discovery",
+            "method": "GET",
+            "description": "Discover coins via LunarCrush"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'config': {'limit': 10, 'sort': 'galaxy_score', 'page': 0, 'total_rows': 7641}, 't"
+          }
+        },
+        {
+          "operation": "lunarcrush.topics_list",
+          "status": "active",
+          "metadata": {
+            "path": "/topics/list",
+            "method": "GET",
+            "description": "Get trending topics list - discover viral crypto moments"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'totalTopics': 1000, 'topics': [{'topic': 'youtube', 'title': 'YouTube', 'topic_ra"
+          }
+        },
+        {
+          "operation": "lunarcrush.topic",
+          "status": "stubbed",
+          "metadata": {
+            "path": "/topic/{topic}",
+            "method": "GET",
+            "description": "Get topic metrics"
+          },
+          "details": {
+            "error": "NotImplementedError: Operation 'lunarcrush.topic' is registered in catalog but handler not implemented yet. Please add handler in _execute_operation method."
+          }
+        },
+        {
+          "operation": "lunarcrush.coin_themes",
+          "status": "active",
+          "metadata": {
+            "path": "/coin/{symbol}/themes",
+            "method": "GET",
+            "description": "Analyze coin themes (AI-free) - detect bullish/bearish signals, sentiment, and risk"
+          },
+          "details": {
+            "data_preview": "{'positive': [], 'negative': ['very_negative_sentiment'], 'neutral': [], 'confidence': 40, 'sentimen"
+          }
+        },
+        {
+          "operation": "lunarcrush.news_feed",
+          "status": "active_graceful",
+          "metadata": {
+            "path": "/news/feed",
+            "method": "GET",
+            "description": "Get crypto news feed (Enterprise tier)"
+          },
+          "details": {
+            "note": "Graceful tier limitation",
+            "error": "News Feed requires Enterprise tier subscription"
+          }
+        },
+        {
+          "operation": "lunarcrush.community_activity",
+          "status": "active",
+          "metadata": {
+            "path": "/community/{symbol}",
+            "method": "GET",
+            "description": "Get community activity metrics"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'communityMetrics': {'socialContributors': 0, 'socialVolume24h': "
+          }
+        },
+        {
+          "operation": "lunarcrush.influencer_activity",
+          "status": "active_graceful",
+          "metadata": {
+            "path": "/influencers/{symbol}",
+            "method": "GET",
+            "description": "Get influencer activity (Enterprise tier)"
+          },
+          "details": {
+            "note": "Graceful tier limitation",
+            "error": "Influencer Activity requires Enterprise tier subscription"
+          }
+        },
+        {
+          "operation": "lunarcrush.coin_correlation",
+          "status": "active",
+          "metadata": {
+            "path": "/correlation/{symbol}",
+            "method": "GET",
+            "description": "Get coin correlation metrics"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'correlation': {'correlationRank': 0.0, 'interpretation': 'low', "
+          }
+        },
+        {
+          "operation": "lunarcrush.market_pair",
+          "status": "active",
+          "metadata": {
+            "path": "/market-pair/{symbol}",
+            "method": "GET",
+            "description": "Get market pair data"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'symbol': 'BTC', 'pair': 'USDT', 'marketData': {'price': 0.0, 'volume24h': 7817514"
+          }
+        },
+        {
+          "operation": "lunarcrush.aggregates",
+          "status": "active_graceful",
+          "metadata": {
+            "path": "/aggregates",
+            "method": "GET",
+            "description": "Get aggregated market metrics"
+          },
+          "details": {
+            "note": "Graceful tier limitation",
+            "error": "Market-wide aggregates require symbol parameter or premium tier"
+          }
+        },
+        {
+          "operation": "lunarcrush.topic_trends",
+          "status": "active",
+          "metadata": {
+            "path": "/topics/trends",
+            "method": "GET",
+            "description": "Get trending topics"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'totalTopics': 1000, 'topics': [{'topic': 'youtube', 'title': 'YouTube', 'topic_ra"
+          }
+        },
+        {
+          "operation": "lunarcrush.coins_rankings",
+          "status": "active",
+          "metadata": {
+            "path": "/coins/rankings",
+            "method": "GET",
+            "description": "Get coins rankings"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'totalRanked': 10, 'sortedBy': 'galaxy_score', 'rankings': [{'rank': 1, 'symbol': "
+          }
+        },
+        {
+          "operation": "lunarcrush.system_status",
+          "status": "active",
+          "metadata": {
+            "path": "/system/status",
+            "method": "GET",
+            "description": "Get API system status"
+          },
+          "details": {
+            "data_preview": "{'success': True, 'status': 'operational', 'apiHealth': 'healthy', 'responseTimeMs': 505.46, 'tier':"
+          }
+        }
+      ]
+    }
+  },
+  "overall": {
+    "total_tested": 89,
+    "total_active": 81,
+    "overall_success_rate": 91.0,
+    "health_classification": "\ud83d\udfe2 Stable"
+  }
+}
