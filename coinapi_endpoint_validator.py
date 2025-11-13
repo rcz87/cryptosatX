@@ -36,8 +36,8 @@ def test_endpoint(operation: str, symbol: str = "BTC") -> Dict:
         
         # Check if operation succeeded
         if data.get("ok"):
-            # Additional validation: check if result has actual data
-            result = data.get("result", {})
+            # Additional validation: check if data has actual data (RPC uses "data" field, not "result")
+            result = data.get("data", {})
             if result and isinstance(result, dict):
                 return {
                     "endpoint": operation,
