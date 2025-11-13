@@ -237,7 +237,7 @@ async def create_ab_test(
         success = dynamic_weight_service.create_ab_test(
             test_name=request.test_name,
             variant_weights=request.variant_weights,
-            traffic_split=request.traffic_split
+            traffic_split=request.traffic_split or {}
         )
         
         if not success:
