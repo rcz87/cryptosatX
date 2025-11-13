@@ -560,6 +560,52 @@ class FlatRPCDispatcher:
             from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
             symbol = args["symbol"]
             return await lunarcrush_comprehensive.analyze_coin_themes(symbol)
+        
+        elif operation == "lunarcrush.news_feed":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            symbol = args.get("symbol")
+            limit = args.get("limit", 20)
+            return await lunarcrush_comprehensive.get_news_feed(symbol=symbol, limit=limit)
+        
+        elif operation == "lunarcrush.community_activity":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            symbol = args["symbol"]
+            return await lunarcrush_comprehensive.get_community_activity(symbol)
+        
+        elif operation == "lunarcrush.influencer_activity":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            symbol = args["symbol"]
+            return await lunarcrush_comprehensive.get_influencer_activity(symbol)
+        
+        elif operation == "lunarcrush.coin_correlation":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            symbol = args["symbol"]
+            return await lunarcrush_comprehensive.get_coin_correlation(symbol)
+        
+        elif operation == "lunarcrush.market_pair":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            symbol = args["symbol"]
+            pair = args.get("pair", "USDT")
+            return await lunarcrush_comprehensive.get_market_pair(symbol=symbol, pair=pair)
+        
+        elif operation == "lunarcrush.aggregates":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            symbol = args.get("symbol")
+            return await lunarcrush_comprehensive.get_aggregates(symbol=symbol)
+        
+        elif operation == "lunarcrush.topic_trends":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            return await lunarcrush_comprehensive.get_topic_trends()
+        
+        elif operation == "lunarcrush.coins_rankings":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            limit = args.get("limit", 100)
+            sort = args.get("sort", "galaxy_score")
+            return await lunarcrush_comprehensive.get_coins_rankings(limit=limit, sort=sort)
+        
+        elif operation == "lunarcrush.system_status":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            return await lunarcrush_comprehensive.get_system_status()
 
         # ===================================================================
         # COINAPI

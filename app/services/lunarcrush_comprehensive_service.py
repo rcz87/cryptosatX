@@ -557,6 +557,342 @@ class LunarCrushComprehensiveService:
             
         except Exception as e:
             return {"success": False, "error": str(e), "symbol": symbol}
+    
+    # ==================== ADDITIONAL ENDPOINTS (Builder Tier) ====================
+    
+    async def get_coin_metrics(self, symbol: str) -> Dict:
+        """
+        Alias for get_coin_comprehensive for RPC compatibility
+        
+        Args:
+            symbol: Cryptocurrency symbol
+        
+        Returns:
+            Comprehensive coin metrics
+        """
+        return await self.get_coin_comprehensive(symbol)
+    
+    async def get_news_feed(self, symbol: str = None, limit: int = 20) -> Dict:
+        """
+        Get crypto news feed (requires Enterprise tier)
+        
+        Builder tier: Returns limitation message with graceful fallback
+        
+        Args:
+            symbol: Optional symbol filter
+            limit: Number of news items
+        
+        Returns:
+            Dict with news data or tier limitation message
+        """
+        return {
+            "success": False,
+            "error": "News Feed requires Enterprise tier subscription",
+            "feature": "lunarcrush.news_feed",
+            "availableIn": "Enterprise",
+            "currentTier": "Builder",
+            "alternativeSources": [
+                "CoinGlass News Feed (available)",
+                "Direct RSS/API from crypto news sites"
+            ],
+            "source": "lunarcrush_comprehensive"
+        }
+    
+    async def get_community_activity(self, symbol: str) -> Dict:
+        """
+        Get community activity metrics for a coin
+        
+        Builder tier: Uses existing social metrics as proxy
+        
+        Args:
+            symbol: Cryptocurrency symbol
+        
+        Returns:
+            Community activity analysis
+        """
+        try:
+            coin_data = await self.get_coin_comprehensive(symbol)
+            
+            if not coin_data.get("success"):
+                return {"success": False, "error": coin_data.get("error")}
+            
+            return {
+                "success": True,
+                "symbol": symbol,
+                "communityMetrics": {
+                    "socialContributors": coin_data.get("socialContributors", 0),
+                    "socialVolume24h": coin_data.get("socialVolume", 0),
+                    "socialEngagement": coin_data.get("socialEngagement", 0),
+                    "socialDominance": coin_data.get("socialDominance", 0),
+                    "tweetVolume": coin_data.get("tweetVolume", 0),
+                    "redditVolume": coin_data.get("redditVolume", 0),
+                    "urlShares": coin_data.get("urlShares", 0)
+                },
+                "activityLevel": "high" if coin_data.get("socialVolume", 0) > 10000 else "medium" if coin_data.get("socialVolume", 0) > 1000 else "low",
+                "source": "lunarcrush_comprehensive"
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e), "symbol": symbol}
+    
+    async def get_influencer_activity(self, symbol: str) -> Dict:
+        """
+        Get influencer activity (requires Enterprise tier)
+        
+        Builder tier: Returns limitation message
+        
+        Args:
+            symbol: Cryptocurrency symbol
+        
+        Returns:
+            Dict with tier limitation message
+        """
+        return {
+            "success": False,
+            "error": "Influencer Activity requires Enterprise tier subscription",
+            "feature": "lunarcrush.influencer_activity",
+            "availableIn": "Enterprise",
+            "currentTier": "Builder",
+            "note": "Upgrade to Enterprise for creator/influencer insights",
+            "source": "lunarcrush_comprehensive"
+        }
+    
+    async def get_coin_correlation(self, symbol: str) -> Dict:
+        """
+        Get correlation metrics for a coin
+        
+        Builder tier: Uses correlation_rank from coin data
+        
+        Args:
+            symbol: Cryptocurrency symbol
+        
+        Returns:
+            Correlation analysis
+        """
+        try:
+            coin_data = await self.get_coin_comprehensive(symbol)
+            
+            if not coin_data.get("success"):
+                return {"success": False, "error": coin_data.get("error")}
+            
+            correlation_rank = coin_data.get("correlationRank", 0)
+            
+            return {
+                "success": True,
+                "symbol": symbol,
+                "correlation": {
+                    "correlationRank": correlation_rank,
+                    "interpretation": "high" if correlation_rank > 0.7 else "medium" if correlation_rank > 0.4 else "low",
+                    "note": "Higher correlation rank indicates stronger price-to-social correlation"
+                },
+                "basedOn": "Builder tier correlation_rank metric",
+                "source": "lunarcrush_comprehensive"
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e), "symbol": symbol}
+    
+    async def get_market_pair(self, symbol: str, pair: str = "USDT") -> Dict:
+        """
+        Get market pair data for a coin
+        
+        Builder tier: Uses price data from coin metrics
+        
+        Args:
+            symbol: Cryptocurrency symbol
+            pair: Trading pair (default: USDT)
+        
+        Returns:
+            Market pair data
+        """
+        try:
+            coin_data = await self.get_coin_comprehensive(symbol)
+            
+            if not coin_data.get("success"):
+                return {"success": False, "error": coin_data.get("error")}
+            
+            return {
+                "success": True,
+                "symbol": symbol,
+                "pair": pair,
+                "marketData": {
+                    "price": coin_data.get("priceUsd", 0),
+                    "volume24h": coin_data.get("volume24h", 0),
+                    "marketCap": coin_data.get("marketCap", 0),
+                    "percentChange1h": coin_data.get("percentChange1h", 0),
+                    "percentChange24h": coin_data.get("percentChange24h", 0),
+                    "percentChange7d": coin_data.get("percentChange7d", 0),
+                    "volatility": coin_data.get("volatility", 0)
+                },
+                "source": "lunarcrush_comprehensive"
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e), "symbol": symbol}
+    
+    async def get_aggregates(self, symbol: str = None) -> Dict:
+        """
+        Get aggregated market metrics
+        
+        Builder tier: Aggregates available coin data
+        
+        Args:
+            symbol: Optional symbol for single-coin aggregates
+        
+        Returns:
+            Aggregated metrics
+        """
+        try:
+            if symbol:
+                coin_data = await self.get_coin_comprehensive(symbol)
+                change_data = await self.get_social_change(symbol, "24h")
+                
+                if not coin_data.get("success"):
+                    return {"success": False, "error": coin_data.get("error")}
+                
+                return {
+                    "success": True,
+                    "symbol": symbol,
+                    "aggregates": {
+                        "currentMetrics": {
+                            "galaxyScore": coin_data.get("galaxyScore"),
+                            "altRank": coin_data.get("altRank"),
+                            "socialVolume": coin_data.get("socialVolume"),
+                            "price": coin_data.get("priceUsd")
+                        },
+                        "changes24h": {
+                            "socialVolumeChange": change_data.get("socialVolumeChange", 0) if change_data.get("success") else 0,
+                            "priceChange": coin_data.get("percentChange24h", 0)
+                        },
+                        "sentiment": {
+                            "average": coin_data.get("averageSentiment"),
+                            "absolute": coin_data.get("sentimentAbsolute")
+                        }
+                    },
+                    "source": "lunarcrush_comprehensive"
+                }
+            else:
+                return {
+                    "success": False,
+                    "error": "Market-wide aggregates require symbol parameter or premium tier",
+                    "note": "Provide symbol parameter for coin-specific aggregates"
+                }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_topic_trends(self) -> Dict:
+        """
+        Get trending topics (alias to topics_list from lunarcrush_service)
+        
+        Returns:
+            Trending topics data
+        """
+        from app.services.lunarcrush_service import lunarcrush_service
+        return await lunarcrush_service.get_topics_list()
+    
+    async def get_coins_rankings(self, limit: int = 100, sort: str = "galaxy_score") -> Dict:
+        """
+        Get coins rankings
+        
+        Builder tier: Uses coins list with ranking focus
+        
+        Args:
+            limit: Number of coins
+            sort: Sort field (galaxy_score, alt_rank, market_cap_rank)
+        
+        Returns:
+            Ranked coins list
+        """
+        from app.services.lunarcrush_service import lunarcrush_service
+        
+        try:
+            coins_data = await lunarcrush_service.get_coins_list(limit=limit, sort=sort)
+            
+            if not coins_data.get("success"):
+                return {"success": False, "error": coins_data.get("error")}
+            
+            coins = coins_data.get("coins", [])
+            
+            rankings = []
+            for idx, coin in enumerate(coins, 1):
+                rankings.append({
+                    "rank": idx,
+                    "symbol": coin.get("s"),
+                    "name": coin.get("n"),
+                    "galaxyScore": coin.get("galaxy_score"),
+                    "altRank": coin.get("alt_rank"),
+                    "marketCapRank": coin.get("market_cap_rank"),
+                    "socialVolume": coin.get("social_volume_24h"),
+                    "price": coin.get("price")
+                })
+            
+            return {
+                "success": True,
+                "totalRanked": len(rankings),
+                "sortedBy": sort,
+                "rankings": rankings,
+                "source": "lunarcrush_comprehensive"
+            }
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    async def get_system_status(self) -> Dict:
+        """
+        Get LunarCrush API system status
+        
+        Returns:
+            System health status
+        """
+        try:
+            client = await self._get_client()
+            
+            url = f"{self.base_url}/coins/list/v1"
+            params = {"limit": 1}
+            
+            start_time = datetime.utcnow()
+            response = await client.get(url, headers=self.headers, params=params)
+            response_time = (datetime.utcnow() - start_time).total_seconds() * 1000
+            
+            if response.status_code == 200:
+                return {
+                    "success": True,
+                    "status": "operational",
+                    "apiHealth": "healthy",
+                    "responseTimeMs": round(response_time, 2),
+                    "tier": "Builder",
+                    "endpoint": self.base_url,
+                    "timestamp": datetime.utcnow().isoformat(),
+                    "source": "lunarcrush_comprehensive"
+                }
+            else:
+                return {
+                    "success": False,
+                    "status": "degraded",
+                    "error": f"HTTP {response.status_code}",
+                    "responseTimeMs": round(response_time, 2)
+                }
+        except Exception as e:
+            return {
+                "success": False,
+                "status": "error",
+                "error": str(e),
+                "source": "lunarcrush_comprehensive"
+            }
+    
+    async def discover_coins(self, min_galaxy_score: int = 60, limit: int = 20) -> Dict:
+        """
+        Discover coins with filtering (alias for RPC compatibility)
+        
+        Args:
+            min_galaxy_score: Minimum galaxy score threshold
+            limit: Number of coins to return
+        
+        Returns:
+            Discovered coins meeting criteria
+        """
+        from app.services.lunarcrush_service import lunarcrush_service
+        return await lunarcrush_service.get_coins_list(
+            limit=limit,
+            min_galaxy_score=min_galaxy_score,
+            sort="galaxy_score"
+        )
 
 
 # Global instance for easy import
