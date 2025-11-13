@@ -24,6 +24,17 @@ class OutcomeTracker:
         self.win_threshold = 1.0  # 1% profit = WIN
         self.loss_threshold = -1.0  # -1% loss = LOSS
         # Between these = NEUTRAL
+        
+        # Prevent race conditions in concurrent updates
+        self._update_locks = {}  # outcome_id -> asyncio.Lock
+        self._locks_lock = asyncio.Lock()  # Protect _update_locks dict itself
+
+    async def _get_outcome_lock(self, outcome_id: int) -> asyncio.Lock:
+        """Get or create a lock for a specific outcome_id (thread-safe)"""
+        async with self._locks_lock:
+            if outcome_id not in self._update_locks:
+                self._update_locks[outcome_id] = asyncio.Lock()
+            return self._update_locks[outcome_id]
 
     async def record_signal_entry(
         self,
@@ -144,6 +155,21 @@ class OutcomeTracker:
         """
         Update outcome for a specific time interval
         Fetches current price, calculates P&L, classifies outcome
+        
+        Uses per-outcome locking to prevent race conditions
+        """
+        # Acquire lock for this outcome_id to serialize updates
+        lock = await self._get_outcome_lock(outcome_id)
+        async with lock:
+            return await self._update_outcome_locked(outcome_id, interval)
+    
+    async def _update_outcome_locked(
+        self,
+        outcome_id: int,
+        interval: str
+    ) -> bool:
+        """
+        Internal method: Update outcome (called under lock)
         """
         try:
             # Fetch outcome record

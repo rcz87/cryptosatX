@@ -430,23 +430,44 @@ class SignalEngine:
                 print(f"⚠️  Failed to calculate volatility metrics: {trade_plan.get('error') if trade_plan else 'unknown error'}")
                 return None
             
-            position_sizing = trade_plan.get("position_sizing", {})
-            stop_loss = trade_plan.get("stop_loss", {})
-            take_profit = trade_plan.get("take_profit", {})
+            position_sizing = trade_plan.get("position_sizing", {}) or {}
+            stop_loss = trade_plan.get("stop_loss", {}) or {}
+            take_profit = trade_plan.get("take_profit", {}) or {}
             volatility_info = position_sizing.get("volatility_info") if position_sizing else None
             
+            # Extract with safe defaults to prevent KeyError
+            # IMPORTANT: Distinguish None (missing) from 0 (intentional for SKIP/AVOID)
+            multiplier = position_sizing.get("multiplier") if position_sizing else None
+            if multiplier is None:
+                multiplier = position_sizing.get("recommended_size", 1.0) if position_sizing else 1.0
+            
+            recommended_size = position_sizing.get("recommended_size") if position_sizing else None
+            if recommended_size is None:
+                recommended_size = 1.0
+            
+            sl_price = stop_loss.get("stop_loss_price") if stop_loss else None
+            sl_dist = stop_loss.get("distance_pct") if stop_loss else None
+            
+            tp_price = take_profit.get("take_profit_price") if take_profit else None
+            tp_dist = take_profit.get("reward_distance_pct") if take_profit else None
+            rr_ratio = take_profit.get("risk_reward_ratio") if take_profit else None
+            
+            atr_val = volatility_info.get("atr_value") if volatility_info else None
+            atr_pct = volatility_info.get("current_atr_pct") if volatility_info else None
+            classification = volatility_info.get("classification", "UNKNOWN") if volatility_info else "UNKNOWN"
+            
             return {
-                "recommendedPositionMultiplier": round(position_sizing.get("multiplier", 1.0), 4) if position_sizing else 1.0,
-                "recommendedPositionSize": round(position_sizing.get("recommended_size", 1.0), 4) if position_sizing else 1.0,
-                "stopLossPrice": round(stop_loss.get("stop_loss_price", 0), 8) if stop_loss else None,
-                "stopLossDistancePct": round(stop_loss.get("distance_pct", 0), 4) if stop_loss else None,
-                "takeProfitPrice": round(take_profit.get("take_profit_price", 0), 8) if take_profit else None,
-                "takeProfitDistancePct": round(take_profit.get("reward_distance_pct", 0), 4) if take_profit else None,
-                "riskRewardRatio": round(take_profit.get("risk_reward_ratio", 0), 2) if take_profit else None,
-                "atrValue": round(volatility_info.get("atr_value", 0), 8) if volatility_info else None,
-                "atrPercentage": round(volatility_info.get("current_atr_pct", 0), 4) if volatility_info else None,
-                "volatilityClassification": volatility_info.get("classification", "UNKNOWN") if volatility_info else "UNKNOWN",
-                "tradePlanSummary": trade_plan.get("trade_plan_summary", ""),
+                "recommendedPositionMultiplier": round(multiplier, 4) if multiplier is not None else 1.0,
+                "recommendedPositionSize": round(recommended_size, 4) if recommended_size is not None else 1.0,
+                "stopLossPrice": round(sl_price, 8) if sl_price is not None else None,
+                "stopLossDistancePct": round(sl_dist, 4) if sl_dist is not None else None,
+                "takeProfitPrice": round(tp_price, 8) if tp_price is not None else None,
+                "takeProfitDistancePct": round(tp_dist, 4) if tp_dist is not None else None,
+                "riskRewardRatio": round(rr_ratio, 2) if rr_ratio is not None else None,
+                "atrValue": round(atr_val, 8) if atr_val is not None else None,
+                "atrPercentage": round(atr_pct, 4) if atr_pct is not None else None,
+                "volatilityClassification": classification,
+                "tradePlanSummary": trade_plan.get("trade_plan_summary", "ATR unavailable"),
                 "timeframe": "4h"
             }
         

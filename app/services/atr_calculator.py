@@ -252,9 +252,14 @@ class ATRCalculator:
             if not atr_value:
                 return None
             
-            # Get current price for percentage calculation
-            current_price = candles[-1]["close"]
-            atr_percentage = (atr_value / current_price) * 100 if current_price > 0 else 0
+            # Get current price for percentage calculation (defensive)
+            current_price = candles[-1].get("close") if candles and len(candles) > 0 else None
+            
+            if not current_price or current_price <= 0:
+                print(f"[ERROR] Invalid current price for {symbol}: {current_price}")
+                return None
+            
+            atr_percentage = (atr_value / current_price) * 100
             
             return {
                 "symbol": symbol,
