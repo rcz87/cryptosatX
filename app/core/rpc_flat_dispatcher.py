@@ -98,12 +98,22 @@ class FlatRPCDispatcher:
         """Extract arguments from flat request"""
         args = {}
 
+        # System parameters that should only be included if explicitly set to non-default values
+        system_params = {'debug', 'include_raw'}
+
         # Extract all non-None fields except 'operation'
         for field_name in request.model_fields:
             if field_name == 'operation':
                 continue
 
             value = getattr(request, field_name, None)
+            
+            # Skip system parameters if they are default values (False/None)
+            if field_name in system_params:
+                if value in (None, False):
+                    continue
+            
+            # Skip None values
             if value is not None:
                 args[field_name] = value
 
@@ -146,58 +156,148 @@ class FlatRPCDispatcher:
         # COINGLASS - LIQUIDATIONS
         # ===================================================================
         elif operation == "coinglass.liquidations.symbol":
-            from app.services.coinglass_service import coinglass_service
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            exchange = args.get("exchange", "Binance")
             symbol = args.get("symbol", "BTC")
-            time_type = args.get("time_type", "h24")
-            return await coinglass_service.get_liquidations(symbol, time_type)
+            return await coinglass_comprehensive.get_liquidation_coin_list(exchange=exchange, symbol=symbol)
 
         elif operation == "coinglass.liquidations.heatmap":
-            from app.services.coinglass_service import coinglass_service
-            symbol = args["symbol"]
-            return await coinglass_service.get_liquidation_heatmap(symbol)
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            symbol = args.get("symbol", "BTC")
+            return await coinglass_comprehensive.get_liquidation_map(symbol=symbol)
 
         elif operation == "coinglass.liquidation.history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
             return await coinglass_comprehensive.get_liquidation_history(**args)
+
+        elif operation == "coinglass.liquidation.order":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_liquidation_orders(**args)
+
+        elif operation == "coinglass.liquidation.exchange_list":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            range_param = args.get("range", "1h")
+            return await coinglass_comprehensive.get_liquidation_exchange_list(range=range_param)
+
+        elif operation == "coinglass.liquidation.aggregated_history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_liquidation_aggregated_history(**args)
 
         # ===================================================================
         # COINGLASS - FUNDING RATE
         # ===================================================================
         elif operation == "coinglass.funding_rate.history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            return await coinglass_comprehensive.get_funding_rate_history(**args)
+            exchange = args.get("exchange", "Binance")
+            symbol = args.get("symbol", "BTCUSDT")
+            interval = args.get("interval", "1d")
+            limit = args.get("limit", 100)
+            return await coinglass_comprehensive.get_funding_rate_history(
+                exchange=exchange, symbol=symbol, interval=interval, limit=limit
+            )
 
         elif operation == "coinglass.funding_rate.exchange_list":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            symbol = args["symbol"]
+            symbol = args.get("symbol", "BTC")
             return await coinglass_comprehensive.get_funding_rate_exchange_list(symbol)
+
+        elif operation == "coinglass.funding_rate.accumulated_exchange_list":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_accumulated_funding_rate_exchange_list(**args)
+
+        elif operation == "coinglass.funding_rate.oi_weight_history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_oi_weighted_funding_rate_history(**args)
+
+        elif operation == "coinglass.funding_rate.vol_weight_history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_volume_weighted_funding_rate_history(**args)
 
         # ===================================================================
         # COINGLASS - OPEN INTEREST
         # ===================================================================
         elif operation == "coinglass.open_interest.history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            return await coinglass_comprehensive.get_open_interest_history(**args)
+            exchange = args.get("exchange", "Binance")
+            symbol = args.get("symbol", "BTCUSDT")
+            interval = args.get("interval", "1d")
+            limit = args.get("limit", 100)
+            unit = args.get("unit", "usd")
+            return await coinglass_comprehensive.get_open_interest_history(
+                exchange=exchange, symbol=symbol, interval=interval, limit=limit, unit=unit
+            )
 
         elif operation == "coinglass.open_interest.exchange_list":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            symbol = args["symbol"]
+            symbol = args.get("symbol", "BTC")
             return await coinglass_comprehensive.get_oi_exchange_list(symbol)
+
+        elif operation == "coinglass.open_interest.aggregated_history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_aggregated_oi_history(**args)
+
+        elif operation == "coinglass.open_interest.aggregated_stablecoin_history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_aggregated_stablecoin_oi_history(**args)
+
+        elif operation == "coinglass.open_interest.aggregated_coin_margin_history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_aggregated_coin_margin_oi_history(**args)
+
+        elif operation == "coinglass.open_interest.exchange_history_chart":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_oi_exchange_history_chart(**args)
 
         # ===================================================================
         # COINGLASS - INDICATORS
         # ===================================================================
         elif operation == "coinglass.indicators.fear_greed":
-            from app.services.coinglass_service import coinglass_service
-            return await coinglass_service.get_fear_greed_index()
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_fear_greed_index()
 
         elif operation == "coinglass.indicators.rsi_list":
-            from app.services.coinglass_service import coinglass_service
-            return await coinglass_service.get_rsi_list()
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_rsi_list()
+
+        elif operation == "coinglass.indicators.rsi":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_rsi_indicator(**args)
+
+        elif operation == "coinglass.indicators.ma":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_ma_indicator(**args)
+
+        elif operation == "coinglass.indicators.ema":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_ema_indicator(**args)
+
+        elif operation == "coinglass.indicators.bollinger":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_bollinger_bands(**args)
+
+        elif operation == "coinglass.indicators.macd":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_macd_indicator(**args)
+
+        elif operation == "coinglass.indicators.basis":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_basis_history(**args)
 
         elif operation == "coinglass.indicators.whale_index":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
             return await coinglass_comprehensive.get_whale_index(**args)
+
+        elif operation == "coinglass.indicators.cgdi":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_cgdi_index()
+
+        elif operation == "coinglass.indicators.cdri":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_cdri_index()
+
+        elif operation == "coinglass.indicators.golden_ratio":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_golden_ratio_multiplier()
 
         # ===================================================================
         # COINGLASS - ORDERBOOK & WHALE
@@ -206,30 +306,92 @@ class FlatRPCDispatcher:
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
             return await coinglass_comprehensive.get_large_limit_orders(**args)
 
+        elif operation == "coinglass.orderbook.whale_history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_large_limit_order_history(**args)
+
+        elif operation == "coinglass.orderbook.aggregated_history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_orderbook_aggregated_history(**args)
+
+        elif operation == "coinglass.orderbook.ask_bids_history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_orderbook_ask_bids_history(**args)
+
+        elif operation == "coinglass.orderbook.detailed_history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_orderbook_detailed_history(**args)
+
         elif operation == "coinglass.chain.whale_transfers":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
             return await coinglass_comprehensive.get_chain_whale_transfers(**args)
+
+        elif operation == "coinglass.chain.exchange_flows":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_exchange_chain_transactions(**args)
+
+        # ===================================================================
+        # COINGLASS - HYPERLIQUID
+        # ===================================================================
+        elif operation == "coinglass.hyperliquid.whale_alerts":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_hyperliquid_whale_alerts()
+
+        elif operation == "coinglass.hyperliquid.whale_positions":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_hyperliquid_whale_positions()
+
+        elif operation == "coinglass.hyperliquid.positions.symbol":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            symbol = args.get("symbol", "BTC")
+            return await coinglass_comprehensive.get_hyperliquid_positions_by_symbol(symbol=symbol)
 
         # ===================================================================
         # COINGLASS - MARKET DATA
         # ===================================================================
         elif operation == "coinglass.markets":
-            from app.services.coinglass_service import coinglass_service
-            symbol = args.get("symbol")
-            return await coinglass_service.get_markets(symbol)
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_coins_markets()
+
+        elif operation == "coinglass.markets.symbol":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            symbol = args.get("symbol", "BTC")
+            return await coinglass_comprehensive.get_coins_markets(symbol=symbol)
+
+        elif operation == "coinglass.dashboard.symbol":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            symbol = args.get("symbol", "BTC")
+            return await coinglass_comprehensive.get_coins_markets(symbol=symbol)
 
         elif operation == "coinglass.supported_coins":
-            from app.services.coinglass_service import coinglass_service
-            return await coinglass_service.get_supported_coins()
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_supported_coins()
 
         elif operation == "coinglass.exchanges":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            return await coinglass_comprehensive.get_exchanges()
+            return await coinglass_comprehensive.get_supported_exchange_pairs()
 
         elif operation == "coinglass.perpetual_market.symbol":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            symbol = args["symbol"]
+            symbol = args.get("symbol", "BTC")
             return await coinglass_comprehensive.get_perpetual_market(symbol)
+
+        elif operation == "coinglass.pairs_markets.symbol":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            symbol = args.get("symbol", "BTC")
+            return await coinglass_comprehensive.get_pairs_markets(symbol=symbol)
+
+        elif operation == "coinglass.price_change":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_coins_price_change()
+
+        elif operation == "coinglass.price_history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_price_history(**args)
+
+        elif operation == "coinglass.delisted_pairs":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_delisted_pairs()
 
         # ===================================================================
         # COINGLASS - ADVANCED METRICS
@@ -251,6 +413,55 @@ class FlatRPCDispatcher:
         elif operation == "coinglass.long_short_ratio.position_history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
             return await coinglass_comprehensive.get_top_long_short_position_ratio_history(**args)
+
+        elif operation == "coinglass.net_position.history":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_net_position_history(**args)
+
+        elif operation == "coinglass.options.open_interest":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_options_open_interest()
+
+        elif operation == "coinglass.options.volume":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_options_volume()
+
+        elif operation == "coinglass.volume.taker_buy_sell":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_taker_buy_sell_volume(**args)
+
+        elif operation == "coinglass.taker_buy_sell.exchange_list":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_taker_buy_sell_volume_exchange_list(**args)
+
+        elif operation == "coinglass.news.feed":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_news_feed()
+
+        elif operation == "coinglass.calendar.economic":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_economic_calendar()
+
+        elif operation == "coinglass.index.bull_market_peak":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_bull_market_indicators()
+
+        elif operation == "coinglass.index.rainbow_chart":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_rainbow_chart()
+
+        elif operation == "coinglass.index.stock_to_flow":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_stock_to_flow()
+
+        elif operation == "coinglass.borrow.interest_rate":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_borrow_interest_rate(**args)
+
+        elif operation == "coinglass.exchange.assets":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            exchange = args.get("exchange", "Binance")
+            return await coinglass_comprehensive.get_exchange_assets(exchange=exchange)
 
         # ===================================================================
         # SMART MONEY
