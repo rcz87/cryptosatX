@@ -36,6 +36,7 @@ from app.api import (
     routes_rpc,  # ADDED FOR UNIFIED RPC ENDPOINT
     routes_gpt_actions,  # ADDED FOR GPT ACTIONS FLAT PARAMS
     routes_dashboard,  # ADDED FOR INTERACTIVE DASHBOARD
+    routes_admin,  # ADDED FOR ADMIN ENDPOINTS
 )
 
 # Load environment variables
@@ -150,6 +151,9 @@ app.include_router(
 app.include_router(
     routes_gpt_actions.router, tags=["GPT Actions (Flat Params)"]
 )  # ADDED FOR GPT ACTIONS COMPATIBILITY
+app.include_router(
+    routes_admin.router, tags=["Admin & System"]
+)  # ADDED FOR ADMIN ENDPOINTS
 
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility
