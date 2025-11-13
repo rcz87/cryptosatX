@@ -75,8 +75,13 @@ async def lifespan(app: FastAPI):
 
     yield
 
-    # Shutdown: close database connection
+    # Shutdown: close database connection and cleanup resources
     print("Shutting down CryptoSatX API...")
+    
+    # Close ATR calculator HTTP client
+    from app.services.atr_calculator import atr_calculator
+    await atr_calculator.close()
+    
     await db.disconnect()
 
 

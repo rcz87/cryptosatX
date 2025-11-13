@@ -20,6 +20,7 @@ from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensi
 from app.services.okx_service import okx_service
 from app.services.telegram_notifier import telegram_notifier
 from app.services.openai_service_v2 import get_openai_service_v2
+from app.services.position_sizer import position_sizer
 from app.utils import risk_rules
 
 
@@ -317,10 +318,11 @@ class SignalEngine:
                 
                 risk_suggestion = validation_result.get("adjusted_risk_suggestion", {})
                 verdict = validation_result.get("verdict", "SKIP")
+                risk_mode = risk_suggestion.get("risk_factor", "NORMAL")
                 
                 signal_data["aiVerdictLayer"] = {
                     "verdict": verdict,
-                    "riskMode": risk_suggestion.get("risk_factor", "NORMAL"),
+                    "riskMode": risk_mode,
                     "riskMultiplier": risk_suggestion.get("position_size_multiplier", 1.0),
                     "aiConfidence": validation_result.get("ai_confidence", 50),
                     "aiSummary": validation_result.get("telegram_summary", ""),
@@ -331,6 +333,18 @@ class SignalEngine:
                     "source": "openai_v2",
                     "model": validation_result.get("model_used", "gpt-4-turbo"),
                 }
+                
+                # Calculate volatility metrics (ATR-based position sizing and stop loss)
+                volatility_metrics = await self._calculate_volatility_metrics(
+                    symbol=symbol,
+                    entry_price=signal_data.get("price", 0),
+                    signal_type=signal_data.get("signal", "NEUTRAL"),
+                    risk_mode=risk_mode
+                )
+                
+                if volatility_metrics:
+                    signal_data["aiVerdictLayer"]["volatilityMetrics"] = volatility_metrics
+                    print(f"📊 Volatility metrics added: {volatility_metrics.get('tradePlanSummary', '')}")
                 
                 return signal_data
             
@@ -369,7 +383,76 @@ class SignalEngine:
         
         print(f"🔧 Rule-based verdict: {verdict}, Risk mode: {risk_mode}, Multiplier: {risk_multiplier}x")
         
+        # Calculate volatility metrics (ATR-based position sizing and stop loss)
+        volatility_metrics = await self._calculate_volatility_metrics(
+            symbol=symbol,
+            entry_price=signal_data.get("price", 0),
+            signal_type=signal_data.get("signal", "NEUTRAL"),
+            risk_mode=risk_mode
+        )
+        
+        if volatility_metrics:
+            signal_data["aiVerdictLayer"]["volatilityMetrics"] = volatility_metrics
+            print(f"📊 Volatility metrics added: {volatility_metrics.get('tradePlanSummary', '')}")
+        
         return signal_data
+
+    async def _calculate_volatility_metrics(
+        self,
+        symbol: str,
+        entry_price: float,
+        signal_type: str,
+        risk_mode: str = "NORMAL"
+    ) -> Optional[Dict]:
+        """
+        Calculate volatility-adjusted position sizing and risk parameters
+        
+        Uses ATR (Average True Range) to determine:
+        - Recommended position size (volatility-adjusted)
+        - Stop loss price (ATR-based)
+        - Take profit price (risk-reward optimized)
+        
+        Returns None if ATR calculation fails (graceful degradation)
+        """
+        try:
+            print(f"📊 Calculating volatility metrics for {symbol} ({signal_type})...")
+            
+            trade_plan = await position_sizer.get_complete_trade_plan(
+                symbol=symbol,
+                entry_price=entry_price,
+                signal_type=signal_type,
+                risk_mode=risk_mode,
+                base_size=1.0,
+                timeframe="4h"
+            )
+            
+            if not trade_plan or "error" in trade_plan:
+                print(f"⚠️  Failed to calculate volatility metrics: {trade_plan.get('error') if trade_plan else 'unknown error'}")
+                return None
+            
+            position_sizing = trade_plan.get("position_sizing", {})
+            stop_loss = trade_plan.get("stop_loss", {})
+            take_profit = trade_plan.get("take_profit", {})
+            volatility_info = position_sizing.get("volatility_info") if position_sizing else None
+            
+            return {
+                "recommendedPositionMultiplier": round(position_sizing.get("multiplier", 1.0), 4) if position_sizing else 1.0,
+                "recommendedPositionSize": round(position_sizing.get("recommended_size", 1.0), 4) if position_sizing else 1.0,
+                "stopLossPrice": round(stop_loss.get("stop_loss_price", 0), 8) if stop_loss else None,
+                "stopLossDistancePct": round(stop_loss.get("distance_pct", 0), 4) if stop_loss else None,
+                "takeProfitPrice": round(take_profit.get("take_profit_price", 0), 8) if take_profit else None,
+                "takeProfitDistancePct": round(take_profit.get("reward_distance_pct", 0), 4) if take_profit else None,
+                "riskRewardRatio": round(take_profit.get("risk_reward_ratio", 0), 2) if take_profit else None,
+                "atrValue": round(volatility_info.get("atr_value", 0), 8) if volatility_info else None,
+                "atrPercentage": round(volatility_info.get("current_atr_pct", 0), 4) if volatility_info else None,
+                "volatilityClassification": volatility_info.get("classification", "UNKNOWN") if volatility_info else "UNKNOWN",
+                "tradePlanSummary": trade_plan.get("trade_plan_summary", ""),
+                "timeframe": "4h"
+            }
+        
+        except Exception as e:
+            print(f"[ERROR] _calculate_volatility_metrics failed: {e}")
+            return None
 
     async def _get_funding_and_oi_with_fallback(self, symbol: str, cg_data: Dict, comp_markets: Dict, comprehensive_available: bool) -> Dict:
         """
