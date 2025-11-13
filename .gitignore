@@ -50,3 +50,22 @@ Thumbs.db
 .pytest_cache/
 .coverage
 htmlcov/
+tests/
+test_scripts/
+testing_reports/
+*test_report*.json
+test_websocket.html
+verify_*.py
+
+# Documentation (temporary files)
+*_SUMMARY.txt
+*_INSTRUCTIONS*.txt
+*_QUESTION_TEMPLATES.txt
+GPT_ACTIONS_*.yaml
+openapi-gpt-actions.json
+
+# Deployment configs (not used)
+k8s/
+monitoring/
+Dockerfile
+docker-compose.yml
