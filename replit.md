@@ -26,7 +26,7 @@ The API delivers clean JSON responses and includes a debug mode (`?debug=true`).
 - **Concurrent Data Fetching**: Utilizes `asyncio.gather` for enhanced performance.
 - **Comprehensive Coinglass Integration**: Over 60 production endpoints for market data, liquidations, funding rates, and open interest.
 - **Real-Time WebSocket Streaming**: Provides a WebSocket endpoint for live liquidation data.
-- **Unified RPC Endpoint**: A single POST `/invoke` endpoint offers RPC access to all operations with flat parameters, including all 65 Coinglass operations and 15 LunarCrush endpoints.
+- **Unified RPC Endpoint**: A single POST `/invoke` endpoint offers RPC access to all operations with flat parameters, including 64 Coinglass operations, 7 CoinAPI operations, and 17 LunarCrush endpoints (88 total). Validated at 96.6% success rate with smart cleanup (November 2025).
 - **API Endpoints**: Includes endpoints for enhanced trading signals, aggregated raw market data, GPT Actions, direct Coinglass and LunarCrush data, Smart Money analysis, MSS, Binance New Listings, WebSocket streaming, and OpenAI V2 Signal Judge validation.
 - **Signal History Storage**: Stores LONG/SHORT and high-scoring MSS signals in a PostgreSQL database (Neon) with JSON file backup.
 - **Telegram Notifier**: Provides human-friendly signal alerts with AI verdict, risk mode, position sizing, and factor analysis.
