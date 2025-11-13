@@ -1,27 +1,43 @@
 """
-Unified RPC Endpoint for GPT Actions
-Single /invoke endpoint that maps to 100+ operations
+Unified RPC Endpoint for GPT Actions - UPGRADED with FLAT PARAMETERS
+Single /invoke endpoint that maps to 192+ operations
 Bypasses GPT Actions 30-operation limit
+NOW SUPPORTS FLAT PARAMETERS for GPT Actions compatibility!
 """
 from fastapi import APIRouter, HTTPException, Request
-from typing import Dict, Any
+from typing import Dict, Any, Union
 
+# Legacy nested args support (backward compatible)
 from app.models.rpc_models import RPCRequest, RPCResponse
 from app.core.rpc_dispatcher import rpc_dispatcher
-from app.utils.operation_catalog import get_all_operations
+
+# NEW: Flat parameters support (GPT Actions compatible)
+from app.models.rpc_flat_models import FlatInvokeRequest, FlatRPCResponse
+from app.core.rpc_flat_dispatcher import flat_rpc_dispatcher
+
+from app.utils.operation_catalog import get_all_operations, OPERATION_CATALOG
 
 router = APIRouter()
 
 
-@router.post("/invoke", response_model=RPCResponse, summary="Unified RPC Endpoint")
-async def invoke_operation(request: RPCRequest) -> RPCResponse:
+@router.post("/invoke", summary="Unified RPC Endpoint (Supports Both Nested & Flat)")
+async def invoke_operation(request: Union[FlatInvokeRequest, RPCRequest]) -> Union[FlatRPCResponse, RPCResponse]:
     """
-    🚀 **Unified RPC Endpoint - All Operations in One**
-    
-    This endpoint provides access to ALL API operations through a single RPC interface.
-    Perfect for GPT Actions integration (bypasses 30-operation limit).
-    
-    **How to use:**
+    🚀 **Unified RPC Endpoint - UPGRADED with Flat Parameters Support**
+
+    Access to 192+ operations through ONE endpoint.
+    Bypasses GPT Actions 30-operation limit.
+
+    **✅ NEW: GPT Actions Compatible - Flat Parameters (RECOMMENDED)**
+    ```json
+    {
+      "operation": "signals.get",
+      "symbol": "BTC",
+      "debug": false
+    }
+    ```
+
+    **⚠️ LEGACY: Nested Args (Still Supported - Backward Compatible)**
     ```json
     {
       "operation": "signals.get",
@@ -91,13 +107,20 @@ async def invoke_operation(request: RPCRequest) -> RPCResponse:
     }
     ```
     """
-    # Dispatch to handler
-    response = await rpc_dispatcher.dispatch(
-        operation=request.operation,
-        args=request.args
-    )
-    
-    return response
+    # Auto-detect request type and dispatch accordingly
+
+    # Check if request has 'args' field (legacy nested format)
+    if hasattr(request, 'args') and request.args:
+        # Legacy nested args format - use old dispatcher
+        response = await rpc_dispatcher.dispatch(
+            operation=request.operation,
+            args=request.args
+        )
+        return response
+    else:
+        # NEW: Flat parameters format (GPT Actions compatible)
+        response = await flat_rpc_dispatcher.dispatch(request)
+        return response
 
 
 @router.get("/invoke/operations", summary="List Available Operations")
@@ -133,44 +156,97 @@ async def list_operations() -> Dict[str, Any]:
     }
 
 
-@router.get("/invoke/schema", summary="Get GPT Actions OpenAPI Schema")
+@router.get("/invoke/schema", summary="Get GPT Actions OpenAPI Schema (Flat Parameters)")
 async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
     """
-    📄 **GPT Actions Compatible OpenAPI Schema**
-    
-    Returns OpenAPI 3.1 schema optimized for GPT Actions integration.
-    Single /invoke operation with complete enum of available operations.
-    
+    📄 **GPT Actions Compatible OpenAPI Schema - FLAT PARAMETERS**
+
+    Returns OpenAPI 3.1 schema optimized for GPT Actions with FLAT parameters.
+    Single /invoke operation with 192+ operations accessible via operation enum.
+
+    **✅ USES FLAT PARAMETERS (GPT Actions Compatible!)**
+
     **For GPT Actions:**
     1. Copy this URL: `https://guardiansofthetoken.org/invoke/schema`
     2. Import into GPT Actions
-    3. GPT can now call any of 100+ operations via single /invoke endpoint
+    3. GPT can now call any of 192 operations via single /invoke endpoint
+    4. All parameters are FLAT (not nested under 'args')
     """
     import os
     from app.utils.operation_catalog import OPERATION_CATALOG
-    
+
     base_url = os.getenv("BASE_URL", "https://guardiansofthetoken.org")
-    
-    # Get all operation names for enum
-    operation_names = list(OPERATION_CATALOG.keys())
+
+    # Get top operations for enum (limit to keep schema manageable)
+    # Priority: Core signals, Coinglass key endpoints, Smart Money, MSS, LunarCrush
+    priority_operations = [
+        # Core
+        "signals.get", "market.get", "health.check",
+
+        # Coinglass - Most Important
+        "coinglass.liquidations.symbol",
+        "coinglass.liquidations.heatmap",
+        "coinglass.funding_rate.history",
+        "coinglass.open_interest.history",
+        "coinglass.indicators.fear_greed",
+        "coinglass.indicators.rsi_list",
+        "coinglass.indicators.whale_index",
+        "coinglass.orderbook.whale_walls",
+        "coinglass.chain.whale_transfers",
+        "coinglass.markets",
+        "coinglass.supported_coins",
+        "coinglass.perpetual_market.symbol",
+        "coinglass.etf.flows",
+        "coinglass.onchain.reserves",
+        "coinglass.long_short_ratio.account_history",
+        "coinglass.long_short_ratio.position_history",
+
+        # Smart Money
+        "smart_money.scan",
+        "smart_money.scan_accumulation",
+        "smart_money.analyze",
+
+        # MSS
+        "mss.discover",
+        "mss.analyze",
+        "mss.scan",
+
+        # LunarCrush
+        "lunarcrush.coin",
+        "lunarcrush.coin_momentum",
+        "lunarcrush.coins_discovery",
+
+        # CoinAPI
+        "coinapi.quote",
+        "coinapi.ohlcv.latest",
+        "coinapi.orderbook",
+        "coinapi.trades",
+    ]
+
+    # Add remaining operations (up to 100 total for GPT Actions compatibility)
+    operation_names = priority_operations.copy()
+    remaining = [op for op in OPERATION_CATALOG.keys() if op not in priority_operations]
+    operation_names.extend(remaining[:70])  # Total ~100 operations
     
     schema = {
         "openapi": "3.1.0",
         "info": {
-            "title": "CryptoSatX Unified RPC API",
-            "version": "3.0.0",
+            "title": "CryptoSatX Unified RPC API - Flat Parameters",
+            "version": "3.0.0-flat",
             "description": (
-                "Single unified RPC endpoint providing access to 100+ crypto market operations.\n\n"
+                "✅ **GPT Actions Compatible** - Single RPC endpoint with FLAT parameters.\n\n"
+                "Access to 192+ crypto market operations through ONE endpoint.\n\n"
                 "**Key Features:**\n"
-                "- 65+ Coinglass endpoints (liquidations, funding, OI, indicators)\n"
-                "- Smart Money whale tracking\n"
+                "- 67+ Coinglass endpoints (liquidations, funding, OI, whale tracking, indicators)\n"
+                "- Smart Money accumulation/distribution detection\n"
                 "- MSS (Multi-Modal Signal Score) discovery system\n"
                 "- LunarCrush social sentiment (7,600+ coins)\n"
                 "- CoinAPI comprehensive market data\n"
-                "- Real-time trading signals\n\n"
-                "**How to Use:**\n"
-                "Call POST /invoke with operation name + args.\n"
-                "Example: {\"operation\": \"signals.get\", \"args\": {\"symbol\": \"BTC\"}}"
+                "- Real-time AI trading signals\n\n"
+                "**✅ Flat Parameters (GPT Actions Compatible):**\n"
+                "All parameters are at root level, not nested.\n"
+                "Example: {\"operation\": \"signals.get\", \"symbol\": \"BTC\"}\n\n"
+                "**Operations Count:** " + str(len(operation_names)) + " available"
             )
         },
         "servers": [
@@ -182,9 +258,14 @@ async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
         "paths": {
             "/invoke": {
                 "post": {
-                    "operationId": "invoke",
-                    "summary": "Unified RPC operation invocation",
-                    "description": "Single endpoint for all operations. Select operation via enum and provide args.",
+                    "operationId": "invokeOperation",
+                    "summary": "Unified RPC with FLAT parameters (GPT Actions compatible)",
+                    "description": (
+                        "Single endpoint for all 192+ operations.\n\n"
+                        "✅ **USES FLAT PARAMETERS** (not nested args).\n\n"
+                        "Select operation via enum and provide parameters at root level.\n\n"
+                        "Example: {\"operation\": \"signals.get\", \"symbol\": \"BTC\"}"
+                    ),
                     "requestBody": {
                         "required": True,
                         "content": {
@@ -195,53 +276,133 @@ async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
                                     "properties": {
                                         "operation": {
                                             "type": "string",
-                                            "description": "Operation to execute",
-                                            "enum": operation_names[:100]  # Limit to 100 for schema size
+                                            "description": "Operation to execute (select from enum)",
+                                            "enum": operation_names
                                         },
-                                        "args": {
-                                            "type": "object",
-                                            "description": "Operation-specific arguments",
-                                            "additionalProperties": True
+                                        "symbol": {
+                                            "type": "string",
+                                            "description": "Cryptocurrency symbol (BTC, ETH, SOL, etc.)",
+                                            "nullable": True
+                                        },
+                                        "interval": {
+                                            "type": "string",
+                                            "description": "Time interval (1m, 5m, 15m, 1h, 4h, 1d)",
+                                            "nullable": True
+                                        },
+                                        "timeframe": {
+                                            "type": "string",
+                                            "description": "Timeframe (1MIN, 5MIN, 15MIN, 1HRS, 4HRS, 1DAY)",
+                                            "nullable": True
+                                        },
+                                        "limit": {
+                                            "type": "integer",
+                                            "description": "Result limit",
+                                            "nullable": True
+                                        },
+                                        "exchange": {
+                                            "type": "string",
+                                            "description": "Exchange name (Binance, OKX, Bybit, etc.)",
+                                            "nullable": True
+                                        },
+                                        "debug": {
+                                            "type": "boolean",
+                                            "description": "Enable debug mode",
+                                            "nullable": True
+                                        },
+                                        "time_type": {
+                                            "type": "string",
+                                            "description": "Time type (h1, h4, h12, h24, all)",
+                                            "nullable": True
+                                        },
+                                        "min_accumulation_score": {
+                                            "type": "integer",
+                                            "description": "Minimum accumulation score (0-10)",
+                                            "nullable": True
+                                        },
+                                        "min_distribution_score": {
+                                            "type": "integer",
+                                            "description": "Minimum distribution score (0-10)",
+                                            "nullable": True
+                                        },
+                                        "min_mss_score": {
+                                            "type": "integer",
+                                            "description": "Minimum MSS score (0-100)",
+                                            "nullable": True
+                                        },
+                                        "max_results": {
+                                            "type": "integer",
+                                            "description": "Maximum number of results",
+                                            "nullable": True
+                                        },
+                                        "asset": {
+                                            "type": "string",
+                                            "description": "Asset name (BTC, ETH)",
+                                            "nullable": True
+                                        },
+                                        "topic": {
+                                            "type": "string",
+                                            "description": "Topic name",
+                                            "nullable": True
                                         }
                                     }
                                 },
                                 "examples": {
                                     "getSignalBTC": {
-                                        "summary": "Get BTC trading signal",
-                                        "description": "IMPORTANT: 'args' field is REQUIRED with 'symbol' parameter",
+                                        "summary": "Get BTC trading signal (FLAT params)",
+                                        "description": "✅ Flat parameters - symbol at root level",
                                         "value": {
                                             "operation": "signals.get",
-                                            "args": {"symbol": "BTC"}
+                                            "symbol": "BTC"
                                         }
                                     },
                                     "getSignalSOL": {
-                                        "summary": "Get SOL trading signal",
-                                        "description": "Example for Solana - notice 'args' object contains 'symbol'",
+                                        "summary": "Get SOL trading signal (FLAT params)",
+                                        "description": "✅ Flat parameters - no nested args",
                                         "value": {
                                             "operation": "signals.get",
-                                            "args": {"symbol": "SOL"}
+                                            "symbol": "SOL"
                                         }
                                     },
-                                    "getSignalETH": {
-                                        "summary": "Get ETH trading signal",
-                                        "description": "Example for Ethereum - 'args' must be an object with 'symbol' key",
+                                    "liquidationsSOL": {
+                                        "summary": "Get SOL liquidations (FLAT params)",
+                                        "description": "✅ Coinglass liquidations with flat parameters",
                                         "value": {
-                                            "operation": "signals.get",
-                                            "args": {"symbol": "ETH"}
+                                            "operation": "coinglass.liquidations.symbol",
+                                            "symbol": "SOL",
+                                            "time_type": "h24"
+                                        }
+                                    },
+                                    "fearGreedIndex": {
+                                        "summary": "Get Fear & Greed Index",
+                                        "description": "✅ No parameters needed for some operations",
+                                        "value": {
+                                            "operation": "coinglass.indicators.fear_greed"
                                         }
                                     },
                                     "scanSmartMoney": {
-                                        "summary": "Scan smart money activity",
+                                        "summary": "Scan smart money accumulation (FLAT params)",
+                                        "description": "✅ Flat parameters for smart money scan",
                                         "value": {
                                             "operation": "smart_money.scan",
-                                            "args": {"min_accumulation_score": 7}
+                                            "min_accumulation_score": 7,
+                                            "min_distribution_score": 7
                                         }
                                     },
                                     "mssDiscover": {
-                                        "summary": "Discover high-potential coins",
+                                        "summary": "Discover high-potential coins (FLAT params)",
+                                        "description": "✅ MSS discovery with flat parameters",
                                         "value": {
                                             "operation": "mss.discover",
-                                            "args": {"min_mss_score": 75, "max_results": 10}
+                                            "min_mss_score": 75,
+                                            "max_results": 10
+                                        }
+                                    },
+                                    "lunarCrushCoin": {
+                                        "summary": "Get LunarCrush social data (FLAT params)",
+                                        "description": "✅ Social metrics for coin",
+                                        "value": {
+                                            "operation": "lunarcrush.coin",
+                                            "symbol": "BTC"
                                         }
                                     }
                                 }
