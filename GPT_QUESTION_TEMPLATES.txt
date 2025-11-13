@@ -1,0 +1,215 @@
+# 🎯 5 TEMPLATE PERTANYAAN GPT - CRYPTOSATX
+Pertanyaan yang dirancang untuk memaksimalkan penggunaan 192+ API endpoints
+
+═══════════════════════════════════════════════════════════════════════
+
+## 📊 TEMPLATE 1: ANALISIS TRADING SIGNAL KOMPREHENSIF
+**Trigger:** signals.get + coinglass.liquidations + coinglass.funding + coinglass.fear_greed
+
+### Pertanyaan:
+"Analisis lengkap BTC sekarang: sinyal trading, liquidation data, funding rate, dan sentimen pasar (fear & greed index)"
+
+### Pertanyaan Alternatif:
+- "Gimana kondisi ETH hari ini? Kasih analisis lengkap: signal, liquidations, funding, sama fear & greed"
+- "SOL sekarang bullish atau bearish? Cek semua data: trading signal, liq data, funding rate, sentimen"
+- "Analisis komprehensif AVAX: signal score, berapa banyak longs/shorts kena liquidasi, funding rate, dan fear & greed"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ signals.get (symbol: BTC)
+✅ coinglass.liquidations.symbol (symbol: BTC)
+✅ coinglass.funding.symbol (symbol: BTC)
+✅ coinglass.fear_greed
+
+### Expected Response:
+- Trading signal (LONG/SHORT/NEUTRAL)
+- Score & confidence level
+- Liquidation volumes (longs vs shorts)
+- Funding rate (positive/negative)
+- Fear & Greed index
+- Top 3 contributing factors
+- Risk analysis
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🐋 TEMPLATE 2: SMART MONEY & WHALE TRACKING
+**Trigger:** smart_money.scan + coinglass.oi.symbol + coinglass.whale_alerts
+
+### Pertanyaan:
+"Scan smart money untuk 10 coins teratas, fokus yang whale lagi akumulasi. Sama cek open interest BTC juga"
+
+### Pertanyaan Alternatif:
+- "Mana coins yang lagi di-accumulate whale? Scan 15 coins dengan smart money score tertinggi"
+- "Cari whale activity di top 20 coins. Mana yang lagi pump karena institutional buying?"
+- "Detect smart money patterns: scan 10 coins, highlight yang ada BOS atau CHoCH signal"
+- "Whale lagi masuk ke mana? Scan smart money + cek OI trend untuk ETH, SOL, AVAX"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ smart_money.scan (limit: 10-20, min_accumulation_score)
+✅ coinglass.oi.symbol (symbol: BTC/ETH/SOL)
+✅ coinglass.orderbook.whale_orders (optional)
+
+### Expected Response:
+- List 10-20 coins dengan smart money activity
+- Accumulation/distribution bias per coin
+- BOS/CHoCH patterns detected
+- Open interest trends
+- Whale orderbook depth
+- Recommended coins untuk watch
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🚀 TEMPLATE 3: MSS DISCOVERY - EMERGING COINS
+**Trigger:** mss.discover + lunarcrush.social + binance.new_listings
+
+### Pertanyaan:
+"Discover emerging cryptocurrencies dengan MSS score 75+. Cari coins yang punya social buzz tinggi dan baru listing di Binance"
+
+### Pertanyaan Alternatif:
+- "Cari hidden gems: MSS score minimal 80, social momentum naik, market cap under $500M"
+- "Discover 10 emerging altcoins yang lagi trending di social media dengan MSS score bagus"
+- "Mana coins baru yang potential 10x? Cek MSS discovery + Binance new listings 7 hari terakhir"
+- "Find next 100x gem: high MSS score (75+), strong community, low market cap"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ mss.discover (min_mss_score: 75-80, max_results: 10)
+✅ lunarcrush.coins.social (untuk top MSS results)
+✅ binance.new_listings (range: 7d/30d)
+✅ market.get (untuk market cap filtering)
+
+### Expected Response:
+- 5-10 emerging coins dengan MSS breakdown
+- Discovery phase scores (tokenomics)
+- Social Confirmation scores (community momentum)
+- Institutional Validation scores (whale activity)
+- Market cap & volume data
+- New Binance listings (jika ada)
+- Tier classification (Tier 1/2/3)
+
+═══════════════════════════════════════════════════════════════════════
+
+## 📈 TEMPLATE 4: TECHNICAL ANALYSIS ADVANCED
+**Trigger:** coinglass.indicators + coinglass.rsi + coinglass.macd + market.get
+
+### Pertanyaan:
+"Technical analysis BTC: RSI, MACD, Whale Index, dan semua indicator dari Coinglass. Plus cek trader positioning (long/short ratio)"
+
+### Pertanyaan Alternatif:
+- "Deep dive ETH indicators: RSI, MACD, Bollinger Bands, CGDI, sama top trader ratio"
+- "Cek semua technical indicators SOL: RSI list, whale index, golden ratio, plus OI trend"
+- "Analisis teknikal lengkap AVAX: 11 indicators Coinglass + long/short ratio + funding"
+- "Scan RSI untuk top 50 coins, highlight yang oversold/overbought. Sama cek whale index"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ coinglass.indicators.rsi (symbol atau list)
+✅ coinglass.indicators.macd (symbol)
+✅ coinglass.indicators.whale_index (symbol)
+✅ coinglass.indicators.cgdi (symbol)
+✅ coinglass.indicators.golden_ratio (symbol)
+✅ coinglass.trader.long_short_ratio (symbol)
+✅ market.get (untuk price context)
+
+### Expected Response:
+- RSI value & interpretation (oversold/overbought)
+- MACD crossover signals
+- Whale Index (institutional activity)
+- CGDI (market health)
+- Golden Ratio (trend strength)
+- Long/Short ratio (retail sentiment)
+- Combined technical outlook
+- Entry/exit zones
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🔥 TEMPLATE 5: MARKET OVERVIEW & MULTI-COIN COMPARISON
+**Trigger:** multiple signals.get + coinglass.liquidations.exchange + market.get (batch)
+
+### Pertanyaan:
+"Compare BTC, ETH, SOL, AVAX, MATIC: mana yang paling bullish hari ini? Kasih signal, score, liquidations, sama funding rate semua coins"
+
+### Pertanyaan Alternatif:
+- "Battle of L1s: bandingkan signal ETH vs SOL vs AVAX vs MATIC. Mana yang paling kuat?"
+- "Top 5 DeFi coins (UNI, AAVE, LINK, CRV, SUSHI): cek signal semua, rank dari best ke worst"
+- "Compare meme coins: DOGE vs SHIB vs PEPE. Signal, liq data, social sentiment"
+- "Scan 10 coins: BTC, ETH, BNB, SOL, XRP, ADA, DOGE, AVAX, MATIC, LINK. Rank berdasarkan composite score"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ signals.get (batch untuk 5-10 symbols)
+✅ coinglass.liquidations.exchange (untuk total liq market-wide)
+✅ coinglass.funding.list (multiple symbols)
+✅ market.get (batch untuk price data)
+✅ coinglass.fear_greed (market sentiment)
+
+### Expected Response:
+- Table comparison 5-10 coins
+- Signal per coin (LONG/SHORT/NEUTRAL)
+- Score ranking (highest to lowest)
+- Liquidation comparison
+- Funding rate comparison
+- Best coin untuk LONG (dengan reasoning)
+- Best coin untuk SHORT (dengan reasoning)
+- Market sentiment overview
+
+═══════════════════════════════════════════════════════════════════════
+
+## 💡 BONUS TEMPLATES (Advanced Users)
+
+### Template 6: Real-Time Liquidation Alert
+"Pantau liquidations real-time untuk BTC di semua exchanges. Highlight kalau ada long/short liquidation spike >$10M"
+
+API: coinglass.liquidations.realtime + websocket streaming
+
+### Template 7: News & Events Impact
+"Cek economic calendar hari ini + crypto news feed. Ada event penting yang bisa impact BTC/ETH?"
+
+API: coinglass.economic_calendar + coinglass.news_feed
+
+### Template 8: Hyperliquid DEX Analysis
+"Whale activity di Hyperliquid: top positions, recent whale alerts untuk BTC-PERP"
+
+API: coinglass.hyperliquid.whale_alerts + positions
+
+### Template 9: ETF Flow Tracking
+"BTC & ETH ETF flows minggu ini: ada net inflow atau outflow? Impact ke price?"
+
+API: coinglass.etf.flows (BTC + ETH)
+
+### Template 10: Full Market Scan
+"Full scan market: signals untuk top 20 coins, highlight yang extreme bullish/bearish, plus MSS discovery emerging coins"
+
+API: signals.get (batch) + mss.discover + coinglass.fear_greed + smart_money.scan
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 TIPS UNTUK USER:
+
+1. **Specific is better** - Sebutkan coin symbols jelas (BTC, ETH, SOL)
+2. **Combine features** - Minta multiple data points (signal + liq + funding)
+3. **Set parameters** - Kasih limit, threshold (MSS 75+, top 10 coins)
+4. **Ask comparisons** - Compare multiple coins untuk insight lebih dalam
+5. **Time ranges** - Specify "hari ini", "7 hari", "30 hari" untuk historical data
+
+═══════════════════════════════════════════════════════════════════════
+
+## ✅ ENDPOINT COVERAGE
+
+Template-template ini cover:
+✅ Core Signals (8-factor scoring)
+✅ Smart Money Analysis (whale tracking)
+✅ MSS Discovery (emerging coins)
+✅ Coinglass Data (63/65 endpoints)
+   - Liquidations (7 endpoints)
+   - Funding Rates (6 endpoints)
+   - Open Interest (6 endpoints)
+   - Technical Indicators (11 indicators)
+   - Trader Positioning (4 endpoints)
+   - Orderbook (5 endpoints)
+   - Hyperliquid DEX (3 endpoints)
+   - News & Calendar (2 endpoints)
+   - Fear & Greed (1 endpoint)
+✅ LunarCrush Social (sentiment data)
+✅ Multi-coin batch analysis
+✅ Real-time WebSocket streaming
+
+Total: 50+ unique endpoint combinations covered!
+
+═══════════════════════════════════════════════════════════════════════
