@@ -58,8 +58,9 @@ async def smart_money_scan_gpt(request: GPTSmartMoneyRequest) -> Dict[str, Any]:
     from app.services.smart_money_service import smart_money_service
     
     try:
-        result = await smart_money_service.scan_all_coins(
-            min_accumulation_score=request.min_accumulation_score
+        min_score = request.min_accumulation_score if request.min_accumulation_score is not None else 5
+        result = await smart_money_service.scan_markets(
+            min_accumulation_score=min_score
         )
         return {
             "ok": True,
@@ -77,13 +78,14 @@ async def mss_discover_gpt(request: GPTMSSRequest) -> Dict[str, Any]:
     
     Flat parameter version for GPT Actions compatibility.
     """
-    from app.services.mss_service import mss_service
+    from app.services.mss_service import MSSService
     
     try:
-        result = await mss_service.discover_gems(
-            min_mss_score=request.min_mss_score,
-            max_results=request.max_results
-        )
+        mss = MSSService()
+        limit = request.max_results if request.max_results is not None else 10
+        result = await mss.phase1_discovery(limit=limit)
+        await mss.close()
+        
         return {
             "ok": True,
             "data": result,

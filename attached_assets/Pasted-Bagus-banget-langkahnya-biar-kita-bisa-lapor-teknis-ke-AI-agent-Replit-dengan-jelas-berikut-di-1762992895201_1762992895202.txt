@@ -1,0 +1,85 @@
+Bagus banget langkahnya 💡 — biar kita bisa lapor teknis ke AI agent Replit dengan jelas, berikut diagnosis lengkap error dari sisi sistem (raw + analisis):
+
+⸻
+
+🧩 Error Log Teknis Lengkap
+
+Error Type:
+
+UnrecognizedKwargsError: args
+
+Konteks:
+Terjadi saat memanggil endpoint:
+
+{
+  "operation": "signals.get",
+  "args": {"symbol": "SOL"}
+}
+
+Dampak:
+Semua operasi yang memakai field "args" gagal (bukan hanya SOL, tapi juga ETH, BTC, dsb).
+
+Log stack internal (disederhanakan):
+
+tool_error
+The outbound call did not succeed, inform the user succinctly but keep important details intact.
+UnrecognizedKwargsError: args
+
+
+⸻
+
+📖 Interpretasi Teknis
+
+Artinya sistem tidak mengenali parameter args di level namespace call — alias:
+	•	Entah struktur JSON berubah,
+	•	Atau parser API baru di sisi Guardians/Replit menolak format lama yang masih pakai "args" wrapper.
+
+Dalam spesifikasi lama (seperti di file instruksi kamu), formatnya begini ✅:
+
+{"operation": "signals.get", "args": {"symbol": "SOL"}}
+
+Tapi sekarang kemungkinan API sudah berubah menjadi format baru, misalnya:
+
+{"operation": "signals.get", "symbol": "SOL"}
+
+Atau
+
+{"operation": "signals.get", "parameters": {"symbol": "SOL"}}
+
+Sehingga ketika sistem lama tetap mengirim args, parser menganggapnya keyword tak dikenal → muncullah UnrecognizedKwargsError.
+
+⸻
+
+🧠 Kemungkinan Sumber Masalah di Replit / Guardians
+
+Kemungkinan	Penjelasan	Status
+Perubahan schema API v2	Guardians ubah args jadi parameter langsung	⚠️ Kemungkinan tinggi
+Parser TypeScript di Replit GPT plugin belum diupdate	Namespace guardiansofthetoken_org__jit_plugin belum sinkron	⚠️ Kemungkinan tinggi
+Cloudflare Block (JS challenge)	Mungkin ikut memicu fallback error	🔸 Menengah
+Credential missing	Tidak relevan (karena error bukan 401)	❌
+
+
+⸻
+
+🧰 Pesan yang Bisa Kamu Kirim ke AI Agent Replit
+
+Kamu bisa copy–paste ini:
+
+Bug report untuk Guardians Plugin / Replit:
+
+Saat menjalankan perintah:
+
+{"operation": "signals.get", "args": {"symbol": "SOL"}}
+
+muncul error:
+
+UnrecognizedKwargsError: args
+
+Sepertinya parser di namespace guardiansofthetoken_org__jit_plugin tidak lagi mengenali field args.
+Mohon dikonfirmasi apakah API Guardians v2 sudah mengubah struktur JSON menjadi tanpa args wrapper (mis. symbol langsung di root).
+
+Semua endpoint yang menggunakan args gagal total, bukan hanya signals.get.
+
+⸻
+
+Kalau kamu mau, aku bisa bantu bikin versi pesan yang diformat rapi untuk kirim langsung ke Replit Support (markdown) atau siap paste di AI agent mereka. Mau saya siapkan?
