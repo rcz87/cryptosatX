@@ -13,7 +13,7 @@ channel = "stable-24_05"
 packages = ["cargo", "glibcLocales", "libiconv", "libxcrypt", "openssl", "pkg-config", "postgresql", "postgresql_15", "rustc"]
 
 [deployment]
-run = ["sh", "-c", "uvicorn main:app --host 0.0.0.0 --port 8000"]
+run = ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--workers"]
 deploymentTarget = "vm"
 
 [env]
@@ -60,4 +60,8 @@ integrations = ["python_database:1.0.0"]
 [[ports]]
 localPort = 8000
 externalPort = 80
+
+[[ports]]
+localPort = 46685
+externalPort = 3000
 
