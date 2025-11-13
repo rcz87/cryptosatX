@@ -1,0 +1,52 @@
+{
+  "timestamp": "2025-11-13T14:59:00Z",
+  "validation_mode": "HONESTY_FIRST",
+  "total_endpoints": 7,
+  "statistics": {
+    "active": 0,
+    "stubbed": 3,
+    "empty_response": 3,
+    "premium_only": 0,
+    "parameter_error": 0,
+    "timeout": 0,
+    "other_errors": 1,
+    "success_rate_percent": 0.0
+  },
+  "results": [
+    {
+      "endpoint": "coinapi.ohlcv.latest",
+      "status": "\u26a0\ufe0f EMPTY_RESPONSE",
+      "error": "Handler returned empty/null result"
+    },
+    {
+      "endpoint": "coinapi.ohlcv.historical",
+      "status": "\u26a0\ufe0f STUBBED",
+      "error": "Handler not implemented yet"
+    },
+    {
+      "endpoint": "coinapi.orderbook",
+      "status": "\u26a0\ufe0f EMPTY_RESPONSE",
+      "error": "Handler returned empty/null result"
+    },
+    {
+      "endpoint": "coinapi.trades",
+      "status": "\u26a0\ufe0f EMPTY_RESPONSE",
+      "error": "Handler returned empty/null result"
+    },
+    {
+      "endpoint": "coinapi.quote",
+      "status": "\u26a0\ufe0f ERROR",
+      "error": "AttributeError: 'CoinAPIService' object has no attribute 'get_quote'"
+    },
+    {
+      "endpoint": "coinapi.multi_exchange",
+      "status": "\u26a0\ufe0f STUBBED",
+      "error": "Handler not implemented yet"
+    },
+    {
+      "endpoint": "coinapi.dashboard",
+      "status": "\u26a0\ufe0f STUBBED",
+      "error": "Handler not implemented yet"
+    }
+  ]
+}
