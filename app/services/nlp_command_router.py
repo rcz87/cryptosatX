@@ -18,6 +18,12 @@ class NLPCommandRouter:
     
     def __init__(self):
         self.keyword_mapping = {
+            # Signal generation (LONG/SHORT/NEUTRAL recommendations)
+            "signal": "signal",
+            "sinyal": "signal",
+            "rekomendasi": "signal",
+            "recommendation": "signal",
+            
             # Scalping analysis
             "analisa": "scalping",
             "analyze": "scalping",
@@ -127,24 +133,63 @@ class NLPCommandRouter:
         
         return "scalping"
     
+    def extract_mode(self, query: str) -> str:
+        """
+        Extract signal mode from natural language query
+        Supports Indonesian and English mode keywords
+        
+        Examples:
+            "scalping XRP mode 3" -> "3"
+            "analisis BTC pakai mode agresif" -> "aggressive"
+            "signal ETH konservatif" -> "conservative"
+            "SOL ultra mode" -> "ultra"
+        """
+        query_lower = query.lower()
+        
+        # Mode keyword mappings (Indonesian + English)
+        mode_patterns = {
+            # Conservative mode (mode 1)
+            r'\b(konservatif|conservative|safe|aman|mode\s*1|m1)\b': 'conservative',
+            
+            # Aggressive mode (mode 2) 
+            r'\b(agresif|aggressive|balanced|seimbang|mode\s*2|m2)\b': 'aggressive',
+            
+            # Ultra mode (mode 3)
+            r'\b(ultra|extreme|ekstrem|scalping\s+mode|mode\s+scalping|mode\s*3|m3)\b': 'ultra',
+        }
+        
+        # Check each pattern
+        for pattern, mode in mode_patterns.items():
+            if re.search(pattern, query_lower):
+                return mode
+        
+        # Default to aggressive if no mode specified
+        return 'aggressive'
+    
     async def route_command(self, query: str) -> Dict[str, Any]:
         """Route natural language command to appropriate layer"""
         symbol = self.extract_symbol(query)
         layer = self.detect_layer(query)
+        mode = self.extract_mode(query)
         
         response = {
             "query": query,
             "detected_symbol": symbol,
             "detected_layer": layer,
+            "detected_mode": mode,
             "data": None,
             "interpretation": ""
         }
         
         try:
             # Use base ticker for services that expect it
-            if layer == "scalping":
-                response["data"] = await self._get_scalping_analysis(symbol)
-                response["interpretation"] = f"Complete scalping analysis for {symbol}"
+            if layer == "signal":
+                response["data"] = await self._get_signal(symbol, mode)
+                response["interpretation"] = f"Trading signal for {symbol} (mode: {mode})"
+                
+            elif layer == "scalping":
+                response["data"] = await self._get_scalping_analysis(symbol, mode)
+                response["interpretation"] = f"Complete scalping analysis for {symbol} (mode: {mode})"
                 
             elif layer == "news":
                 response["data"] = await self._get_news(symbol)
@@ -214,12 +259,30 @@ class NLPCommandRouter:
             response["interpretation"] = f"Error processing query: {str(e)}"
             return response
     
-    async def _get_scalping_analysis(self, symbol: str) -> Dict[str, Any]:
-        """Get complete scalping analysis"""
+    async def _get_signal(self, symbol: str, mode: str = "aggressive") -> Dict[str, Any]:
+        """
+        Get trading signal (LONG/SHORT/NEUTRAL) with mode selection
+        
+        Args:
+            symbol: Crypto symbol (e.g., "BTC", "ETH")
+            mode: Signal mode - "conservative", "aggressive", or "ultra"
+        """
+        from app.core.signal_engine import signal_engine
+        return await signal_engine.build_signal(symbol, debug=False, mode=mode)
+    
+    async def _get_scalping_analysis(self, symbol: str, mode: str = "aggressive") -> Dict[str, Any]:
+        """
+        Get complete scalping analysis with mode selection
+        
+        Args:
+            symbol: Crypto symbol (e.g., "BTC", "ETH")
+            mode: Signal mode - "conservative", "aggressive", or "ultra"
+        """
         from app.api.routes_scalping import ScalpingAnalysisRequest, analyze_for_scalping
         
         request = ScalpingAnalysisRequest(
             symbol=symbol,
+            mode=mode,
             include_smart_money=False,
             include_whale_positions=False,
             include_fear_greed=False,

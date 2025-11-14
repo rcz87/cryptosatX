@@ -5,7 +5,7 @@ Universal natural language interface for all crypto analysis layers
 
 from fastapi import APIRouter, HTTPException, Query
 from pydantic import BaseModel, Field
-from typing import Dict, Any
+from typing import Dict, Any, Optional
 from app.services.nlp_command_router import process_natural_command
 
 
@@ -33,6 +33,7 @@ class NLPQueryResponse(BaseModel):
     query: str
     detected_symbol: str
     detected_layer: str
+    detected_mode: Optional[str] = "aggressive"
     interpretation: str
     data: Dict[str, Any]
 

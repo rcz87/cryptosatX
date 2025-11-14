@@ -15,6 +15,10 @@ router = APIRouter(prefix="/scalping", tags=["Scalping"])
 class ScalpingAnalysisRequest(BaseModel):
     """Request model for scalping analysis"""
     symbol: str = Field(..., description="Cryptocurrency symbol (e.g., BTC, ETH, SOL, XRP)")
+    mode: Optional[str] = Field(
+        default="aggressive",
+        description="Signal mode: 'conservative'/'1' (safe), 'aggressive'/'2' (balanced, default), 'ultra'/'3' (maximum signals)"
+    )
     include_smart_money: bool = Field(default=True, description="Include smart money analysis (takes ~25s)")
     include_whale_positions: bool = Field(default=True, description="Include Hyperliquid whale positions (DEX institutional bias)")
     include_fear_greed: bool = Field(default=True, description="Include fear & greed index")
