@@ -42,6 +42,8 @@ from app.api import (
     routes_admin,  # ADDED FOR ADMIN ENDPOINTS
     routes_scalping,  # ADDED FOR SCALPING GPT ACTIONS
     routes_nlp,  # ADDED FOR NATURAL LANGUAGE PROCESSING
+    routes_cache,  # ADDED FOR CACHE MANAGEMENT
+    routes_batch,  # ADDED FOR BATCH OPERATIONS
 )
 
 # Load environment variables
@@ -185,6 +187,12 @@ app.include_router(
 app.include_router(
     routes_nlp.router, tags=["Natural Language Processing"]
 )  # ADDED FOR NLP UNIVERSAL INTERFACE
+app.include_router(
+    routes_cache.router, tags=["Cache Management"]
+)  # ADDED FOR PERFORMANCE OPTIMIZATION
+app.include_router(
+    routes_batch.router, tags=["Batch Operations"]
+)  # ADDED FOR MULTI-SYMBOL FETCHING
 
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility
