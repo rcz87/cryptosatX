@@ -35,8 +35,8 @@ class FlatRPCDispatcher:
         "signals.debug": 45,
         
         # MSS operations (multi-coin scans)
-        "mss.discover": 90,
-        "mss.scan": 90,
+        "mss.discover": 60,
+        "mss.scan": 60,
         "mss.analyze": 45,
         
         # Smart Money operations
@@ -163,7 +163,7 @@ class FlatRPCDispatcher:
             
             # Log timeout for monitoring
             print(f"⏱️  FLAT RPC TIMEOUT: {operation} after {timeout}s")
-            print(f"   Args: {json.dumps(args, indent=2)}")
+            print(f"   Args: {json.dumps(args, indent=2, default=str)}")
             
             return FlatRPCResponse(
                 ok=False,
@@ -188,7 +188,7 @@ class FlatRPCDispatcher:
             print(f"❌ FLAT RPC ERROR: {operation}")
             print(f"   Error Type: {error_type}")
             print(f"   Error Message: {error_msg}")
-            print(f"   Args: {json.dumps(args, indent=2)}")
+            print(f"   Args: {json.dumps(args, indent=2, default=str)}")
             
             # Only log full stack trace for unexpected errors
             if error_type not in ["ValueError", "KeyError", "ValidationError"]:
