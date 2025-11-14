@@ -16,6 +16,7 @@ class ScalpingAnalysisRequest(BaseModel):
     """Request model for scalping analysis"""
     symbol: str = Field(..., description="Cryptocurrency symbol (e.g., BTC, ETH, SOL, XRP)")
     include_smart_money: bool = Field(default=True, description="Include smart money analysis (takes ~25s)")
+    include_whale_positions: bool = Field(default=True, description="Include Hyperliquid whale positions (DEX institutional bias)")
     include_fear_greed: bool = Field(default=True, description="Include fear & greed index")
 
 
@@ -37,6 +38,7 @@ class ScalpingAnalysisResponse(BaseModel):
     rsi: Optional[Dict[str, Any]] = None
     volume_delta: Optional[Dict[str, Any]] = None
     smart_money: Optional[Dict[str, Any]] = None
+    whale_positions: Optional[Dict[str, Any]] = None
     fear_greed: Optional[Dict[str, Any]] = None
     
     # Analysis summary
@@ -126,6 +128,10 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
         if request.include_smart_money:
             tasks.append(("smart_money", smart_money_service.scan_smart_money(symbol)))
         
+        # OPTIONAL - Hyperliquid Whale Positions (Layer 7.5)
+        if request.include_whale_positions:
+            tasks.append(("whale_positions", coinglass_comprehensive.get_hyperliquid_whale_positions()))
+        
         # OPTIONAL - Fear & Greed
         if request.include_fear_greed:
             tasks.append(("fear_greed", coinglass_comprehensive.get_fear_greed_index()))
@@ -141,21 +147,64 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
         # Count availability
         critical_keys = ["price", "orderbook_history", "liquidations", "rsi", "volume_delta"]
         recommended_keys = ["funding", "ls_ratio"]
+        optional_keys = []
         if request.include_smart_money:
-            recommended_keys.append("smart_money")
+            optional_keys.append("smart_money")
+        if request.include_whale_positions:
+            optional_keys.append("whale_positions")
+        if request.include_fear_greed:
+            optional_keys.append("fear_greed")
         
         critical_available = sum(1 for k in critical_keys if result.get(k))
         recommended_available = sum(1 for k in recommended_keys if result.get(k))
+        optional_available = sum(1 for k in optional_keys if result.get(k))
         
         result["critical_data_available"] = critical_available
         result["recommended_data_available"] = recommended_available
         result["ready"] = critical_available >= 4  # Need at least 4/5 critical
+        
+        # Calculate whale bias if available
+        whale_bias_summary = None
+        if result.get("whale_positions") and result["whale_positions"].get("success"):
+            wp = result["whale_positions"]
+            positions = wp.get("topPositions", [])
+            if positions:
+                long_value = sum(p["positionValue"] for p in positions if p["side"] == "LONG")
+                short_value = sum(p["positionValue"] for p in positions if p["side"] == "SHORT")
+                total_value = long_value + short_value
+                
+                if total_value > 0:
+                    long_pct = (long_value / total_value) * 100
+                    short_pct = (short_value / total_value) * 100
+                    ratio = long_value / short_value if short_value > 0 else 999
+                    
+                    if ratio > 1.5:
+                        bias = "LONG"
+                        confidence = min((ratio - 1) / 2, 0.9)
+                    elif ratio < 0.67:
+                        bias = "SHORT"
+                        confidence = min((1/ratio - 1) / 2, 0.9)
+                    else:
+                        bias = "NEUTRAL"
+                        confidence = 0.5
+                    
+                    whale_bias_summary = {
+                        "bias": bias,
+                        "longValue": long_value,
+                        "shortValue": short_value,
+                        "longPercent": long_pct,
+                        "shortPercent": short_pct,
+                        "ratio": ratio if ratio != 999 else 999,
+                        "confidence": round(confidence, 2),
+                        "interpretation": f"Whales {bias} bias ({long_pct:.1f}% LONG vs {short_pct:.1f}% SHORT)"
+                    }
         
         # Generate summary
         result["summary"] = {
             "data_layers": {
                 "critical": f"{critical_available}/{len(critical_keys)}",
                 "recommended": f"{recommended_available}/{len(recommended_keys)}",
+                "optional": f"{optional_available}/{len(optional_keys)}"
             },
             "readiness": "READY" if result["ready"] else "PARTIAL",
             "message": (
@@ -164,6 +213,10 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
                 else f"Partial data - {critical_available}/{len(critical_keys)} critical layers available"
             )
         }
+        
+        # Add whale bias to summary if available
+        if whale_bias_summary:
+            result["summary"]["whale_bias"] = whale_bias_summary
         
         return result
         
@@ -192,6 +245,7 @@ async def quick_scalping_check(symbol: str):
     request = ScalpingAnalysisRequest(
         symbol=symbol,
         include_smart_money=False,
+        include_whale_positions=False,
         include_fear_greed=False
     )
     

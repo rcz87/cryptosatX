@@ -39,7 +39,7 @@ The API delivers clean JSON responses and includes a debug mode (`?debug=true`).
 - `POST /scalping/analyze` - Complete analysis (~15-30s) with all layers including optional smart money
 - `GET /scalping/info` - System capabilities and data layer information
 
-**Data Layers (5 Critical + 2 Recommended + 2 Optional):**
+**Data Layers (5 Critical + 2 Recommended + 3 Optional):**
 
 **CRITICAL (Polling 3-5s):**
 1. **Price & OHLCV** - Real-time spot prices from CoinAPI
@@ -49,12 +49,13 @@ The API delivers clean JSON responses and includes a debug mode (`?debug=true`).
 5. **Liquidations** - Panic signal detection from aggregated exchange liquidation data
 
 **RECOMMENDED (Polling 1-2m):**
-5. **Funding Rate** - Position bias indicator (8h intervals, Binance)
-6. **Long/Short Ratio** - Trader positioning from top accounts (1h intervals)
+6. **Funding Rate** - Position bias indicator (8h intervals, Binance)
+7. **Long/Short Ratio** - Trader positioning from top accounts (1h intervals)
 
 **OPTIONAL (On Demand):**
-7. **Smart Money Flow** - Institutional trading pattern detection (~25s, set `include_smart_money: true`)
-8. **Fear & Greed Index** - Macro sentiment indicator (hourly updates, set `include_fear_greed: true`)
+8. **Smart Money Flow** - Institutional trading pattern detection (~25s, set `include_smart_money: true`)
+9. **Hyperliquid Whale Positions (Layer 7.5)** - DEX institutional bias from $5B+ whale positions (2-5m, set `include_whale_positions: true`)
+10. **Fear & Greed Index** - Macro sentiment indicator (hourly updates, set `include_fear_greed: true`)
 
 **Features:**
 - Concurrent data fetching with `asyncio.gather` for optimal performance
