@@ -208,11 +208,12 @@ class RPCDispatcher:
     # ========================================================================
     
     async def _signals_get(self, args: Dict) -> Dict:
-        """Get trading signal - FIXED"""
+        """Get trading signal with mode support"""
         from app.core.signal_engine import signal_engine
         symbol = args["symbol"]
         debug = args.get("debug", False)
-        return await signal_engine.build_signal(symbol, debug=debug)
+        mode = args.get("mode", "aggressive")  # Support mode parameter (conservative/aggressive/ultra or 1/2/3)
+        return await signal_engine.build_signal(symbol, debug=debug, mode=mode)
     
     async def _market_get(self, args: Dict) -> Dict:
         """Get market data - uses signal engine's internal aggregation"""

@@ -299,6 +299,7 @@ class SignalEngine:
     - Weighted scoring system (0-100)
     - Multi-factor analysis
     - Smart money tracking
+    - 3-Mode system for different risk profiles
     """
 
     # Scoring weights (total = 100) - ADJUSTED FOR HIGHER SENSITIVITY
@@ -313,6 +314,48 @@ class SignalEngine:
         "fear_greed": 4,         # FIXED: Reduced from 7 - reduce sentiment weight
     }
     # Total: 100% ✅ (Fixed from 110% bug - see AUDIT_REPORT)
+    
+    # 3-Mode Threshold System for different risk profiles
+    MODE_THRESHOLDS = {
+        "conservative": {
+            "short_max": 48,      # Score <= 48 = SHORT
+            "neutral_min": 48,    # Score > 48 and < 52 = NEUTRAL  
+            "neutral_max": 52,
+            "long_min": 52,       # Score >= 52 = LONG
+            "description": "Conservative Mode - Reliable signals, minimal false positives",
+            "risk_level": "Low",
+            "best_for": "Beginners, risk-averse traders"
+        },
+        "aggressive": {
+            "short_max": 45,      # Score <= 45 = SHORT
+            "neutral_min": 45,    # Score > 45 and < 55 = NEUTRAL
+            "neutral_max": 55,
+            "long_min": 55,       # Score >= 55 = LONG
+            "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+            "risk_level": "Medium",
+            "best_for": "Experienced traders, trending markets"
+        },
+        "ultra": {
+            "short_max": 49,      # Score <= 49 = SHORT
+            "neutral_min": 49,    # Score > 49 and < 51 = NEUTRAL
+            "neutral_max": 51,
+            "long_min": 51,       # Score >= 51 = LONG
+            "description": "Ultra-Aggressive Mode - Maximum signals, high frequency trading",
+            "risk_level": "High",
+            "best_for": "Pro scalpers, always in position"
+        }
+    }
+    
+    # Mode aliases for user convenience
+    MODE_ALIASES = {
+        "1": "conservative",
+        "2": "aggressive", 
+        "3": "ultra",
+        "safe": "conservative",
+        "balanced": "aggressive",
+        "extreme": "ultra",
+        "scalping": "ultra"
+    }
     
     def __init__(self):
         """Initialize and validate signal engine configuration"""
@@ -330,7 +373,8 @@ class SignalEngine:
         symbol: str, 
         debug: bool = False, 
         enforce_quality_threshold: bool = True,
-        min_quality_score: float = 50.0
+        min_quality_score: float = 50.0,
+        mode: str = "aggressive"
     ) -> Dict:
         """
         Build enhanced trading signal using all data sources concurrently
@@ -340,14 +384,19 @@ class SignalEngine:
             debug: If True, include all raw metrics in response
             enforce_quality_threshold: If True, reject signals below min_quality_score (default: True)
             min_quality_score: Minimum data quality percentage required (default: 50.0%)
+            mode: Signal mode - conservative/aggressive/ultra (or 1/2/3) [default: aggressive]
 
         Returns:
-            Dict with signal, score, comprehensive analysis, and data quality metrics
+            Dict with signal, score, comprehensive analysis, data quality metrics, and mode info
             
         Raises:
             ValueError: If data quality is below threshold (when enforce_quality_threshold=True)
         """
-        print(f"🔵 BUILD_SIGNAL STARTED for {symbol} - Quality threshold: {min_quality_score}%")
+        # Normalize mode
+        mode = self._normalize_mode(mode)
+        mode_info = self.MODE_THRESHOLDS[mode]
+        
+        print(f"🔵 BUILD_SIGNAL STARTED for {symbol} - Mode: {mode} ({mode_info['risk_level']} risk) - Quality threshold: {min_quality_score}%")
         symbol = symbol.upper()
 
         # PHASE 1: Concurrent data collection with quality tracking
@@ -412,8 +461,8 @@ class SignalEngine:
         # PHASE 2: Calculate weighted score
         score, breakdown = self._calculate_weighted_score(context)
 
-        # PHASE 3: Generate signal and reasoning
-        signal = self._determine_signal(score)
+        # PHASE 3: Generate signal and reasoning with mode-specific thresholds
+        signal = self._determine_signal(score, mode)
         top_reasons = self._generate_top_reasons(breakdown, context)
 
         # Build response
@@ -425,6 +474,19 @@ class SignalEngine:
             "confidence": self._calculate_confidence(breakdown),
             "price": context.price,
             "reasons": top_reasons,
+            # Mode information - NEW!
+            "mode": mode,
+            "mode_info": {
+                "name": mode,
+                "description": mode_info["description"],
+                "risk_level": mode_info["risk_level"],
+                "best_for": mode_info["best_for"],
+                "thresholds": {
+                    "short": f"0-{mode_info['short_max']}",
+                    "neutral": f"{mode_info['neutral_min']}-{mode_info['neutral_max']}",
+                    "long": f"{mode_info['long_min']}-100"
+                }
+            },
             "metrics": {
                 "fundingRate": context.funding_rate,
                 "openInterest": context.open_interest,
@@ -1404,21 +1466,52 @@ class SignalEngine:
         else:
             return 50
 
-    def _determine_signal(self, score: float) -> str:
+    def _normalize_mode(self, mode: Optional[str]) -> str:
         """
-        Determine LONG/SHORT/NEUTRAL based on score
-
-        Score ranges (AGGRESSIVE MODE - MAXIMIZE DECISIVENESS):
-        - 0-45: SHORT (45% range - highly aggressive)
-        - 45-55: NEUTRAL (10% range - minimal neutral zone)
-        - 55-100: LONG (45% range - highly aggressive)
+        Normalize mode input to standard mode name
+        Supports: conservative/aggressive/ultra, 1/2/3, safe/balanced/extreme, etc.
+        """
+        if not mode:
+            return "aggressive"  # Default mode
         
-        This aggressive mode catches trends earlier but increases risk of whipsaw
-        in choppy markets. Best for trending markets with clear direction.
+        mode_lower = str(mode).lower().strip()
+        
+        # Check aliases first
+        if mode_lower in self.MODE_ALIASES:
+            return self.MODE_ALIASES[mode_lower]
+        
+        # Check direct mode names
+        if mode_lower in self.MODE_THRESHOLDS:
+            return mode_lower
+        
+        # Default to aggressive if unknown
+        print(f"⚠️  Unknown mode '{mode}', defaulting to 'aggressive'")
+        return "aggressive"
+    
+    def _determine_signal(self, score: float, mode: str = "aggressive") -> str:
         """
-        if score >= 55:
+        Determine LONG/SHORT/NEUTRAL based on score and mode
+        
+        Modes:
+        - conservative (mode 1): Reliable signals, minimal false positives
+          • 0-48: SHORT, 48-52: NEUTRAL, 52-100: LONG
+        
+        - aggressive (mode 2): Balanced risk/reward, catch trends earlier [DEFAULT]
+          • 0-45: SHORT, 45-55: NEUTRAL, 55-100: LONG
+        
+        - ultra (mode 3): Maximum signals, high frequency trading
+          • 0-49: SHORT, 49-51: NEUTRAL, 51-100: LONG
+        """
+        # Normalize mode input
+        mode = self._normalize_mode(mode)
+        
+        # Get thresholds for this mode
+        thresholds = self.MODE_THRESHOLDS.get(mode, self.MODE_THRESHOLDS["aggressive"])
+        
+        # Apply thresholds
+        if score >= thresholds["long_min"]:
             return "LONG"
-        elif score <= 45:
+        elif score <= thresholds["short_max"]:
             return "SHORT"
         else:
             return "NEUTRAL"

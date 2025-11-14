@@ -43,6 +43,10 @@ class FlatInvokeRequest(BaseModel):
         False,
         description="Enable debug mode for detailed output"
     )
+    mode: Optional[str] = Field(
+        "aggressive",
+        description="Signal mode: 'conservative'/'1' (safe, minimal false positives), 'aggressive'/'2' (balanced, default), 'ultra'/'3' (maximum signals, scalping)"
+    )
 
     # Additional flat parameters
     topic: Optional[str] = Field(None, description="Topic name for topic-based operations")

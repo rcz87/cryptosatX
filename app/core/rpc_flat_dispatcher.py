@@ -257,7 +257,8 @@ class FlatRPCDispatcher:
             from app.core.signal_engine import signal_engine
             symbol = args["symbol"]
             debug = args.get("debug", False)
-            return await signal_engine.build_signal(symbol, debug=debug)
+            mode = args.get("mode", "aggressive")  # Support mode parameter (conservative/aggressive/ultra or 1/2/3)
+            return await signal_engine.build_signal(symbol, debug=debug, mode=mode)
 
         elif operation == "market.get":
             from app.core.signal_engine import signal_engine
