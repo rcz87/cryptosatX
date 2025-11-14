@@ -1,0 +1,1282 @@
+# COMPREHENSIVE TASK: Fix and Optimize ALL CryptoSatX API Routes
+
+## OVERVIEW
+You are fixing and optimizing 22 route files in CryptoSatX API.
+This is a COMPLETE audit covering ALL issues found.
+
+Total files: 22 route files
+Issues found: 15 files need fixes/improvements
+Priority levels: CRITICAL → HIGH → MEDIUM → LOW
+
+---
+
+## ⚠️ CRITICAL PRIORITY (FIX IMMEDIATELY!)
+
+### 1. routes_admin.py - IMPORT ERROR
+**FILE:** `app/api/routes_admin.py`
+**LINE:** Last line of file
+**ISSUE:** `import os` is at the BOTTOM instead of TOP
+
+**CURRENT (BROKEN):**
+```python
+"""Admin API Routes"""
+from fastapi import APIRouter, HTTPException, Depends, status, Query
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+# ... 500+ lines of code ...
+import os  # ❌ WRONG LOCATION!
+```
+
+**FIX TO:**
+```python
+"""Admin API Routes"""
+import os  # ✅ MOVE HERE!
+from fastapi import APIRouter, HTTPException, Depends, status, Query
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+# ... rest of code ...
+```
+
+**TEST:**
+```bash
+python -c "from app.api import routes_admin; print('✅ Fixed')"
+```
+
+---
+
+## 🔥 HIGH PRIORITY (DO AFTER CRITICAL)
+
+### 2. routes_optimized_gpt.py - FILE TOO LARGE (1000+ LINES)
+**FILE:** `app/api/routes_optimized_gpt.py`
+**ISSUE:** Single file with 1000+ lines, helper functions mixed with endpoints
+
+**PROBLEMS:**
+- Hard to maintain
+- Functions like `_calculate_risk_score`, `_calculate_position_size`, etc. scattered
+- Portfolio logic mixed with endpoints
+- Risk assessment logic mixed with endpoints
+
+**SOLUTION:** Split into 4 files
+
+#### A. Create `app/utils/gpt_helpers.py`
+```python
+"""Helper functions for GPT-powered routes"""
+from typing import Dict, Any
+
+def calculate_risk_score(signal: dict, risk_level: str) -> float:
+    """Calculate comprehensive risk score"""
+    base_score = signal.get("score", 50)
+    risk_multipliers = {"conservative": 1.5, "moderate": 1.0, "aggressive": 0.7}
+    return min(100, base_score * risk_multipliers.get(risk_level, 1.0))
+
+
+def calculate_position_size(risk_score: float, risk_level: str) -> float:
+    """Calculate recommended position size"""
+    base_sizes = {
+        "conservative": 0.02,  # 2%
+        "moderate": 0.05,      # 5%
+        "aggressive": 0.10,    # 10%
+    }
+    base_size = base_sizes.get(risk_level, 0.05)
+    risk_adjustment = (risk_score / 100) * 0.5
+    return base_size * (1 + risk_adjustment)
+
+
+def calculate_stop_loss(signal: dict, risk_level: str) -> float:
+    """Calculate stop loss percentage"""
+    base_stop_losses = {"conservative": 1.5, "moderate": 2.5, "aggressive": 4.0}
+    return base_stop_losses.get(risk_level, 2.5)
+
+
+def calculate_take_profit(signal: dict, risk_level: str) -> float:
+    """Calculate take profit percentage"""
+    base_take_profits = {"conservative": 3.0, "moderate": 5.0, "aggressive": 8.0}
+    score_multiplier = signal.get("score", 50) / 100
+    return base_take_profits.get(risk_level, 5.0) * (1 + score_multiplier)
+
+
+def detect_market_regime(signal: dict) -> str:
+    """Detect current market regime"""
+    score = signal.get("score", 50)
+    if score > 70:
+        return "bullish"
+    elif score < 30:
+        return "bearish"
+    else:
+        return "neutral"
+
+
+def assess_volatility(signal: dict) -> str:
+    """Assess market volatility"""
+    # Simplified volatility assessment
+    return "moderate"
+
+
+def assess_liquidity(signal: dict) -> str:
+    """Assess market liquidity"""
+    return "high"
+
+
+def assess_sentiment(signal: dict) -> str:
+    """Assess market sentiment"""
+    score = signal.get("score", 50)
+    if score > 60:
+        return "positive"
+    elif score < 40:
+        return "negative"
+    else:
+        return "neutral"
+
+
+def generate_final_recommendation(ultimate_signal: dict) -> dict:
+    """Generate final trading recommendation"""
+    primary_signal = ultimate_signal.get("primary", {})
+    signal = primary_signal.get("signal", "NEUTRAL")
+    confidence = primary_signal.get("confidence", "low")
+    
+    return {
+        "action": signal,
+        "confidence": confidence,
+        "reasoning": f"MAXIMAL analysis indicates {signal} position with {confidence} confidence",
+        "entryStrategy": get_entry_strategy(signal, confidence),
+        "exitStrategy": get_exit_strategy(signal, confidence),
+        "timeHorizon": "1-7 days",
+        "conviction": "HIGH" if confidence in ["high", "maximum"] else "MEDIUM",
+    }
+
+
+def get_entry_strategy(signal: str, confidence: str) -> str:
+    """Get entry strategy based on signal and confidence"""
+    if signal == "LONG":
+        if confidence == "maximum":
+            return "Enter immediately with full position"
+        elif confidence == "high":
+            return "Enter in 2-3 tranches over 2 hours"
+        else:
+            return "Wait for confirmation, enter with 50% position"
+    elif signal == "SHORT":
+        if confidence == "maximum":
+            return "Short immediately with full position"
+        elif confidence == "high":
+            return "Short in 2-3 tranches over 2 hours"
+        else:
+            return "Wait for confirmation, short with 50% position"
+    else:
+        return "Stay flat, wait for better setup"
+
+
+def get_exit_strategy(signal: str, confidence: str) -> str:
+    """Get exit strategy based on signal and confidence"""
+    if confidence == "maximum":
+        return "Take profit at 8%, stop loss at 2%"
+    elif confidence == "high":
+        return "Take profit at 5%, stop loss at 2.5%"
+    else:
+        return "Take profit at 3%, stop loss at 2%"
+
+
+def get_risk_warnings(signal: dict, risk_score: float) -> list:
+    """Generate risk warnings based on signal data"""
+    warnings = []
+    
+    if risk_score > 70:
+        warnings.append("⚠️ HIGH RISK: Consider reducing position size")
+    
+    funding_rate = signal.get("metrics", {}).get("fundingRate", 0)
+    if abs(funding_rate) > 0.01:
+        warnings.append(
+            f"⚠️ High funding rate ({funding_rate*100:.2f}%): Overcrowded trade"
+        )
+    
+    score = signal.get("score", 50)
+    if 48 <= score <= 52:
+        warnings.append("⚠️ NEUTRAL signal: Low conviction trade, consider waiting")
+    
+    if not warnings:
+        warnings.append("✅ Risk levels acceptable for moderate trading")
+    
+    return warnings
+```
+
+#### B. Create `app/services/portfolio_optimizer_service.py`
+```python
+"""Portfolio optimization service"""
+from typing import List, Dict, Any
+
+class PortfolioOptimizerService:
+    """Service for portfolio optimization and allocation"""
+    
+    def calculate_expected_return(self, signal: dict, risk_tolerance: int) -> float:
+        """Calculate expected return for portfolio optimization"""
+        base_return = (signal.get("score", 50) - 50) / 100
+        risk_adjustment = (risk_tolerance - 5) / 20
+        return (base_return + risk_adjustment) * 100
+    
+    
+    def calculate_coin_risk(self, signal: dict, risk_tolerance: int) -> float:
+        """Calculate risk for portfolio optimization"""
+        confidence = signal.get("confidence", "low")
+        confidence_risk = {"low": 0.3, "medium": 0.2, "high": 0.15, "maximum": 0.1}
+        base_risk = confidence_risk.get(confidence, 0.25)
+        risk_adjustment = (11 - risk_tolerance) / 20
+        return base_risk * (1 + risk_adjustment)
+    
+    
+    def optimize_portfolio_allocation(
+        self, 
+        portfolio_data: list, 
+        risk_tolerance: int, 
+        investment_amount: float
+    ) -> dict:
+        """Optimize portfolio allocation using simplified approach"""
+        if not portfolio_data:
+            return {"allocations": [], "metrics": {}}
+        
+        # Sort by expected return
+        portfolio_data.sort(key=lambda x: x["expectedReturn"], reverse=True)
+        
+        # Calculate allocations
+        num_coins = len(portfolio_data)
+        base_allocation = 1.0 / num_coins
+        
+        allocations = []
+        total_expected_return = 0
+        total_risk = 0
+        
+        for coin_data in portfolio_data:
+            return_adjustment = coin_data["expectedReturn"] / 100
+            risk_penalty = coin_data["risk"]
+            
+            adjusted_allocation = base_allocation * (1 + return_adjustment - risk_penalty)
+            adjusted_allocation = max(0.05, min(0.4, adjusted_allocation))
+            
+            allocation_amount = investment_amount * adjusted_allocation
+            
+            allocations.append({
+                "symbol": coin_data["symbol"],
+                "percentage": round(adjusted_allocation * 100, 2),
+                "amount": round(allocation_amount, 2),
+                "expectedReturn": coin_data["expectedReturn"],
+                "risk": coin_data["risk"],
+                "signal": coin_data["signal"],
+            })
+            
+            total_expected_return += adjusted_allocation * coin_data["expectedReturn"]
+            total_risk += adjusted_allocation * coin_data["risk"]
+        
+        # Normalize allocations to 100%
+        total_percentage = sum(a["percentage"] for a in allocations)
+        if total_percentage != 100:
+            for allocation in allocations:
+                allocation["percentage"] = round(
+                    allocation["percentage"] / total_percentage * 100, 2
+                )
+                allocation["amount"] = round(
+                    investment_amount * allocation["percentage"] / 100, 2
+                )
+        
+        # Calculate Sharpe ratio
+        risk_free_rate = 2.0
+        sharpe_ratio = (
+            (total_expected_return - risk_free_rate) / total_risk 
+            if total_risk > 0 else 0
+        )
+        
+        return {
+            "allocations": allocations,
+            "metrics": {
+                "diversificationScore": min(100, num_coins * 10),
+                "riskScore": round(total_risk * 100, 2),
+                "expectedAnnualReturn": round(total_expected_return * 365 / 7, 2),
+                "maxDrawdown": round(total_risk * 50, 2),
+            },
+            "rebalancing": {
+                "frequency": "weekly",
+                "threshold": 5.0,
+                "nextRebalance": "7 days",
+            },
+            "expectedReturn": round(total_expected_return, 2),
+            "expectedRisk": round(total_risk * 100, 2),
+            "sharpeRatio": round(sharpe_ratio, 2),
+        }
+```
+
+#### C. Create `app/services/risk_assessment_service.py`
+```python
+"""Risk assessment service"""
+from typing import Dict, Any, Optional
+
+class RiskAssessmentService:
+    """Service for comprehensive risk assessment"""
+    
+    def assess_coin_risk(
+        self,
+        symbol: str,
+        signal: dict,
+        position_size: Optional[float] = None
+    ) -> dict:
+        """Comprehensive risk assessment for a cryptocurrency position"""
+        from app.utils.gpt_helpers import (
+            calculate_stop_loss,
+            calculate_take_profit,
+            detect_market_regime,
+            get_risk_warnings
+        )
+        
+        # Get volatility
+        volatility_7d = signal.get("coinAPIMetrics", {}).get("volatility7d", 10.0)
+        
+        # Calculate risk metrics
+        score = signal.get("score", 50)
+        confidence = signal.get("confidence", "medium")
+        
+        # Determine risk level
+        if score > 65 or score < 35:
+            risk_level = "high"
+            risk_score = 75
+        elif score > 55 or score < 45:
+            risk_level = "medium"
+            risk_score = 50
+        else:
+            risk_level = "low"
+            risk_score = 25
+        
+        # Volatility adjustment
+        if volatility_7d > 15:
+            risk_score += 15
+            risk_level = "high"
+        elif volatility_7d > 10:
+            risk_score += 10
+        
+        risk_score = min(100, risk_score)
+        
+        # Position sizing recommendation
+        recommended_size = None
+        if position_size:
+            max_loss_percent = 2.0
+            stop_loss_percent = calculate_stop_loss(signal, "moderate")
+            recommended_size = (position_size * max_loss_percent) / stop_loss_percent
+        
+        return {
+            "success": True,
+            "symbol": symbol,
+            "riskAssessment": {
+                "riskLevel": risk_level,
+                "riskScore": round(risk_score, 2),
+                "volatility": {
+                    "7day": round(volatility_7d, 2),
+                    "level": (
+                        "high" if volatility_7d > 15
+                        else "medium" if volatility_7d > 10
+                        else "low"
+                    ),
+                },
+                "liquidity": {
+                    "level": "high",
+                    "openInterest": signal.get("metrics", {}).get("openInterest", 0),
+                },
+                "marketRegime": detect_market_regime(signal),
+                "signalConfidence": confidence,
+            },
+            "positionSizing": {
+                "requestedSize": position_size,
+                "recommendedSize": (
+                    round(recommended_size, 2) if recommended_size else None
+                ),
+                "maxLossPercent": 2.0,
+                "stopLossPercent": calculate_stop_loss(signal, "moderate"),
+                "takeProfitPercent": calculate_take_profit(signal, "moderate"),
+            },
+            "riskMitigation": {
+                "stopLoss": f"{calculate_stop_loss(signal, 'moderate')}% below entry",
+                "takeProfit": f"{calculate_take_profit(signal, 'moderate')}% above entry",
+                "positionLimit": "2-5% of portfolio",
+                "diversification": "Maintain 8-12 positions across different sectors",
+            },
+            "warnings": get_risk_warnings(signal, risk_score),
+        }
+
+
+# Create singleton instance
+risk_assessment_service = RiskAssessmentService()
+```
+
+#### D. Update `app/api/routes_optimized_gpt.py`
+```python
+"""Optimized GPT Actions Routes - Cleaned up version"""
+from fastapi import APIRouter, Query, Depends
+import time
+
+# Import helpers and services
+from app.utils.gpt_helpers import (
+    calculate_risk_score,
+    calculate_position_size,
+    calculate_stop_loss,
+    calculate_take_profit,
+    detect_market_regime,
+    assess_volatility,
+    assess_liquidity,
+    assess_sentiment,
+    generate_final_recommendation,
+)
+from app.services.portfolio_optimizer_service import PortfolioOptimizerService
+from app.services.risk_assessment_service import risk_assessment_service
+
+# Import existing services
+from app.core.signal_engine import signal_engine
+from app.middleware.auth import get_optional_api_key
+from app.utils.logger import default_logger, log_api_call
+
+router = APIRouter(prefix="/gpt", tags=["Optimized GPT Actions"])
+
+# Initialize services
+portfolio_optimizer = PortfolioOptimizerService()
+
+
+@router.get("/actions/maximal-schema")
+async def get_maximal_gpt_schema():
+    """🚀 MAXIMAL GPT Actions Schema"""
+    # Keep existing schema code here
+    pass
+
+
+@router.get("/actions/ultimate-signal/{symbol}")
+async def get_ultimate_signal(
+    symbol: str,
+    include_ai_validation: bool = Query(True),
+    include_smc: bool = Query(True),
+    include_whale_data: bool = Query(True),
+    risk_level: str = Query("moderate"),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """🚀 ULTIMATE SIGNAL - Maximum AI-Powered Trading Signal"""
+    start_time = time.time()
+    
+    try:
+        symbol = symbol.upper()
+        signal = await signal_engine.build_signal(symbol, debug=False)
+        
+        response = {
+            "symbol": symbol,
+            "timestamp": signal.get("timestamp"),
+            "ultimateSignal": {
+                "primary": signal,
+                "confidence": "MAXIMAL",
+                "version": "3.0.0-MAXIMAL",
+            },
+        }
+        
+        # Use helper functions
+        risk_score = calculate_risk_score(signal, risk_level)
+        response["ultimateSignal"]["riskAssessment"] = {
+            "riskScore": risk_score,
+            "riskLevel": risk_level,
+            "positionSize": calculate_position_size(risk_score, risk_level),
+            "stopLoss": calculate_stop_loss(signal, risk_level),
+            "takeProfit": calculate_take_profit(signal, risk_level),
+        }
+        
+        response["ultimateSignal"]["marketContext"] = {
+            "marketRegime": detect_market_regime(signal),
+            "volatility": assess_volatility(signal),
+            "liquidity": assess_liquidity(signal),
+            "sentiment": assess_sentiment(signal),
+        }
+        
+        response["ultimateSignal"]["finalRecommendation"] = (
+            generate_final_recommendation(response["ultimateSignal"])
+        )
+        
+        duration = time.time() - start_time
+        log_api_call(
+            default_logger,
+            f"/gpt/actions/ultimate-signal/{symbol}",
+            symbol=symbol,
+            duration=duration,
+            status="success",
+        )
+        
+        return response
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to generate ultimate signal: {str(e)}",
+            "symbol": symbol.upper(),
+        }
+
+
+@router.get("/actions/portfolio-optimizer")
+async def optimize_portfolio(
+    risk_tolerance: int = Query(5),
+    investment_amount: float = Query(10000),
+    time_horizon: str = Query("medium_term"),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """💼 AI Portfolio Optimizer"""
+    try:
+        top_coins = ["BTC", "ETH", "SOL", "AVAX", "DOGE", "SHIB", "MATIC", "DOT", "LINK", "UNI"]
+        
+        portfolio_data = []
+        for coin in top_coins:
+            try:
+                signal = await signal_engine.build_signal(coin, debug=False)
+                
+                expected_return = portfolio_optimizer.calculate_expected_return(
+                    signal, risk_tolerance
+                )
+                risk = portfolio_optimizer.calculate_coin_risk(signal, risk_tolerance)
+                
+                portfolio_data.append({
+                    "symbol": coin,
+                    "allocation": 0,
+                    "expectedReturn": expected_return,
+                    "risk": risk,
+                    "signal": signal.get("signal", "NEUTRAL"),
+                    "confidence": signal.get("confidence", "low"),
+                })
+            except Exception:
+                continue
+        
+        optimized_portfolio = portfolio_optimizer.optimize_portfolio_allocation(
+            portfolio_data, risk_tolerance, investment_amount
+        )
+        
+        return {
+            "success": True,
+            "portfolioOptimization": {
+                "riskTolerance": risk_tolerance,
+                "investmentAmount": investment_amount,
+                "timeHorizon": time_horizon,
+                **optimized_portfolio,
+            },
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": f"Portfolio optimization failed: {str(e)}"}
+
+
+@router.get("/smart-money/accumulation")
+async def find_whale_accumulation(
+    min_score: int = Query(8),
+    exclude_overbought_coins: bool = Query(True),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """📈 Whale Accumulation Finder"""
+    # Keep existing implementation
+    pass
+
+
+@router.get("/portfolio/optimize")
+async def optimize_portfolio_public(
+    risk_tolerance: int = Query(5),
+    investment_amount: float = Query(10000),
+    time_horizon: str = Query("medium_term"),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """💼 Portfolio Optimizer - Public endpoint"""
+    return await optimize_portfolio(
+        risk_tolerance, investment_amount, time_horizon, api_key
+    )
+
+
+@router.get("/risk/assess/{symbol}")
+async def assess_risk(
+    symbol: str,
+    position_size: float = Query(None),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """⚠️ Risk Assessment"""
+    try:
+        symbol = symbol.upper()
+        signal = await signal_engine.build_signal(symbol, debug=False)
+        
+        result = risk_assessment_service.assess_coin_risk(
+            symbol, signal, position_size
+        )
+        
+        return result
+        
+    except Exception as e:
+        return {"success": False, "error": f"Risk assessment failed: {str(e)}"}
+
+
+@router.get("/strategies/recommend")
+async def recommend_strategies(
+    symbol: str = Query(None),
+    strategy_type: str = Query("all"),
+    timeframe: str = Query("swing"),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """🎯 Trading Strategy Recommendations"""
+    # Keep existing implementation
+    pass
+```
+
+**RESULT:** File reduced from 1000+ lines to ~200 lines!
+
+---
+
+### 3. routes_gpt.py - EXTRACT TELEGRAM FORMATTERS
+**FILE:** `app/api/routes_gpt.py`
+**ISSUE:** Large formatting functions inside routes file
+
+**SOLUTION:** Extract to utils
+
+#### Create `app/utils/telegram_formatters.py`
+```python
+"""Telegram alert message formatters"""
+from datetime import datetime
+from typing import List, Dict, Any
+
+def format_mss_alert(symbol: str, mss_result: dict) -> str:
+    """Format MSS analysis alert for Telegram"""
+    mss_score = mss_result.get("mss_score", 0)
+    signal = mss_result.get("signal", "NEUTRAL")
+    confidence = mss_result.get("confidence", "low")
+    
+    # Determine tier
+    if mss_score >= 80:
+        tier, tier_emoji = "DIAMOND", "💎"
+    elif mss_score >= 70:
+        tier, tier_emoji = "GOLD", "🥇"
+    elif mss_score >= 60:
+        tier, tier_emoji = "SILVER", "🥈"
+    else:
+        tier, tier_emoji = "BRONZE", "🥉"
+    
+    phases = mss_result.get("phases", {})
+    phase1 = phases.get("phase1_discovery", {})
+    phase2 = phases.get("phase2_confirmation", {})
+    phase3 = phases.get("phase3_validation", {})
+    
+    p1_breakdown = phase1.get("breakdown", {})
+    p2_breakdown = phase2.get("breakdown", {})
+    p3_breakdown = phase3.get("breakdown", {})
+    
+    message = f"""🚀 <b>MSS DISCOVERY ALERT</b> 🚀
+━━━━━━━━━━━━━━━━━━━━━━━
+{tier_emoji} <b>{symbol}/USDT</b>
+📊 MSS Score: <b>{mss_score:.1f}/100</b> ({tier} Tier)
+📈 Signal: <b>{signal}</b>
+⚡ Confidence: {confidence.upper()}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+📊 <b>3-Phase Analysis</b>
+
+<b>Phase 1 - Discovery:</b> {phase1.get('score', 0):.1f}/35
+- FDV: ${p1_breakdown.get('fdv_usd', 0):,.0f}
+- Age: {p1_breakdown.get('age_hours', 0):.1f}h
+- Status: {p1_breakdown.get('status', 'N/A')}
+
+<b>Phase 2 - Social Confirmation:</b> {phase2.get('score', 0):.1f}/30
+- AltRank: {p2_breakdown.get('altrank', 0):.0f}
+- Galaxy Score: {p2_breakdown.get('galaxy_score', 0):.1f}/100
+- Status: {p2_breakdown.get('status', 'N/A')}
+
+<b>Phase 3 - Institutional Validation:</b> {phase3.get('score', 0):.1f}/35
+- OI Change: {p3_breakdown.get('oi_change_pct', 0):.1f}%
+- Funding Rate: {p3_breakdown.get('funding_rate', 0):.4f}%
+- Status: {p3_breakdown.get('status', 'N/A')}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+💡 <b>Why This Matters:</b>
+{tier} tier indicates {"STRONG hidden gem potential! 💎" if tier == "DIAMOND" else "good opportunity" if tier == "GOLD" else "moderate opportunity"}
+
+🕐 Alert Time: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC
+⚙️ Source: MSS 3-Phase Analysis Engine
+━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Powered by CryptoSatX
+"""
+    return message
+
+
+def format_smart_money_alert(
+    symbol: str, 
+    accumulation: List[Dict], 
+    distribution: List[Dict]
+) -> str:
+    """Format smart money alert for Telegram"""
+    message = f"""🐋 <b>SMART MONEY ALERT</b> 🐋
+━━━━━━━━━━━━━━━━━━━━━━━
+💎 <b>{symbol}/USDT</b>
+
+"""
+    
+    if accumulation:
+        acc = accumulation[0]
+        message += f"""🟢 <b>ACCUMULATION DETECTED</b>
+📊 Score: {acc.get('accumulationScore', 0):.1f}/10
+💰 Price: ${acc.get('price', 0):.6f}
+💡 Signal: Whales buying before retail!
+
+<b>Key Reasons:</b>
+"""
+        for reason in acc.get('reasons', [])[:3]:
+            message += f"• {reason}\n"
+        message += "\n"
+    
+    if distribution:
+        dist = distribution[0]
+        message += f"""🔴 <b>DISTRIBUTION DETECTED</b>
+📊 Score: {dist.get('distributionScore', 0):.1f}/10
+💰 Price: ${dist.get('price', 0):.6f}
+⚠️ Signal: Whales selling to retail!
+
+<b>Key Reasons:</b>
+"""
+        for reason in dist.get('reasons', [])[:3]:
+            message += f"• {reason}\n"
+        message += "\n"
+    
+    if not accumulation and not distribution:
+        message += "⚪ <b>NEUTRAL</b>\nNo significant patterns detected.\n\n"
+    
+    message += f"""━━━━━━━━━━━━━━━━━━━━━━━
+💡 <b>Strategy:</b>
+{"BUY during accumulation" if accumulation else ""}
+{"AVOID/SHORT during distribution" if distribution else ""}
+{"Monitor for clearer signals" if not accumulation and not distribution else ""}
+
+🕐 {datetime.utcnow().strftime('%Y-%m-%d %H:%M')} UTC
+━━━━━━━━━━━━━━━━━━━━━━━
+⚡ Powered by CryptoSatX
+"""
+    return message
+```
+
+#### Update `app/api/routes_gpt.py`
+```python
+# At top of file, add import:
+from app.utils.telegram_formatters import format_mss_alert, format_smart_money_alert
+
+# Remove _format_mss_alert() function (lines ~200-280)
+# Remove _format_smart_money_alert() function (lines ~285-350)
+
+# Keep all endpoint definitions using the imported functions
+```
+
+---
+
+### 4. routes_analytics.py - ADD CACHING
+**FILE:** `app/api/routes_analytics.py`
+**ISSUE:** Heavy queries with no caching
+
+**SOLUTION:** Add caching to expensive endpoints
+```python
+# At top of file, add:
+from aiocache import cached
+from aiocache.serializers import JsonSerializer
+
+# Update endpoints:
+@router.get("/summary")
+@cached(ttl=300, serializer=JsonSerializer())  # Cache 5 minutes
+async def get_analytics_summary(symbol: Optional[str] = None, days: int = 7):
+    # ... existing code
+
+@router.get("/stats/overview")
+@cached(ttl=600, serializer=JsonSerializer())  # Cache 10 minutes
+async def get_overall_stats():
+    # ... existing code
+
+@router.get("/verdict-performance")
+@cached(ttl=180, serializer=JsonSerializer())  # Cache 3 minutes
+async def get_verdict_performance(
+    verdict: Optional[str] = None,
+    interval: str = "24h",
+    days: int = 30
+):
+    # ... existing code
+```
+
+**INSTALL DEPENDENCY:**
+```bash
+pip install aiocache
+```
+
+---
+
+### 5. routes_openai.py - ADD RATE LIMITING
+**FILE:** `app/api/routes_openai.py`
+**ISSUE:** No rate limiting on expensive OpenAI calls
+
+**SOLUTION:** Add rate limiters
+```python
+# At top of file, add:
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from fastapi import Request
+
+limiter = Limiter(key_func=get_remote_address)
+
+# Update endpoints:
+@router.get("/analyze/{symbol}")
+@limiter.limit("10/minute")  # Max 10 requests per minute
+async def analyze_signal_with_openai(
+    request: Request,  # Add Request parameter
+    symbol: str,
+    include_validation: bool = True,
+    include_market_context: bool = True,
+    api_key: str = Depends(get_optional_api_key),
+):
+    # ... existing code
+
+@router.get("/sentiment/market")
+@limiter.limit("5/minute")  # Max 5 requests per minute
+async def get_market_sentiment_analysis(
+    request: Request,  # Add Request parameter
+    symbols: str = "BTC,ETH,SOL",
+    api_key: str = Depends(get_optional_api_key),
+):
+    # ... existing code
+
+@router.post("/validate/{symbol}")
+@limiter.limit("10/minute")
+async def validate_trading_signal(
+    request: Request,  # Add Request parameter
+    symbol: str,
+    signal_data: dict,
+    conflicting_indicators: Optional[List[str]] = None,
+    api_key: str = Depends(get_api_key),
+):
+    # ... existing code
+```
+
+**INSTALL DEPENDENCY:**
+```bash
+pip install slowapi
+```
+
+**ADD TO MAIN APP:**
+```python
+# In app/main.py, add:
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+```
+
+---
+
+## 🔧 MEDIUM PRIORITY
+
+### 6. routes_mss.py - ADD PAGINATION
+**FILE:** `app/api/routes_mss.py`
+
+**UPDATE ENDPOINTS:**
+```python
+@router.get("/history")
+async def get_mss_history(
+    limit: int = Query(100, ge=1, le=500),
+    offset: int = Query(0, ge=0),  # Add offset
+    min_score: Optional[float] = Query(None, ge=0, le=100)  # Add filter
+):
+    """MSS Signal History with pagination"""
+    try:
+        # Add pagination support
+        signals = await mss_db.get_latest_mss_signals(
+            limit=limit,
+            offset=offset,
+            min_score=min_score
+        )
+        
+        total = await mss_db.get_mss_signal_count(min_score=min_score)
+        
+        return {
+            "success": True,
+            "total": total,
+            "limit": limit,
+            "offset": offset,
+            "has_more": (offset + len(signals)) < total,
+            "signals": signals
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/top-scores")
+@cached(ttl=900, serializer=JsonSerializer())  # Cache 15 minutes
+async def get_top_mss_scores(
+    min_score: float = Query(75.0, ge=0, le=100),
+    limit: int = Query(50, ge=1, le=100),
+    offset: int = Query(0, ge=0)  # Add offset
+):
+    """Top MSS Scores with caching and pagination"""
+    # ... existing code with pagination
+```
+
+---
+
+### 7. routes_admin.py - ADD RATE LIMITING
+**FILE:** `app/api/routes_admin.py`
+```python
+# After fixing import, add rate limiting:
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from fastapi import Request
+
+limiter = Limiter(key_func=get_remote_address)
+
+@router.get("/weights/current")
+@limiter.limit("20/minute")
+async def get_current_weights(request: Request, admin: Dict = Depends(verify_admin)):
+    # ... existing code
+
+@router.post("/weights/update")
+@limiter.limit("10/minute")
+async def update_weight(
+    request: Request,
+    update_request: WeightUpdateRequest,
+    admin: Dict = Depends(verify_admin)
+):
+    # ... existing code
+
+@router.post("/weights/reset")
+@limiter.limit("5/minute")
+async def reset_weights(
+    request: Request,
+    reset_request: WeightResetRequest,
+    admin: Dict = Depends(verify_admin)
+):
+    # ... existing code
+```
+
+---
+
+### 8. routes_monitoring.py - ADD HEALTH TIMEOUTS
+**FILE:** `app/api/routes_monitoring.py`
+```python
+import asyncio
+
+@router.get("/health")
+async def monitoring_health_check():
+    """Health check with timeout"""
+    try:
+        # Add timeout to prevent hanging
+        async with asyncio.timeout(5.0):  # 5 second timeout
+            service = await get_monitoring_service()
+            status = await service.get_monitoring_status()
+            
+            health_status = "healthy"
+            issues = []
+            
+            if not status['running']:
+                health_status = "stopped"
+                issues.append("Monitoring service is not running")
+            
+            if not status['symbols']:
+                health_status = "warning"
+                issues.append("No symbols configured")
+            
+            telegram = TelegramNotifier()
+            if not telegram.enabled:
+                health_status = "warning"
+                issues.append("Telegram not configured")
+            
+            return {
+                "success": True,
+                "status": health_status,
+                "issues": issues,
+                "monitoring_status": status,
+                "telegram_configured": telegram.enabled,
+                "timestamp": datetime.now().isoformat()
+            }
+            
+    except asyncio.TimeoutError:
+        return {
+            "success": False,
+            "status": "timeout",
+            "error": "Health check timed out after 5 seconds",
+            "timestamp": datetime.now().isoformat()
+        }
+    except Exception as e:
+        return {
+            "success": False,
+            "status": "error",
+            "error": str(e),
+            "timestamp": datetime.now().isoformat()
+        }
+```
+
+---
+
+## 📝 LOW PRIORITY (OPTIONAL IMPROVEMENTS)
+
+### 9. Standardize Error Messages
+**ALL FILES**
+
+Create `app/utils/error_responses.py`:
+```python
+"""Standardized error responses"""
+from fastapi import HTTPException
+
+def not_found_error(resource: str, identifier: str):
+    """Standard 404 error"""
+    raise HTTPException(
+        status_code=404,
+        detail=f"{resource} '{identifier}' not found"
+    )
+
+def validation_error(field: str, message: str):
+    """Standard 422 validation error"""
+    raise HTTPException(
+        status_code=422,
+        detail=f"Validation error for '{field}': {message}"
+    )
+
+def server_error(operation: str, error: Exception):
+    """Standard 500 server error"""
+    raise HTTPException(
+        status_code=500,
+        detail=f"{operation} failed: {str(error)}"
+    )
+
+def rate_limit_error():
+    """Standard 429 rate limit error"""
+    raise HTTPException(
+        status_code=429,
+        detail="Rate limit exceeded. Please try again later."
+    )
+```
+
+Use in routes:
+```python
+from app.utils.error_responses import not_found_error, server_error
+
+# Instead of:
+raise HTTPException(status_code=404, detail=f"Coin {symbol} not found")
+
+# Use:
+not_found_error("Coin", symbol)
+```
+
+---
+
+### 10. Add Type Hints Where Missing
+**ALL FILES**
+
+Add type hints to improve code quality:
+```python
+# Before:
+async def get_signal(symbol, debug=False):
+    pass
+
+# After:
+from typing import Dict, Any
+
+async def get_signal(symbol: str, debug: bool = False) -> Dict[str, Any]:
+    pass
+```
+
+---
+
+## 📋 COMPLETE FILE CHECKLIST
+
+**NEW FILES TO CREATE:**
+- [ ] `app/utils/telegram_formatters.py`
+- [ ] `app/utils/gpt_helpers.py`
+- [ ] `app/services/portfolio_optimizer_service.py`
+- [ ] `app/services/risk_assessment_service.py`
+- [ ] `app/utils/error_responses.py` (optional)
+
+**FILES TO MODIFY - CRITICAL:**
+- [ ] `app/api/routes_admin.py` (fix import)
+
+**FILES TO MODIFY - HIGH PRIORITY:**
+- [ ] `app/api/routes_optimized_gpt.py` (extract helpers)
+- [ ] `app/api/routes_gpt.py` (extract formatters)
+- [ ] `app/api/routes_analytics.py` (add caching)
+- [ ] `app/api/routes_openai.py` (add rate limiting)
+
+**FILES TO MODIFY - MEDIUM PRIORITY:**
+- [ ] `app/api/routes_mss.py` (add pagination + caching)
+- [ ] `app/api/routes_admin.py` (add rate limiting)
+- [ ] `app/api/routes_monitoring.py` (add timeouts)
+
+**FILES THAT ARE GOOD (NO CHANGES):**
+- ✅ `app/api/routes_health.py`
+- ✅ `app/api/routes_signals.py`
+- ✅ `app/api/routes_smc.py`
+- ✅ `app/api/routes_smart_money.py`
+- ✅ `app/api/routes_history.py`
+- ✅ `app/api/routes_lunarcrush.py`
+- ✅ `app/api/routes_coinglass.py`
+- ✅ `app/api/routes_coinapi.py`
+- ✅ `app/api/routes_scalping.py`
+- ✅ `app/api/routes_new_listings.py`
+- ✅ `app/api/routes_narratives.py`
+- ✅ `app/api/routes_enhanced_gpt.py`
+- ✅ `app/api/routes_dashboard.py`
+- ✅ `app/api/routes_rpc.py`
+
+---
+
+## 🧪 TESTING CHECKLIST
+
+After each fix, run:
+```bash
+# 1. Test imports
+python -c "from app.api import routes_admin; print('✅ Admin fixed')"
+python -c "from app.api import routes_optimized_gpt; print('✅ GPT optimized fixed')"
+python -c "from app.api import routes_gpt; print('✅ GPT fixed')"
+python -c "from app.utils import telegram_formatters; print('✅ Formatters created')"
+python -c "from app.utils import gpt_helpers; print('✅ Helpers created')"
+
+# 2. Start server
+uvicorn app.main:app --reload
+
+# 3. Test endpoints
+curl http://localhost:8000/health
+curl http://localhost:8000/signals/BTC
+curl http://localhost:8000/gpt/actions/maximal-schema
+
+# 4. Test rate limiting (should hit limit after 10 requests)
+for i in {1..15}; do curl http://localhost:8000/openai/analyze/BTC; done
+
+# 5. Test caching (second call should be instant)
+time curl http://localhost:8000/analytics/summary
+time curl http://localhost:8000/analytics/summary  # Should be cached
+```
+
+---
+
+## ⏱️ TIME ESTIMATES
+
+| Task | Priority | Time | Complexity |
+|------|----------|------|------------|
+| Fix routes_admin.py import | CRITICAL | 2 min | ⭐ Easy |
+| Extract telegram formatters | HIGH | 30 min | ⭐⭐ Medium |
+| Refactor routes_optimized_gpt.py | HIGH | 90 min | ⭐⭐⭐ Hard |
+| Add caching to analytics | HIGH | 20 min | ⭐⭐ Medium |
+| Add rate limiting | HIGH | 40 min | ⭐⭐ Medium |
+| Add pagination to MSS | MEDIUM | 30 min | ⭐⭐ Medium |
+| Add health timeouts | MEDIUM | 15 min | ⭐ Easy |
+| Standardize errors (optional) | LOW | 60 min | ⭐⭐ Medium |
+| Add type hints (optional) | LOW | 120 min | ⭐⭐⭐ Hard |
+
+**TOTAL CRITICAL + HIGH PRIORITY: ~3 hours**
+**TOTAL WITH MEDIUM: ~4 hours**
+**TOTAL WITH ALL OPTIONAL: ~6.5 hours**
+
+---
+
+## 🎯 RECOMMENDED EXECUTION ORDER
+
+### Phase 1: Critical (Do First!)
+1. Fix `routes_admin.py` import ← 2 minutes
+2. Test: `python -c "from app.api import routes_admin"`
+
+### Phase 2: High Priority Refactoring (2-3 hours)
+3. Create `telegram_formatters.py` ← 30 minutes
+4. Update `routes_gpt.py` to use formatters
+5. Create `gpt_helpers.py` ← 60 minutes
+6. Create service files (portfolio, risk) ← 30 minutes
+7. Update `routes_optimized_gpt.py` ← Cleanup
+8. Test: Server starts, endpoints work
+
+### Phase 3: Performance (1 hour)
+9. Add caching to `routes_analytics.py` ← 20 minutes
+10. Add caching to `routes_mss.py` ← 10 minutes
+11. Add rate limiting to `routes_openai.py` ← 20 minutes
+12. Add rate limiting to `routes_admin.py` ← 10 minutes
+13. Test: Rate limits work, cache speeds up requests
+
+### Phase 4: Medium Priority (Optional, 45 minutes)
+14. Add pagination to `routes_mss.py`
+15. Add health timeouts to `routes_monitoring.py`
+16. Test: Pagination works, timeouts prevent hangs
+
+### Phase 5: Low Priority (Optional, 3+ hours)
+17. Standardize error messages
+18. Add type hints
+19. Improve documentation
+
+---
+
+## 🚀 SUCCESS CRITERIA
+
+Task is complete when:
+- [ ] All 22 route files import without errors
+- [ ] Server starts successfully
+- [ ] No file exceeds 500 lines
+- [ ] Helper functions properly organized
+- [ ] Rate limiting prevents abuse
+- [ ] Caching improves performance
+- [ ] All tests pass
+- [ ] Code is maintainable
+
+---
+
+## 💾 GIT COMMIT STRATEGY
+```bash
+# After each phase:
+git add .
+git commit -m "fix(api): move import os to top in routes_admin.py"
+git commit -m "refactor(api): extract telegram formatters to utils"
+git commit -m "refactor(api): split routes_optimized_gpt into helpers and services"
+git commit -m "feat(api): add rate limiting to OpenAI and admin endpoints"
+git commit -m "feat(api): add caching to analytics and MSS endpoints"
+git commit -m "feat(api): add pagination and timeouts"
+git push origin main
+```
+
+---
+
+## 📚 DEPENDENCIES TO INSTALL
+```bash
+pip install aiocache       # For caching
+pip install slowapi        # For rate limiting
+pip install redis          # Optional: for distributed caching
+```
+
+Or add to `requirements.txt`:
+```txt
+aiocache==0.12.2
+slowapi==0.1.9
+redis==5.0.1  # optional
+```
+
+---
+
+## ❓ QUESTIONS TO ASK IF UNCLEAR
+
+Before starting, clarify:
+1. Should I preserve exact code formatting?
+2. Do you want unit tests for extracted functions?
+3. Should I update docstrings?
+4. Do you want me to add logging?
+5. Redis for caching or in-memory?
+6. Should I merge routes_gpt_actions.py into routes_gpt.py?
+
+---
+
+## 🆘 TROUBLESHOOTING
+
+**If imports fail:**
+```bash
+pip install -r requirements.txt
+python -c "import sys; print(sys.path)"
+```
+
+**If server won't start:**
+```bash
+python -m app.main  # Run directly
+uvicorn app.main:app --reload --log-level debug
+```
+
+**If rate limiting doesn't work:**
+```bash
+# Check slowapi is installed
+pip show slowapi
+# Check main.py has limiter configured
+```
+
+**If caching doesn't work:**
+```bash
+# Check aiocache is installed
+pip show aiocache
+# Check cache decorator syntax
+```
+
+---
+
+END OF COMPLETE PROMPT
