@@ -35,6 +35,7 @@ The API provides clean JSON responses, offers a debug mode (`?debug=true`), and 
 - **Smart Money Concept (SMC) Analyzer**: Detects institutional trading patterns across multiple timeframes.
 - **Dynamic Coin Discovery**: Integrates Binance Futures and CoinGecko for dynamic cryptocurrency discovery.
 - **Unified RPC Endpoint**: A single POST `/invoke` endpoint provides RPC access to all operations, including Coinglass, CoinAPI, LunarCrush, and Binance New Listings monitor.
+- **RPC Timeout Protection**: Both RPC dispatchers (standard and flat) include timeout protection using `asyncio.wait_for()` to prevent hanging requests. Default timeout is 30 seconds with operation-specific overrides (45s for signal generation, 60s for MSS/smart money scans, 180s for backtesting). Features graceful timeout handling with user-friendly error messages, context-aware suggestions, and safe JSON serialization for all request parameters.
 - **Binance New Listings Monitor**: RPC-enabled endpoint (`new_listings.binance`) for detecting new perpetual futures listings with trading statistics.
 - **Signal History Storage**: Stores LONG/SHORT and high-scoring MSS signals in a PostgreSQL database (Neon) with JSON file backup.
 - **Telegram Notifier**: Provides human-friendly signal alerts with AI verdict, risk mode, position sizing, and factor analysis.
