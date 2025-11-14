@@ -13,6 +13,10 @@ from dotenv import load_dotenv
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from app.middleware.rate_limiter import limiter
+from app.utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
 
 from app.api import (
     routes_health,
@@ -57,29 +61,22 @@ async def lifespan(app: FastAPI):
     # Import database here to avoid circular imports
     from app.storage.database import db
 
-    print("=" * 50)
-    print("CryptoSatX - Enhanced Crypto Signal API Starting...")
-    print("=" * 50)
-    print(f"Environment variables loaded:")
-    print(f"  - COINAPI_KEY: {'✓' if os.getenv('COINAPI_KEY') else '✗'}")
-    print(f"  - COINGLASS_API_KEY: {'✓' if os.getenv('COINGLASS_API_KEY') else '✗'}")
-    print(f"  - LUNARCRUSH_API_KEY: {'✓' if os.getenv('LUNARCRUSH_API_KEY') else '✗'}")
-    print(
-        f"  - TELEGRAM_BOT_TOKEN: {'✓' if os.getenv('TELEGRAM_BOT_TOKEN') else '✗'}"
-    )  # ADDED
-    print(
-        f"  - API_KEYS: {'✓' if os.getenv('API_KEYS') else '✗ (public mode)'}"
-    )  # ADDED
-    print(f"  - OPENAI_API_KEY: {'✓' if os.getenv('OPENAI_API_KEY') else '✗'}")  # ADDED
-    print(
-        f"  - DATABASE_URL: {'✓' if os.getenv('DATABASE_URL') else '✗'}"
-    )  # ADDED FOR DATABASE
-    print(f"  - BASE_URL: {os.getenv('BASE_URL', 'Not set')}")
-    print("=" * 50)
-    print(
-        "🚀 Enhanced Features: SMC Analysis | Signal History | Telegram Alerts | OpenAI GPT-4 | PostgreSQL Database"
-    )  # UPDATED
-    print("=" * 50)
+    # Startup banner with environment validation
+    logger.info("=" * 50)
+    logger.info("🚀 CryptoSatX - Enhanced Crypto Signal API Starting...")
+    logger.info("=" * 50)
+    logger.info("Environment variables loaded:")
+    logger.info(f"  - COINAPI_KEY: {'✓' if os.getenv('COINAPI_KEY') else '✗'}")
+    logger.info(f"  - COINGLASS_API_KEY: {'✓' if os.getenv('COINGLASS_API_KEY') else '✗'}")
+    logger.info(f"  - LUNARCRUSH_API_KEY: {'✓' if os.getenv('LUNARCRUSH_API_KEY') else '✗'}")
+    logger.info(f"  - TELEGRAM_BOT_TOKEN: {'✓' if os.getenv('TELEGRAM_BOT_TOKEN') else '✗'}")
+    logger.info(f"  - API_KEYS: {'✓' if os.getenv('API_KEYS') else '✗ (public mode)'}")
+    logger.info(f"  - OPENAI_API_KEY: {'✓' if os.getenv('OPENAI_API_KEY') else '✗'}")
+    logger.info(f"  - DATABASE_URL: {'✓' if os.getenv('DATABASE_URL') else '✗'}")
+    logger.info(f"  - BASE_URL: {os.getenv('BASE_URL', 'Not set')}")
+    logger.info("=" * 50)
+    logger.info("🚀 Enhanced Features: SMC Analysis | Signal History | Telegram Alerts | OpenAI GPT-4 | PostgreSQL Database")
+    logger.info("=" * 50)
 
     # Initialize database connection
     await db.connect()
@@ -87,12 +84,12 @@ async def lifespan(app: FastAPI):
     # Initialize cache service and start cleanup task
     from app.core.cache_service import cache_service, start_cache_cleanup_task
     cache_cleanup_task = asyncio.create_task(start_cache_cleanup_task())
-    print("🗄️  Cache service initialized with auto-cleanup")
+    logger.info("🗄️  Cache service initialized with auto-cleanup")
 
     yield
 
     # Shutdown: close database connection and cleanup resources
-    print("Shutting down CryptoSatX API...")
+    logger.info("🛑 Shutting down CryptoSatX API...")
     
     # Cancel cache cleanup task
     cache_cleanup_task.cancel()

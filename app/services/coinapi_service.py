@@ -4,6 +4,11 @@ Provides real-time spot price data for cryptocurrencies
 """
 
 import os
+
+from app.utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
 import httpx
 from typing import Dict, Optional
 
@@ -18,7 +23,7 @@ class CoinAPIService:
         
         # Validate API key on init
         if not self.api_key:
-            print("⚠️ WARNING: CoinAPI key not configured (COINAPI_KEY env variable)")
+            logger.warning("⚠️ WARNING: CoinAPI key not configured (COINAPI_KEY env variable)")
 
     async def get_spot_price(self, symbol: str) -> Dict:
         """
@@ -55,7 +60,7 @@ class CoinAPIService:
             status_code = e.response.status_code
             
             if status_code == 401:
-                print(f"🔴 CoinAPI authentication failed for {symbol}")
+                logger.error(f"🔴 CoinAPI authentication failed for {symbol}")
                 # Alert for auth errors (critical)
                 try:
                     from app.utils.alerter import alert_critical
@@ -70,44 +75,44 @@ class CoinAPIService:
                     symbol, "Authentication error. Please check API configuration."
                 )
             elif status_code == 429:
-                print(f"⚠️ CoinAPI rate limit exceeded for {symbol}")
+                logger.warning(f"⚠️ CoinAPI rate limit exceeded for {symbol}")
                 return self._get_default_response(
                     symbol, "Rate limit exceeded. Please try again later."
                 )
             elif status_code == 404:
-                print(f"⚠️ Symbol not found: {symbol}")
+                logger.warning(f"⚠️ Symbol not found: {symbol}")
                 return self._get_default_response(
                     symbol, f"Symbol '{symbol}' not found."
                 )
             else:
-                print(f"❌ CoinAPI HTTP {status_code} error for {symbol}")
+                logger.error(f"❌ CoinAPI HTTP {status_code} error for {symbol}")
                 return self._get_default_response(
                     symbol, "Service temporarily unavailable."
                 )
         
         except httpx.TimeoutException:
-            print(f"⏱️ CoinAPI timeout for {symbol}")
+            logger.info(f"⏱️ CoinAPI timeout for {symbol}")
             return self._get_default_response(
                 symbol, "Request timeout. Please try again."
             )
         
         except httpx.RequestError as e:
             # Network errors - don't expose details
-            print(f"🌐 CoinAPI network error for {symbol}: {type(e).__name__}")
+            logger.error(f"🌐 CoinAPI network error for {symbol}: {type(e).__name__}")
             return self._get_default_response(
                 symbol, "Network error. Please check your connection."
             )
         
         except (ValueError, KeyError) as e:
             # Data parsing errors - might be API response change
-            print(f"❌ CoinAPI response parsing error for {symbol}: {type(e).__name__}")
+            logger.error(f"❌ CoinAPI response parsing error for {symbol}: {type(e).__name__}")
             return self._get_default_response(
                 symbol, "Unable to process market data."
             )
         
         except Exception as e:
             # Unexpected errors - log safely and alert
-            print(f"🔴 UNEXPECTED CoinAPI error for {symbol}: {type(e).__name__}")
+            logger.error(f"🔴 UNEXPECTED CoinAPI error for {symbol}: {type(e).__name__}")
             try:
                 from app.utils.alerter import alert_critical
                 import asyncio
@@ -194,7 +199,7 @@ class CoinAPIService:
             
             normalized = normalize_symbol(symbol, "coinapi")
             if not normalized:
-                print(f"⚠️ Symbol normalization failed: {symbol}")
+                logger.error(f"⚠️ Symbol normalization failed: {symbol}")
                 return {
                     "success": False, 
                     "error": "Invalid symbol format", 
@@ -246,25 +251,25 @@ class CoinAPIService:
         except httpx.HTTPStatusError as e:
             status_code = e.response.status_code
             if status_code == 429:
-                print(f"⚠️ Rate limit on OHLCV for {symbol}")
+                logger.warning(f"⚠️ Rate limit on OHLCV for {symbol}")
                 return {"success": False, "error": "Rate limit exceeded", "symbol": symbol}
             elif status_code == 401:
-                print(f"🔴 Auth error on OHLCV for {symbol}")
+                logger.error(f"🔴 Auth error on OHLCV for {symbol}")
                 return {"success": False, "error": "Authentication error", "symbol": symbol}
             else:
-                print(f"❌ HTTP {status_code} on OHLCV for {symbol}")
+                logger.error(f"❌ HTTP {status_code} on OHLCV for {symbol}")
                 return {"success": False, "error": "Service unavailable", "symbol": symbol}
         
         except httpx.TimeoutException:
-            print(f"⏱️ Timeout on OHLCV for {symbol}")
+            logger.info(f"⏱️ Timeout on OHLCV for {symbol}")
             return {"success": False, "error": "Request timeout", "symbol": symbol}
         
         except (ValueError, KeyError) as e:
-            print(f"❌ OHLCV parsing error for {symbol}: {type(e).__name__}")
+            logger.error(f"❌ OHLCV parsing error for {symbol}: {type(e).__name__}")
             return {"success": False, "error": "Unable to process data", "symbol": symbol}
         
         except Exception as e:
-            print(f"🔴 Unexpected OHLCV error for {symbol}: {type(e).__name__}")
+            logger.error(f"🔴 Unexpected OHLCV error for {symbol}: {type(e).__name__}")
             try:
                 from app.utils.alerter import alert_critical
                 import asyncio
@@ -360,15 +365,15 @@ class CoinAPIService:
                 
         except httpx.HTTPStatusError as e:
             status_code = e.response.status_code
-            print(f"❌ HTTP {status_code} on trades for {symbol}")
+            logger.error(f"❌ HTTP {status_code} on trades for {symbol}")
             return {"success": False, "error": "Service unavailable", "symbol": symbol}
         
         except httpx.TimeoutException:
-            print(f"⏱️ Timeout on trades for {symbol}")
+            logger.info(f"⏱️ Timeout on trades for {symbol}")
             return {"success": False, "error": "Request timeout", "symbol": symbol}
         
         except Exception as e:
-            print(f"🔴 Unexpected trades error for {symbol}: {type(e).__name__}")
+            logger.error(f"🔴 Unexpected trades error for {symbol}: {type(e).__name__}")
             try:
                 from app.utils.alerter import alert_critical
                 import asyncio

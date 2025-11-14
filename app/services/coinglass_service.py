@@ -4,6 +4,11 @@ Provides funding rate and open interest data for crypto futures
 """
 
 import os
+
+from app.utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
 import httpx
 from typing import Dict, Optional
 
@@ -30,9 +35,9 @@ class CoinglassService:
                 response = await client.get(url, headers=self.headers)
 
                 if response.status_code != 200:
-                    print(f"Coinglass connection test failed:")
-                    print(f"Status code: {response.status_code}")
-                    print(f"Response: {response.text}")
+                    logger.error(f"Coinglass connection test failed:")
+                    logger.info(f"Status code: {response.status_code}")
+                    logger.info(f"Response: {response.text}")
                     return {
                         "success": False,
                         "status_code": response.status_code,
@@ -50,7 +55,7 @@ class CoinglassService:
                     ),
                 }
         except Exception as e:
-            print(f"Coinglass connection error: {e}")
+            logger.error(f"Coinglass connection error: {e}")
             return {"success": False, "error": str(e)}
 
     async def get_funding_rate(self, symbol: str) -> Dict:
@@ -100,7 +105,7 @@ class CoinglassService:
                 }
 
         except Exception as e:
-            print(f"Coinglass funding rate error for {symbol}: {e}")
+            logger.error(f"Coinglass funding rate error for {symbol}: {e}")
             return {
                 "symbol": symbol,
                 "fundingRate": 0.0,
@@ -156,7 +161,7 @@ class CoinglassService:
                 }
 
         except Exception as e:
-            print(f"Coinglass open interest error for {symbol}: {e}")
+            logger.error(f"Coinglass open interest error for {symbol}: {e}")
             return {
                 "symbol": symbol,
                 "openInterest": 0.0,
@@ -187,9 +192,9 @@ class CoinglassService:
                 response = await client.get(url, headers=self.headers)
 
                 if response.status_code != 200:
-                    print(f"Coinglass coins-markets error for {symbol}:")
-                    print(f"Status code: {response.status_code}")
-                    print(f"Response: {response.text[:500]}")
+                    logger.error(f"Coinglass coins-markets error for {symbol}:")
+                    logger.info(f"Status code: {response.status_code}")
+                    logger.info(f"Response: {response.text[:500]}")
                     return self._get_default_combined_response(
                         symbol, f"HTTP {response.status_code}"
                     )
@@ -228,7 +233,7 @@ class CoinglassService:
                     )
 
         except Exception as e:
-            print(f"Coinglass funding+OI error for {symbol}: {e}")
+            logger.error(f"Coinglass funding+OI error for {symbol}: {e}")
             return self._get_default_combined_response(symbol, str(e))
 
     def _get_default_combined_response(self, symbol: str, error: str = "") -> Dict:
@@ -278,7 +283,7 @@ class CoinglassService:
             return market_data
 
         except Exception as e:
-            print(f"Coinglass market data error for {symbol}: {e}")
+            logger.error(f"Coinglass market data error for {symbol}: {e}")
             return {
                 "symbol": symbol,
                 "fundingRate": 0.0,

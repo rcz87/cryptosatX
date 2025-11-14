@@ -4,6 +4,11 @@ Premium endpoints for advanced trading signal generation
 Requires Coinglass Standard plan or higher
 """
 import os
+
+from app.utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
 import httpx
 from typing import Dict, Optional, List
 from datetime import datetime, timedelta
@@ -57,7 +62,7 @@ class CoinglassPremiumService:
             response = await client.get(url, headers=self.headers, params=params)
             
             if response.status_code != 200:
-                print(f"Liquidation API error for {symbol}: {response.status_code}")
+                logger.error(f"Liquidation API error for {symbol}: {response.status_code}")
                 return self._default_liquidation_response(symbol)
             
             data = response.json()
@@ -65,7 +70,7 @@ class CoinglassPremiumService:
             # Debug logging
             code = data.get("code")
             msg = data.get("msg", "")
-            print(f"[Liquidation] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
+            logger.info(f"[Liquidation] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
             
             # Coinglass returns integer 0 for success, not string "0"
             if str(code) == "0" and data.get("data"):
@@ -100,7 +105,7 @@ class CoinglassPremiumService:
             return self._default_liquidation_response(symbol)
             
         except Exception as e:
-            print(f"Liquidation error for {symbol}: {e}")
+            logger.error(f"Liquidation error for {symbol}: {e}")
             return self._default_liquidation_response(symbol)
     
     async def get_long_short_ratio(self, symbol: str, exchange: str = "Binance") -> Dict:
@@ -131,7 +136,7 @@ class CoinglassPremiumService:
             response = await client.get(url, headers=self.headers, params=params)
             
             if response.status_code != 200:
-                print(f"[LongShortRatio] HTTP ERROR {symbol} - Status: {response.status_code}, Body: {response.text[:500]}")
+                logger.error(f"[LongShortRatio] HTTP ERROR {symbol} - Status: {response.status_code}, Body: {response.text[:500]}")
                 return self._default_ls_ratio_response(symbol)
             
             data = response.json()
@@ -139,7 +144,7 @@ class CoinglassPremiumService:
             # Debug logging
             code = data.get("code")
             msg = data.get("msg", "")
-            print(f"[LongShortRatio] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
+            logger.info(f"[LongShortRatio] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
             
             # Coinglass returns integer 0 for success
             if str(code) == "0" and data.get("data"):
@@ -176,7 +181,7 @@ class CoinglassPremiumService:
             return self._default_ls_ratio_response(symbol)
             
         except Exception as e:
-            print(f"Long/Short ratio error for {symbol}: {e}")
+            logger.error(f"Long/Short ratio error for {symbol}: {e}")
             return self._default_ls_ratio_response(symbol)
     
     async def get_oi_trend(self, symbol: str, limit: int = 24) -> Dict:
@@ -205,7 +210,7 @@ class CoinglassPremiumService:
             response = await client.get(url, headers=self.headers, params=params)
             
             if response.status_code != 200:
-                print(f"[OITrend] HTTP ERROR {symbol} - Status: {response.status_code}, Body: {response.text[:500]}")
+                logger.error(f"[OITrend] HTTP ERROR {symbol} - Status: {response.status_code}, Body: {response.text[:500]}")
                 return self._default_oi_trend_response(symbol)
             
             data = response.json()
@@ -213,7 +218,7 @@ class CoinglassPremiumService:
             # Debug logging
             code = data.get("code")
             msg = data.get("msg", "")
-            print(f"[OITrend] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
+            logger.info(f"[OITrend] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
             
             # Coinglass returns integer 0 for success
             if str(code) == "0" and data.get("data"):
@@ -253,7 +258,7 @@ class CoinglassPremiumService:
             return self._default_oi_trend_response(symbol)
             
         except Exception as e:
-            print(f"OI trend error for {symbol}: {e}")
+            logger.error(f"OI trend error for {symbol}: {e}")
             return self._default_oi_trend_response(symbol)
     
     async def get_top_trader_ratio(self, symbol: str, exchange: str = "Binance") -> Dict:
@@ -284,7 +289,7 @@ class CoinglassPremiumService:
             response = await client.get(url, headers=self.headers, params=params)
             
             if response.status_code != 200:
-                print(f"[TopTrader] HTTP ERROR {symbol} - Status: {response.status_code}, Body: {response.text[:500]}")
+                logger.error(f"[TopTrader] HTTP ERROR {symbol} - Status: {response.status_code}, Body: {response.text[:500]}")
                 return self._default_top_trader_response(symbol)
             
             data = response.json()
@@ -292,7 +297,7 @@ class CoinglassPremiumService:
             # Debug logging
             code = data.get("code")
             msg = data.get("msg", "")
-            print(f"[TopTrader] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
+            logger.info(f"[TopTrader] {symbol} - Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
             
             # Coinglass returns integer 0 for success
             if str(code) == "0" and data.get("data"):
@@ -325,7 +330,7 @@ class CoinglassPremiumService:
             return self._default_top_trader_response(symbol)
             
         except Exception as e:
-            print(f"Top trader error for {symbol}: {e}")
+            logger.error(f"Top trader error for {symbol}: {e}")
             return self._default_top_trader_response(symbol)
     
     async def get_fear_greed_index(self) -> Dict:
@@ -344,7 +349,7 @@ class CoinglassPremiumService:
             response = await client.get(url, headers=self.headers)
             
             if response.status_code != 200:
-                print(f"[FearGreed] HTTP ERROR - Status: {response.status_code}, Body: {response.text[:500]}")
+                logger.error(f"[FearGreed] HTTP ERROR - Status: {response.status_code}, Body: {response.text[:500]}")
                 return self._default_fear_greed_response()
             
             data = response.json()
@@ -352,16 +357,16 @@ class CoinglassPremiumService:
             # Debug logging
             code = data.get("code")
             msg = data.get("msg", "")
-            print(f"[FearGreed] Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
+            logger.info(f"[FearGreed] Status: {response.status_code}, Code: {code}, Msg: {msg}, Has Data: {bool(data.get('data'))}")
             
             # Coinglass returns integer 0 for success
             if str(code) == "0" and data.get("data"):
                 fg_data = data["data"]
-                print(f"[FearGreed] DEBUG - Data type: {type(fg_data)}, Length: {len(fg_data) if isinstance(fg_data, list) else 'N/A'}, First entry: {fg_data[0] if isinstance(fg_data, list) and len(fg_data) > 0 else fg_data}")
+                logger.info(f"[FearGreed] DEBUG - Data type: {type(fg_data)}, Length: {len(fg_data) if isinstance(fg_data, list) else 'N/A'}, First entry: {fg_data[0] if isinstance(fg_data, list) and len(fg_data) > 0 else fg_data}")
                 
                 if isinstance(fg_data, list) and len(fg_data) > 0:
                     latest = fg_data[0]
-                    print(f"[FearGreed] DEBUG - Latest entry fields: {latest.keys() if isinstance(latest, dict) else 'not a dict'}")
+                    logger.info(f"[FearGreed] DEBUG - Latest entry fields: {latest.keys() if isinstance(latest, dict) else 'not a dict'}")
                     
                     value = int(latest.get("value", 50))
                     
@@ -389,7 +394,7 @@ class CoinglassPremiumService:
             return self._default_fear_greed_response()
             
         except Exception as e:
-            print(f"Fear & Greed error: {e}")
+            logger.error(f"Fear & Greed error: {e}")
             return self._default_fear_greed_response()
     
     # Default responses for error handling

@@ -25,6 +25,10 @@ from app.services.telegram_notifier import telegram_notifier
 from app.services.openai_service_v2 import get_openai_service_v2
 from app.services.position_sizer import position_sizer
 from app.utils import risk_rules
+from app.utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
 
 
 # ============================================================================
@@ -511,7 +515,7 @@ class SignalEngine:
                 f"Signal engine weights must sum to 100%, got {total_weight}%. "
                 f"Weights: {self.WEIGHTS}"
             )
-        print(f"✅ Signal engine initialized - weights validated (sum={total_weight}%)")
+        logger.info(f"✅ Signal engine initialized - weights validated (sum={total_weight}%)")
 
     async def build_signal(
         self, 
@@ -541,23 +545,23 @@ class SignalEngine:
         mode = self._normalize_mode(mode)
         mode_info = self.MODE_THRESHOLDS[mode]
         
-        print(f"🔵 BUILD_SIGNAL STARTED for {symbol} - Mode: {mode} ({mode_info['risk_level']} risk) - Quality threshold: {min_quality_score}%")
+        logger.info(f"🔵 BUILD_SIGNAL STARTED for {symbol} - Mode: {mode} ({mode_info['risk_level']} risk) - Quality threshold: {min_quality_score}%")
         symbol = symbol.upper()
 
         # PHASE 1: Concurrent data collection with quality tracking
         context, quality_report = await self._collect_market_data(symbol)
         
         # PHASE 1.5: Quality validation
-        print(f"📊 Data Quality: {quality_report.quality_score}% ({quality_report.quality_level}) - "
+        logger.info(f"📊 Data Quality: {quality_report.quality_score}% ({quality_report.quality_level}) - "
               f"{quality_report.services_successful}/{quality_report.services_total} services successful")
         
         # Log failed services if any
         if quality_report.services_failed:
-            print(f"⚠️  Failed services ({len(quality_report.services_failed)}):")
+            logger.error(f"⚠️  Failed services ({len(quality_report.services_failed)}):")
             for failed in quality_report.services_failed[:5]:  # Show first 5 failures
-                print(f"   - {failed['name']} ({failed['tier']}): {failed['error']}")
+                logger.error(f"   - {failed['name']} ({failed['tier']}): {failed['error']}")
             if len(quality_report.services_failed) > 5:
-                print(f"   ... and {len(quality_report.services_failed) - 5} more")
+                logger.error(f"   ... and {len(quality_report.services_failed) - 5} more")
         
         # Enforce quality threshold if enabled
         if enforce_quality_threshold and quality_report.quality_score < min_quality_score:
@@ -576,7 +580,7 @@ class SignalEngine:
                 if len(quality_report.services_failed) > 3:
                     error_msg += f" (and {len(quality_report.services_failed) - 3} more)"
             
-            print(f"❌ QUALITY CHECK FAILED: {error_msg}")
+            logger.error(f"❌ QUALITY CHECK FAILED: {error_msg}")
             
             # Return error response instead of raising exception (better for API)
             return {
@@ -763,16 +767,16 @@ class SignalEngine:
             and not (auto_skip_avoid and ai_verdict == "SKIP")
         )
         
-        print(f"🟢 Signal={signal}, Verdict={ai_verdict}, Telegram enabled={telegram_notifier.enabled}, Should send={should_send_telegram}")
+        logger.info(f"🟢 Signal={signal}, Verdict={ai_verdict}, Telegram enabled={telegram_notifier.enabled}, Should send={should_send_telegram}")
         
         if should_send_telegram:
-            print(f"🟡 Attempting to send Telegram alert for {symbol} {signal}")
+            logger.info(f"🟡 Attempting to send Telegram alert for {symbol} {signal}")
             try:
                 result = await telegram_notifier.send_signal_alert(response)
-                print(f"✅ Telegram alert sent successfully: {result}")
+                logger.info(f"✅ Telegram alert sent successfully: {result}")
             except Exception as e:
                 # Don't fail signal generation if Telegram fails
-                print(f"⚠️ Telegram notification failed: {e}")
+                logger.error(f"⚠️ Telegram notification failed: {e}")
 
         return response
 
@@ -793,7 +797,7 @@ class SignalEngine:
         ai_timeout = int(os.getenv("AI_JUDGE_TIMEOUT", "15"))
         
         try:
-            print(f"🤖 Calling OpenAI V2 Signal Judge for {symbol}...")
+            logger.info(f"🤖 Calling OpenAI V2 Signal Judge for {symbol}...")
             
             openai_v2 = await asyncio.wait_for(
                 get_openai_service_v2(),
@@ -815,7 +819,7 @@ class SignalEngine:
             )
             
             if validation_result.get("success"):
-                print(f"✅ OpenAI V2 verdict: {validation_result.get('verdict')} (confidence: {validation_result.get('ai_confidence')}%)")
+                logger.info(f"✅ OpenAI V2 verdict: {validation_result.get('verdict')} (confidence: {validation_result.get('ai_confidence')}%)")
                 
                 risk_suggestion = validation_result.get("adjusted_risk_suggestion", {})
                 verdict = validation_result.get("verdict", "SKIP")
@@ -845,21 +849,21 @@ class SignalEngine:
                 
                 if volatility_metrics:
                     signal_data["aiVerdictLayer"]["volatilityMetrics"] = volatility_metrics
-                    print(f"📊 Volatility metrics added: {volatility_metrics.get('tradePlanSummary', '')}")
+                    logger.info(f"📊 Volatility metrics added: {volatility_metrics.get('tradePlanSummary', '')}")
                 
                 return signal_data
             
             else:
                 error_msg = validation_result.get("error", "Unknown error")
-                print(f"⚠️  OpenAI V2 validation failed: {error_msg}. Falling back to rule-based.")
+                logger.error(f"⚠️  OpenAI V2 validation failed: {error_msg}. Falling back to rule-based.")
                 raise Exception(f"V2 validation failed: {error_msg}")
         
         except asyncio.TimeoutError:
-            print(f"⏱️  OpenAI V2 timeout after {ai_timeout}s. Falling back to rule-based assessment.")
+            logger.info(f"⏱️  OpenAI V2 timeout after {ai_timeout}s. Falling back to rule-based assessment.")
         except Exception as e:
-            print(f"⚠️  OpenAI V2 error: {e}. Falling back to rule-based assessment.")
+            logger.error(f"⚠️  OpenAI V2 error: {e}. Falling back to rule-based assessment.")
         
-        print(f"🔧 Using rule-based risk assessment for {symbol}")
+        logger.info(f"🔧 Using rule-based risk assessment for {symbol}")
         verdict = risk_rules.rule_based_verdict(signal_data)
         risk_mode = risk_rules.rule_based_risk_mode(signal_data)
         risk_multiplier = risk_rules.rule_based_multiplier(signal_data)
@@ -882,7 +886,7 @@ class SignalEngine:
             "model": None,
         }
         
-        print(f"🔧 Rule-based verdict: {verdict}, Risk mode: {risk_mode}, Multiplier: {risk_multiplier}x")
+        logger.info(f"🔧 Rule-based verdict: {verdict}, Risk mode: {risk_mode}, Multiplier: {risk_multiplier}x")
         
         # Calculate volatility metrics (ATR-based position sizing and stop loss)
         volatility_metrics = await self._calculate_volatility_metrics(
@@ -894,7 +898,7 @@ class SignalEngine:
         
         if volatility_metrics:
             signal_data["aiVerdictLayer"]["volatilityMetrics"] = volatility_metrics
-            print(f"📊 Volatility metrics added: {volatility_metrics.get('tradePlanSummary', '')}")
+            logger.info(f"📊 Volatility metrics added: {volatility_metrics.get('tradePlanSummary', '')}")
         
         return signal_data
 
@@ -916,7 +920,7 @@ class SignalEngine:
         Returns None if ATR calculation fails (graceful degradation)
         """
         try:
-            print(f"📊 Calculating volatility metrics for {symbol} ({signal_type})...")
+            logger.info(f"📊 Calculating volatility metrics for {symbol} ({signal_type})...")
             
             trade_plan = await position_sizer.get_complete_trade_plan(
                 symbol=symbol,
@@ -928,7 +932,7 @@ class SignalEngine:
             )
             
             if not trade_plan or "error" in trade_plan:
-                print(f"⚠️  Failed to calculate volatility metrics: {trade_plan.get('error') if trade_plan else 'unknown error'}")
+                logger.error(f"⚠️  Failed to calculate volatility metrics: {trade_plan.get('error') if trade_plan else 'unknown error'}")
                 return None
             
             position_sizing = trade_plan.get("position_sizing", {}) or {}
@@ -973,7 +977,7 @@ class SignalEngine:
             }
         
         except Exception as e:
-            print(f"[ERROR] _calculate_volatility_metrics failed: {e}")
+            logger.error(f"[ERROR] _calculate_volatility_metrics failed: {e}")
             return None
 
     async def _get_funding_and_oi_with_fallback(self, symbol: str, cg_data: Dict, comp_markets: Dict, comprehensive_available: bool) -> Dict:
@@ -1003,7 +1007,7 @@ class SignalEngine:
         
         # If Coinglass failed or returned zero values, try OKX fallback
         if not cg_success or (funding == 0.0 and oi == 0.0):
-            print(f"⚠️  Coinglass funding/OI unavailable for {symbol}, attempting OKX fallback...")
+            logger.warning(f"⚠️  Coinglass funding/OI unavailable for {symbol}, attempting OKX fallback...")
             
             try:
                 # Fetch from OKX
@@ -1017,15 +1021,15 @@ class SignalEngine:
                 if not isinstance(okx_funding_result, Exception) and okx_funding_result.get("success"):
                     funding = okx_funding_result.get("fundingRate", 0.0)
                     funding_source = "okx"
-                    print(f"✅ OKX funding rate retrieved for {symbol}: {funding}")
+                    logger.info(f"✅ OKX funding rate retrieved for {symbol}: {funding}")
                 
                 if not isinstance(okx_oi_result, Exception) and okx_oi_result.get("success"):
                     oi = okx_oi_result.get("openInterest", 0.0)
                     oi_source = "okx"
-                    print(f"✅ OKX open interest retrieved for {symbol}: {oi}")
+                    logger.info(f"✅ OKX open interest retrieved for {symbol}: {oi}")
                     
             except Exception as e:
-                print(f"⚠️  OKX fallback failed for {symbol}: {e}")
+                logger.error(f"⚠️  OKX fallback failed for {symbol}: {e}")
         
         return {
             "fundingRate": funding,
@@ -1162,7 +1166,7 @@ class SignalEngine:
             if ls_data.get("success"): successful_endpoints.append("long/short ratio")
             if oi_trend_data.get("success"): successful_endpoints.append("OI trend")
             if trader_data.get("success"): successful_endpoints.append("top trader")
-            print(f"✅ Premium data available for {symbol}: {', '.join(successful_endpoints)}")
+            logger.info(f"✅ Premium data available for {symbol}: {', '.join(successful_endpoints)}")
 
         comprehensive_available = comp_markets.get("success", False)
         lunarcrush_comp_available = lc_comp.get("success", False)
@@ -1176,20 +1180,14 @@ class SignalEngine:
         # Log comprehensive data availability
         if not comprehensive_available:
             error_msg = comp_markets.get("error", "unknown error")
-            print(
-                f"⚠️  Comprehensive markets data unavailable for {symbol}: {error_msg}. Falling back to basic Coinglass data."
-            )
+            logger.error(f"⚠️  Comprehensive markets data unavailable for {symbol}: {error_msg}. Falling back to basic Coinglass data.")
 
         if not lunarcrush_comp_available:
             error_msg = lc_comp.get("error", "unknown error")
-            print(
-                f"⚠️  Comprehensive LunarCrush data unavailable for {symbol}: {error_msg}. Falling back to basic social score."
-            )
+            logger.error(f"⚠️  Comprehensive LunarCrush data unavailable for {symbol}: {error_msg}. Falling back to basic social score.")
 
         if not coinapi_comp_available:
-            print(
-                f"⚠️  CoinAPI comprehensive data unavailable for {symbol}. Order book/trades analysis will use defaults."
-            )
+            logger.warning(f"⚠️  CoinAPI comprehensive data unavailable for {symbol}. Order book/trades analysis will use defaults.")
 
         # CRITICAL: Validate price data - hard-fail if missing
         price_value = (
@@ -1201,7 +1199,7 @@ class SignalEngine:
         if price_value == 0.0 or not price_data:
             # Price data is CRITICAL - cannot generate signal without it
             error_msg = f"❌ CRITICAL: Price data missing for {symbol}. Cannot generate signal."
-            print(error_msg)
+            logger.error(error_msg)
             # Mark price as failed and return early with quality report
             monitor.track_result("price_data", Exception(error_msg), 0.0)
             quality_report = monitor.calculate_quality()
@@ -1237,7 +1235,7 @@ class SignalEngine:
                 "source": f"fallback_to_{funding_source}"
             }
             monitor.track_result("funding_oi_data", fallback_success_data, 0.0)
-            print(f"✅ Funding/OI fallback successful - updated quality tracking")
+            logger.info(f"✅ Funding/OI fallback successful - updated quality tracking")
 
         # Build context
         context = EnhancedSignalContext(
@@ -1374,7 +1372,7 @@ class SignalEngine:
             else:
                 return "neutral"
         except Exception as e:
-            print(f"Error calculating price trend: {e}")
+            logger.error(f"Error calculating price trend: {e}")
             return "neutral"
 
     def _calculate_multi_timeframe_trend(self, comp_markets: dict) -> str:
@@ -1434,7 +1432,7 @@ class SignalEngine:
             else:
                 return "neutral"
         except Exception as e:
-            print(f"Error calculating multi-timeframe trend: {e}")
+            logger.error(f"Error calculating multi-timeframe trend: {e}")
             return "neutral"
 
     def _calculate_weighted_score(
@@ -1630,7 +1628,7 @@ class SignalEngine:
             return mode_lower
         
         # Default to aggressive if unknown
-        print(f"⚠️  Unknown mode '{mode}', defaulting to 'aggressive'")
+        logger.warning(f"⚠️  Unknown mode '{mode}', defaulting to 'aggressive'")
         return "aggressive"
     
     def _determine_signal(self, score: float, mode: str = "aggressive") -> str:
