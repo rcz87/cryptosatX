@@ -4,9 +4,11 @@ Enhanced trading signals with GPT-4 analysis and validation
 """
 
 import os
-from fastapi import APIRouter, Query, Depends, HTTPException
+from fastapi import APIRouter, Query, Depends, HTTPException, Request
 from typing import Optional, List
 import time
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from app.services.openai_service import get_openai_service
 from app.core.signal_engine import signal_engine
@@ -15,9 +17,14 @@ from app.utils.logger import default_logger, log_api_call
 
 router = APIRouter(prefix="/openai", tags=["OpenAI Integration"])
 
+# Rate limiter (10 requests per minute for OpenAI endpoints to prevent abuse)
+limiter = Limiter(key_func=get_remote_address)
+
 
 @router.get("/analyze/{symbol}")
+@limiter.limit("10/minute")
 async def analyze_signal_with_openai(
+    request: Request,
     symbol: str,
     include_validation: bool = Query(True, description="Include GPT signal validation"),
     include_market_context: bool = Query(
@@ -136,7 +143,9 @@ async def analyze_signal_with_openai(
 
 
 @router.get("/sentiment/market")
+@limiter.limit("10/minute")
 async def get_market_sentiment_analysis(
+    request: Request,
     symbols: str = Query("BTC,ETH,SOL", description="Comma-separated list of symbols"),
     api_key: str = Depends(get_optional_api_key),
 ):
@@ -223,7 +232,9 @@ async def get_market_sentiment_analysis(
 
 
 @router.post("/validate/{symbol}")
+@limiter.limit("10/minute")
 async def validate_trading_signal(
+    request: Request,
     symbol: str,
     signal_data: dict,
     conflicting_indicators: Optional[List[str]] = None,
