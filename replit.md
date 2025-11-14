@@ -66,3 +66,19 @@ The API delivers clean JSON responses and includes a debug mode (`?debug=true`).
 - **Binance Futures API**: Futures market data, coin discovery, 24hr statistics, funding rates, open interest, new listings.
 - **CoinGecko API**: Coin discovery, market cap filtering, volume analysis, category search.
 - **Neon (PostgreSQL)**: Managed PostgreSQL database for signal history storage.
+
+## Known Limitations & Workarounds
+
+### LunarCrush API Constraints
+- **Multi-Chain Token Disambiguation**: Symbols like "BEAT" may map to multiple tokens across different chains (e.g., MetaBeat on Polygon vs Audiera BEAT on BNB Chain). Current implementation defaults to first/most established token. **Workaround**: Specify chain/project name in query (e.g., "Audiera BEAT" or "BEAT on BNB Chain").
+- **New Token Indexing Delay**: Newly listed tokens (<7 days) require 24-48 hours for full social metrics indexing. **Workaround**: Use CoinGlass for funding/OI data (faster) and cross-verify with exchange APIs.
+- **API Cache**: Social data updates hourly; real-time mentions may lag 1 hour. **Workaround**: CoinGlass provides real-time liquidations; Binance API for real-time price.
+- **Premium Endpoints**: Advanced features (topic time-series, detailed post analytics) require Pro tier ($99/mo). Current implementation uses free/builder tier endpoints successfully.
+
+### Geographic Restrictions
+- **Binance API**: May be geo-blocked (HTTP 451) in certain regions due to regulatory compliance. **Workaround**: Use LunarCrush coin discovery, CoinGlass market data, or OKX/CoinGecko as alternatives.
+
+### Data Accuracy for Edge Cases
+- **Established Coins** (BTC, ETH, SOL, major altcoins): 100% accurate across all metrics.
+- **New/Micro-Cap Coins**: Galaxy Score and Alt Rank accurate; social volume may lag or default to older tokens with same ticker. Manual verification recommended for trending coins.
+- **Multi-Chain Tokens**: Specify chain explicitly to avoid ambiguity.
