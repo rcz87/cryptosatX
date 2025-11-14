@@ -30,3 +30,5 @@ requests
 sqlalchemy[asyncio]
 websockets
 aiofiles
+aiocache
+slowapi
