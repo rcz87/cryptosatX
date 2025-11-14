@@ -7,8 +7,6 @@ import os
 from fastapi import APIRouter, Query, Depends, HTTPException, Request
 from typing import Optional, List
 import time
-from slowapi import Limiter
-from slowapi.util import get_remote_address
 
 from app.services.openai_service import get_openai_service
 from app.core.signal_engine import signal_engine
