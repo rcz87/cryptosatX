@@ -1427,7 +1427,7 @@ class SignalEngine:
             return "neutral"
 
         try:
-            # Get all timeframe changes
+            # Get all timeframe changes (% price change for each period)
             changes = {
                 "5m": comp_markets.get("priceChange5m", 0.0),
                 "15m": comp_markets.get("priceChange15m", 0.0),
@@ -1438,37 +1438,46 @@ class SignalEngine:
                 "24h": comp_markets.get("priceChange24h", 0.0),
             }
 
-            # Count bullish vs bearish timeframes
+            # Count how many timeframes are bullish (positive) vs bearish (negative)
+            # This gives us directional agreement across timeframes
             bullish_count = sum(1 for change in changes.values() if change > 0)
             bearish_count = sum(1 for change in changes.values() if change < 0)
 
-            # Weighted score (longer timeframes = more weight)
+            # Apply exponential weighting: longer timeframes = more weight
+            # Rationale: 24h trend more significant than 5m noise
+            # Total weight = 17 (1+1+1+2+3+4+5)
             weights = {
-                "5m": 1,
-                "15m": 1,
-                "30m": 1,
-                "1h": 2,
-                "4h": 3,
-                "12h": 4,
-                "24h": 5,
+                "5m": 1,    # Short-term noise - minimal weight
+                "15m": 1,   # Short-term noise - minimal weight
+                "30m": 1,   # Short-term noise - minimal weight
+                "1h": 2,    # Medium-term trend - moderate weight
+                "4h": 3,    # Important swing timeframe
+                "12h": 4,   # Strong trend indicator
+                "24h": 5,   # Most significant for daily trend
             }
+            
+            # Calculate weighted average change across all timeframes
+            # Example: If 24h is +2% (weight 5) and 5m is -0.5% (weight 1),
+            # weighted_sum = (2 * 5) + (-0.5 * 1) = 9.5
             weighted_sum = sum(changes[tf] * weights[tf] for tf in changes)
-            total_weight = sum(weights.values())
+            total_weight = sum(weights.values())  # = 17
             avg_weighted_change = weighted_sum / total_weight if total_weight > 0 else 0
 
-            # Determine trend strength using configured thresholds
+            # Determine trend strength using two criteria:
+            # 1. Directional agreement (6/7 timeframes bullish = threshold)
+            # 2. Weighted momentum strength (>1.0% avg weighted change = strong)
             if (bullish_count >= self.CANDLE_ANALYSIS["bullish_threshold"] and 
                 avg_weighted_change > self.CANDLE_ANALYSIS["strong_momentum_threshold"]):
-                return "strongly_bullish"
+                return "strongly_bullish"  # 6+ bullish timeframes + strong momentum
             elif bullish_count >= self.CANDLE_ANALYSIS["moderate_threshold"]:
-                return "bullish"
+                return "bullish"  # 5+ bullish timeframes (moderate agreement)
             elif (bearish_count >= self.CANDLE_ANALYSIS["bearish_threshold"] and 
                   avg_weighted_change < -self.CANDLE_ANALYSIS["strong_momentum_threshold"]):
-                return "strongly_bearish"
+                return "strongly_bearish"  # 6+ bearish timeframes + strong downtrend
             elif bearish_count >= self.CANDLE_ANALYSIS["moderate_threshold"]:
-                return "bearish"
+                return "bearish"  # 5+ bearish timeframes (moderate downtrend)
             else:
-                return "neutral"
+                return "neutral"  # Mixed signals or insufficient directional agreement
         except Exception as e:
             logger.error(f"Error calculating multi-timeframe trend: {e}")
             return "neutral"
@@ -1555,23 +1564,37 @@ class SignalEngine:
 
     def _score_funding_rate(self, rate: float) -> float:
         """
-        Score funding rate on 0-100 scale using configured thresholds
-        Negative funding = bullish (shorts pay longs) = high score
-        Positive funding = bearish (longs pay shorts) = low score
+        Score funding rate on 0-100 scale using configured thresholds.
+        
+        FUNDING RATE MECHANICS:
+        - Negative rate = Shorts pay longs = More shorts = BULLISH signal
+        - Positive rate = Longs pay shorts = More longs = BEARISH signal
+        - High positive rate = Overcrowded longs = Potential reversal down
         """
-        # Normalize to percentage
+        # Convert decimal to percentage (e.g., 0.0001 → 0.01%)
         rate_pct = rate * 100
 
+        # Extreme negative (<-0.05%) = Strong short pressure = Very Bullish (Score: 85)
         if rate_pct < self.FUNDING_RATE_THRESHOLDS["very_negative"]:
             return self.FUNDING_RATE_SCORES["very_bullish"]
+        
+        # Moderate negative (<-0.01%) = Short pressure clearing = Bullish (Score: 70)
         elif rate_pct < self.FUNDING_RATE_THRESHOLDS["negative"]:
             return self.FUNDING_RATE_SCORES["bullish"]
+        
+        # Slightly negative (<0%) = Slight bearish sentiment clearing = Slightly Bullish (Score: 60)
         elif rate_pct < self.FUNDING_RATE_THRESHOLDS["slightly_negative"]:
             return self.FUNDING_RATE_SCORES["slightly_bullish"]
+        
+        # Slightly positive (<0.05%) = Slight bullish pressure = Slightly Bearish (Score: 45)
         elif rate_pct < self.FUNDING_RATE_THRESHOLDS["slightly_positive"]:
             return self.FUNDING_RATE_SCORES["neutral_bearish"]
+        
+        # Moderate positive (<0.2%) = Moderate long pressure = Bearish (Score: 30)
         elif rate_pct < self.FUNDING_RATE_THRESHOLDS["positive"]:
             return self.FUNDING_RATE_SCORES["bearish"]
+        
+        # Extreme positive (>0.2%) = Extreme long pressure = Very Bearish (Score: 15)
         else:
             return self.FUNDING_RATE_SCORES["very_bearish"]
 
@@ -1601,49 +1624,95 @@ class SignalEngine:
 
     def _score_long_short_ratio(self, long_pct: float) -> float:
         """
-        Score based on long/short ratio using configured thresholds (contrarian indicator)
-        Too many longs = bearish, too many shorts = bullish
+        Score based on long/short ratio using configured thresholds (contrarian indicator).
+        
+        CONTRARIAN LOGIC:
+        - Too many longs (>65%) = overcrowded = likely reversal down = BEARISH
+        - Too many shorts (<35%) = oversold = likely reversal up = BULLISH
+        - Balanced (45-55%) = no strong bias = NEUTRAL
+        
+        This is a mean-reversion strategy: we fade the crowd.
         """
+        # Extreme overcrowding: >65% longs = everyone bullish = contrarian bearish signal
         if long_pct > self.LONG_SHORT_RATIO_THRESHOLDS["overcrowded_longs"]:
-            return self.LONG_SHORT_RATIO_SCORES["very_bearish"]
+            return self.LONG_SHORT_RATIO_SCORES["very_bearish"]  # Score: 25
+        
+        # Moderate overcrowding: >55% longs = too bullish = bearish signal
         elif long_pct > self.LONG_SHORT_RATIO_THRESHOLDS["high_longs"]:
-            return self.LONG_SHORT_RATIO_SCORES["bearish"]
+            return self.LONG_SHORT_RATIO_SCORES["bearish"]  # Score: 40
+        
+        # Extreme oversold: <35% longs = everyone bearish = contrarian bullish signal
         elif long_pct < self.LONG_SHORT_RATIO_THRESHOLDS["oversold_shorts"]:
-            return self.LONG_SHORT_RATIO_SCORES["very_bullish"]
+            return self.LONG_SHORT_RATIO_SCORES["very_bullish"]  # Score: 75
+        
+        # Moderate undersold: <45% longs = too bearish = bullish signal
         elif long_pct < self.LONG_SHORT_RATIO_THRESHOLDS["low_longs"]:
-            return self.LONG_SHORT_RATIO_SCORES["bullish"]
+            return self.LONG_SHORT_RATIO_SCORES["bullish"]  # Score: 60
+        
+        # Balanced market: 45-55% range = no clear crowding = neutral
         else:
-            return self.LONG_SHORT_RATIO_SCORES["neutral"]
+            return self.LONG_SHORT_RATIO_SCORES["neutral"]  # Score: 50
 
     def _score_oi_trend(self, change_pct: float) -> float:
         """
-        Score based on OI change using configured thresholds
-        Rising OI = confirmation of trend
+        Score based on Open Interest change using configured thresholds.
+        
+        OI TREND LOGIC:
+        - Rising OI = New money entering = Trend confirmation
+        - Falling OI = Money leaving = Trend weakening
+        - OI is directionally neutral: just measures conviction strength
         """
+        # Strong increase (>5%) = High conviction = Score: 75
+        # More contracts opened = strong participation
         if change_pct > self.OI_CHANGE_THRESHOLDS["strong_increase"]:
             return self.OI_CHANGE_SCORES["strong_increase"]
+        
+        # Moderate increase (>1%) = Moderate conviction = Score: 60
         elif change_pct > self.OI_CHANGE_THRESHOLDS["increase"]:
             return self.OI_CHANGE_SCORES["increase"]
+        
+        # Strong decrease (<-5%) = Weak conviction = Score: 25
+        # Contracts closing = participants exiting
         elif change_pct < self.OI_CHANGE_THRESHOLDS["strong_decrease"]:
             return self.OI_CHANGE_SCORES["strong_decrease"]
+        
+        # Moderate decrease (<-1%) = Some unwinding = Score: 40
         elif change_pct < self.OI_CHANGE_THRESHOLDS["decrease"]:
             return self.OI_CHANGE_SCORES["decrease"]
+        
+        # Stable (-1% to +1%) = No significant change = Score: 50
         else:
             return self.OI_CHANGE_SCORES["neutral"]
 
     def _score_smart_money(self, top_trader_long_pct: float) -> float:
         """
-        Score based on what smart money is doing using configured thresholds
-        Follow the whales
+        Score based on what smart money (top traders/whales) is doing.
+        
+        SMART MONEY LOGIC:
+        - "Follow the whales" strategy
+        - Top traders have better information and deeper analysis
+        - Their positioning is a leading indicator
+        - NOT contrarian: we follow smart money, not fade them
         """
+        # High long (>60%) = Smart money heavily bullish = Score: 70
+        # Whales are positioning for upside
         if top_trader_long_pct > self.SMART_MONEY_THRESHOLDS["high_long"]:
             return self.SMART_MONEY_SCORES["bullish"]
+        
+        # Moderate long (>52%) = Smart money moderately bullish = Score: 60
         elif top_trader_long_pct > self.SMART_MONEY_THRESHOLDS["moderate_long"]:
             return self.SMART_MONEY_SCORES["slightly_bullish"]
+        
+        # Low long (<40%) = Smart money heavily short = Score: 30
+        # Whales are positioning for downside
         elif top_trader_long_pct < self.SMART_MONEY_THRESHOLDS["low_long"]:
             return self.SMART_MONEY_SCORES["bearish"]
+        
+        # Moderate short (<48%) = Smart money moderately bearish = Score: 40
         elif top_trader_long_pct < self.SMART_MONEY_THRESHOLDS["moderate_short"]:
             return self.SMART_MONEY_SCORES["slightly_bearish"]
+        
+        # Neutral (48-52%) = No strong bias from smart money = Score: 50
         else:
             return self.SMART_MONEY_SCORES["neutral"]
 
@@ -1699,22 +1768,34 @@ class SignalEngine:
 
     def _calculate_confidence(self, breakdown: Dict) -> str:
         """
-        Calculate confidence level based on score distribution
+        Calculate confidence level based on score distribution variance.
+        
+        Uses statistical variance to measure agreement between different signal layers.
+        Low variance = all factors agree = high confidence
+        High variance = conflicting signals = low confidence
         """
+        # Extract weighted scores from all 8 factors
         weighted_scores = [item["weighted"] for item in breakdown.values()]
         avg_score = sum(weighted_scores) / len(weighted_scores)
 
-        # Check if scores are aligned or divergent using configured thresholds
+        # Calculate variance: measures how spread out the scores are
+        # Formula: Σ(x - mean)² / n
+        # Example: [10, 12, 11] = low variance (aligned) 
+        #          [5, 50, 10] = high variance (conflicting)
         variance = sum((s - avg_score) ** 2 for s in weighted_scores) / len(
             weighted_scores
         )
 
+        # Map variance to confidence level using configured thresholds
+        # < 5: All factors strongly agree → high confidence
+        # < 15: Moderate agreement → medium confidence  
+        # > 15: Conflicting signals → low confidence
         if variance < self.VOLATILITY_THRESHOLDS["low_variance"]:
-            return "high"
+            return "high"  # Aligned factors = predictable outcome
         elif variance < self.VOLATILITY_THRESHOLDS["moderate_variance"]:
-            return "medium"
+            return "medium"  # Some disagreement but trend visible
         else:
-            return "low"
+            return "low"  # High divergence = unpredictable
 
     def _generate_top_reasons(
         self, breakdown: Dict, context: EnhancedSignalContext
