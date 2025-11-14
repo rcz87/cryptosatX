@@ -30,6 +30,7 @@ class ScalpingAnalysisResponse(BaseModel):
     # Data layers
     price: Optional[Dict[str, Any]] = None
     orderbook: Optional[Dict[str, Any]] = None
+    orderbook_history: Optional[Dict[str, Any]] = None
     liquidations: Optional[Dict[str, Any]] = None
     funding: Optional[Dict[str, Any]] = None
     ls_ratio: Optional[Dict[str, Any]] = None
@@ -100,6 +101,9 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
         
         # CRITICAL layers
         tasks.append(("price", coinapi.get_spot_price(symbol)))
+        tasks.append(("orderbook_history", coinglass_comprehensive.get_orderbook_detailed_history(
+            exchange="Binance", symbol=pair, interval="1h", limit=1
+        )))
         tasks.append(("liquidations", coinglass_comprehensive.get_liquidation_aggregated_history(
             symbol=symbol, exchange_list="Binance", interval="1m", limit=20
         )))
@@ -135,7 +139,7 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
                 result[key] = results[i]
         
         # Count availability
-        critical_keys = ["price", "liquidations", "rsi", "volume_delta"]
+        critical_keys = ["price", "orderbook_history", "liquidations", "rsi", "volume_delta"]
         recommended_keys = ["funding", "ls_ratio"]
         if request.include_smart_money:
             recommended_keys.append("smart_money")
@@ -145,7 +149,7 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
         
         result["critical_data_available"] = critical_available
         result["recommended_data_available"] = recommended_available
-        result["ready"] = critical_available >= 3  # Need at least 3/4 critical
+        result["ready"] = critical_available >= 4  # Need at least 4/5 critical
         
         # Generate summary
         result["summary"] = {
