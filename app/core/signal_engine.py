@@ -323,7 +323,7 @@ class SignalEngine:
                 f"Signal engine weights must sum to 100%, got {total_weight}%. "
                 f"Weights: {self.WEIGHTS}"
             )
-        logger.info(f"✅ Signal engine initialized - weights validated (sum={total_weight}%)")
+        print(f"✅ Signal engine initialized - weights validated (sum={total_weight}%)")
 
     async def build_signal(
         self, 
