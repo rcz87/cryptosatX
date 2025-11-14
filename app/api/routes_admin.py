@@ -2,6 +2,7 @@
 Admin API Routes for CryptoSatX
 Dynamic weight adjustment dan system management
 """
+import os
 from fastapi import APIRouter, HTTPException, Depends, status, Query
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Dict, List, Optional, Any
@@ -446,7 +447,3 @@ async def get_system_health(admin: Dict = Depends(verify_admin)):
     except Exception as e:
         logger.error(f"Error getting system health: {e}")
         raise HTTPException(status_code=500, detail=str(e))
-
-
-# Import os untuk admin token validation
-import os
