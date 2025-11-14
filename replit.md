@@ -47,6 +47,13 @@ The API delivers clean JSON responses and includes a debug mode (`?debug=true`).
 - **Signal History Storage**: Stores LONG/SHORT and high-scoring MSS signals in a PostgreSQL database (Neon) with JSON file backup.
 - **Telegram Notifier**: Provides human-friendly signal alerts with AI verdict, risk mode, position sizing, and factor analysis.
 - **LunarCrush v4 Features**: Includes Coins Discovery, Topics API, Topics List for trending topics, and Theme Analyzer for AI-free sentiment detection.
+- **Social Hype Engine** (November 2025): Complete 6-feature analytics system for detecting viral trends and pump risks:
+  1. **Social Hype Score (0-100)**: Composite metric from social volume, engagement, contributors, dominance, and sentiment with log-scale normalization
+  2. **Platform-Specific Hype**: Individual scores for Twitter, TikTok, Reddit, YouTube, News with pump risk classification (LOW/MODERATE/HIGH/EXTREME)
+  3. **Hype Momentum Tracker**: Detects ACCELERATING/STABLE/FADING trends with BUY/HOLD/SELL signals and strength scoring (0-10)
+  4. **Hype vs Price Correlation**: Pattern detection (HYPE_PUMP, HYPE_BUILDING, ORGANIC_GROWTH, etc.) with confidence scores and trading recommendations
+  5. **Historical Hype Database**: PostgreSQL storage of all hype metrics with optimized indexes for trend analysis and spike detection
+  6. **Hype Spike Alerts**: Auto-detects >20% hype increases within 6-hour windows, triggers Telegram notifications with severity classification (MODERATE/HIGH/EXTREME)
 - **Output**: Signals include recommendation, composite score, confidence, top contributing factors, and raw metrics (in debug mode). MSS alerts provide a 3-phase breakdown and tier classification.
 
 ### System Design Choices
