@@ -1,0 +1,85 @@
+✅ **1. DESAIN FUNGSI
+
+compute_social_hype_score() (SIAP IMPLEMENTASI)**
+
+Fungsi ini dibuat modular, gampang dipakai di endpoint analisa coin mana pun.
+
+🎯 Tujuan:
+
+Menghasilkan angka 0–100 yang mewakili hype, kekuatan sosial, dan momentum komunitas berdasarkan data LunarCrush v4.
+
+📌 FORMULA SOCIAL HYPE SCORE (0–100)
+INPUT yang dipakai (semuanya dari LunarCrush v4):
+
+social_volume
+
+social_engagement
+
+social_contributors
+
+social_dominance
+
+sentiment (0–100)
+
+(Optional) galaxy_score (fallback jika sentiment tidak ada)
+
+🧠 NORMALISASI (PENTING)
+
+Karena data tiap coin beda jauh (BTC ≠ SOL ≠ XRP), maka kita pakai log-scale normalization:
+
+def normalize(value, max_value=1_000_000, log_scale=True):
+    if value is None or value <= 0:
+        return 0
+    if log_scale:
+        from math import log10
+        return min(100, (log10(value + 1) / log10(max_value + 1)) * 100)
+    return min(100, (value / max_value) * 100)
+
+🧩 FORMULA AKHIR SOCIAL HYPE SCORE
+def compute_social_hype_score(
+    social_volume: int,
+    engagement: int,
+    contributors: int,
+    dominance: float,
+    sentiment: float,
+    galaxy_score: float = None
+):
+    vol_score = normalize(social_volume, 5_000_000)
+    eng_score = normalize(engagement, 200_000_000)
+    contrib_score = normalize(contributors, 100_000)
+    dom_score = min(100, dominance * 10)  # dominance 3.5% → score 35
+
+    # fallback jika sentiment tidak ada
+    sent_score = sentiment or galaxy_score or 50
+
+    social_hype_score = (
+        vol_score * 0.25 +
+        eng_score * 0.30 +
+        contrib_score * 0.20 +
+        dom_score * 0.10 +
+        sent_score * 0.15
+    )
+
+    return round(min(100, social_hype_score), 2)
+
+📊 Interpretasi Score
+Score	Meaning	Penjelasan
+0–30	Dead Zone	Tidak ada hype, no buzz
+30–60	Normal	Healthy social but belum kuat
+60–80	Trending	Market mulai melirik
+80–100	Extreme Hype	Pump risk / viral / breakout sosial
+🔥 Contoh Output Real
+
+Misal SOL:
+
+volume 99,113
+
+engagement 26M
+
+sentiment 87
+
+contributors 25K
+
+dominance 3.1%
+
+→ hasil sekitar 78–85 (kategori high-trending).

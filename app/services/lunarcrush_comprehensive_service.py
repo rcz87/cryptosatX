@@ -7,7 +7,93 @@ import os
 import httpx
 from typing import Dict, Optional, List
 from datetime import datetime, timedelta
+from math import log10
 from app.utils.symbol_normalizer import normalize_symbol, Provider
+
+
+def normalize(value, max_value=1_000_000, log_scale=True):
+    """
+    Normalize a value to 0-100 scale with optional logarithmic scaling
+    
+    Args:
+        value: Value to normalize
+        max_value: Maximum expected value for normalization
+        log_scale: Use logarithmic scaling (recommended for social metrics)
+    
+    Returns:
+        Normalized score (0-100)
+    """
+    if value is None or value <= 0:
+        return 0
+    if log_scale:
+        return min(100, (log10(value + 1) / log10(max_value + 1)) * 100)
+    return min(100, (value / max_value) * 100)
+
+
+def compute_social_hype_score(
+    social_volume: int,
+    engagement: int,
+    contributors: int,
+    dominance: float,
+    sentiment: float,
+    galaxy_score: float = None
+) -> float:
+    """
+    Compute Social Hype Score (0-100) from LunarCrush v4 metrics
+    
+    This score represents the intensity of social hype, community momentum,
+    and viral potential for a cryptocurrency.
+    
+    Formula Breakdown:
+    - Social Volume (25%): Number of posts/mentions across platforms
+    - Engagement (30%): Total interactions (likes, comments, shares, views)
+    - Contributors (20%): Unique users creating content
+    - Dominance (10%): Share of social voice vs all cryptocurrencies
+    - Sentiment (15%): Overall bullish/bearish sentiment (0-100)
+    
+    Score Interpretation:
+    - 0-30:   Dead Zone (No hype, no buzz)
+    - 30-60:  Normal (Healthy social activity)
+    - 60-80:  Trending (Market attention increasing)
+    - 80-100: Extreme Hype (Viral/Breakout potential)
+    
+    Args:
+        social_volume: Number of social posts (24h)
+        engagement: Total interactions across platforms (24h)
+        contributors: Number of unique contributors (24h)
+        dominance: Social dominance percentage (0-100)
+        sentiment: Sentiment score (0-100)
+        galaxy_score: Fallback if sentiment unavailable
+    
+    Returns:
+        Social Hype Score (0-100)
+    
+    Example:
+        >>> compute_social_hype_score(
+        ...     social_volume=99113,
+        ...     engagement=26000000,
+        ...     contributors=25000,
+        ...     dominance=3.1,
+        ...     sentiment=87
+        ... )
+        78.45
+    """
+    vol_score = normalize(social_volume, 5_000_000)
+    eng_score = normalize(engagement, 200_000_000)
+    contrib_score = normalize(contributors, 100_000)
+    dom_score = min(100, dominance * 10)
+    
+    sent_score = sentiment or galaxy_score or 50
+    
+    social_hype_score = (
+        vol_score * 0.25 +
+        eng_score * 0.30 +
+        contrib_score * 0.20 +
+        dom_score * 0.10 +
+        sent_score * 0.15
+    )
+    
+    return round(min(100, social_hype_score), 2)
 
 
 class LunarCrushComprehensiveService:
@@ -113,21 +199,38 @@ class LunarCrushComprehensiveService:
             types_interactions = topic_data.get("types_interactions", {})
             types_sentiment = topic_data.get("types_sentiment", {})
             
+            social_volume = int(coin_data.get("social_volume_24h", 0))
+            social_engagement = int(coin_data.get("interactions_24h", 0))
+            social_dominance = float(coin_data.get("social_dominance", 0))
+            social_contributors = topic_data.get("num_contributors", 0) if has_topic_data else 0
+            sentiment = float(coin_data.get("sentiment", 0))
+            galaxy_score = float(coin_data.get("galaxy_score", 0))
+            
+            social_hype = compute_social_hype_score(
+                social_volume=social_volume,
+                engagement=social_engagement,
+                contributors=social_contributors,
+                dominance=social_dominance,
+                sentiment=sentiment,
+                galaxy_score=galaxy_score
+            )
+            
             return {
                 "success": True,
                 "symbol": coin_data.get("symbol", "").upper(),
                 "name": coin_data.get("name", ""),
                 
-                "galaxyScore": float(coin_data.get("galaxy_score", 0)),
+                "galaxyScore": galaxy_score,
                 "altRank": int(coin_data.get("alt_rank", 0)),
                 
-                "socialVolume": int(coin_data.get("social_volume_24h", 0)),
-                "socialEngagement": int(coin_data.get("interactions_24h", 0)),
-                "socialDominance": float(coin_data.get("social_dominance", 0)),
-                "socialContributors": topic_data.get("num_contributors", 0) if has_topic_data else 0,
+                "socialVolume": social_volume,
+                "socialEngagement": social_engagement,
+                "socialDominance": social_dominance,
+                "socialContributors": social_contributors,
+                "socialHypeScore": social_hype,
                 
-                "averageSentiment": float(coin_data.get("sentiment", 0)),
-                "sentimentAbsolute": float(coin_data.get("sentiment", 0)),
+                "averageSentiment": sentiment,
+                "sentimentAbsolute": sentiment,
                 
                 "tweetVolume": types_count.get("tweet", 0),
                 "redditVolume": types_count.get("reddit-post", 0),
