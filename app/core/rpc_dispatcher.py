@@ -1,8 +1,11 @@
 """
-RPC Dispatcher - FIXED VERSION
-Maps operation names to service-layer callables with proper validation
+RPC Dispatcher - IMPROVED VERSION with Timeout Protection
+Maps operation names to service-layer callables with proper validation and timeout handling
 """
+import os
 import time
+import asyncio
+import traceback
 from typing import Dict, Any, Callable
 from pydantic import ValidationError
 
@@ -14,7 +17,23 @@ class RPCDispatcher:
     """
     Unified RPC dispatcher - maps operations to service functions
     Follows architect guidance: service-layer callables with Pydantic validation
+    
+    ✅ NEW: Timeout protection for all operations
+    ✅ NEW: Detailed error logging with context
+    ✅ NEW: Graceful degradation on timeout
     """
+    
+    # Operation timeout configuration (seconds)
+    DEFAULT_TIMEOUT = int(os.getenv("RPC_OPERATION_TIMEOUT", "30"))
+    
+    # Timeout overrides for specific operation types
+    TIMEOUT_OVERRIDES = {
+        "signals.get": 45,  # Signal generation needs more time
+        "mss.discover": 60,  # MSS discovery scans many coins
+        "mss.scan": 60,
+        "smart_money.scan": 45,
+        "backtest.run": 120,  # Backtesting can take longer
+    }
     
     def __init__(self):
         self.handlers: Dict[str, Callable] = {}
@@ -59,7 +78,11 @@ class RPCDispatcher:
     
     async def dispatch(self, operation: str, args: Dict[str, Any]) -> RPCResponse:
         """
-        Dispatch operation with validation and error handling
+        Dispatch operation with validation, timeout protection, and error handling
+        
+        ✅ NEW: Wraps execution with asyncio.wait_for() for timeout protection
+        ✅ NEW: Catches TimeoutError and returns user-friendly error
+        ✅ NEW: Logs execution context for debugging
         """
         start_time = time.time()
         
@@ -91,10 +114,18 @@ class RPCDispatcher:
                 error=validation_error
             )
         
-        # Execute handler
+        # ✅ NEW: Get timeout for this operation
+        timeout = self.TIMEOUT_OVERRIDES.get(operation, self.DEFAULT_TIMEOUT)
+        
+        # Execute handler with timeout protection
         try:
             handler = self.handlers[operation]
-            result = await handler(args)
+            
+            # ✅ NEW: Wrap with asyncio.wait_for for timeout protection
+            result = await asyncio.wait_for(
+                handler(args),
+                timeout=timeout
+            )
             
             execution_time = time.time() - start_time
             
@@ -104,13 +135,49 @@ class RPCDispatcher:
                 data=result,
                 meta={
                     "execution_time_ms": round(execution_time * 1000, 2),
-                    "namespace": metadata.namespace
+                    "namespace": metadata.namespace,
+                    "timeout_limit_s": timeout
                 }
             )
+            
+        except asyncio.TimeoutError:
+            # ✅ NEW: Handle timeout gracefully
+            execution_time = time.time() - start_time
+            
+            error_msg = (
+                f"Operation timeout after {timeout}s. "
+                f"The operation took too long to complete. "
+                f"Try reducing the scope or parameters."
+            )
+            
+            # Log timeout for monitoring
+            print(f"⏱️  RPC TIMEOUT: {operation} after {timeout}s with args: {args}")
+            
+            return RPCResponse(
+                ok=False,
+                operation=operation,
+                error=error_msg,
+                meta={
+                    "execution_time_ms": round(execution_time * 1000, 2),
+                    "namespace": metadata.namespace,
+                    "timeout_limit_s": timeout,
+                    "error_type": "TimeoutError",
+                    "suggestion": "Reduce scope or increase timeout in environment variables"
+                }
+            )
+            
         except Exception as e:
+            # ✅ IMPROVED: Better error logging with context
             execution_time = time.time() - start_time
             error_type = type(e).__name__
             error_msg = str(e)
+            
+            # Log detailed error for debugging
+            print(f"❌ RPC ERROR: {operation}")
+            print(f"   Error Type: {error_type}")
+            print(f"   Error Message: {error_msg}")
+            print(f"   Args: {args}")
+            print(f"   Stack Trace:\n{traceback.format_exc()}")
             
             return RPCResponse(
                 ok=False,
@@ -118,7 +185,9 @@ class RPCDispatcher:
                 error=f"{error_type}: {error_msg}",
                 meta={
                     "execution_time_ms": round(execution_time * 1000, 2),
-                    "namespace": metadata.namespace
+                    "namespace": metadata.namespace,
+                    "error_type": error_type,
+                    "timeout_limit_s": timeout
                 }
             )
     
@@ -283,7 +352,9 @@ class RPCDispatcher:
             "status": "healthy",
             "service": "CryptoSatX RPC Endpoint",
             "version": "3.0.0",
-            "operations_count": len(self.handlers)
+            "operations_count": len(self.handlers),
+            "timeout_protection": "enabled",
+            "default_timeout_s": self.DEFAULT_TIMEOUT
         }
 
 
