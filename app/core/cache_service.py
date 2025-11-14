@@ -35,6 +35,7 @@ class CacheService:
             "sets": 0,
             "evictions": 0,
         }
+        self._start_time = datetime.now()
         logger.info("🗄️  Cache service initialized (in-memory)")
     
     def _generate_key(self, prefix: str, *args, **kwargs) -> str:
@@ -119,6 +120,7 @@ class CacheService:
             if total_requests > 0
             else 0.0
         )
+        uptime = (datetime.now() - self._start_time).total_seconds()
         
         return {
             "cache_size": len(self._cache),
@@ -128,6 +130,7 @@ class CacheService:
             "evictions": self.stats["evictions"],
             "hit_rate_percent": round(hit_rate, 2),
             "total_requests": total_requests,
+            "uptime_seconds": round(uptime, 1),
         }
     
     def cached(
