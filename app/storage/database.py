@@ -62,10 +62,9 @@ class Database:
                 print("[SUCCESS] SQLite connection established")
 
         # Initialize schema on first connect
-        # For PostgreSQL: Migrations managed by Alembic (run `alembic upgrade head`)
-        # For SQLite: Manual schema creation for Replit compatibility
-        if not self.use_postgres:
-            await self.init_schema()
+        # For PostgreSQL: Validates Alembic migrations are applied
+        # For SQLite: Creates manual schema for Replit compatibility
+        await self.init_schema()
 
     async def disconnect(self):
         """Close connection pool or SQLite connection"""
