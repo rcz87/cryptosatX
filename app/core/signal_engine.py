@@ -180,12 +180,12 @@ class ServiceCallMonitor:
         else:
             quality_score = (quality_numerator / quality_denominator) * 100
         
-        # Determine quality level
-        if quality_score >= 80:
+        # Determine quality level using SignalEngine thresholds
+        if quality_score >= SignalEngine.QUALITY_THRESHOLDS["excellent"]:
             quality_level = "excellent"
-        elif quality_score >= 60:
+        elif quality_score >= SignalEngine.QUALITY_THRESHOLDS["good"]:
             quality_level = "good"
-        elif quality_score >= 50:
+        elif quality_score >= SignalEngine.QUALITY_THRESHOLDS["minimum"]:
             quality_level = "fair"
         else:
             quality_level = "poor"
@@ -355,6 +355,150 @@ class SignalEngine:
         "balanced": "aggressive",
         "extreme": "ultra",
         "scalping": "ultra"
+    }
+    
+    # ============================================================================
+    # SCORING THRESHOLDS & CONFIGURATION
+    # All magic numbers extracted for easy tuning and A/B testing
+    # ============================================================================
+    
+    # Funding Rate Thresholds (in percentage %)
+    # Negative = Shorts pay Longs (Bullish) | Positive = Longs pay Shorts (Bearish)
+    FUNDING_RATE_THRESHOLDS = {
+        "very_negative": -0.2,   # < -0.2% = Extreme short pressure cleared = Very Bullish (Score: 85)
+        "negative": -0.05,       # < -0.05% = Moderate short pressure = Bullish (Score: 70)
+        "slightly_negative": 0,  # < 0% = Slight bearish sentiment clearing = Slightly Bullish (Score: 60)
+        "slightly_positive": 0.05,  # < 0.05% = Slight bullish pressure = Slightly Bearish (Score: 45)
+        "positive": 0.2,         # < 0.2% = Moderate long pressure = Bearish (Score: 30)
+        # > 0.2% = Extreme long pressure = Very Bearish (Score: 15)
+    }
+    FUNDING_RATE_SCORES = {
+        "very_bullish": 85,
+        "bullish": 70,
+        "slightly_bullish": 60,
+        "neutral_bearish": 45,
+        "bearish": 30,
+        "very_bearish": 15
+    }
+    
+    # Price Momentum Scores
+    PRICE_MOMENTUM_SCORES = {
+        "bullish": 80,   # +5 bias: Strong uptrend confirmed
+        "bearish": 20,   # -5 bias: Strong downtrend confirmed
+        "neutral": 50    # Sideways/ranging market
+    }
+    
+    # Liquidation Imbalance Scores (Contrarian indicator)
+    LIQUIDATION_SCORES = {
+        "long": 70,      # +5 bias: Longs liquidated = Bearish pressure cleared = Bullish reversal potential
+        "short": 30,     # -5 bias: Shorts liquidated = Bullish pressure cleared = Bearish reversal potential
+        "neutral": 50    # Balanced liquidations
+    }
+    
+    # Long/Short Ratio Thresholds (% of accounts long - Contrarian indicator)
+    # Too many longs = Overcrowded = Bearish | Too many shorts = Oversold = Bullish
+    LONG_SHORT_RATIO_THRESHOLDS = {
+        "overcrowded_longs": 65,    # > 65% longs = Extreme overcrowding = Very Bearish (Score: 25)
+        "high_longs": 55,            # > 55% longs = Moderate overcrowding = Bearish (Score: 40)
+        "oversold_shorts": 35,       # < 35% longs = Extreme short crowding = Very Bullish (Score: 75)
+        "low_longs": 45              # < 45% longs = Moderate short crowding = Bullish (Score: 60)
+        # 45-55% = Neutral (Score: 50)
+    }
+    LONG_SHORT_RATIO_SCORES = {
+        "very_bearish": 25,   # Overcrowded longs
+        "bearish": 40,        # High longs
+        "neutral": 50,        # Balanced
+        "bullish": 60,        # Low longs (high shorts)
+        "very_bullish": 75    # Oversold shorts
+    }
+    
+    # Open Interest Change Thresholds (% change in 24h)
+    OI_CHANGE_THRESHOLDS = {
+        "strong_increase": 5,    # > 5% = Strong conviction increase (Score: 75)
+        "increase": 1,           # > 1% = Moderate increase (Score: 60)
+        "strong_decrease": -5,   # < -5% = Strong conviction decrease (Score: 25)
+        "decrease": -1           # < -1% = Moderate decrease (Score: 40)
+        # -1% to 1% = Stable (Score: 50)
+    }
+    OI_CHANGE_SCORES = {
+        "strong_increase": 75,
+        "increase": 60,
+        "neutral": 50,
+        "decrease": 40,
+        "strong_decrease": 25
+    }
+    
+    # Smart Money (Top Trader) Thresholds (% of top traders long)
+    SMART_MONEY_THRESHOLDS = {
+        "high_long": 60,      # > 60% = Smart money heavily long = Bullish (Score: 70)
+        "moderate_long": 52,  # > 52% = Smart money moderately long = Slightly Bullish (Score: 60)
+        "low_long": 40,       # < 40% = Smart money heavily short = Bearish (Score: 30)
+        "moderate_short": 48  # < 48% = Smart money moderately short = Slightly Bearish (Score: 40)
+        # 48-52% = Neutral (Score: 50)
+    }
+    SMART_MONEY_SCORES = {
+        "bullish": 70,
+        "slightly_bullish": 60,
+        "neutral": 50,
+        "slightly_bearish": 40,
+        "bearish": 30
+    }
+    
+    # Fear & Greed Index Thresholds (0-100 scale)
+    FEAR_GREED_THRESHOLDS = {
+        "extreme_fear": 25,   # < 25 = Extreme Fear = Contrarian buy opportunity
+        "extreme_greed": 75   # > 75 = Extreme Greed = Potential top/correction
+    }
+    
+    # Multi-Timeframe Price Change Thresholds (% change)
+    PRICE_CHANGE_THRESHOLDS = {
+        "strong_bullish": 0.5,    # > 0.5% across timeframes = Strong uptrend
+        "strong_bearish": -0.5    # < -0.5% across timeframes = Strong downtrend
+    }
+    
+    # Candlestick Pattern Analysis
+    CANDLE_ANALYSIS = {
+        "min_candles": 5,              # Minimum candles needed for trend analysis
+        "bullish_threshold": 6,        # >= 6 bullish candles = Strong uptrend
+        "bearish_threshold": 6,        # >= 6 bearish candles = Strong downtrend
+        "strong_momentum_threshold": 1.0,  # >= 1.0% weighted change = Strong momentum
+        "moderate_threshold": 5        # >= 5 candles same direction = Moderate trend
+    }
+    
+    # Volatility & Risk Metrics
+    VOLATILITY_THRESHOLDS = {
+        "low_variance": 5,       # < 5% variance = Low volatility = Predictable
+        "moderate_variance": 15  # < 15% variance = Moderate volatility
+        # > 15% = High volatility = Unpredictable
+    }
+    VOLATILITY_SCORES = {
+        "low": 70,       # Low volatility = More predictable = Higher confidence
+        "moderate": 55,  # Moderate volatility = Normal
+        "high": 40       # High volatility = Less predictable = Lower confidence
+    }
+    
+    # Data Quality Requirements
+    QUALITY_THRESHOLDS = {
+        "excellent": 80,     # >= 80% data quality
+        "good": 60,          # >= 60% data quality
+        "minimum": 50,       # >= 50% data quality (hard minimum)
+        "critical_services": 3,   # Maximum critical service failures before abort
+        "important_services": 5   # Maximum important service failures before warning
+    }
+    
+    # Layer Check Thresholds (for AI verdict analysis)
+    LAYER_CHECK_THRESHOLDS = {
+        "long_short_high": 60,        # > 60% = Overcrowded
+        "long_short_low": 40,         # < 40% = Oversold
+        "smart_money_bullish": 55,    # > 55% = Smart money long bias
+        "smart_money_bearish": 45,    # < 45% = Smart money short bias
+        "oi_increase": 3,             # > 3% = Strong OI increase
+        "oi_decrease": -3,            # < -3% = Strong OI decrease
+        "funding_high": 0.1,          # > 0.1% = High funding (bearish)
+        "funding_low": -0.1,          # < -0.1% = Low funding (bullish)
+        "fear_greed_fear": 25,        # < 25 = Extreme fear
+        "fear_greed_greed": 75,       # > 75 = Extreme greed
+        "min_layers_confidence": 3    # Need >= 3 confirming layers for high confidence
     }
     
     def __init__(self):
@@ -1208,23 +1352,23 @@ class SignalEngine:
         Returns:
             'bullish', 'bearish', or 'neutral'
         """
-        if not candles or len(candles) < 5:
+        if not candles or len(candles) < self.CANDLE_ANALYSIS["min_candles"]:
             return "neutral"
 
         try:
             # Get recent candles (most recent first in OKX)
-            recent = candles[:5]
+            recent = candles[:self.CANDLE_ANALYSIS["min_candles"]]
 
-            # Compare current price with average of last 5 candles
+            # Compare current price with average of last N candles
             current_close = recent[0]["close"]
             avg_close = sum(c["close"] for c in recent) / len(recent)
 
             # Calculate percentage difference
             diff_pct = ((current_close - avg_close) / avg_close) * 100
 
-            if diff_pct > 0.5:
+            if diff_pct > self.PRICE_CHANGE_THRESHOLDS["strong_bullish"]:
                 return "bullish"
-            elif diff_pct < -0.5:
+            elif diff_pct < self.PRICE_CHANGE_THRESHOLDS["strong_bearish"]:
                 return "bearish"
             else:
                 return "neutral"
@@ -1275,14 +1419,16 @@ class SignalEngine:
             total_weight = sum(weights.values())
             avg_weighted_change = weighted_sum / total_weight if total_weight > 0 else 0
 
-            # Determine trend strength
-            if bullish_count >= 6 and avg_weighted_change > 1.0:
+            # Determine trend strength using configured thresholds
+            if (bullish_count >= self.CANDLE_ANALYSIS["bullish_threshold"] and 
+                avg_weighted_change > self.CANDLE_ANALYSIS["strong_momentum_threshold"]):
                 return "strongly_bullish"
-            elif bullish_count >= 5:
+            elif bullish_count >= self.CANDLE_ANALYSIS["moderate_threshold"]:
                 return "bullish"
-            elif bearish_count >= 6 and avg_weighted_change < -1.0:
+            elif (bearish_count >= self.CANDLE_ANALYSIS["bearish_threshold"] and 
+                  avg_weighted_change < -self.CANDLE_ANALYSIS["strong_momentum_threshold"]):
                 return "strongly_bearish"
-            elif bearish_count >= 5:
+            elif bearish_count >= self.CANDLE_ANALYSIS["moderate_threshold"]:
                 return "bearish"
             else:
                 return "neutral"
@@ -1372,99 +1518,97 @@ class SignalEngine:
 
     def _score_funding_rate(self, rate: float) -> float:
         """
-        Score funding rate on 0-100 scale
+        Score funding rate on 0-100 scale using configured thresholds
         Negative funding = bullish (shorts pay longs) = high score
         Positive funding = bearish (longs pay shorts) = low score
         """
         # Normalize to percentage
         rate_pct = rate * 100
 
-        if rate_pct < -0.2:  # Very negative = very bullish
-            return 85
-        elif rate_pct < -0.05:
-            return 70
-        elif rate_pct < 0:
-            return 60
-        elif rate_pct < 0.05:
-            return 45
-        elif rate_pct < 0.2:
-            return 30
-        else:  # > 0.2% = very bearish
-            return 15
+        if rate_pct < self.FUNDING_RATE_THRESHOLDS["very_negative"]:
+            return self.FUNDING_RATE_SCORES["very_bullish"]
+        elif rate_pct < self.FUNDING_RATE_THRESHOLDS["negative"]:
+            return self.FUNDING_RATE_SCORES["bullish"]
+        elif rate_pct < self.FUNDING_RATE_THRESHOLDS["slightly_negative"]:
+            return self.FUNDING_RATE_SCORES["slightly_bullish"]
+        elif rate_pct < self.FUNDING_RATE_THRESHOLDS["slightly_positive"]:
+            return self.FUNDING_RATE_SCORES["neutral_bearish"]
+        elif rate_pct < self.FUNDING_RATE_THRESHOLDS["positive"]:
+            return self.FUNDING_RATE_SCORES["bearish"]
+        else:
+            return self.FUNDING_RATE_SCORES["very_bearish"]
 
     def _score_price_momentum(self, trend: str) -> float:
-        """Score price momentum based on trend - ENHANCED SENSITIVITY"""
+        """Score price momentum based on trend using configured scores"""
         if trend == "bullish":
-            return 80  # +5: More bullish bias
+            return self.PRICE_MOMENTUM_SCORES["bullish"]
         elif trend == "bearish":
-            return 20  # -5: More bearish bias
+            return self.PRICE_MOMENTUM_SCORES["bearish"]
         else:
-            return 50
+            return self.PRICE_MOMENTUM_SCORES["neutral"]
 
     def _score_liquidations(self, context: EnhancedSignalContext) -> float:
         """
-        Score based on liquidation imbalance - ENHANCED SENSITIVITY
+        Score based on liquidation imbalance using configured scores
         More longs liquidated = bearish pressure cleared = bullish
         """
         if not context.premium_data_available:
-            return 50  # Neutral if no data
+            return self.LIQUIDATION_SCORES["neutral"]
 
         if context.liquidation_imbalance == "long":
-            # Longs getting liquidated = potential reversal up
-            return 70  # +5: More bullish bias
+            return self.LIQUIDATION_SCORES["long"]
         elif context.liquidation_imbalance == "short":
-            # Shorts getting liquidated = potential reversal down
-            return 30  # -5: More bearish bias
+            return self.LIQUIDATION_SCORES["short"]
         else:
-            return 50
+            return self.LIQUIDATION_SCORES["neutral"]
 
     def _score_long_short_ratio(self, long_pct: float) -> float:
         """
-        Score based on long/short ratio (contrarian indicator)
+        Score based on long/short ratio using configured thresholds (contrarian indicator)
         Too many longs = bearish, too many shorts = bullish
         """
-        if long_pct > 65:  # Overcrowded longs = bearish
-            return 25
-        elif long_pct > 55:
-            return 40
-        elif long_pct < 35:  # Overcrowded shorts = bullish
-            return 75
-        elif long_pct < 45:
-            return 60
+        if long_pct > self.LONG_SHORT_RATIO_THRESHOLDS["overcrowded_longs"]:
+            return self.LONG_SHORT_RATIO_SCORES["very_bearish"]
+        elif long_pct > self.LONG_SHORT_RATIO_THRESHOLDS["high_longs"]:
+            return self.LONG_SHORT_RATIO_SCORES["bearish"]
+        elif long_pct < self.LONG_SHORT_RATIO_THRESHOLDS["oversold_shorts"]:
+            return self.LONG_SHORT_RATIO_SCORES["very_bullish"]
+        elif long_pct < self.LONG_SHORT_RATIO_THRESHOLDS["low_longs"]:
+            return self.LONG_SHORT_RATIO_SCORES["bullish"]
         else:
-            return 50
+            return self.LONG_SHORT_RATIO_SCORES["neutral"]
 
     def _score_oi_trend(self, change_pct: float) -> float:
         """
-        Score based on OI change
+        Score based on OI change using configured thresholds
         Rising OI = confirmation of trend
         """
-        if change_pct > 5:  # Strong increase
-            return 70
-        elif change_pct > 1:
-            return 60
-        elif change_pct < -5:  # Strong decrease
-            return 30
-        elif change_pct < -1:
-            return 40
+        if change_pct > self.OI_CHANGE_THRESHOLDS["strong_increase"]:
+            return self.OI_CHANGE_SCORES["strong_increase"]
+        elif change_pct > self.OI_CHANGE_THRESHOLDS["increase"]:
+            return self.OI_CHANGE_SCORES["increase"]
+        elif change_pct < self.OI_CHANGE_THRESHOLDS["strong_decrease"]:
+            return self.OI_CHANGE_SCORES["strong_decrease"]
+        elif change_pct < self.OI_CHANGE_THRESHOLDS["decrease"]:
+            return self.OI_CHANGE_SCORES["decrease"]
         else:
-            return 50
+            return self.OI_CHANGE_SCORES["neutral"]
 
     def _score_smart_money(self, top_trader_long_pct: float) -> float:
         """
-        Score based on what smart money is doing
+        Score based on what smart money is doing using configured thresholds
         Follow the whales
         """
-        if top_trader_long_pct > 60:
-            return 70
-        elif top_trader_long_pct > 52:
-            return 60
-        elif top_trader_long_pct < 40:
-            return 30
-        elif top_trader_long_pct < 48:
-            return 40
+        if top_trader_long_pct > self.SMART_MONEY_THRESHOLDS["high_long"]:
+            return self.SMART_MONEY_SCORES["bullish"]
+        elif top_trader_long_pct > self.SMART_MONEY_THRESHOLDS["moderate_long"]:
+            return self.SMART_MONEY_SCORES["slightly_bullish"]
+        elif top_trader_long_pct < self.SMART_MONEY_THRESHOLDS["low_long"]:
+            return self.SMART_MONEY_SCORES["bearish"]
+        elif top_trader_long_pct < self.SMART_MONEY_THRESHOLDS["moderate_short"]:
+            return self.SMART_MONEY_SCORES["slightly_bearish"]
         else:
-            return 50
+            return self.SMART_MONEY_SCORES["neutral"]
 
     def _normalize_mode(self, mode: Optional[str]) -> str:
         """
@@ -1523,14 +1667,14 @@ class SignalEngine:
         weighted_scores = [item["weighted"] for item in breakdown.values()]
         avg_score = sum(weighted_scores) / len(weighted_scores)
 
-        # Check if scores are aligned or divergent
+        # Check if scores are aligned or divergent using configured thresholds
         variance = sum((s - avg_score) ** 2 for s in weighted_scores) / len(
             weighted_scores
         )
 
-        if variance < 5:
+        if variance < self.VOLATILITY_THRESHOLDS["low_variance"]:
             return "high"
-        elif variance < 15:
+        elif variance < self.VOLATILITY_THRESHOLDS["moderate_variance"]:
             return "medium"
         else:
             return "low"
@@ -1565,58 +1709,58 @@ class SignalEngine:
                     )
 
             elif factor_name == "long_short_ratio":
-                if context.long_account_pct > 60:
+                if context.long_account_pct > self.LAYER_CHECK_THRESHOLDS["long_short_high"]:
                     reasons.append(
                         f"Overcrowded longs ({context.long_account_pct:.1f}%) - contrarian bearish"
                     )
-                elif context.long_account_pct < 40:
+                elif context.long_account_pct < self.LAYER_CHECK_THRESHOLDS["long_short_low"]:
                     reasons.append(
                         f"Overcrowded shorts ({context.short_account_pct:.1f}%) - contrarian bullish"
                     )
 
             elif factor_name == "smart_money":
-                if context.top_trader_long_pct > 55:
+                if context.top_trader_long_pct > self.LAYER_CHECK_THRESHOLDS["smart_money_bullish"]:
                     reasons.append(
                         f"Smart money long-biased ({context.top_trader_long_pct:.1f}%)"
                     )
-                elif context.top_trader_long_pct < 45:
+                elif context.top_trader_long_pct < self.LAYER_CHECK_THRESHOLDS["smart_money_bearish"]:
                     reasons.append(
                         f"Smart money short-biased ({context.top_trader_long_pct:.1f}%)"
                     )
 
             elif factor_name == "oi_trend":
-                if context.oi_change_pct > 3:
+                if context.oi_change_pct > self.LAYER_CHECK_THRESHOLDS["oi_increase"]:
                     reasons.append(
                         f"OI rising strongly (+{context.oi_change_pct:.1f}%) - trend confirmation"
                     )
-                elif context.oi_change_pct < -3:
+                elif context.oi_change_pct < self.LAYER_CHECK_THRESHOLDS["oi_decrease"]:
                     reasons.append(
                         f"OI falling ({context.oi_change_pct:.1f}%) - trend weakening"
                     )
 
             elif factor_name == "funding_rate":
                 rate_pct = context.funding_rate * 100
-                if rate_pct > 0.1:
+                if rate_pct > self.LAYER_CHECK_THRESHOLDS["funding_high"]:
                     reasons.append(
                         f"High funding rate ({rate_pct:.3f}%) - longs overleveraged"
                     )
-                elif rate_pct < -0.1:
+                elif rate_pct < self.LAYER_CHECK_THRESHOLDS["funding_low"]:
                     reasons.append(
                         f"Negative funding ({rate_pct:.3f}%) - shorts overleveraged"
                     )
 
             elif factor_name == "fear_greed":
-                if context.fear_greed_value < 25:
+                if context.fear_greed_value < self.LAYER_CHECK_THRESHOLDS["fear_greed_fear"]:
                     reasons.append(
                         f"Extreme fear ({context.fear_greed_value}/100) - buy opportunity"
                     )
-                elif context.fear_greed_value > 75:
+                elif context.fear_greed_value > self.LAYER_CHECK_THRESHOLDS["fear_greed_greed"]:
                     reasons.append(
                         f"Extreme greed ({context.fear_greed_value}/100) - sell signal"
                     )
 
-        # If we don't have 3 reasons yet, add basic ones
-        if len(reasons) < 3:
+        # If we don't have enough reasons yet, add basic ones
+        if len(reasons) < self.LAYER_CHECK_THRESHOLDS["min_layers_confidence"]:
             reasons.append(f"Price trend: {context.price_trend}")
             reasons.append(f"Social sentiment: {context.social_score:.0f}/100")
 
