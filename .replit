@@ -57,3 +57,7 @@ waitForPort = 8000
 expertMode = true
 integrations = ["python_database:1.0.0"]
 
+[[ports]]
+localPort = 8000
+externalPort = 80
+
