@@ -45,7 +45,7 @@ The API provides clean JSON responses, offers a debug mode (`?debug=true`), and 
 - **Social Hype Engine**: A 6-feature analytics system for detecting viral trends and pump risks, including a Social Hype Score, platform-specific hype analysis, Hype Momentum Tracker, Hype vs Price Correlation, Historical Hype Database, and Hype Spike Alerts.
 
 ## External Dependencies
-- **CoinAPI Startup**: Market data, OHLCV, order book, quotes, price aggregation, whale detection.
+- **CoinAPI Startup (2025-11-14 UPGRADED)**: Market data, OHLCV, order book, quotes, price aggregation, whale detection. Enhanced with production-ready error handling: 5-tier error categorization (401/429/404/timeout/network/parsing), user-friendly error messages without internal details exposure, critical error alerts via Telegram, API key validation on initialization, and emoji-based logging (🔴/⚠️/⏱️/🌐) for structured monitoring. Features graceful degradation with safe defaults and automatic rate limit handling.
 - **Coinglass v4 Standard**: Liquidations, funding rates, open interest, trader positioning, whale intelligence, technical analysis, macro calendar, news feed.
 - **Coinglass WebSocket**: Real-time liquidation streaming.
 - **LunarCrush Builder**: Social sentiment, community engagement, social momentum, real-time coin discovery.
