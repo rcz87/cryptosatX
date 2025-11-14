@@ -102,6 +102,7 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "coinglass.net_position.history": OperationMetadata("coinglass.net_position.history", "coinglass", "/net-position/history", "GET", "Get net position history"),
     "coinglass.pairs_markets.symbol": OperationMetadata("coinglass.pairs_markets.symbol", "coinglass", "/pairs-markets/{symbol}", "GET", "Get pairs markets", requires_symbol=True),
     "coinglass.supported_coins": OperationMetadata("coinglass.supported_coins", "coinglass", "/supported-coins", "GET", "Get supported coins"),
+    "coinglass.supported_exchanges": OperationMetadata("coinglass.supported_exchanges", "coinglass", "/supported-exchanges", "GET", "Get supported exchanges"),
     "coinglass.exchanges": OperationMetadata("coinglass.exchanges", "coinglass", "/exchanges", "GET", "Get exchanges"),
     "coinglass.options.open_interest": OperationMetadata("coinglass.options.open_interest", "coinglass", "/options/open-interest", "GET", "Get options open interest"),
     "coinglass.options.volume": OperationMetadata("coinglass.options.volume", "coinglass", "/options/volume", "GET", "Get options volume"),

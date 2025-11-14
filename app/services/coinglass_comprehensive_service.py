@@ -5052,6 +5052,39 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_supported_exchanges(self) -> Dict:
+        """
+        Get list of all supported exchanges
+        Endpoint: /api/futures/supported-exchanges
+        
+        Returns:
+        - Array of exchange names (29 exchanges)
+        - Includes: Binance, OKX, Bybit, HTX, Bitmex, Bitfinex, Deribit, etc.
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url_v4}/api/futures/supported-exchanges"
+            
+            response = await client.get(url, headers=self.headers)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if str(data.get("code")) == "0" and data.get("data"):
+                return {
+                    "success": True,
+                    "exchanges": data["data"],
+                    "count": len(data["data"]),
+                    "source": "coinglass_exchanges"
+                }
+            
+            return {"success": False, "error": "No data"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     async def get_supported_exchange_pairs(self) -> Dict:
         """
         Get all supported exchanges and their trading pairs

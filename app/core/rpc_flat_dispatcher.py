@@ -374,6 +374,10 @@ class FlatRPCDispatcher:
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
             return await coinglass_comprehensive.get_supported_coins()
 
+        elif operation == "coinglass.supported_exchanges":
+            from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            return await coinglass_comprehensive.get_supported_exchanges()
+
         elif operation == "coinglass.exchanges":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
             return await coinglass_comprehensive.get_supported_exchange_pairs()
