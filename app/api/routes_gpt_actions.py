@@ -29,10 +29,39 @@ class GPTMSSRequest(BaseModel):
 @router.post("/signal", summary="Get Trading Signal (GPT Actions Compatible)")
 async def get_signal_gpt(request: GPTSignalRequest) -> Dict[str, Any]:
     """
-    Get trading signal - GPT Actions flat parameter version
+    Get trading signal - GPT Actions flat parameter version for ChatGPT integration.
     
     This endpoint uses flat parameters instead of nested args object
     for compatibility with GPT Actions.
+    
+    Example Request Body:
+        {
+            "symbol": "BTC",
+            "debug": false
+        }
+        
+    Example Response:
+        {
+            "ok": true,
+            "data": {
+                "symbol": "BTC",
+                "timestamp": "2025-11-14T12:00:00",
+                "signal": "LONG",
+                "score": 72.5,
+                "confidence": "high",
+                "price": 45123.45,
+                "reasons": ["Liquidation imbalance favors longs", ...],
+                "mode": "aggressive",
+                "metrics": {
+                    "fundingRate": 0.0001,
+                    "openInterest": 1234567890,
+                    "socialScore": 65.5
+                },
+                "data_quality": {...},
+                "aiVerdictLayer": {...}  // Conditional field
+            },
+            "operation": "signals.get"
+        }
     """
     from app.core.signal_engine import signal_engine
     

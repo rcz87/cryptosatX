@@ -99,7 +99,7 @@ async def persist_signal_with_tracking(signal: dict):
 @router.get("/signals/{symbol}")
 async def get_signal(symbol: str, debug: bool = False, include_ai_validation: bool = False):
     """
-    Get enhanced trading signal with premium data and weighted scoring
+    Get enhanced trading signal with premium data and weighted scoring.
     
     Args:
         symbol: Cryptocurrency symbol (e.g., BTC, ETH, SOL)
@@ -114,6 +114,44 @@ async def get_signal(symbol: str, debug: bool = False, include_ai_validation: bo
         - Premium metrics (liquidations, L/S ratio, smart money, etc.)
         - AI validation (if requested)
         - Debug info if requested
+        
+    Examples:
+        Basic signal request:
+            GET /signals/BTC
+            
+        With debug mode:
+            GET /signals/ETH?debug=true
+            
+        With AI validation:
+            GET /signals/SOL?include_ai_validation=true
+            
+    Response Structure (core fields always present):
+        {
+            "symbol": "BTC",
+            "timestamp": "2025-11-14T12:00:00",
+            "signal": "LONG" | "SHORT" | "NEUTRAL",
+            "score": 72.5,
+            "confidence": "high" | "medium" | "low",
+            "price": 45123.45,
+            "reasons": ["Liquidation imbalance favors longs", ...],
+            "mode": "aggressive",
+            "mode_info": {...},
+            "metrics": {
+                "fundingRate": 0.0001,
+                "openInterest": 1234567890,
+                "socialScore": 65.5,
+                "priceTrend": "bullish"
+            },
+            "data_quality": {...}
+        }
+        
+    Conditional Fields (depends on data availability):
+        - "premiumMetrics": {...}  // When premium data available
+        - "comprehensiveMetrics": {...}  // When comprehensive Coinglass data available
+        - "lunarCrushMetrics": {...}  // When LunarCrush data available
+        - "coinAPIMetrics": {...}  // When CoinAPI data available
+        - "aiVerdictLayer": {...}  // When AI validation enabled
+        - "debug": {...}  // When debug=true
     """
     try:
         signal = await signal_engine.build_signal(symbol, debug=debug)
