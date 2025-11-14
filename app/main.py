@@ -80,11 +80,23 @@ async def lifespan(app: FastAPI):
 
     # Initialize database connection
     await db.connect()
+    
+    # Initialize cache service and start cleanup task
+    from app.core.cache_service import cache_service, start_cache_cleanup_task
+    cache_cleanup_task = asyncio.create_task(start_cache_cleanup_task())
+    print("🗄️  Cache service initialized with auto-cleanup")
 
     yield
 
     # Shutdown: close database connection and cleanup resources
     print("Shutting down CryptoSatX API...")
+    
+    # Cancel cache cleanup task
+    cache_cleanup_task.cancel()
+    try:
+        await cache_cleanup_task
+    except asyncio.CancelledError:
+        pass
     
     # Close ATR calculator HTTP client
     from app.services.atr_calculator import atr_calculator
