@@ -25,10 +25,8 @@ aiosmtplib==3.0.1
 # Additional utilities
 structlog==23.2.0
 colorama==0.4.6
-asyncpg
-requests
-sqlalchemy[asyncio]
-websockets
-aiofiles
-aiocache
-slowapi
+requests==2.32.3
+sqlalchemy[asyncio]==2.0.44
+websockets==15.0.1
+aiofiles==25.1.0
+aiocache==0.12.3
