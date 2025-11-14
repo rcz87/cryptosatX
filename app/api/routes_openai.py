@@ -14,11 +14,9 @@ from app.services.openai_service import get_openai_service
 from app.core.signal_engine import signal_engine
 from app.middleware.auth import get_api_key, get_optional_api_key
 from app.utils.logger import default_logger, log_api_call
+from app.middleware.rate_limiter import limiter
 
 router = APIRouter(prefix="/openai", tags=["OpenAI Integration"])
-
-# Rate limiter (10 requests per minute for OpenAI endpoints to prevent abuse)
-limiter = Limiter(key_func=get_remote_address)
 
 
 @router.get("/analyze/{symbol}")

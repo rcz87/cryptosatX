@@ -5,10 +5,13 @@ Crypto Futures Signal API with multi-provider integration
 
 import os
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from dotenv import load_dotenv
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from app.middleware.rate_limiter import limiter
 
 from app.api import (
     routes_health,
@@ -100,6 +103,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+# Register shared rate limiter from middleware module (avoids circular imports)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
@@ -108,6 +115,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add SlowAPI rate limiting middleware (MUST be after CORS)
+from slowapi.middleware import SlowAPIMiddleware
+app.add_middleware(SlowAPIMiddleware)
 
 # Mount static files for dashboard
 app.mount("/static", StaticFiles(directory="static"), name="static")
