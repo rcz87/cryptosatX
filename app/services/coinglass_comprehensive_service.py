@@ -26,6 +26,21 @@ class CoinglassComprehensiveService:
         }
         self._client: Optional[httpx.AsyncClient] = None
     
+    def _normalize_symbol(self, symbol: str) -> str:
+        """
+        Normalize symbol for Coinglass API
+        Converts: BTC -> BTCUSDT, SOL -> SOLUSDT, etc.
+        Already formatted symbols pass through unchanged: BTCUSDT -> BTCUSDT
+        """
+        symbol = symbol.upper().strip()
+        
+        # If already has USDT suffix, return as-is
+        if symbol.endswith("USDT") or symbol.endswith("USD"):
+            return symbol
+        
+        # Auto-append USDT for Coinglass API
+        return f"{symbol}USDT"
+    
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create shared async HTTP client"""
         if self._client is None or self._client.is_closed:
@@ -68,7 +83,7 @@ class CoinglassComprehensiveService:
                 markets = data["data"]
                 
                 if symbol:
-                    symbol_upper = symbol.upper()
+                    symbol_upper = self._normalize_symbol(symbol)
                     symbol_data = next((m for m in markets if m.get("symbol") == symbol_upper), None)
                     
                     if symbol_data:
@@ -111,7 +126,7 @@ class CoinglassComprehensiveService:
         try:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/futures/perpetual-market"
-            params = {"symbol": symbol.upper()}
+            params = {"symbol": self._normalize_symbol(symbol)}
             
             response = await client.get(url, headers=self.headers, params=params)
             
@@ -235,7 +250,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/price/history"
             params = {
                 "exchange": exchange,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit
             }
@@ -274,7 +289,7 @@ class CoinglassComprehensiveService:
                 return {
                     "success": True,
                     "exchange": exchange,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "interval": interval,
                     "candleCount": len(candles),
                     "summary": {
@@ -381,7 +396,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/indicators/rsi"
             params = {
                 "exchange": exchange,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit,
                 "window": window
@@ -430,7 +445,7 @@ class CoinglassComprehensiveService:
                 return {
                     "success": True,
                     "exchange": exchange,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "interval": interval,
                     "window": window,
                     "dataPointCount": len(rsi_data),
@@ -473,7 +488,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/open-interest/history"
             params = {
                 "exchange": exchange,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit,
                 "unit": unit
@@ -532,7 +547,7 @@ class CoinglassComprehensiveService:
                 return {
                     "success": True,
                     "exchange": exchange,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "interval": interval,
                     "unit": unit,
                     "dataPointCount": len(oi_data),
@@ -576,7 +591,7 @@ class CoinglassComprehensiveService:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/futures/open-interest/aggregated-history"
             params = {
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit,
                 "unit": unit
@@ -638,7 +653,7 @@ class CoinglassComprehensiveService:
                 
                 return {
                     "success": True,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "interval": interval,
                     "unit": unit,
                     "aggregationType": "ALL_EXCHANGES",
@@ -687,7 +702,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/open-interest/aggregated-stablecoin-history"
             params = {
                 "exchange_list": exchange_list,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit
             }
@@ -745,7 +760,7 @@ class CoinglassComprehensiveService:
                 return {
                     "success": True,
                     "exchangeList": exchange_list,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "interval": interval,
                     "unit": "COIN",
                     "dataPointCount": len(oi_data),
@@ -792,7 +807,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/open-interest/aggregated-coin-margin-history"
             params = {
                 "exchange_list": exchange_list,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit
             }
@@ -850,7 +865,7 @@ class CoinglassComprehensiveService:
                 return {
                     "success": True,
                     "exchangeList": exchange_list,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "interval": interval,
                     "contractType": "COIN_MARGINED",
                     "dataPointCount": len(oi_data),
@@ -895,7 +910,7 @@ class CoinglassComprehensiveService:
         try:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/futures/open-interest/exchange-list"
-            params = {"symbol": symbol.upper()}
+            params = {"symbol": self._normalize_symbol(symbol)}
             
             response = await client.get(url, headers=self.headers, params=params)
             
@@ -947,7 +962,7 @@ class CoinglassComprehensiveService:
                 
                 return {
                     "success": True,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "exchangeCount": len(exchanges),
                     "aggregate": aggregate_info,
                     "top5Exchanges": top_5_with_share,
@@ -982,7 +997,7 @@ class CoinglassComprehensiveService:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/futures/open-interest/exchange-history-chart"
             params = {
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "range": range,
                 "unit": unit
             }
@@ -1030,7 +1045,7 @@ class CoinglassComprehensiveService:
                 
                 return {
                     "success": True,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "range": range,
                     "unit": unit,
                     "dataPoints": len(time_list),
@@ -1073,7 +1088,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/funding-rate/history"
             params = {
                 "exchange": exchange,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit
             }
@@ -1135,7 +1150,7 @@ class CoinglassComprehensiveService:
                     return {
                         "success": True,
                         "exchange": exchange,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "interval": interval,
                         "dataPointCount": len(fr_data),
                         "latestFundingRate": last_fr,
@@ -1166,7 +1181,7 @@ class CoinglassComprehensiveService:
                 return {
                     "success": True,
                     "exchange": exchange,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "interval": interval,
                     "dataPointCount": len(fr_data),
                     "latestFundingRate": last_fr,
@@ -1203,7 +1218,7 @@ class CoinglassComprehensiveService:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/futures/funding-rate/oi-weight-history"
             params = {
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit
             }
@@ -1264,7 +1279,7 @@ class CoinglassComprehensiveService:
                     
                     return {
                         "success": True,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "interval": interval,
                         "weightingMethod": "OI_WEIGHTED",
                         "dataPointCount": len(fr_data),
@@ -1291,7 +1306,7 @@ class CoinglassComprehensiveService:
                 else:
                     return {
                         "success": True,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "interval": interval,
                         "weightingMethod": "OI_WEIGHTED",
                         "dataPointCount": len(fr_data),
@@ -1326,7 +1341,7 @@ class CoinglassComprehensiveService:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/futures/funding-rate/vol-weight-history"
             params = {
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit
             }
@@ -1387,7 +1402,7 @@ class CoinglassComprehensiveService:
                     
                     return {
                         "success": True,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "interval": interval,
                         "weightingMethod": "VOLUME_WEIGHTED",
                         "dataPointCount": len(fr_data),
@@ -1414,7 +1429,7 @@ class CoinglassComprehensiveService:
                 else:
                     return {
                         "success": True,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "interval": interval,
                         "weightingMethod": "VOLUME_WEIGHTED",
                         "dataPointCount": len(fr_data),
@@ -1446,7 +1461,7 @@ class CoinglassComprehensiveService:
         try:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/futures/funding-rate/exchange-list"
-            params = {"symbol": symbol.upper()}
+            params = {"symbol": self._normalize_symbol(symbol)}
             
             response = await client.get(url, headers=self.headers, params=params)
             
@@ -1516,7 +1531,7 @@ class CoinglassComprehensiveService:
                 
                 return {
                     "success": True,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "stablecoinMargined": {
                         "statistics": stable_stats,
                         "top5Highest": stablecoin_sorted[:5],
@@ -1559,7 +1574,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/funding-rate/accumulated-exchange-list"
             params = {
                 "range": range,
-                "symbol": symbol.upper()
+                "symbol": self._normalize_symbol(symbol)
             }
             
             response = await client.get(url, headers=self.headers, params=params)
@@ -1626,7 +1641,7 @@ class CoinglassComprehensiveService:
                 
                 return {
                     "success": True,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "range": range,
                     "stablecoinMargined": {
                         "statistics": stable_stats,
@@ -1674,7 +1689,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/top-long-short-account-ratio/history"
             params = {
                 "exchange": exchange,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit
             }
@@ -1734,7 +1749,7 @@ class CoinglassComprehensiveService:
                     return {
                         "success": True,
                         "exchange": exchange,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "interval": interval,
                         "dataPointCount": len(ratio_data),
                         "latest": {
@@ -1760,7 +1775,7 @@ class CoinglassComprehensiveService:
                     return {
                         "success": True,
                         "exchange": exchange,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "interval": interval,
                         "dataPointCount": len(ratio_data),
                         "timeSeries": ratio_data,
@@ -1797,7 +1812,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/top-long-short-position-ratio/history"
             params = {
                 "exchange": exchange,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit
             }
@@ -1857,7 +1872,7 @@ class CoinglassComprehensiveService:
                     return {
                         "success": True,
                         "exchange": exchange,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "interval": interval,
                         "dataPointCount": len(ratio_data),
                         "latest": {
@@ -1883,7 +1898,7 @@ class CoinglassComprehensiveService:
                     return {
                         "success": True,
                         "exchange": exchange,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "interval": interval,
                         "dataPointCount": len(ratio_data),
                         "timeSeries": ratio_data,
@@ -1920,7 +1935,7 @@ class CoinglassComprehensiveService:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/futures/taker-buy-sell-volume/exchange-list"
             params = {
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "range": range
             }
             
@@ -1992,7 +2007,7 @@ class CoinglassComprehensiveService:
                 
                 return {
                     "success": True,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "range": range,
                     "overall": {
                         "buyRatio": overall_buy_ratio,
@@ -2045,7 +2060,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/v2/net-position/history"
             params = {
                 "exchange": exchange,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit
             }
@@ -2100,7 +2115,7 @@ class CoinglassComprehensiveService:
                     return {
                         "success": True,
                         "exchange": exchange,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "interval": interval,
                         "dataPointCount": len(position_data),
                         "latest": {
@@ -2124,7 +2139,7 @@ class CoinglassComprehensiveService:
                     return {
                         "success": True,
                         "exchange": exchange,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "interval": interval,
                         "dataPointCount": len(position_data),
                         "timeSeries": position_data,
@@ -2153,7 +2168,7 @@ class CoinglassComprehensiveService:
         try:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/futures/pairs-markets"
-            params = {"symbol": symbol.upper()}
+            params = {"symbol": self._normalize_symbol(symbol)}
             
             response = await client.get(url, headers=self.headers, params=params)
             
@@ -2190,7 +2205,7 @@ class CoinglassComprehensiveService:
                 
                 return {
                     "success": True,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "exchangeCount": len(pairs),
                     "aggregates": {
                         "totalVolumeUSD": total_volume_usd,
@@ -2249,7 +2264,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/liquidation/order"
             params = {
                 "exchange": exchange,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "min_liquidation_amount": min_liquidation_amount
             }
             
@@ -2314,7 +2329,7 @@ class CoinglassComprehensiveService:
                 return {
                     "success": True,
                     "exchange": exchange,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "minAmount": min_liquidation_amount,
                     "summary": {
                         "longLiquidations": long_total,
@@ -2473,7 +2488,7 @@ class CoinglassComprehensiveService:
         try:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/futures/liquidation/map"
-            params = {"symbol": symbol.upper()}
+            params = {"symbol": self._normalize_symbol(symbol)}
             
             response = await client.get(url, headers=self.headers, params=params)
             
@@ -2503,7 +2518,7 @@ class CoinglassComprehensiveService:
                 
                 return {
                     "success": True,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "clusterCount": total_clusters,
                     "largestCluster": largest_cluster,
                     "mapData": map_data,
@@ -2537,7 +2552,7 @@ class CoinglassComprehensiveService:
             if str(data.get("code")) == "0" and data.get("data"):
                 coin_list = data["data"]
                 
-                symbol_upper = symbol.upper()
+                symbol_upper = self._normalize_symbol(symbol)
                 symbol_data = next((c for c in coin_list if c.get("symbol") == symbol_upper), None)
                 
                 if symbol_data:
@@ -2591,7 +2606,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/liquidation/aggregated-history"
             params = {
                 "exchange_list": exchange_list,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit
             }
@@ -2724,7 +2739,7 @@ class CoinglassComprehensiveService:
                 
                 return {
                     "success": True,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "exchanges": exchange_list,
                     "interval": interval,
                     "dataPoints": len(history),
@@ -3162,7 +3177,7 @@ class CoinglassComprehensiveService:
             url = f"{self.base_url_v4}/api/futures/orderbook/aggregated-ask-bids-history"
             params = {
                 "exchange_list": exchange_list,
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval,
                 "limit": limit
             }
@@ -3223,7 +3238,7 @@ class CoinglassComprehensiveService:
                 return {
                     "success": True,
                     "exchanges": exchange_list,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "interval": interval,
                     "dataPoints": len(history),
                     "summary": {
@@ -3696,7 +3711,7 @@ class CoinglassComprehensiveService:
         try:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/hyperliquid/position"
-            params = {"symbol": symbol.upper()}
+            params = {"symbol": self._normalize_symbol(symbol)}
             
             response = await client.get(url, headers=self.headers, params=params)
             
@@ -3753,7 +3768,7 @@ class CoinglassComprehensiveService:
                 
                 return {
                     "success": True,
-                    "symbol": symbol.upper(),
+                    "symbol": self._normalize_symbol(symbol),
                     "totalPages": result.get("total_pages", 1),
                     "positionCount": len(positions),
                     "summary": {
@@ -4507,7 +4522,7 @@ class CoinglassComprehensiveService:
             client = await self._get_client()
             url = f"{self.base_url_pro}/public/v2/long_short_accounts"
             params = {
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": "h1"
             }
             
@@ -4530,7 +4545,7 @@ class CoinglassComprehensiveService:
                     
                     return {
                         "success": True,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "longAccountPct": long_pct,
                         "shortAccountPct": short_pct,
                         "ratio": ratio,
@@ -4557,7 +4572,7 @@ class CoinglassComprehensiveService:
             client = await self._get_client()
             url = f"{self.base_url_pro}/public/v2/indicator/funding_rate_oi_weight_ohlc"
             params = {
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval
             }
             
@@ -4576,7 +4591,7 @@ class CoinglassComprehensiveService:
                     
                     return {
                         "success": True,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "avgFundingRate": latest.get("c", 0),
                         "high": latest.get("h", 0),
                         "low": latest.get("l", 0),
@@ -4641,7 +4656,7 @@ class CoinglassComprehensiveService:
             client = await self._get_client()
             url = f"{self.base_url_pro}/public/v2/indicator/open_interest_aggregated_ohlc"
             params = {
-                "symbol": symbol.upper(),
+                "symbol": self._normalize_symbol(symbol),
                 "interval": interval
             }
             
@@ -4665,7 +4680,7 @@ class CoinglassComprehensiveService:
                     
                     return {
                         "success": True,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "currentOI": current_oi,
                         "previousOI": previous_oi,
                         "oiChangePct": oi_change,
@@ -4834,7 +4849,7 @@ class CoinglassComprehensiveService:
         try:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/exchange/balance/list"
-            params = {"symbol": symbol.upper()}
+            params = {"symbol": self._normalize_symbol(symbol)}
             
             response = await client.get(url, headers=self.headers, params=params)
             
@@ -4878,7 +4893,7 @@ class CoinglassComprehensiveService:
                     
                     return {
                         "success": True,
-                        "symbol": symbol.upper(),
+                        "symbol": self._normalize_symbol(symbol),
                         "totalExchangeBalance": total_balance,
                         "change1h": change_1h,
                         "change7d": change_7d,
@@ -4989,7 +5004,7 @@ class CoinglassComprehensiveService:
         try:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/borrow-interest-rate/history"
-            params = {"symbol": symbol.upper()}  # Add symbol parameter
+            params = {"symbol": self._normalize_symbol(symbol)}  # Add symbol parameter
             
             response = await client.get(url, headers=self.headers, params=params)
             
