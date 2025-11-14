@@ -755,6 +755,26 @@ class FlatRPCDispatcher:
             }
 
         # ===================================================================
+        # NEW LISTINGS MONITOR
+        # ===================================================================
+        elif operation == "new_listings.binance":
+            from app.services.binance_listings_monitor import BinanceListingsMonitor
+            
+            hours = args.get("hours", 72)
+            include_stats = args.get("include_stats", True)
+            
+            monitor = BinanceListingsMonitor()
+            try:
+                if include_stats:
+                    result = await monitor.detect_new_listings_with_stats(hours=hours)
+                else:
+                    result = await monitor.get_new_listings(hours=hours)
+                
+                return result
+            finally:
+                await monitor.close()
+
+        # ===================================================================
         # HEALTH
         # ===================================================================
         elif operation == "health.check":
