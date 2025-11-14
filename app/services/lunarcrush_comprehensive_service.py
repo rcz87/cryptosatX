@@ -7,6 +7,7 @@ import os
 import httpx
 from typing import Dict, Optional, List
 from datetime import datetime, timedelta
+from app.utils.symbol_normalizer import normalize_symbol, Provider
 
 
 class LunarCrushComprehensiveService:
@@ -71,7 +72,7 @@ class LunarCrushComprehensiveService:
         """
         try:
             client = await self._get_client()
-            symbol = symbol.upper()
+            symbol = normalize_symbol(symbol, Provider.LUNARCRUSH)
             url = f"{self.base_url}/coins/{symbol}/v1"
             
             response = await client.get(url, headers=self.headers)
@@ -255,7 +256,7 @@ class LunarCrushComprehensiveService:
         """
         try:
             client = await self._get_client()
-            symbol = symbol.upper()
+            symbol = normalize_symbol(symbol, Provider.LUNARCRUSH)
             
             # Calculate start timestamp
             end_time = datetime.utcnow()
@@ -337,7 +338,7 @@ class LunarCrushComprehensiveService:
               Builder tier only provides price change via comprehensive endpoint.
         """
         try:
-            symbol = symbol.upper()
+            symbol = normalize_symbol(symbol, Provider.LUNARCRUSH)
             
             # Validate supported intervals
             supported_intervals = {"1h", "24h", "7d", "1d"}  # 1d is alias for 24h

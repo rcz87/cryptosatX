@@ -7,6 +7,7 @@ import httpx
 from typing import Dict, List, Optional
 from datetime import datetime
 import asyncio
+from app.utils.symbol_normalizer import normalize_symbol, Provider
 
 
 class BinanceFuturesService:

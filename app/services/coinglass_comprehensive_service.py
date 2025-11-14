@@ -28,18 +28,12 @@ class CoinglassComprehensiveService:
     
     def _normalize_symbol(self, symbol: str) -> str:
         """
-        Normalize symbol for Coinglass API
+        Normalize symbol for Coinglass API using universal normalizer
         Converts: BTC -> BTCUSDT, SOL -> SOLUSDT, etc.
         Already formatted symbols pass through unchanged: BTCUSDT -> BTCUSDT
         """
-        symbol = symbol.upper().strip()
-        
-        # If already has USDT suffix, return as-is
-        if symbol.endswith("USDT") or symbol.endswith("USD"):
-            return symbol
-        
-        # Auto-append USDT for Coinglass API
-        return f"{symbol}USDT"
+        from app.utils.symbol_normalizer import normalize_symbol, Provider
+        return normalize_symbol(symbol, Provider.COINGLASS)
     
     async def _get_client(self) -> httpx.AsyncClient:
         """Get or create shared async HTTP client"""

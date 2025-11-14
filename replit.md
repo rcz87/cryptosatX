@@ -13,6 +13,21 @@ This project provides a FastAPI backend for generating real-time cryptocurrency 
 ## System Architecture
 The application uses a modular FastAPI architecture, separating API routes, business logic, and external service integrations.
 
+### Symbol Normalization
+**Universal Symbol Normalizer** (November 2025) - Centralized system supporting short-form ticker input (e.g., "SOL") with automatic conversion to provider-specific formats. Enables natural language queries via GPT Actions without requiring full symbol names.
+
+**Supported Formats:**
+- CoinGlass: `SOL` → `SOLUSDT`
+- LunarCrush: `SOL` / `SOLUSDT` → `SOL`
+- CoinAPI: `SOL` → `BINANCE_SPOT_SOL_USDT`
+- Binance: `SOL` → `SOLUSDT`
+- OKX: `SOL` → `SOL-USDT-SWAP`
+- CoinGecko: `SOL` / `SOLUSDT` → `solana`
+
+**Dictionary Coverage:** 55+ popular cryptocurrencies including BTC, ETH, SOL, BNB, AVAX, DOGE, PEPE, ARB, OP, and more.
+
+**Implementation:** All services updated to use `app/utils/symbol_normalizer.py` for consistent symbol conversion. Backward compatible with full symbol formats (e.g., "BTCUSDT" still works).
+
 ### UI/UX Decisions
 The API delivers clean JSON responses and includes a debug mode (`?debug=true`). OpenAPI documentation is available at `/docs` and `/redoc`, with a GPT Actions-compatible schema.
 

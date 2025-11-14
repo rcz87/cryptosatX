@@ -16,6 +16,7 @@ import os
 import httpx
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
+from app.utils.symbol_normalizer import normalize_symbol, Provider, get_base_symbol
 
 
 class CoinAPIComprehensiveService:
@@ -45,18 +46,16 @@ class CoinAPIComprehensiveService:
     
     def _get_symbol_id(self, symbol: str, exchange: str = "BINANCE") -> str:
         """
-        Convert simple symbol to CoinAPI symbol_id format
+        Convert simple symbol to CoinAPI symbol_id format using universal normalizer
         
         Args:
-            symbol: Simple symbol like 'BTC', 'ETH'
+            symbol: Symbol in any format (BTC, BTCUSDT, bitcoin, etc.)
             exchange: Exchange name (default: BINANCE)
             
         Returns:
             CoinAPI symbol_id like 'BINANCE_SPOT_BTC_USDT'
         """
-        symbol = symbol.upper()
-        exchange = exchange.upper()
-        return f"{exchange}_SPOT_{symbol}_USDT"
+        return normalize_symbol(symbol, Provider.COINAPI, exchange=exchange)
     
     # ==================== OHLCV / CANDLESTICK DATA ====================
     

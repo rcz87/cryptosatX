@@ -4,6 +4,7 @@ Provides candlestick/OHLCV data, funding rates, and open interest without requir
 """
 import httpx
 from typing import Dict, List, Optional
+from app.utils.symbol_normalizer import normalize_symbol, Provider
 
 
 class OKXService:
@@ -14,28 +15,22 @@ class OKXService:
     
     def _normalize_to_swap_inst_id(self, symbol: str) -> str:
         """
-        Normalize symbol to OKX perpetual swap format
+        Normalize symbol to OKX perpetual swap format using universal normalizer
         
         Args:
-            symbol: Simple symbol like 'BTC', 'ETH', 'SOL'
+            symbol: Symbol in any format (BTC, BTCUSDT, bitcoin, etc.)
             
         Returns:
             OKX instrument ID like 'BTC-USDT-SWAP'
         """
-        symbol = symbol.upper()
-        if symbol.endswith("-USDT-SWAP"):
-            return symbol
-        elif symbol.endswith("-USDT"):
-            return f"{symbol}-SWAP"
-        else:
-            return f"{symbol}-USDT-SWAP"
+        return normalize_symbol(symbol, Provider.OKX)
     
     async def get_candles(self, symbol: str, timeframe: str = "15m", limit: int = 100) -> Dict:
         """
         Get candlestick data for a cryptocurrency pair
         
         Args:
-            symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH')
+            symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH', 'BTCUSDT', 'bitcoin')
             timeframe: Timeframe for candles (1m, 5m, 15m, 1H, 4H, 1D)
             limit: Number of candles to retrieve (max 300)
             
@@ -43,12 +38,10 @@ class OKXService:
             Dict with symbol and OHLCV data
         """
         try:
-            # Normalize symbol to OKX format (e.g., BTC-USDT)
-            symbol = symbol.upper()
-            if not symbol.endswith("-USDT"):
-                inst_id = f"{symbol}-USDT"
-            else:
-                inst_id = symbol
+            # Use universal normalizer - get base symbol first, then format for OKX spot
+            from app.utils.symbol_normalizer import get_base_symbol
+            base_sym = get_base_symbol(symbol)
+            inst_id = f"{base_sym}-USDT"
             
             # Map timeframe to OKX format
             bar_mapping = {
