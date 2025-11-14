@@ -1408,14 +1408,17 @@ class SignalEngine:
         """
         Determine LONG/SHORT/NEUTRAL based on score
 
-        Score ranges (REDUCED NEUTRALITY - NARROWER NEUTRAL ZONE):
-        - 0-48: SHORT
-        - 48-52: NEUTRAL (reduced from 45-55)
-        - 52-100: LONG
+        Score ranges (AGGRESSIVE MODE - MAXIMIZE DECISIVENESS):
+        - 0-45: SHORT (45% range - highly aggressive)
+        - 45-55: NEUTRAL (10% range - minimal neutral zone)
+        - 55-100: LONG (45% range - highly aggressive)
+        
+        This aggressive mode catches trends earlier but increases risk of whipsaw
+        in choppy markets. Best for trending markets with clear direction.
         """
-        if score >= 52:
+        if score >= 55:
             return "LONG"
-        elif score <= 48:
+        elif score <= 45:
             return "SHORT"
         else:
             return "NEUTRAL"
