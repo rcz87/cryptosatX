@@ -1,5 +1,5 @@
 """
-OpenAI Integration Service
+OpenAI Integration Service - IMPROVED ERROR HANDLING
 Enhances trading signals with GPT-4 analysis and insights
 """
 
@@ -125,9 +125,92 @@ class OpenAIService:
                 "model_used": self.config.model,
             }
 
+        except httpx.HTTPStatusError as e:
+            status_code = e.response.status_code
+            
+            if status_code == 401:
+                self.logger.error(f"🔴 OpenAI authentication failed")
+                try:
+                    from app.utils.alerter import alert_critical
+                    asyncio.create_task(alert_critical(
+                        "OpenAI Auth Failed",
+                        "API key validation failed. Check OPENAI_API_KEY env variable."
+                    ))
+                except:
+                    pass
+                return {
+                    "success": False,
+                    "error": "Authentication error. Please check API configuration.",
+                    "analysis": None,
+                }
+            elif status_code == 429:
+                self.logger.warning(f"⚠️ OpenAI rate limit exceeded")
+                return {
+                    "success": False,
+                    "error": "Rate limit exceeded. Please try again later.",
+                    "analysis": None,
+                }
+            elif status_code in [400, 422]:
+                self.logger.error(f"❌ OpenAI invalid request: HTTP {status_code}")
+                return {
+                    "success": False,
+                    "error": "Invalid request parameters.",
+                    "analysis": None,
+                }
+            elif status_code >= 500:
+                self.logger.error(f"❌ OpenAI service error: HTTP {status_code}")
+                return {
+                    "success": False,
+                    "error": "OpenAI service temporarily unavailable.",
+                    "analysis": None,
+                }
+            else:
+                self.logger.error(f"❌ OpenAI HTTP {status_code} error")
+                return {
+                    "success": False,
+                    "error": "Service temporarily unavailable.",
+                    "analysis": None,
+                }
+        
+        except httpx.TimeoutException:
+            self.logger.warning(f"⏱️ OpenAI request timeout")
+            return {
+                "success": False,
+                "error": "Request timeout. Please try again.",
+                "analysis": None,
+            }
+        
+        except httpx.RequestError as e:
+            self.logger.error(f"🌐 OpenAI network error: {type(e).__name__}")
+            return {
+                "success": False,
+                "error": "Network error. Please check your connection.",
+                "analysis": None,
+            }
+        
+        except (ValueError, KeyError, json.JSONDecodeError) as e:
+            self.logger.error(f"❌ OpenAI response parsing error: {type(e).__name__}")
+            return {
+                "success": False,
+                "error": "Unable to process AI response.",
+                "analysis": None,
+            }
+        
         except Exception as e:
-            self.logger.error(f"Error in GPT signal analysis: {e}")
-            return {"success": False, "error": str(e), "analysis": None}
+            self.logger.error(f"🔴 UNEXPECTED OpenAI error: {type(e).__name__}")
+            try:
+                from app.utils.alerter import alert_critical
+                asyncio.create_task(alert_critical(
+                    "OpenAI Unexpected Error",
+                    f"Unexpected error in analyze_signal_with_gpt\nError Type: {type(e).__name__}\nCheck logs for details"
+                ))
+            except:
+                pass
+            return {
+                "success": False,
+                "error": "An unexpected error occurred.",
+                "analysis": None,
+            }
 
     async def generate_market_sentiment_analysis(
         self, symbols: List[str], market_data: Dict[str, Any]
@@ -180,9 +263,33 @@ class OpenAIService:
                 "model_used": self.config.model,
             }
 
+        except httpx.HTTPStatusError as e:
+            status_code = e.response.status_code
+            if status_code == 401:
+                self.logger.error(f"🔴 OpenAI auth error in sentiment analysis")
+                return {"success": False, "error": "Authentication error. Please check API configuration."}
+            elif status_code == 429:
+                self.logger.warning(f"⚠️ OpenAI rate limit in sentiment analysis")
+                return {"success": False, "error": "Rate limit exceeded. Please try again later."}
+            else:
+                self.logger.error(f"❌ OpenAI HTTP {status_code} in sentiment analysis")
+                return {"success": False, "error": "Service temporarily unavailable."}
+        
+        except httpx.TimeoutException:
+            self.logger.warning(f"⏱️ OpenAI timeout in sentiment analysis")
+            return {"success": False, "error": "Request timeout. Please try again."}
+        
+        except httpx.RequestError:
+            self.logger.error(f"🌐 OpenAI network error in sentiment analysis")
+            return {"success": False, "error": "Network error. Please check your connection."}
+        
+        except (ValueError, KeyError, json.JSONDecodeError):
+            self.logger.error(f"❌ OpenAI parsing error in sentiment analysis")
+            return {"success": False, "error": "Unable to process AI response."}
+        
         except Exception as e:
-            self.logger.error(f"Error in sentiment analysis: {e}")
-            return {"success": False, "error": str(e)}
+            self.logger.error(f"🔴 UNEXPECTED OpenAI error in sentiment analysis: {type(e).__name__}")
+            return {"success": False, "error": "An unexpected error occurred."}
 
     async def validate_signal_with_gpt(
         self,
@@ -248,11 +355,59 @@ class OpenAIService:
                 "model_used": self.config.model,
             }
 
-        except Exception as e:
-            self.logger.error(f"Error in signal validation: {e}")
+        except httpx.HTTPStatusError as e:
+            status_code = e.response.status_code
+            if status_code == 401:
+                self.logger.error(f"🔴 OpenAI auth error in signal validation")
+                return {
+                    "success": False,
+                    "error": "Authentication error. Please check API configuration.",
+                    "validated_signal": signal_data.get("signal"),
+                }
+            elif status_code == 429:
+                self.logger.warning(f"⚠️ OpenAI rate limit in signal validation")
+                return {
+                    "success": False,
+                    "error": "Rate limit exceeded. Please try again later.",
+                    "validated_signal": signal_data.get("signal"),
+                }
+            else:
+                self.logger.error(f"❌ OpenAI HTTP {status_code} in signal validation")
+                return {
+                    "success": False,
+                    "error": "Service temporarily unavailable.",
+                    "validated_signal": signal_data.get("signal"),
+                }
+        
+        except httpx.TimeoutException:
+            self.logger.warning(f"⏱️ OpenAI timeout in signal validation")
             return {
                 "success": False,
-                "error": str(e),
+                "error": "Request timeout. Please try again.",
+                "validated_signal": signal_data.get("signal"),
+            }
+        
+        except httpx.RequestError:
+            self.logger.error(f"🌐 OpenAI network error in signal validation")
+            return {
+                "success": False,
+                "error": "Network error. Please check your connection.",
+                "validated_signal": signal_data.get("signal"),
+            }
+        
+        except (ValueError, KeyError, json.JSONDecodeError):
+            self.logger.error(f"❌ OpenAI parsing error in signal validation")
+            return {
+                "success": False,
+                "error": "Unable to process AI response.",
+                "validated_signal": signal_data.get("signal"),
+            }
+        
+        except Exception as e:
+            self.logger.error(f"🔴 UNEXPECTED OpenAI error in signal validation: {type(e).__name__}")
+            return {
+                "success": False,
+                "error": "An unexpected error occurred.",
                 "validated_signal": signal_data.get("signal"),
             }
 
@@ -396,7 +551,7 @@ REASONS:
             return analysis
 
         except Exception as e:
-            self.logger.error(f"Error parsing GPT analysis: {e}")
+            self.logger.error(f"❌ Error parsing GPT analysis: {type(e).__name__}")
             return {
                 "overall_sentiment": "neutral",
                 "confidence_level": "low",
@@ -406,7 +561,7 @@ REASONS:
                 "recommendation": "HOLD",
                 "time_horizon": "medium_term",
                 "raw_analysis": gpt_response,
-                "parse_error": str(e),
+                "parse_error": "Unable to parse AI response",
             }
 
     def _parse_validation_response(self, validation_response: str) -> Dict[str, Any]:
@@ -438,11 +593,11 @@ REASONS:
             return validation
 
         except Exception as e:
-            self.logger.error(f"Error parsing validation response: {e}")
+            self.logger.error(f"❌ Error parsing validation response: {type(e).__name__}")
             return {
                 "signal": "NEUTRAL",
                 "confidence": "low",
-                "reasoning": f"Error parsing validation: {str(e)}",
+                "reasoning": "Error parsing validation response",
             }
 
 
@@ -511,7 +666,8 @@ async def analyze_signal_with_validation(signal_data: Dict[str, Any]) -> Dict[st
             return result
 
     except Exception as e:
-        return {"success": False, "error": f"OpenAI service not available: {str(e)}"}
+        default_logger.error(f"❌ Error in legacy signal validation: {type(e).__name__}")
+        return {"success": False, "error": "AI service temporarily unavailable"}
 
 
 async def analyze_market_sentiment(symbols: List[str]) -> Dict[str, Any]:
@@ -556,7 +712,8 @@ async def analyze_market_sentiment(symbols: List[str]) -> Dict[str, Any]:
             return result
 
     except Exception as e:
-        return {"success": False, "error": f"OpenAI service not available: {str(e)}"}
+        default_logger.error(f"❌ Error in legacy sentiment analysis: {type(e).__name__}")
+        return {"success": False, "error": "AI service temporarily unavailable"}
 
 
 # Create a simple instance for backward compatibility
