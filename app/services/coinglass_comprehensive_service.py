@@ -4403,8 +4403,17 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
-    async def get_news_feed(self) -> Dict:
-        """Get Latest Crypto News Articles! (58TH ENDPOINT!)"""
+    async def get_news_feed(self, limit: int = 10, include_content: bool = False) -> Dict:
+        """
+        Get Latest Crypto News Articles! (58TH ENDPOINT!)
+        
+        Args:
+            limit: Number of articles to return (default: 10, max: 50)
+            include_content: Include full article content (default: False for GPT Actions)
+        
+        Returns:
+            Latest crypto news with title, description, source, and optional full content
+        """
         try:
             client = await self._get_client()
             url = f"{self.base_url_v4}/api/article/list"
@@ -4415,24 +4424,33 @@ class CoinglassComprehensiveService:
             if str(data.get("code")) == "0" and data.get("data"):
                 articles = data["data"]
                 
+                # Limit articles to prevent response too large error
+                limit = min(max(1, limit), 50)  # Between 1 and 50
+                articles = articles[:limit]
+                
                 processed_articles = []
                 for article in articles:
-                    processed_articles.append({
+                    article_data = {
                         "title": article.get("article_title", ""),
                         "description": article.get("article_description", ""),
-                        "content": article.get("article_content", ""),
                         "image": article.get("article_picture", ""),
                         "source": article.get("source_name", ""),
                         "sourceLogo": article.get("source_website_logo", ""),
                         "publishedAt": article.get("article_release_time", 0),
                         "url": article.get("article_url", "")
-                    })
+                    }
+                    
+                    # Only include full content if requested (can be very large)
+                    if include_content:
+                        article_data["content"] = article.get("article_content", "")
+                    
+                    processed_articles.append(article_data)
                 
                 return {
                     "success": True,
                     "totalArticles": len(processed_articles),
                     "articles": processed_articles,
-                    "note": "Latest crypto news from major sources (CoinTelegraph, TheBlock, etc). Real-time market news feed.",
+                    "note": f"Latest {len(processed_articles)} crypto news headlines from major sources (CoinTelegraph, TheBlock, etc). Set include_content=true for full article text.",
                     "source": "news_feed"
                 }
             return {"success": False, "error": "No data"}

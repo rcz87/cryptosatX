@@ -444,7 +444,11 @@ class FlatRPCDispatcher:
 
         elif operation == "coinglass.news.feed":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            return await coinglass_comprehensive.get_news_feed()
+            limit = int(args.get("limit", 10))
+            # Handle both boolean and string "true"/"false"
+            include_content_raw = args.get("include_content", False)
+            include_content = include_content_raw if isinstance(include_content_raw, bool) else str(include_content_raw).lower() == "true"
+            return await coinglass_comprehensive.get_news_feed(limit=limit, include_content=include_content)
 
         elif operation == "coinglass.calendar.economic":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive

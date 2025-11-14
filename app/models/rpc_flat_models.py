@@ -55,6 +55,7 @@ class FlatInvokeRequest(BaseModel):
     coins: Optional[str] = Field(None, description="Comma-separated coin list")
     min_galaxy_score: Optional[int] = Field(None, description="Minimum Galaxy score (LunarCrush)")
     include_raw: Optional[bool] = Field(None, description="Include raw data in response")
+    include_content: Optional[bool] = Field(None, description="Include full article content in news feed (false for GPT Actions)")
     start_date: Optional[str] = Field(None, description="Start date (YYYY-MM-DD)")
     end_date: Optional[str] = Field(None, description="End date (YYYY-MM-DD)")
 
