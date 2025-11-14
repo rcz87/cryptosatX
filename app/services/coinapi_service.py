@@ -1,5 +1,5 @@
 """
-CoinAPI Service
+CoinAPI Service - IMPROVED ERROR HANDLING
 Provides real-time spot price data for cryptocurrencies
 """
 
@@ -15,6 +15,10 @@ class CoinAPIService:
         self.api_key = os.getenv("COINAPI_KEY", "")
         self.base_url = "https://rest.coinapi.io/v1"
         self.headers = {"X-CoinAPI-Key": self.api_key}
+        
+        # Validate API key on init
+        if not self.api_key:
+            print("⚠️ WARNING: CoinAPI key not configured (COINAPI_KEY env variable)")
 
     async def get_spot_price(self, symbol: str) -> Dict:
         """
@@ -47,16 +51,75 @@ class CoinAPIService:
                 }
 
         except httpx.HTTPStatusError as e:
-            print(f"CoinAPI HTTP error for {symbol}: {e}")
+            # Handle specific HTTP errors with safe messages
+            status_code = e.response.status_code
+            
+            if status_code == 401:
+                print(f"🔴 CoinAPI authentication failed for {symbol}")
+                # Alert for auth errors (critical)
+                try:
+                    from app.utils.alerter import alert_critical
+                    import asyncio
+                    asyncio.create_task(alert_critical(
+                        "CoinAPI Auth Failed",
+                        f"API key validation failed for {symbol}. Check COINAPI_KEY env variable."
+                    ))
+                except:
+                    pass
+                return self._get_default_response(
+                    symbol, "Authentication error. Please check API configuration."
+                )
+            elif status_code == 429:
+                print(f"⚠️ CoinAPI rate limit exceeded for {symbol}")
+                return self._get_default_response(
+                    symbol, "Rate limit exceeded. Please try again later."
+                )
+            elif status_code == 404:
+                print(f"⚠️ Symbol not found: {symbol}")
+                return self._get_default_response(
+                    symbol, f"Symbol '{symbol}' not found."
+                )
+            else:
+                print(f"❌ CoinAPI HTTP {status_code} error for {symbol}")
+                return self._get_default_response(
+                    symbol, "Service temporarily unavailable."
+                )
+        
+        except httpx.TimeoutException:
+            print(f"⏱️ CoinAPI timeout for {symbol}")
             return self._get_default_response(
-                symbol, f"HTTP error: {e.response.status_code}"
+                symbol, "Request timeout. Please try again."
             )
+        
         except httpx.RequestError as e:
-            print(f"CoinAPI request error for {symbol}: {e}")
-            return self._get_default_response(symbol, f"Request error: {str(e)}")
+            # Network errors - don't expose details
+            print(f"🌐 CoinAPI network error for {symbol}: {type(e).__name__}")
+            return self._get_default_response(
+                symbol, "Network error. Please check your connection."
+            )
+        
+        except (ValueError, KeyError) as e:
+            # Data parsing errors - might be API response change
+            print(f"❌ CoinAPI response parsing error for {symbol}: {type(e).__name__}")
+            return self._get_default_response(
+                symbol, "Unable to process market data."
+            )
+        
         except Exception as e:
-            print(f"CoinAPI unexpected error for {symbol}: {e}")
-            return self._get_default_response(symbol, f"Unexpected error: {str(e)}")
+            # Unexpected errors - log safely and alert
+            print(f"🔴 UNEXPECTED CoinAPI error for {symbol}: {type(e).__name__}")
+            try:
+                from app.utils.alerter import alert_critical
+                import asyncio
+                asyncio.create_task(alert_critical(
+                    "CoinAPI Unexpected Error",
+                    f"Unexpected error in get_spot_price\nSymbol: {symbol}\nError Type: {type(e).__name__}\nCheck logs for details"
+                ))
+            except:
+                pass
+            return self._get_default_response(
+                symbol, "An unexpected error occurred."
+            )
 
     def _get_default_response(self, symbol: str, error: str = "") -> Dict:
         """Return safe default response on error"""
@@ -65,7 +128,7 @@ class CoinAPIService:
             "price": 0.0,
             "source": "coinapi",
             "success": False,
-            "error": error,
+            "error": error,  # Now always safe, user-friendly message
         }
 
     async def get_market_data(self, symbol: str) -> Dict:
@@ -131,7 +194,12 @@ class CoinAPIService:
             
             normalized = normalize_symbol(symbol, "coinapi")
             if not normalized:
-                return {"success": False, "error": f"Symbol normalization failed for {symbol}", "symbol": symbol}
+                print(f"⚠️ Symbol normalization failed: {symbol}")
+                return {
+                    "success": False, 
+                    "error": "Invalid symbol format", 
+                    "symbol": symbol
+                }
             
             url = f"{self.base_url}/ohlcv/{normalized}/latest"
             params = {"period_id": period, "limit": limit}
@@ -143,7 +211,7 @@ class CoinAPIService:
                 data = response.json()
                 
                 if not data:
-                    return {"success": False, "error": "No OHLCV data"}
+                    return {"success": False, "error": "No historical data available", "symbol": symbol}
                 
                 latest = data[0]
                 oldest = data[-1] if len(data) > 1 else latest
@@ -175,8 +243,38 @@ class CoinAPIService:
                     "source": "coinapi"
                 }
                 
+        except httpx.HTTPStatusError as e:
+            status_code = e.response.status_code
+            if status_code == 429:
+                print(f"⚠️ Rate limit on OHLCV for {symbol}")
+                return {"success": False, "error": "Rate limit exceeded", "symbol": symbol}
+            elif status_code == 401:
+                print(f"🔴 Auth error on OHLCV for {symbol}")
+                return {"success": False, "error": "Authentication error", "symbol": symbol}
+            else:
+                print(f"❌ HTTP {status_code} on OHLCV for {symbol}")
+                return {"success": False, "error": "Service unavailable", "symbol": symbol}
+        
+        except httpx.TimeoutException:
+            print(f"⏱️ Timeout on OHLCV for {symbol}")
+            return {"success": False, "error": "Request timeout", "symbol": symbol}
+        
+        except (ValueError, KeyError) as e:
+            print(f"❌ OHLCV parsing error for {symbol}: {type(e).__name__}")
+            return {"success": False, "error": "Unable to process data", "symbol": symbol}
+        
         except Exception as e:
-            return {"success": False, "error": str(e), "symbol": symbol}
+            print(f"🔴 Unexpected OHLCV error for {symbol}: {type(e).__name__}")
+            try:
+                from app.utils.alerter import alert_critical
+                import asyncio
+                asyncio.create_task(alert_critical(
+                    "CoinAPI OHLCV Error",
+                    f"Unexpected error in get_ohlcv_latest\nSymbol: {symbol}\nError: {type(e).__name__}"
+                ))
+            except:
+                pass
+            return {"success": False, "error": "An unexpected error occurred", "symbol": symbol}
     
     async def get_trades(self, symbol: str, limit: int = 100) -> Dict:
         """
@@ -194,7 +292,7 @@ class CoinAPIService:
             
             normalized = normalize_symbol(symbol, "coinapi")
             if not normalized:
-                return {"success": False, "error": f"Symbol normalization failed for {symbol}", "symbol": symbol}
+                return {"success": False, "error": "Invalid symbol format", "symbol": symbol}
             
             url = f"{self.base_url}/trades/{normalized}/latest"
             params = {"limit": limit}
@@ -206,7 +304,7 @@ class CoinAPIService:
                 data = response.json()
                 
                 if not data:
-                    return {"success": False, "error": "No trade data", "symbol": symbol}
+                    return {"success": False, "error": "No trade data available", "symbol": symbol}
                 
                 buy_volume = 0.0
                 sell_volume = 0.0
@@ -227,7 +325,7 @@ class CoinAPIService:
                         if price > 0:
                             total_price += price
                             valid_trades += 1
-                    except (ValueError, TypeError, KeyError) as e:
+                    except (ValueError, TypeError, KeyError):
                         continue
                 
                 if valid_trades == 0:
@@ -260,8 +358,27 @@ class CoinAPIService:
                     "source": "coinapi"
                 }
                 
+        except httpx.HTTPStatusError as e:
+            status_code = e.response.status_code
+            print(f"❌ HTTP {status_code} on trades for {symbol}")
+            return {"success": False, "error": "Service unavailable", "symbol": symbol}
+        
+        except httpx.TimeoutException:
+            print(f"⏱️ Timeout on trades for {symbol}")
+            return {"success": False, "error": "Request timeout", "symbol": symbol}
+        
         except Exception as e:
-            return {"success": False, "error": str(e), "symbol": symbol}
+            print(f"🔴 Unexpected trades error for {symbol}: {type(e).__name__}")
+            try:
+                from app.utils.alerter import alert_critical
+                import asyncio
+                asyncio.create_task(alert_critical(
+                    "CoinAPI Trades Error",
+                    f"Unexpected error in get_trades\nSymbol: {symbol}\nError: {type(e).__name__}"
+                ))
+            except:
+                pass
+            return {"success": False, "error": "An unexpected error occurred", "symbol": symbol}
 
 
 # Singleton instance
