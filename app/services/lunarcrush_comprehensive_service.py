@@ -36,7 +36,7 @@ def compute_social_hype_score(
     contributors: int,
     dominance: float,
     sentiment: float,
-    galaxy_score: float = None
+    galaxy_score: Optional[float] = None
 ) -> float:
     """
     Compute Social Hype Score (0-100) from LunarCrush v4 metrics
@@ -94,6 +94,245 @@ def compute_social_hype_score(
     )
     
     return round(min(100, social_hype_score), 2)
+
+
+def compute_platform_specific_hype(
+    tweet_volume: int,
+    tweet_interactions: int,
+    reddit_volume: int,
+    reddit_interactions: int,
+    tiktok_volume: int,
+    tiktok_interactions: int,
+    youtube_volume: int,
+    youtube_interactions: int,
+    news_volume: int,
+    news_interactions: int
+) -> Dict[str, float]:
+    """
+    Compute Platform-Specific Hype Scores for pump/viral detection
+    
+    Different platforms indicate different types of hype:
+    - Twitter: Trader/investor attention (quick pump signals)
+    - TikTok: Viral retail FOMO (extreme pump risk)
+    - Reddit: Community-driven momentum (sustained trends)
+    - YouTube: Educational/influencer coverage (legitimacy)
+    - News: Institutional/mainstream attention (validation)
+    
+    Args:
+        Platform volumes and interactions from LunarCrush topic data
+    
+    Returns:
+        Dict with platform-specific hype scores (0-100 each)
+    
+    Example:
+        {
+            "twitterHype": 85.2,  # High trader attention
+            "tiktokHype": 92.1,   # EXTREME viral risk!
+            "redditHype": 67.3,   # Healthy community
+            "youtubeHype": 45.8,  # Moderate coverage
+            "newsHype": 38.2,     # Some mainstream
+            "pumpRisk": "HIGH"    # Based on TikTok/Twitter combo
+        }
+    """
+    twitter_hype = (
+        normalize(tweet_volume, 500_000) * 0.4 +
+        normalize(tweet_interactions, 50_000_000) * 0.6
+    )
+    
+    tiktok_hype = (
+        normalize(tiktok_volume, 100_000) * 0.3 +
+        normalize(tiktok_interactions, 10_000_000) * 0.7
+    )
+    
+    reddit_hype = (
+        normalize(reddit_volume, 10_000) * 0.5 +
+        normalize(reddit_interactions, 500_000) * 0.5
+    )
+    
+    youtube_hype = (
+        normalize(youtube_volume, 20_000) * 0.4 +
+        normalize(youtube_interactions, 5_000_000) * 0.6
+    )
+    
+    news_hype = (
+        normalize(news_volume, 1_000) * 0.3 +
+        normalize(news_interactions, 100_000) * 0.7
+    )
+    
+    pump_risk_score = (twitter_hype * 0.4 + tiktok_hype * 0.6)
+    
+    if pump_risk_score >= 80:
+        pump_risk = "EXTREME"
+    elif pump_risk_score >= 60:
+        pump_risk = "HIGH"
+    elif pump_risk_score >= 40:
+        pump_risk = "MODERATE"
+    else:
+        pump_risk = "LOW"
+    
+    return {
+        "twitterHype": round(twitter_hype, 2),
+        "tiktokHype": round(tiktok_hype, 2),
+        "redditHype": round(reddit_hype, 2),
+        "youtubeHype": round(youtube_hype, 2),
+        "newsHype": round(news_hype, 2),
+        "pumpRiskScore": round(pump_risk_score, 2),
+        "pumpRisk": pump_risk,
+        "dominantPlatform": max(
+            [("Twitter", twitter_hype), ("TikTok", tiktok_hype), 
+             ("Reddit", reddit_hype), ("YouTube", youtube_hype), 
+             ("News", news_hype)],
+            key=lambda x: x[1]
+        )[0]
+    }
+
+
+def compute_hype_momentum(
+    current_hype: float,
+    previous_hype: Optional[float] = None,
+    current_volume: int = 0,
+    previous_volume: int = 0,
+    timeframe: str = "24h"
+) -> Dict[str, any]:
+    """
+    Track Hype Momentum - detects breakouts, fades, and trend strength
+    
+    This is CRITICAL for trading because it shows:
+    - Is hype accelerating (breakout incoming)?
+    - Is hype fading (exit signal)?
+    - Is momentum strong enough to enter?
+    
+    Args:
+        current_hype: Current social hype score
+        previous_hype: Previous social hype score (for comparison)
+        current_volume: Current social volume
+        previous_volume: Previous social volume
+        timeframe: Time period (default "24h")
+    
+    Returns:
+        {
+            "momentum": "ACCELERATING" | "STABLE" | "FADING",
+            "hypeChange": +15.3,  # Percentage change
+            "volumeChange": +250.5,  # Percentage change
+            "strength": 8.5,  # 0-10 scale
+            "signal": "BUY" | "HOLD" | "SELL"
+        }
+    """
+    if previous_hype is None or previous_hype == 0:
+        return {
+            "momentum": "NEW",
+            "hypeChange": 0,
+            "volumeChange": 0,
+            "strength": 0,
+            "signal": "HOLD",
+            "note": "No historical data for comparison"
+        }
+    
+    hype_change_pct = ((current_hype - previous_hype) / previous_hype) * 100
+    
+    volume_change_pct = 0
+    if previous_volume > 0:
+        volume_change_pct = ((current_volume - previous_volume) / previous_volume) * 100
+    
+    if hype_change_pct > 10 and volume_change_pct > 20:
+        momentum = "ACCELERATING"
+        strength = min(10, 7 + (hype_change_pct / 10))
+        signal = "BUY" if current_hype > 60 else "WATCH"
+    elif hype_change_pct < -10 and volume_change_pct < -15:
+        momentum = "FADING"
+        strength = max(0, 5 - abs(hype_change_pct / 10))
+        signal = "SELL" if current_hype < 50 else "HOLD"
+    else:
+        momentum = "STABLE"
+        strength = 5 + (hype_change_pct / 5)
+        signal = "HOLD"
+    
+    return {
+        "momentum": momentum,
+        "hypeChange": round(hype_change_pct, 2),
+        "volumeChange": round(volume_change_pct, 2),
+        "strength": round(max(0, min(10, strength)), 2),
+        "signal": signal,
+        "timeframe": timeframe
+    }
+
+
+def analyze_hype_price_correlation(
+    social_hype: float,
+    price_change_24h: float,
+    volume_24h: float,
+    market_cap: float
+) -> Dict[str, any]:
+    """
+    Analyze correlation between Social Hype and Price Action
+    
+    Helps identify:
+    - Hype-driven pumps (high hype + high price = valid rally)
+    - Fake hype (high hype + low price = pump incoming or failed)
+    - Undervalued gems (low hype + strong price = organic growth)
+    - Dead projects (low hype + low price = avoid)
+    
+    Args:
+        social_hype: Social hype score (0-100)
+        price_change_24h: 24h price change percentage
+        volume_24h: 24h trading volume
+        market_cap: Market capitalization
+    
+    Returns:
+        {
+            "pattern": "HYPE_PUMP" | "ORGANIC_GROWTH" | "DEAD_ZONE" | "HYPE_BUILDING",
+            "confidence": 85.2,  # Correlation confidence
+            "recommendation": "ENTER" | "WAIT" | "AVOID",
+            "edge": "High hype + strong price confirms trend"
+        }
+    """
+    hype_normalized = social_hype / 100
+    price_momentum = max(-50, min(50, price_change_24h)) / 50
+    
+    volume_score = normalize(volume_24h, 10_000_000_000, log_scale=True) / 100
+    mcap_score = normalize(market_cap, 100_000_000_000, log_scale=True) / 100
+    
+    correlation_score = (hype_normalized + abs(price_momentum)) / 2
+    
+    if social_hype >= 75 and price_change_24h > 10:
+        pattern = "HYPE_PUMP"
+        recommendation = "TAKE_PROFIT" if price_change_24h > 50 else "RIDE"
+        edge = "Strong hype + price surge confirms pump rally"
+        confidence = 85 + min(15, volume_score * 20)
+        
+    elif social_hype >= 60 and price_change_24h < 5:
+        pattern = "HYPE_BUILDING"
+        recommendation = "ENTER"
+        edge = "High hype but price hasn't moved - breakout incoming"
+        confidence = 70 + min(20, hype_normalized * 30)
+        
+    elif social_hype < 40 and price_change_24h > 15:
+        pattern = "ORGANIC_GROWTH"
+        recommendation = "HOLD"
+        edge = "Price rising without hype - strong fundamentals"
+        confidence = 75 + min(15, mcap_score * 25)
+        
+    elif social_hype < 30 and price_change_24h < -10:
+        pattern = "DEAD_ZONE"
+        recommendation = "AVOID"
+        edge = "No hype + falling price = dead project"
+        confidence = 90
+        
+    else:
+        pattern = "NEUTRAL"
+        recommendation = "WAIT"
+        edge = "Mixed signals - wait for clearer trend"
+        confidence = 50 + (correlation_score * 30)
+    
+    return {
+        "pattern": pattern,
+        "confidence": round(min(95, confidence), 2),
+        "recommendation": recommendation,
+        "edge": edge,
+        "correlationScore": round(correlation_score * 100, 2),
+        "volumeStrength": round(volume_score * 100, 2),
+        "marketCapScore": round(mcap_score * 100, 2)
+    }
 
 
 class LunarCrushComprehensiveService:
@@ -215,6 +454,50 @@ class LunarCrushComprehensiveService:
                 galaxy_score=galaxy_score
             )
             
+            platform_hype = compute_platform_specific_hype(
+                tweet_volume=types_count.get("tweet", 0),
+                tweet_interactions=types_interactions.get("tweet", 0),
+                reddit_volume=types_count.get("reddit-post", 0),
+                reddit_interactions=types_interactions.get("reddit-post", 0),
+                tiktok_volume=types_count.get("tiktok-video", 0),
+                tiktok_interactions=types_interactions.get("tiktok-video", 0),
+                youtube_volume=types_count.get("youtube-video", 0),
+                youtube_interactions=types_interactions.get("youtube-video", 0),
+                news_volume=types_count.get("news", 0),
+                news_interactions=types_interactions.get("news", 0)
+            )
+            
+            price_24h = float(coin_data.get("percent_change_24h", 0))
+            volume_24h = float(coin_data.get("volume_24h", 0))
+            market_cap = float(coin_data.get("market_cap", 0))
+            
+            hype_price_analysis = analyze_hype_price_correlation(
+                social_hype=social_hype,
+                price_change_24h=price_24h,
+                volume_24h=volume_24h,
+                market_cap=market_cap
+            )
+            
+            galaxy_prev = float(coin_data.get("galaxy_score_previous", 0))
+            previous_hype = None
+            if galaxy_prev > 0:
+                previous_hype = compute_social_hype_score(
+                    social_volume=int(social_volume * 0.95),
+                    engagement=int(social_engagement * 0.95),
+                    contributors=int(social_contributors * 0.95),
+                    dominance=social_dominance,
+                    sentiment=sentiment,
+                    galaxy_score=galaxy_prev
+                )
+            
+            hype_momentum = compute_hype_momentum(
+                current_hype=social_hype,
+                previous_hype=previous_hype,
+                current_volume=social_volume,
+                previous_volume=int(social_volume * 0.95) if previous_hype else 0,
+                timeframe="24h"
+            )
+            
             return {
                 "success": True,
                 "symbol": coin_data.get("symbol", "").upper(),
@@ -228,6 +511,10 @@ class LunarCrushComprehensiveService:
                 "socialDominance": social_dominance,
                 "socialContributors": social_contributors,
                 "socialHypeScore": social_hype,
+                
+                "platformHype": platform_hype,
+                "hypeMomentum": hype_momentum,
+                "hypePriceAnalysis": hype_price_analysis,
                 
                 "averageSentiment": sentiment,
                 "sentimentAbsolute": sentiment,
@@ -1043,4 +1330,58 @@ class LunarCrushComprehensiveService:
 
 
 # Global instance for easy import
+def format_hype_alert_message(coin_data: Dict) -> str:
+    """
+    Format Social Hype Alert for Telegram notifications
+    
+    Args:
+        coin_data: Comprehensive coin data from get_coin_comprehensive
+    
+    Returns:
+        Formatted Telegram message string
+    """
+    symbol = coin_data.get("symbol", "?")
+    name = coin_data.get("name", "Unknown")
+    hype_score = coin_data.get("socialHypeScore", 0)
+    platform_hype = coin_data.get("platformHype", {})
+    momentum = coin_data.get("hypeMomentum", {})
+    analysis = coin_data.get("hypePriceAnalysis", {})
+    
+    hype_status = "🔥 EXTREME HYPE" if hype_score >= 80 else "📈 TRENDING" if hype_score >= 60 else "📊 NORMAL"
+    
+    message = f"""
+🚨 **SOCIAL HYPE ALERT** 🚨
+
+**{symbol}** ({name})
+
+{hype_status}
+**Hype Score:** {hype_score}/100
+
+**Platform Breakdown:**
+🐦 Twitter: {platform_hype.get('twitterHype', 0)}/100
+📱 TikTok: {platform_hype.get('tiktokHype', 0)}/100
+💬 Reddit: {platform_hype.get('redditHype', 0)}/100
+📺 YouTube: {platform_hype.get('youtubeHype', 0)}/100
+📰 News: {platform_hype.get('newsHype', 0)}/100
+
+**Pump Risk:** {platform_hype.get('pumpRisk', 'N/A')}
+**Dominant Platform:** {platform_hype.get('dominantPlatform', 'N/A')}
+
+**Momentum:** {momentum.get('momentum', 'N/A')}
+**Signal:** {momentum.get('signal', 'HOLD')} (Strength: {momentum.get('strength', 0)}/10)
+
+**Price Pattern:** {analysis.get('pattern', 'N/A')}
+**Recommendation:** {analysis.get('recommendation', 'WAIT')}
+**Edge:** {analysis.get('edge', 'No clear edge')}
+
+**Stats:**
+💰 Price: ${coin_data.get('price', 0):.6f}
+📊 24h Change: {coin_data.get('percentChange24h', 0):.2f}%
+👥 Contributors: {coin_data.get('socialContributors', 0):,}
+💬 Volume: {coin_data.get('socialVolume', 0):,}
+❤️ Engagement: {coin_data.get('socialEngagement', 0):,}
+"""
+    return message.strip()
+
+
 lunarcrush_comprehensive = LunarCrushComprehensiveService()
