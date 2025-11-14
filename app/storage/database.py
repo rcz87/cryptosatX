@@ -15,6 +15,11 @@ from asyncpg import Pool
 import aiosqlite
 import sqlite3
 
+from app.utils.logger import get_logger
+
+# Initialize module logger
+logger = get_logger(__name__)
+
 
 class Database:
     """
@@ -34,11 +39,10 @@ class Database:
         if not self.database_url:
             self.database_url = "sqlite:///cryptosatx.db"
             self.use_postgres = False
-            print("[INFO] Using SQLite database for Replit compatibility")
+            logger.info("📁 Using SQLite database for Replit compatibility")
         else:
-            print(
-                f"[INFO] Using {'PostgreSQL' if self.use_postgres else 'SQLite'} database"
-            )
+            db_type = "PostgreSQL" if self.use_postgres else "SQLite"
+            logger.info(f"🗄️  Using {db_type} database")
 
     async def connect(self):
         """Initialize connection pool or SQLite connection"""
@@ -51,7 +55,7 @@ class Database:
                     command_timeout=60,
                     timeout=30,
                 )
-                print("[SUCCESS] PostgreSQL connection pool created")
+                logger.info("✅ PostgreSQL connection pool created")
         else:
             if self.sqlite_conn is None:
                 db_path = self.database_url.replace("sqlite:///", "")
@@ -59,7 +63,7 @@ class Database:
                 # Enable foreign keys and WAL mode for better performance
                 await self.sqlite_conn.execute("PRAGMA foreign_keys = ON")
                 await self.sqlite_conn.execute("PRAGMA journal_mode = WAL")
-                print("[SUCCESS] SQLite connection established")
+                logger.info("✅ SQLite connection established")
 
         # Initialize schema on first connect
         # For PostgreSQL: Validates Alembic migrations are applied
@@ -72,12 +76,12 @@ class Database:
             if self.pool:
                 await self.pool.close()
                 self.pool = None
-                print("[SUCCESS] PostgreSQL connection pool closed")
+                logger.info("✅ PostgreSQL connection pool closed")
         else:
             if self.sqlite_conn:
                 await self.sqlite_conn.close()
                 self.sqlite_conn = None
-                print("[SUCCESS] SQLite connection closed")
+                logger.info("✅ SQLite connection closed")
 
     async def init_schema(self):
         """
@@ -102,9 +106,9 @@ class Database:
                     """
                 )
                 if not result:
-                    print("[WARNING] Alembic migrations not detected. Run: alembic upgrade head")
+                    logger.warning("⚠️  Alembic migrations not detected. Run: alembic upgrade head")
                 else:
-                    print("[INFO] Database schema managed by Alembic migrations")
+                    logger.info("✅ Database schema managed by Alembic migrations")
             return
         
         # SQLite schema creation below (for Replit compatibility)
@@ -191,7 +195,7 @@ class Database:
 
             await self.sqlite_conn.commit()
 
-        print("[SUCCESS] Database schema initialized")
+        logger.info("✅ Database schema initialized")
 
     @asynccontextmanager
     async def acquire(self) -> AsyncGenerator:

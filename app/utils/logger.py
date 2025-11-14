@@ -175,5 +175,47 @@ def log_error(
     logger.handle(log_record)
 
 
+def get_logger(module_name: str, level: Optional[int] = None) -> logging.Logger:
+    """
+    Get a module-level logger with consistent configuration.
+    
+    This is the recommended way to get a logger in any module:
+        from app.utils.logger import get_logger
+        logger = get_logger(__name__)
+    
+    Args:
+        module_name: Module name (use __name__)
+        level: Optional log level override
+    
+    Returns:
+        Configured logger instance with JSON formatting
+    
+    Example:
+        logger = get_logger(__name__)
+        logger.info("✅ Service initialized")
+        logger.warning("⚠️ Rate limit approaching")
+        logger.error("❌ API call failed", extra={"symbol": "BTC"})
+    """
+    import os
+    
+    # Get log level from environment or use INFO as default
+    if level is None:
+        env_level = os.getenv("LOG_LEVEL", "INFO").upper()
+        level = getattr(logging, env_level, logging.INFO)
+    
+    return setup_json_logger(module_name, level)
+
+
 # Create default logger instance
 default_logger = setup_json_logger()
+
+
+# Convenience re-exports for backward compatibility
+__all__ = [
+    "get_logger",
+    "setup_json_logger", 
+    "log_api_call",
+    "log_signal_generation",
+    "log_error",
+    "default_logger",
+]

@@ -7,6 +7,7 @@ Uses premium Coinglass endpoints and weighted scoring system
 import os
 import asyncio
 import time
+import logging
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, asdict, field
