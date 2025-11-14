@@ -2,6 +2,9 @@
 Database configuration and connection management
 Uses async PostgreSQL with asyncpg for optimal performance
 Falls back to SQLite for Replit compatibility
+
+Database migrations are managed with Alembic.
+Run migrations with: alembic upgrade head
 """
 
 import os
@@ -59,7 +62,10 @@ class Database:
                 print("[SUCCESS] SQLite connection established")
 
         # Initialize schema on first connect
-        await self.init_schema()
+        # For PostgreSQL: Migrations managed by Alembic (run `alembic upgrade head`)
+        # For SQLite: Manual schema creation for Replit compatibility
+        if not self.use_postgres:
+            await self.init_schema()
 
     async def disconnect(self):
         """Close connection pool or SQLite connection"""
@@ -76,12 +82,36 @@ class Database:
 
     async def init_schema(self):
         """
-        Initialize database schema
-        Creates signals table if it doesn't exist
+        Initialize database schema for SQLite only.
+        
+        PostgreSQL schema is managed by Alembic migrations.
+        Run: alembic upgrade head
+        
+        This method is only called for SQLite to maintain Replit compatibility.
         """
         if self.use_postgres:
+            # PostgreSQL schema is managed by Alembic migrations
+            # Check if alembic_version table exists to verify migrations are run
             async with self.pool.acquire() as conn:
-                await conn.execute(
+                result = await conn.fetchval(
+                    """
+                    SELECT EXISTS (
+                        SELECT FROM information_schema.tables 
+                        WHERE table_schema = 'public' 
+                        AND table_name = 'alembic_version'
+                    )
+                    """
+                )
+                if not result:
+                    print("[WARNING] Alembic migrations not detected. Run: alembic upgrade head")
+                else:
+                    print("[INFO] Database schema managed by Alembic migrations")
+            return
+        
+        # SQLite schema creation below (for Replit compatibility)
+        else:
+            # SQLite schema
+            await self.sqlite_conn.execute(
                     """
                     CREATE TABLE IF NOT EXISTS signals (
                         id SERIAL PRIMARY KEY,

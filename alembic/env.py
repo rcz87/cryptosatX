@@ -25,6 +25,13 @@ if database_url:
     # Convert postgresql:// to postgresql+asyncpg:// for async support
     if database_url.startswith("postgresql://"):
         database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+    
+    # Remove sslmode parameter if present (asyncpg handles SSL differently)
+    # asyncpg uses ssl= instead of sslmode=
+    if "sslmode=" in database_url:
+        database_url = database_url.split("?")[0]  # Remove all query parameters
+        database_url += "?ssl=prefer"  # Add asyncpg-compatible SSL
+    
     config.set_main_option("sqlalchemy.url", database_url)
 
 # Add your model's MetaData object here for 'autogenerate' support
