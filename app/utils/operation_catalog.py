@@ -118,6 +118,7 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "signals.get": OperationMetadata("signals.get", "signals", "/signals/{symbol}", "GET", "Get trading signal for symbol", requires_symbol=True),
     "signals.debug": OperationMetadata("signals.debug", "signals", "/debug/premium/{symbol}", "GET", "Get debug premium data", requires_symbol=True),
     "market.get": OperationMetadata("market.get", "market", "/market/{symbol}", "GET", "Get market data for symbol", requires_symbol=True),
+    "market.summary": OperationMetadata("market.summary", "market", "/market/summary", "GET", "Get overall market summary across major cryptocurrencies (BTC, ETH, SOL, XRP, BNB)"),
     
     "smart_money.scan": OperationMetadata("smart_money.scan", "smart_money", "/scan", "GET", "Scan smart money activity"),
     "smart_money.scan_accumulation": OperationMetadata("smart_money.scan_accumulation", "smart_money", "/scan/accumulation", "GET", "Scan accumulation patterns"),

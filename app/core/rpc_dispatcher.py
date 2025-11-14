@@ -45,6 +45,7 @@ class RPCDispatcher:
         # Core Signals
         self.handlers["signals.get"] = self._signals_get
         self.handlers["market.get"] = self._market_get
+        self.handlers["market.summary"] = self._market_summary
         
         # Coinglass - Key endpoints
         self.handlers["coinglass.markets"] = self._coinglass_markets
@@ -221,6 +222,11 @@ class RPCDispatcher:
         symbol = args["symbol"]
         # Signal engine internally aggregates market data
         return await signal_engine.build_signal(symbol, debug=True)
+    
+    async def _market_summary(self, args: Dict) -> Dict:
+        """Get overall market summary across major cryptocurrencies"""
+        from app.services.market_summary_service import market_summary_service
+        return await market_summary_service.get_market_summary()
     
     async def _coinglass_markets(self, args: Dict) -> Dict:
         """Get Coinglass markets"""

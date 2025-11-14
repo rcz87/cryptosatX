@@ -264,6 +264,10 @@ class FlatRPCDispatcher:
             from app.core.signal_engine import signal_engine
             symbol = args["symbol"]
             return await signal_engine.build_signal(symbol, debug=True)
+        
+        elif operation == "market.summary":
+            from app.services.market_summary_service import market_summary_service
+            return await market_summary_service.get_market_summary()
 
         # ===================================================================
         # COINGLASS - LIQUIDATIONS
