@@ -57,86 +57,116 @@ class LunarCrushComprehensiveService:
     async def get_coin_comprehensive(self, symbol: str) -> Dict:
         """
         Get comprehensive social + market metrics for a coin
-        Endpoint: /coins/{symbol}/v1
         
-        Note: Individual coin lookups use /v1 (only /list endpoints have /v2)
-        With paid API tier, this provides current data.
+        LunarCrush v4 API Strategy (Builder Tier):
+        Primary: /coins/list/v2 (filtered by symbol) - Has ALL data (market + social)
+        Fallback: /topic/{topic}/v1 for additional platform-specific breakdown
+        
+        Why /coins/list/v2?
+        - Single call gets market data + social metrics + dominance
+        - Real-time data (no 1-hour cache)
+        - Includes social_volume_24h, interactions_24h, social_dominance, sentiment
         
         Returns 60+ metrics including:
         - Galaxy Score™, AltRank™
-        - Social volume, engagement, dominance
-        - Average sentiment (1-5 scale)
-        - Tweet/Reddit volumes
-        - URL shares, correlation rank
+        - Social volume, engagement, contributors, dominance
+        - Sentiment analysis (overall + by platform)
+        - Platform-specific metrics (Twitter, Reddit, TikTok, YouTube, News)
         - Price, volume, market cap
         """
         try:
+            import asyncio
+            
             client = await self._get_client()
             symbol = normalize_symbol(symbol, Provider.LUNARCRUSH)
-            url = f"{self.base_url}/coins/{symbol}/v1"
+            topic = symbol.lower()
             
-            response = await client.get(url, headers=self.headers)
+            list_url = f"{self.base_url}/coins/list/v2"
+            topic_url = f"{self.base_url}/topic/{topic}/v1"
             
-            if response.status_code != 200:
-                return {"success": False, "error": f"HTTP {response.status_code}"}
+            list_response, topic_response = await asyncio.gather(
+                client.get(list_url, headers=self.headers),
+                client.get(topic_url, headers=self.headers),
+                return_exceptions=True
+            )
             
-            data = response.json()
+            if isinstance(list_response, Exception) or list_response.status_code != 200:
+                error_msg = str(list_response) if isinstance(list_response, Exception) else f"HTTP {list_response.status_code}"
+                return {"success": False, "error": f"Coins list API: {error_msg}"}
             
-            if data.get("data"):
-                coin_data = data["data"]
+            list_data_raw = list_response.json()
+            all_coins = list_data_raw.get("data", [])
+            
+            coin_data = next((c for c in all_coins if c.get("symbol", "").upper() == symbol.upper()), None)
+            
+            if not coin_data:
+                return {"success": False, "error": f"Coin {symbol} not found in LunarCrush database"}
+            
+            topic_data = {}
+            has_topic_data = False
+            if not isinstance(topic_response, Exception) and topic_response.status_code == 200:
+                topic_data_raw = topic_response.json()
+                topic_data = topic_data_raw.get("data", {})
+                has_topic_data = True
+            
+            types_count = topic_data.get("types_count", {})
+            types_interactions = topic_data.get("types_interactions", {})
+            types_sentiment = topic_data.get("types_sentiment", {})
+            
+            return {
+                "success": True,
+                "symbol": coin_data.get("symbol", "").upper(),
+                "name": coin_data.get("name", ""),
                 
-                return {
-                    "success": True,
-                    "symbol": symbol,
-                    
-                    # Proprietary Scores
-                    "galaxyScore": float(coin_data.get("galaxy_score", 0)),
-                    "altRank": int(coin_data.get("alt_rank", 0)),
-                    
-                    # Social Metrics
-                    "socialVolume": int(coin_data.get("social_volume", 0)),
-                    "socialEngagement": int(coin_data.get("social_engagement", 0)),
-                    "socialDominance": float(coin_data.get("social_dominance", 0)),
-                    "socialContributors": int(coin_data.get("social_contributors", 0)),
-                    
-                    # Sentiment Analysis
-                    "averageSentiment": float(coin_data.get("average_sentiment", 0)),
-                    "sentimentAbsolute": float(coin_data.get("sentiment_absolute", 0)),
-                    
-                    # Platform-specific Volumes
-                    "tweetVolume": int(coin_data.get("tweets", 0)),
-                    "redditVolume": int(coin_data.get("reddit_posts", 0)),
-                    "urlShares": int(coin_data.get("url_shares", 0)),
-                    
-                    # Correlation & Quality
-                    "correlationRank": float(coin_data.get("correlation_rank", 0)),
-                    "spamDetected": int(coin_data.get("spam", 0)),
-                    
-                    # Market Data
-                    "price": float(coin_data.get("price", 0)),
-                    "priceUsd": float(coin_data.get("price_usd", 0)),
-                    "volume24h": float(coin_data.get("volume_24h", 0)),
-                    "marketCap": float(coin_data.get("market_cap", 0)),
-                    "percentChange24h": float(coin_data.get("percent_change_24h", 0)),
-                    "percentChange7d": float(coin_data.get("percent_change_7d", 0)),
-                    "percentChange1h": float(coin_data.get("percent_change_1h", 0)),
-                    
-                    # Volatility
-                    "volatility": float(coin_data.get("volatility", 0)),
-                    
-                    # Categories
-                    "categories": coin_data.get("categories", []),
-                    
-                    # Metadata
-                    "name": coin_data.get("name", ""),
-                    "timeFetched": datetime.utcnow().isoformat(),
-                    "source": "lunarcrush_comprehensive"
-                }
+                "galaxyScore": float(coin_data.get("galaxy_score", 0)),
+                "altRank": int(coin_data.get("alt_rank", 0)),
+                
+                "socialVolume": int(coin_data.get("social_volume_24h", 0)),
+                "socialEngagement": int(coin_data.get("interactions_24h", 0)),
+                "socialDominance": float(coin_data.get("social_dominance", 0)),
+                "socialContributors": topic_data.get("num_contributors", 0) if has_topic_data else 0,
+                
+                "averageSentiment": float(coin_data.get("sentiment", 0)),
+                "sentimentAbsolute": float(coin_data.get("sentiment", 0)),
+                
+                "tweetVolume": types_count.get("tweet", 0),
+                "redditVolume": types_count.get("reddit-post", 0),
+                "newsVolume": types_count.get("news", 0),
+                "tiktokVolume": types_count.get("tiktok-video", 0),
+                "youtubeVolume": types_count.get("youtube-video", 0),
+                
+                "tweetInteractions": types_interactions.get("tweet", 0),
+                "redditInteractions": types_interactions.get("reddit-post", 0),
+                "newsInteractions": types_interactions.get("news", 0),
+                "tiktokInteractions": types_interactions.get("tiktok-video", 0),
+                "youtubeInteractions": types_interactions.get("youtube-video", 0),
+                
+                "tweetSentiment": types_sentiment.get("tweet", 0),
+                "redditSentiment": types_sentiment.get("reddit-post", 0),
+                "newsSentiment": types_sentiment.get("news", 0),
+                "tiktokSentiment": types_sentiment.get("tiktok-video", 0),
+                "youtubeSentiment": types_sentiment.get("youtube-video", 0),
+                
+                "price": float(coin_data.get("price", 0)),
+                "priceUsd": float(coin_data.get("price", 0)),
+                "volume24h": float(coin_data.get("volume_24h", 0)),
+                "marketCap": float(coin_data.get("market_cap", 0)),
+                "percentChange24h": float(coin_data.get("percent_change_24h", 0)),
+                "percentChange7d": float(coin_data.get("percent_change_7d", 0)),
+                "percentChange1h": float(coin_data.get("percent_change_1h", 0)),
+                
+                "volatility": float(coin_data.get("volatility", 0)),
+                "marketCapRank": int(coin_data.get("market_cap_rank", 0)),
+                "marketDominance": float(coin_data.get("market_dominance", 0)),
+                
+                "categories": coin_data.get("categories", "").split(",") if coin_data.get("categories") else [],
+                
+                "timeFetched": datetime.utcnow().isoformat(),
+                "source": "lunarcrush_v4_comprehensive",
+                "dataStrategy": "coins_list_v2 + topic_v1 (concurrent)",
+                "hasTopicData": has_topic_data
+            }
             
-            return {"success": False, "error": "No data returned from API"}
-            
-        except httpx.HTTPStatusError as e:
-            return {"success": False, "error": f"HTTP {e.response.status_code}"}
         except Exception as e:
             return {"success": False, "error": str(e)}
     
