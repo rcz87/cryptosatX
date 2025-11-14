@@ -390,6 +390,172 @@ class LunarCrushService:
                 "success": False,
                 "error": str(e),
             }
+    
+    async def get_coin_sentiment(self, symbol: str) -> Dict:
+        """
+        Get comprehensive sentiment analysis for a cryptocurrency
+        Combines social volume, engagement, sentiment, and platform breakdown
+        
+        Args:
+            symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH', 'SOL')
+            
+        Returns:
+            Dict with comprehensive sentiment metrics optimized for scalping
+        """
+        try:
+            symbol = symbol.upper()
+            
+            # Fetch both coin data and topic data concurrently
+            import asyncio
+            coin_data_task = self.get_social_score(symbol)
+            topic_data_task = self.get_topic_details(symbol.lower())
+            
+            coin_data, topic_data = await asyncio.gather(coin_data_task, topic_data_task, return_exceptions=True)
+            
+            # Check for exceptions from asyncio.gather
+            if isinstance(coin_data, Exception):
+                return {
+                    "success": False,
+                    "symbol": symbol,
+                    "error": f"Coin data fetch failed: {str(coin_data)}",
+                    "source": "lunarcrush"
+                }
+            
+            if isinstance(topic_data, Exception):
+                return {
+                    "success": False,
+                    "symbol": symbol,
+                    "error": f"Topic data fetch failed: {str(topic_data)}",
+                    "source": "lunarcrush"
+                }
+            
+            # Initialize response
+            result = {
+                "success": True,
+                "symbol": symbol,
+                "source": "lunarcrush"
+            }
+            
+            # Extract galaxy score from coin data
+            galaxy_score = 50.0
+            if isinstance(coin_data, dict) and coin_data.get("success"):
+                galaxy_score = coin_data.get("socialScore", 50.0)
+            elif isinstance(coin_data, dict) and not coin_data.get("success"):
+                return {
+                    "success": False,
+                    "symbol": symbol,
+                    "error": coin_data.get("error", "Coin data unavailable"),
+                    "source": "lunarcrush"
+                }
+            
+            # Extract sentiment from topic data
+            sentiment_score = 50.0
+            social_volume = 0
+            social_engagement = 0
+            social_contributors = 0
+            social_dominance = 0.0
+            
+            if isinstance(topic_data, dict) and topic_data.get("success"):
+                topic_info = topic_data.get("data", {})
+                sentiment_score = float(topic_info.get("sentiment", 50.0))
+                social_volume = int(topic_info.get("social_volume", 0))
+                social_engagement = int(topic_info.get("interactions_24h", 0))
+                social_contributors = int(topic_info.get("social_contributors", 0))
+                social_dominance = float(topic_info.get("social_dominance", 0.0))
+            
+            # Calculate composite scores
+            bullish_score = (galaxy_score + sentiment_score) / 2
+            volume_score = min((social_volume / 10000) * 100, 100) if social_volume > 0 else 0
+            
+            # Determine sentiment label
+            if bullish_score > 70:
+                label = "VERY_BULLISH"
+            elif bullish_score > 60:
+                label = "BULLISH"
+            elif bullish_score > 40:
+                label = "NEUTRAL"
+            elif bullish_score > 30:
+                label = "BEARISH"
+            else:
+                label = "VERY_BEARISH"
+            
+            # Build response
+            result.update({
+                "galaxy_score": round(galaxy_score, 2),
+                "sentiment_score": round(sentiment_score, 2),
+                "bullish_score": round(bullish_score, 2),
+                "volume_score": round(volume_score, 2),
+                "sentiment_label": label,
+                "social_metrics": {
+                    "volume_24h": social_volume,
+                    "engagement_24h": social_engagement,
+                    "contributors": social_contributors,
+                    "dominance_percent": round(social_dominance, 4)
+                },
+                "interpretation": self._interpret_sentiment(bullish_score, social_volume, label),
+                "scalping_signal": self._get_scalping_signal(bullish_score, volume_score)
+            })
+            
+            return result
+            
+        except Exception as e:
+            print(f"LunarCrush sentiment error for {symbol}: {e}")
+            return {
+                "success": False,
+                "symbol": symbol,
+                "error": str(e),
+                "source": "lunarcrush"
+            }
+    
+    def _interpret_sentiment(self, bullish_score: float, volume: int, label: str) -> str:
+        """Generate human-readable interpretation of sentiment"""
+        if bullish_score > 70 and volume > 10000:
+            return f"{label}: Strong bullish sentiment with high social volume - potential pump risk"
+        elif bullish_score > 60:
+            return f"{label}: Positive sentiment - favorable for longs"
+        elif bullish_score < 30 and volume > 10000:
+            return f"{label}: Negative sentiment with high activity - possible capitulation"
+        elif bullish_score < 40:
+            return f"{label}: Negative sentiment - consider shorts or wait"
+        else:
+            return f"{label}: Neutral sentiment - no strong social bias"
+    
+    def _get_scalping_signal(self, bullish_score: float, volume_score: float) -> Dict:
+        """Generate scalping-specific signal from sentiment"""
+        # High sentiment + high volume = potential overheated
+        if bullish_score > 75 and volume_score > 70:
+            return {
+                "bias": "CAUTION",
+                "reason": "Overheated sentiment - potential top",
+                "action": "Consider taking profits or shorting"
+            }
+        # High sentiment + low volume = sustainable bullish
+        elif bullish_score > 65 and volume_score < 40:
+            return {
+                "bias": "LONG",
+                "reason": "Bullish sentiment without hype",
+                "action": "Good for swing longs"
+            }
+        # Low sentiment + high volume = panic/capitulation
+        elif bullish_score < 35 and volume_score > 70:
+            return {
+                "bias": "CONTRARIAN_LONG",
+                "reason": "Panic selling with high volume",
+                "action": "Contrarian buy opportunity"
+            }
+        # Low sentiment + low volume = bearish drift
+        elif bullish_score < 40 and volume_score < 40:
+            return {
+                "bias": "SHORT",
+                "reason": "Negative sentiment, low interest",
+                "action": "Avoid longs, consider shorts"
+            }
+        else:
+            return {
+                "bias": "NEUTRAL",
+                "reason": "Mixed signals",
+                "action": "Wait for clearer setup"
+            }
 
 
 # Singleton instance

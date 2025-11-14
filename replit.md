@@ -39,7 +39,7 @@ The API delivers clean JSON responses and includes a debug mode (`?debug=true`).
 - `POST /scalping/analyze` - Complete analysis (~15-30s) with all layers including optional smart money
 - `GET /scalping/info` - System capabilities and data layer information
 
-**Data Layers (5 Critical + 2 Recommended + 3 Optional):**
+**Data Layers (5 Critical + 2 Recommended + 6 Optional):**
 
 **CRITICAL (Polling 3-5s):**
 1. **Price & OHLCV** - Real-time spot prices from CoinAPI
@@ -56,6 +56,9 @@ The API delivers clean JSON responses and includes a debug mode (`?debug=true`).
 8. **Smart Money Flow** - Institutional trading pattern detection (~25s, set `include_smart_money: true`)
 9. **Hyperliquid Whale Positions (Layer 7.5)** - DEX institutional bias from $5B+ whale positions (2-5m, set `include_whale_positions: true`)
 10. **Fear & Greed Index** - Macro sentiment indicator (hourly updates, set `include_fear_greed: true`)
+11. **OHLCV Trend Analysis** - CoinAPI 24-candle analysis with BULLISH/BEARISH/NEUTRAL trend detection and % change over period (set `include_coinapi: true`)
+12. **Recent Trades** - CoinAPI last 100 trades with buy/sell pressure calculation and volume momentum (set `include_coinapi: true`)
+13. **Sentiment Analysis** - LunarCrush comprehensive sentiment combining Galaxy Score + social metrics with scalping-specific signals (set `include_sentiment: true`)
 
 **Features:**
 - Concurrent data fetching with `asyncio.gather` for optimal performance

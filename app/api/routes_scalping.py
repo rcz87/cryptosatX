@@ -18,6 +18,8 @@ class ScalpingAnalysisRequest(BaseModel):
     include_smart_money: bool = Field(default=True, description="Include smart money analysis (takes ~25s)")
     include_whale_positions: bool = Field(default=True, description="Include Hyperliquid whale positions (DEX institutional bias)")
     include_fear_greed: bool = Field(default=True, description="Include fear & greed index")
+    include_coinapi: bool = Field(default=True, description="Include extended CoinAPI data (OHLCV, trades)")
+    include_sentiment: bool = Field(default=True, description="Include LunarCrush sentiment and social momentum")
 
 
 class ScalpingAnalysisResponse(BaseModel):
@@ -40,6 +42,9 @@ class ScalpingAnalysisResponse(BaseModel):
     smart_money: Optional[Dict[str, Any]] = None
     whale_positions: Optional[Dict[str, Any]] = None
     fear_greed: Optional[Dict[str, Any]] = None
+    ohlcv: Optional[Dict[str, Any]] = None
+    trades: Optional[Dict[str, Any]] = None
+    sentiment: Optional[Dict[str, Any]] = None
     
     # Analysis summary
     summary: Dict[str, Any]
@@ -136,6 +141,16 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
         if request.include_fear_greed:
             tasks.append(("fear_greed", coinglass_comprehensive.get_fear_greed_index()))
         
+        # OPTIONAL - Extended CoinAPI (OHLCV + Trades)
+        if request.include_coinapi:
+            tasks.append(("ohlcv", coinapi.get_ohlcv_latest(symbol, period="1HRS", limit=24)))
+            tasks.append(("trades", coinapi.get_trades(symbol, limit=100)))
+        
+        # OPTIONAL - LunarCrush Sentiment
+        if request.include_sentiment:
+            from app.services.lunarcrush_service import lunarcrush_service
+            tasks.append(("sentiment", lunarcrush_service.get_coin_sentiment(symbol)))
+        
         # Execute all tasks concurrently
         results = await asyncio.gather(*[task[1] for task in tasks], return_exceptions=True)
         
@@ -154,6 +169,10 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
             optional_keys.append("whale_positions")
         if request.include_fear_greed:
             optional_keys.append("fear_greed")
+        if request.include_coinapi:
+            optional_keys.extend(["ohlcv", "trades"])
+        if request.include_sentiment:
+            optional_keys.append("sentiment")
         
         critical_available = sum(1 for k in critical_keys if result.get(k))
         recommended_available = sum(1 for k in recommended_keys if result.get(k))
@@ -246,7 +265,9 @@ async def quick_scalping_check(symbol: str):
         symbol=symbol,
         include_smart_money=False,
         include_whale_positions=False,
-        include_fear_greed=False
+        include_fear_greed=False,
+        include_coinapi=False,
+        include_sentiment=False
     )
     
     return await analyze_for_scalping(request)
@@ -275,6 +296,9 @@ async def scalping_info():
             ],
             "optional": [
                 {"name": "Fear & Greed Index", "polling": "1h", "provider": "CoinGlass"},
+                {"name": "OHLCV Trend Analysis", "polling": "on-demand", "provider": "CoinAPI"},
+                {"name": "Recent Trades", "polling": "on-demand", "provider": "CoinAPI"},
+                {"name": "Sentiment Analysis", "polling": "on-demand", "provider": "LunarCrush"},
             ]
         },
         "endpoints": {
