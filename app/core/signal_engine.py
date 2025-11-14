@@ -6,9 +6,11 @@ Uses premium Coinglass endpoints and weighted scoring system
 
 import os
 import asyncio
+import time
 from datetime import datetime
-from typing import Dict, List, Optional
-from dataclasses import dataclass, asdict
+from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass, asdict, field
+from enum import Enum
 
 from app.services.coinapi_service import coinapi_service
 from app.services.coinapi_comprehensive_service import coinapi_comprehensive
@@ -22,6 +24,195 @@ from app.services.telegram_notifier import telegram_notifier
 from app.services.openai_service_v2 import get_openai_service_v2
 from app.services.position_sizer import position_sizer
 from app.utils import risk_rules
+
+
+# ============================================================================
+# SERVICE TRACKING & QUALITY MONITORING
+# ============================================================================
+
+class ServiceTier(Enum):
+    """Service priority tiers for quality calculation"""
+    CRITICAL = "critical"    # Must have for valid signal (price, funding, basic social)
+    IMPORTANT = "important"  # Should have for good signal (liquidations, LS ratio, candles)
+    OPTIONAL = "optional"    # Nice to have for enhanced signal (comprehensive data, whale analytics)
+
+
+@dataclass
+class ServiceCallResult:
+    """Track individual service call result"""
+    name: str
+    tier: ServiceTier
+    success: bool
+    error_message: Optional[str] = None
+    execution_time_ms: float = 0.0
+    data: any = None  # Store actual result
+
+
+@dataclass
+class DataQualityReport:
+    """Comprehensive data quality metrics"""
+    quality_score: float  # Percentage 0-100
+    quality_level: str    # excellent/good/fair/poor
+    services_total: int
+    services_successful: int
+    services_failed: List[Dict]  # List of {name, tier, error}
+    critical_success_count: int
+    important_success_count: int
+    optional_success_count: int
+    critical_total: int
+    important_total: int
+    optional_total: int
+
+
+class ServiceCallMonitor:
+    """
+    Reusable service call monitor and quality aggregator
+    Wraps asyncio.gather results with detailed tracking
+    """
+    
+    # Service tier registry - defines which services are critical/important/optional
+    SERVICE_REGISTRY = {
+        # CRITICAL - Must have for valid signal
+        "price_data": ServiceTier.CRITICAL,
+        "funding_oi_data": ServiceTier.CRITICAL,
+        "social_basic": ServiceTier.CRITICAL,
+        
+        # IMPORTANT - Should have for good signal  
+        "liquidations": ServiceTier.IMPORTANT,
+        "long_short_ratio": ServiceTier.IMPORTANT,
+        "candles_data": ServiceTier.IMPORTANT,
+        "fear_greed": ServiceTier.IMPORTANT,
+        
+        # OPTIONAL - Nice to have for enhanced signal
+        "comprehensive_markets": ServiceTier.OPTIONAL,
+        "lunarcrush_comprehensive": ServiceTier.OPTIONAL,
+        "social_change": ServiceTier.OPTIONAL,
+        "social_momentum": ServiceTier.OPTIONAL,
+        "oi_trend": ServiceTier.OPTIONAL,
+        "top_trader_ratio": ServiceTier.OPTIONAL,
+        "coinapi_orderbook": ServiceTier.OPTIONAL,
+        "coinapi_trades": ServiceTier.OPTIONAL,
+        "coinapi_ohlcv": ServiceTier.OPTIONAL,
+    }
+    
+    def __init__(self):
+        self.results: List[ServiceCallResult] = []
+    
+    def track_result(self, name: str, result: any, execution_time_ms: float = 0.0):
+        """Track a single service call result"""
+        tier = self.SERVICE_REGISTRY.get(name, ServiceTier.OPTIONAL)
+        
+        is_exception = isinstance(result, Exception)
+        success = not is_exception
+        error_msg = None
+        data = None
+        
+        if is_exception:
+            # Truncate error message to avoid logging sensitive data or huge payloads
+            error_msg = str(result)[:200]
+        else:
+            data = result
+            # Check if result dict indicates failure
+            if isinstance(result, dict) and not result.get("success", True):
+                success = False
+                error_msg = result.get("error", "Unknown error")[:200]
+        
+        self.results.append(ServiceCallResult(
+            name=name,
+            tier=tier,
+            success=success,
+            error_message=error_msg,
+            data=data,
+            execution_time_ms=execution_time_ms
+        ))
+    
+    def calculate_quality(self) -> DataQualityReport:
+        """Calculate comprehensive data quality metrics"""
+        critical_total = 0
+        critical_success = 0
+        important_total = 0
+        important_success = 0
+        optional_total = 0
+        optional_success = 0
+        failed_services = []
+        
+        for result in self.results:
+            if result.tier == ServiceTier.CRITICAL:
+                critical_total += 1
+                if result.success:
+                    critical_success += 1
+                else:
+                    failed_services.append({
+                        "name": result.name,
+                        "tier": result.tier.value,
+                        "error": result.error_message
+                    })
+            
+            elif result.tier == ServiceTier.IMPORTANT:
+                important_total += 1
+                if result.success:
+                    important_success += 1
+                else:
+                    failed_services.append({
+                        "name": result.name,
+                        "tier": result.tier.value,
+                        "error": result.error_message
+                    })
+            
+            else:  # OPTIONAL
+                optional_total += 1
+                if result.success:
+                    optional_success += 1
+                else:
+                    failed_services.append({
+                        "name": result.name,
+                        "tier": result.tier.value,
+                        "error": result.error_message
+                    })
+        
+        # Quality calculation: (critical_success + important_success) / (critical_total + important_total)
+        # Ignore optional services in quality score
+        quality_denominator = critical_total + important_total
+        quality_numerator = critical_success + important_success
+        
+        if quality_denominator == 0:
+            quality_score = 0.0
+        else:
+            quality_score = (quality_numerator / quality_denominator) * 100
+        
+        # Determine quality level
+        if quality_score >= 80:
+            quality_level = "excellent"
+        elif quality_score >= 60:
+            quality_level = "good"
+        elif quality_score >= 50:
+            quality_level = "fair"
+        else:
+            quality_level = "poor"
+        
+        total_success = critical_success + important_success + optional_success
+        total_services = critical_total + important_total + optional_total
+        
+        return DataQualityReport(
+            quality_score=round(quality_score, 1),
+            quality_level=quality_level,
+            services_total=total_services,
+            services_successful=total_success,
+            services_failed=failed_services,
+            critical_success_count=critical_success,
+            important_success_count=important_success,
+            optional_success_count=optional_success,
+            critical_total=critical_total,
+            important_total=important_total,
+            optional_total=optional_total
+        )
+    
+    def get_result_by_name(self, name: str) -> Optional[ServiceCallResult]:
+        """Get tracked result by service name"""
+        for result in self.results:
+            if result.name == name:
+                return result
+        return None
 
 
 @dataclass
@@ -122,22 +313,89 @@ class SignalEngine:
         "fear_greed": 7,  # +2: More weight to sentiment
     }
 
-    async def build_signal(self, symbol: str, debug: bool = False) -> Dict:
+    async def build_signal(
+        self, 
+        symbol: str, 
+        debug: bool = False, 
+        enforce_quality_threshold: bool = True,
+        min_quality_score: float = 50.0
+    ) -> Dict:
         """
         Build enhanced trading signal using all data sources concurrently
 
         Args:
             symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH')
             debug: If True, include all raw metrics in response
+            enforce_quality_threshold: If True, reject signals below min_quality_score (default: True)
+            min_quality_score: Minimum data quality percentage required (default: 50.0%)
 
         Returns:
-            Dict with signal, score, and comprehensive analysis
+            Dict with signal, score, comprehensive analysis, and data quality metrics
+            
+        Raises:
+            ValueError: If data quality is below threshold (when enforce_quality_threshold=True)
         """
-        print(f"🔵 BUILD_SIGNAL STARTED for {symbol} - Code reload test!")
+        print(f"🔵 BUILD_SIGNAL STARTED for {symbol} - Quality threshold: {min_quality_score}%")
         symbol = symbol.upper()
 
-        # PHASE 1: Concurrent data collection
-        context = await self._collect_market_data(symbol)
+        # PHASE 1: Concurrent data collection with quality tracking
+        context, quality_report = await self._collect_market_data(symbol)
+        
+        # PHASE 1.5: Quality validation
+        print(f"📊 Data Quality: {quality_report.quality_score}% ({quality_report.quality_level}) - "
+              f"{quality_report.services_successful}/{quality_report.services_total} services successful")
+        
+        # Log failed services if any
+        if quality_report.services_failed:
+            print(f"⚠️  Failed services ({len(quality_report.services_failed)}):")
+            for failed in quality_report.services_failed[:5]:  # Show first 5 failures
+                print(f"   - {failed['name']} ({failed['tier']}): {failed['error']}")
+            if len(quality_report.services_failed) > 5:
+                print(f"   ... and {len(quality_report.services_failed) - 5} more")
+        
+        # Enforce quality threshold if enabled
+        if enforce_quality_threshold and quality_report.quality_score < min_quality_score:
+            error_msg = (
+                f"Insufficient data quality for {symbol}: {quality_report.quality_score}% "
+                f"(minimum required: {min_quality_score}%). "
+                f"Only {quality_report.services_successful}/{quality_report.services_total} services succeeded. "
+                f"Critical: {quality_report.critical_success_count}/{quality_report.critical_total}, "
+                f"Important: {quality_report.important_success_count}/{quality_report.important_total}. "
+            )
+            
+            # Add top failed services to error message
+            if quality_report.services_failed:
+                failed_names = [f['name'] for f in quality_report.services_failed[:3]]
+                error_msg += f"Failed services: {', '.join(failed_names)}"
+                if len(quality_report.services_failed) > 3:
+                    error_msg += f" (and {len(quality_report.services_failed) - 3} more)"
+            
+            print(f"❌ QUALITY CHECK FAILED: {error_msg}")
+            
+            # Return error response instead of raising exception (better for API)
+            return {
+                "success": False,
+                "symbol": symbol,
+                "timestamp": datetime.utcnow().isoformat(),
+                "error": error_msg,
+                "data_quality": {
+                    "quality_score": quality_report.quality_score,
+                    "quality_level": quality_report.quality_level,
+                    "services_total": quality_report.services_total,
+                    "services_successful": quality_report.services_successful,
+                    "services_failed": quality_report.services_failed,
+                    "critical_services": {
+                        "successful": quality_report.critical_success_count,
+                        "total": quality_report.critical_total
+                    },
+                    "important_services": {
+                        "successful": quality_report.important_success_count,
+                        "total": quality_report.important_total
+                    },
+                    "threshold_enforced": True,
+                    "min_quality_required": min_quality_score
+                }
+            }
 
         # PHASE 2: Calculate weighted score
         score, breakdown = self._calculate_weighted_score(context)
@@ -165,6 +423,30 @@ class SignalEngine:
             "comprehensiveDataAvailable": context.comprehensive_data_available,
             "lunarcrushDataAvailable": context.lunarcrush_comprehensive_available,
             "coinapiDataAvailable": context.coinapi_comprehensive_available,
+            # Data quality metrics - NEW!
+            "data_quality": {
+                "quality_score": quality_report.quality_score,
+                "quality_level": quality_report.quality_level,
+                "services_total": quality_report.services_total,
+                "services_successful": quality_report.services_successful,
+                "services_failed": quality_report.services_failed,
+                "critical_services": {
+                    "successful": quality_report.critical_success_count,
+                    "total": quality_report.critical_total,
+                    "success_rate": round((quality_report.critical_success_count / quality_report.critical_total * 100), 1) if quality_report.critical_total > 0 else 0.0
+                },
+                "important_services": {
+                    "successful": quality_report.important_success_count,
+                    "total": quality_report.important_total,
+                    "success_rate": round((quality_report.important_success_count / quality_report.important_total * 100), 1) if quality_report.important_total > 0 else 0.0
+                },
+                "optional_services": {
+                    "successful": quality_report.optional_success_count,
+                    "total": quality_report.optional_total
+                },
+                "threshold_enforced": enforce_quality_threshold,
+                "min_quality_required": min_quality_score if enforce_quality_threshold else None
+            },
         }
 
         # Add comprehensive Coinglass metrics if available
@@ -533,10 +815,15 @@ class SignalEngine:
             "oiSource": oi_source
         }
     
-    async def _collect_market_data(self, symbol: str) -> EnhancedSignalContext:
+    async def _collect_market_data(self, symbol: str) -> Tuple[EnhancedSignalContext, DataQualityReport]:
         """
         Fetch all market data concurrently using asyncio.gather
+        Returns: Tuple of (context, quality_report)
         """
+        # Initialize service call monitor
+        monitor = ServiceCallMonitor()
+        start_time = time.time()
+        
         # Fetch all data sources in parallel
         results = await asyncio.gather(
             coinapi_service.get_spot_price(symbol),
@@ -568,6 +855,9 @@ class SignalEngine:
             return_exceptions=True,  # Don't fail if one endpoint fails
         )
 
+        # Calculate execution time
+        execution_time_ms = (time.time() - start_time) * 1000
+        
         # Unpack results
         (
             price_data,
@@ -588,7 +878,28 @@ class SignalEngine:
             ca_ohlcv,
         ) = results
 
-        # Handle potential exceptions
+        # Track all service results with monitor
+        # Execution time is averaged across all parallel calls
+        avg_time_per_service = execution_time_ms / len(results)
+        
+        monitor.track_result("price_data", price_data, avg_time_per_service)
+        monitor.track_result("funding_oi_data", cg_data, avg_time_per_service)
+        monitor.track_result("comprehensive_markets", comp_markets, avg_time_per_service)
+        monitor.track_result("social_basic", social_data, avg_time_per_service)
+        monitor.track_result("lunarcrush_comprehensive", lc_comp, avg_time_per_service)
+        monitor.track_result("social_change", lc_change, avg_time_per_service)
+        monitor.track_result("social_momentum", lc_momentum, avg_time_per_service)
+        monitor.track_result("candles_data", candles_data, avg_time_per_service)
+        monitor.track_result("liquidations", liq_data, avg_time_per_service)
+        monitor.track_result("long_short_ratio", ls_data, avg_time_per_service)
+        monitor.track_result("oi_trend", oi_trend_data, avg_time_per_service)
+        monitor.track_result("top_trader_ratio", trader_data, avg_time_per_service)
+        monitor.track_result("fear_greed", fg_data, avg_time_per_service)
+        monitor.track_result("coinapi_orderbook", ca_orderbook, avg_time_per_service)
+        monitor.track_result("coinapi_trades", ca_trades, avg_time_per_service)
+        monitor.track_result("coinapi_ohlcv", ca_ohlcv, avg_time_per_service)
+
+        # Handle potential exceptions (still needed for fallback logic)
         price_data = price_data if not isinstance(price_data, Exception) else {}
         cg_data = cg_data if not isinstance(cg_data, Exception) else {}
         comp_markets = comp_markets if not isinstance(comp_markets, Exception) else {}
@@ -661,6 +972,31 @@ class SignalEngine:
                 f"⚠️  CoinAPI comprehensive data unavailable for {symbol}. Order book/trades analysis will use defaults."
             )
 
+        # CRITICAL: Validate price data - hard-fail if missing
+        price_value = (
+            comp_markets.get("price", price_data.get("price", 0.0))
+            if comprehensive_available
+            else price_data.get("price", 0.0)
+        )
+        
+        if price_value == 0.0 or not price_data:
+            # Price data is CRITICAL - cannot generate signal without it
+            error_msg = f"❌ CRITICAL: Price data missing for {symbol}. Cannot generate signal."
+            print(error_msg)
+            # Mark price as failed and return early with quality report
+            monitor.track_result("price_data", Exception(error_msg), 0.0)
+            quality_report = monitor.calculate_quality()
+            # Return empty context with quality report showing critical failure
+            empty_context = EnhancedSignalContext(
+                symbol=symbol,
+                price=0.0,
+                funding_rate=0.0,
+                open_interest=0.0,
+                social_score=0.0,
+                price_trend="unknown"
+            )
+            return (empty_context, quality_report)
+        
         # Get funding/OI with OKX fallback
         funding_oi_data = await self._get_funding_and_oi_with_fallback(
             symbol, cg_data, comp_markets, comprehensive_available
@@ -670,8 +1006,22 @@ class SignalEngine:
         oi = funding_oi_data["openInterest"]
         funding_source = funding_oi_data["fundingSource"]
         oi_source = funding_oi_data["oiSource"]
+        
+        # Update funding/OI tracking to reflect final fallback state
+        # If fallback succeeded (source changed to okx), update the tracked result
+        if funding_source == "okx" or oi_source == "okx":
+            # Overwrite the original failed result with successful fallback
+            fallback_success_data = {
+                "success": True,
+                "fundingRate": funding,
+                "openInterest": oi,
+                "source": f"fallback_to_{funding_source}"
+            }
+            monitor.track_result("funding_oi_data", fallback_success_data, 0.0)
+            print(f"✅ Funding/OI fallback successful - updated quality tracking")
 
-        return EnhancedSignalContext(
+        # Build context
+        context = EnhancedSignalContext(
             symbol=symbol,
             price=(
                 comp_markets.get("price", price_data.get("price", 0.0))
@@ -767,6 +1117,12 @@ class SignalEngine:
             lunarcrush_comprehensive_available=lunarcrush_comp_available,
             coinapi_comprehensive_available=coinapi_comp_available,
         )
+        
+        # Calculate final quality report
+        quality_report = monitor.calculate_quality()
+        
+        # Return tuple of (context, quality_report)
+        return (context, quality_report)
 
     def _calculate_price_trend(self, candles: list) -> str:
         """
