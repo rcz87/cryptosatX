@@ -5,6 +5,8 @@ Advanced signal history analytics and insights using PostgreSQL
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
 from datetime import datetime, timedelta
+from aiocache import Cache
+from aiocache.serializers import JsonSerializer
 
 from app.storage.signal_db import signal_db
 
@@ -14,6 +16,9 @@ from app.services.outcome_tracker import outcome_tracker
 
 router = APIRouter(prefix="/analytics", tags=["Analytics & Insights"])
 
+# Configure cache (in-memory with 5-minute TTL for analytics)
+cache = Cache(Cache.MEMORY, serializer=JsonSerializer(), ttl=300)
+
 
 @router.get("/summary")
 async def get_analytics_summary(
@@ -21,7 +26,7 @@ async def get_analytics_summary(
     days: int = Query(default=7, ge=1, le=365, description="Number of days to analyze")
 ):
     """
-    Get comprehensive analytics summary
+    Get comprehensive analytics summary (Cached for 5 minutes)
     
     Query Parameters:
     - symbol: Filter by symbol (optional, e.g., BTC, ETH)
@@ -34,7 +39,20 @@ async def get_analytics_summary(
     - Trading insights
     """
     try:
+        # Create cache key from parameters
+        cache_key = f"analytics_summary_{symbol or 'all'}_{days}"
+        
+        # Try to get from cache first
+        cached_result = await cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+        
+        # If not in cache, fetch from database
         summary = await signal_db.get_analytics_summary(symbol=symbol, days=days)
+        
+        # Store in cache
+        await cache.set(cache_key, summary)
+        
         return summary
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get analytics: {str(e)}")
@@ -45,18 +63,31 @@ async def get_latest_signals(
     limit: int = Query(default=50, ge=1, le=1000, description="Number of signals to return")
 ):
     """
-    Get latest signals (most recent first)
+    Get latest signals - most recent first (Cached for 2 minutes)
     
     Query Parameters:
     - limit: Maximum number of signals (1-1000, default: 50)
     """
     try:
+        cache_key = f"latest_signals_{limit}"
+        
+        # Check cache
+        cached_result = await cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+        
+        # Fetch from database
         signals = await signal_db.get_latest_signals(limit=limit)
-        return {
+        result = {
             "success": True,
             "count": len(signals),
             "signals": signals
         }
+        
+        # Cache with shorter TTL (2 minutes) since this changes frequently
+        await cache.set(cache_key, result, ttl=120)
+        
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get signals: {str(e)}")
 
@@ -68,7 +99,7 @@ async def get_symbol_history(
     offset: int = Query(default=0, ge=0)
 ):
     """
-    Get signal history for specific symbol
+    Get signal history for specific symbol (Cached for 5 minutes)
     
     Path Parameters:
     - symbol: Cryptocurrency symbol (e.g., BTC, ETH, SOL)
@@ -80,10 +111,18 @@ async def get_symbol_history(
     Supports pagination for large datasets
     """
     try:
+        cache_key = f"symbol_history_{symbol.upper()}_{limit}_{offset}"
+        
+        # Check cache
+        cached_result = await cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+        
+        # Fetch from database
         signals = await signal_db.get_signals_by_symbol(symbol, limit=limit, offset=offset)
         total = await signal_db.get_signal_count(symbol=symbol)
         
-        return {
+        result = {
             "success": True,
             "symbol": symbol.upper(),
             "total": total,
@@ -93,6 +132,11 @@ async def get_symbol_history(
             "has_more": (offset + len(signals)) < total,
             "signals": signals
         }
+        
+        # Cache result
+        await cache.set(cache_key, result)
+        
+        return result
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get symbol history: {str(e)}")
 
@@ -104,7 +148,7 @@ async def get_signals_by_date_range(
     symbol: Optional[str] = None
 ):
     """
-    Get signals within specific date range
+    Get signals within specific date range (Cached for 10 minutes)
     
     Query Parameters:
     - start_date: Start date (required, format: YYYY-MM-DD)
@@ -114,6 +158,13 @@ async def get_signals_by_date_range(
     Example: /analytics/history/date-range?start_date=2025-11-01&end_date=2025-11-10
     """
     try:
+        cache_key = f"date_range_{start_date}_{end_date}_{symbol or 'all'}"
+        
+        # Check cache
+        cached_result = await cache.get(cache_key)
+        if cached_result is not None:
+            return cached_result
+        
         # Parse dates
         start_dt = datetime.fromisoformat(start_date)
         end_dt = datetime.fromisoformat(end_date)
@@ -124,7 +175,7 @@ async def get_signals_by_date_range(
         # Get signals
         signals = await signal_db.get_signals_by_date_range(start_dt, end_dt, symbol=symbol)
         
-        return {
+        result = {
             "success": True,
             "start_date": start_date,
             "end_date": end_date,
@@ -132,6 +183,11 @@ async def get_signals_by_date_range(
             "count": len(signals),
             "signals": signals
         }
+        
+        # Cache result (historical data, longer TTL - 10 minutes)
+        await cache.set(cache_key, result, ttl=600)
+        
+        return result
     except ValueError as e:
         raise HTTPException(status_code=400, detail=f"Invalid date format: {str(e)}")
     except Exception as e:
