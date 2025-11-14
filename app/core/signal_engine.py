@@ -303,15 +303,27 @@ class SignalEngine:
 
     # Scoring weights (total = 100) - ADJUSTED FOR HIGHER SENSITIVITY
     WEIGHTS = {
-        "funding_rate": 18,  # +3: More weight to funding signals
-        "social_sentiment": 8,  # -2: Less weight to social noise
-        "price_momentum": 20,  # +5: More weight to price action
-        "liquidations": 25,  # +5: More weight to liquidation pressure
-        "long_short_ratio": 12,  # -3: Reduce contrarian bias
-        "oi_trend": 8,  # -2: Less weight to OI
-        "smart_money": 12,  # +2: More weight to smart money
-        "fear_greed": 7,  # +2: More weight to sentiment
+        "funding_rate": 18,      # High priority - smart money positioning
+        "social_sentiment": 6,   # FIXED: Reduced from 8 - less reliable indicator
+        "price_momentum": 20,    # High priority - price action confirmation
+        "liquidations": 24,      # FIXED: Reduced from 25 - still very important
+        "long_short_ratio": 11,  # FIXED: Reduced from 12 - contrarian indicator
+        "oi_trend": 6,           # FIXED: Reduced from 8 - less reliable
+        "smart_money": 11,       # FIXED: Reduced from 12 - whale positioning
+        "fear_greed": 4,         # FIXED: Reduced from 7 - reduce sentiment weight
     }
+    # Total: 100% ✅ (Fixed from 110% bug - see AUDIT_REPORT)
+    
+    def __init__(self):
+        """Initialize and validate signal engine configuration"""
+        # Validate weights sum to exactly 100%
+        total_weight = sum(self.WEIGHTS.values())
+        if total_weight != 100:
+            raise ValueError(
+                f"Signal engine weights must sum to 100%, got {total_weight}%. "
+                f"Weights: {self.WEIGHTS}"
+            )
+        logger.info(f"✅ Signal engine initialized - weights validated (sum={total_weight}%)")
 
     async def build_signal(
         self, 
