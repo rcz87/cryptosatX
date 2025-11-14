@@ -38,6 +38,7 @@ from app.api import (
     routes_dashboard,  # ADDED FOR INTERACTIVE DASHBOARD
     routes_admin,  # ADDED FOR ADMIN ENDPOINTS
     routes_scalping,  # ADDED FOR SCALPING GPT ACTIONS
+    routes_nlp,  # ADDED FOR NATURAL LANGUAGE PROCESSING
 )
 
 # Load environment variables
@@ -158,6 +159,9 @@ app.include_router(
 app.include_router(
     routes_scalping.router, tags=["Scalping Analysis"]
 )  # ADDED FOR SCALPING GPT ACTIONS
+app.include_router(
+    routes_nlp.router, tags=["Natural Language Processing"]
+)  # ADDED FOR NLP UNIVERSAL INTERFACE
 
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility
