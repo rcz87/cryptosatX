@@ -164,6 +164,44 @@ class Database:
                     CREATE INDEX IF NOT EXISTS idx_outcomes_signal_id ON signal_outcomes(signal_id);
                 """
                 )
+                
+                await conn.execute(
+                    """
+                    CREATE TABLE IF NOT EXISTS hype_history (
+                        id SERIAL PRIMARY KEY,
+                        symbol VARCHAR(20) NOT NULL,
+                        
+                        social_hype_score DECIMAL(5,2) NOT NULL,
+                        social_volume INTEGER NOT NULL,
+                        social_engagement BIGINT NOT NULL,
+                        social_contributors INTEGER NOT NULL,
+                        social_dominance DECIMAL(5,2) NOT NULL,
+                        sentiment DECIMAL(5,2) NOT NULL,
+                        
+                        twitter_hype DECIMAL(5,2) NOT NULL,
+                        tiktok_hype DECIMAL(5,2) NOT NULL,
+                        reddit_hype DECIMAL(5,2) NOT NULL,
+                        youtube_hype DECIMAL(5,2) NOT NULL,
+                        news_hype DECIMAL(5,2) NOT NULL,
+                        pump_risk VARCHAR(20),
+                        pump_risk_score DECIMAL(5,2),
+                        
+                        price DECIMAL(20,8) NOT NULL,
+                        price_change_24h DECIMAL(10,4),
+                        market_cap DECIMAL(30,2),
+                        volume_24h DECIMAL(30,2),
+                        
+                        timestamp TIMESTAMP NOT NULL DEFAULT NOW(),
+                        created_at TIMESTAMP DEFAULT NOW()
+                    );
+                    
+                    CREATE INDEX IF NOT EXISTS idx_hype_history_symbol ON hype_history(symbol);
+                    CREATE INDEX IF NOT EXISTS idx_hype_history_timestamp ON hype_history(timestamp DESC);
+                    CREATE INDEX IF NOT EXISTS idx_hype_history_symbol_timestamp ON hype_history(symbol, timestamp DESC);
+                    CREATE INDEX IF NOT EXISTS idx_hype_history_score ON hype_history(social_hype_score DESC);
+                    CREATE INDEX IF NOT EXISTS idx_hype_history_pump_risk ON hype_history(pump_risk) WHERE pump_risk = 'EXTREME';
+                """
+                )
         else:
             # SQLite schema
             await self.sqlite_conn.execute(
