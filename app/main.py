@@ -4,6 +4,7 @@ Crypto Futures Signal API with multi-provider integration
 """
 
 import os
+import asyncio
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
