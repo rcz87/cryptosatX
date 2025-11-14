@@ -982,10 +982,28 @@ class SignalEngine:
 
     async def _get_funding_and_oi_with_fallback(self, symbol: str, cg_data: Dict, comp_markets: Dict, comprehensive_available: bool) -> Dict:
         """
-        Get funding rate and open interest with OKX fallback
+        Get funding rate and open interest with automatic OKX fallback for reliability.
         
-        Sequential fallback strategy: Coinglass → OKX
-        Returns dict with funding_rate, open_interest, and source tracking
+        Implements robust fallback strategy to ensure critical funding/OI data is available:
+        1. Primary: Coinglass (comprehensive or basic)
+        2. Fallback: OKX if Coinglass fails or returns zeros
+        
+        Args:
+            symbol: Cryptocurrency symbol
+            cg_data: Coinglass basic data response
+            comp_markets: Coinglass comprehensive markets data
+            comprehensive_available: Whether comprehensive data succeeded
+            
+        Returns:
+            Dict containing:
+                - fundingRate: Current funding rate (%)
+                - openInterest: Total open interest (USD)
+                - fundingSource: Data source used ('coinglass' or 'okx')
+                - oiSource: Data source used ('coinglass' or 'okx')
+                
+        Note:
+            Funding and OI may use different sources if only one Coinglass metric failed.
+            Source tracking enables quality report accuracy.
         """
         # Start with Coinglass data
         funding_source = "coinglass"
@@ -1040,8 +1058,28 @@ class SignalEngine:
     
     async def _collect_market_data(self, symbol: str) -> Tuple[EnhancedSignalContext, DataQualityReport]:
         """
-        Fetch all market data concurrently using asyncio.gather
-        Returns: Tuple of (context, quality_report)
+        Fetch all market data concurrently from multiple providers using asyncio.gather.
+        
+        Orchestrates concurrent data retrieval from multiple sources including:
+        - CoinAPI: Spot price, orderbook depth, recent trades, OHLCV historical
+        - Coinglass: Funding rates, open interest, comprehensive markets data
+        - Coinglass Premium: Liquidations, long/short ratio, OI trend, top trader ratio, Fear & Greed
+        - LunarCrush: Social score, comprehensive coin data, social change, momentum analysis
+        - OKX: Candlestick data for trend calculation
+        
+        Implementation:
+        - Parallel execution using asyncio.gather with return_exceptions=True
+        - Quality tracking with 3-tier service classification (CRITICAL/IMPORTANT/OPTIONAL)
+        - OKX fallback attempted if Coinglass funding/OI fails
+        - Returns empty context if price data is missing (critical failure)
+        
+        Args:
+            symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH', 'SOL')
+            
+        Returns:
+            Tuple[EnhancedSignalContext, DataQualityReport]: 
+                - context: Populated with available market data using safe defaults for failures
+                - quality_report: Quality metrics including score, failed services, tier breakdown
         """
         # Initialize service call monitor
         monitor = ServiceCallMonitor()

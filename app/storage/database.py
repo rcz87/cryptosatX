@@ -45,7 +45,25 @@ class Database:
             logger.info(f"🗄️  Using {db_type} database")
 
     async def connect(self):
-        """Initialize connection pool or SQLite connection"""
+        """
+        Initialize database connection with appropriate driver (PostgreSQL or SQLite).
+        
+        Creates connection pool for PostgreSQL (asyncpg) or direct connection for SQLite (aiosqlite).
+        Automatically calls init_schema() after successful connection.
+        
+        PostgreSQL Config:
+            - Connection pool: min_size=2, max_size=10
+            - Command timeout: 60s
+            - Connection timeout: 30s
+            
+        SQLite Config:
+            - WAL mode enabled for better concurrency
+            - Foreign keys enabled
+            
+        Raises:
+            asyncpg.PostgresError: If PostgreSQL connection fails
+            aiosqlite.Error: If SQLite connection fails
+        """
         if self.use_postgres:
             if self.pool is None:
                 self.pool = await asyncpg.create_pool(
@@ -71,7 +89,14 @@ class Database:
         await self.init_schema()
 
     async def disconnect(self):
-        """Close connection pool or SQLite connection"""
+        """
+        Gracefully close database connections and release resources.
+        
+        For PostgreSQL: Closes connection pool and waits for all connections to finish
+        For SQLite: Closes single connection and flushes WAL journal
+        
+        Safe to call multiple times - automatically checks if connection exists before closing.
+        """
         if self.use_postgres:
             if self.pool:
                 await self.pool.close()

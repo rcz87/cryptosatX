@@ -50,7 +50,23 @@ class CacheService:
         return f"{prefix}:{key_hash}"
     
     async def get(self, key: str) -> Optional[Any]:
-        """Get value from cache, return None if expired or missing"""
+        """
+        Retrieve value from cache with automatic expiration handling.
+        
+        Args:
+            key: Cache key identifier
+            
+        Returns:
+            Optional[Any]: Cached value if exists and not expired, None otherwise
+            
+        Side Effects:
+            - Increments hits counter if found and valid
+            - Increments misses and evictions counters if expired
+            - Automatically removes expired entries from cache
+            
+        Thread Safety:
+            Uses async lock for safe concurrent access
+        """
         async with self._lock:
             if key not in self._cache:
                 self.stats["misses"] += 1
@@ -70,7 +86,26 @@ class CacheService:
             return entry["value"]
     
     async def set(self, key: str, value: Any, ttl_seconds: int) -> None:
-        """Set value in cache with TTL"""
+        """
+        Store value in cache with time-to-live expiration.
+        
+        Args:
+            key: Cache key identifier
+            value: Any Python object to cache (stored directly, no serialization)
+            ttl_seconds: Time-to-live in seconds before expiration
+            
+        Cache Entry Structure:
+            - value: Stored data (as-is)
+            - expires_at: Calculated expiration timestamp
+            - created_at: Entry creation timestamp
+            
+        Side Effects:
+            - Increments sets counter
+            - Overwrites existing key if present
+            
+        Thread Safety:
+            Uses async lock for safe concurrent writes
+        """
         async with self._lock:
             self._cache[key] = {
                 "value": value,
@@ -95,7 +130,21 @@ class CacheService:
             logger.info(f"🧹 Cache cleared: {count} entries removed")
     
     async def cleanup_expired(self) -> int:
-        """Remove all expired entries, return count of removed items"""
+        """
+        Remove all expired cache entries and free memory.
+        
+        Called automatically every 5 minutes by background cleanup task.
+        Can be manually triggered for immediate cleanup.
+        
+        Returns:
+            int: Number of expired entries removed
+            
+        Performance:
+            O(n) complexity where n = total cache entries
+            
+        Thread Safety:
+            Uses async lock to prevent concurrent modification
+        """
         async with self._lock:
             now = datetime.now()
             expired_keys = [
