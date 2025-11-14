@@ -37,6 +37,7 @@ from app.api import (
     routes_gpt_actions,  # ADDED FOR GPT ACTIONS FLAT PARAMS
     routes_dashboard,  # ADDED FOR INTERACTIVE DASHBOARD
     routes_admin,  # ADDED FOR ADMIN ENDPOINTS
+    routes_scalping,  # ADDED FOR SCALPING GPT ACTIONS
 )
 
 # Load environment variables
@@ -154,6 +155,9 @@ app.include_router(
 app.include_router(
     routes_admin.router, tags=["Admin & System"]
 )  # ADDED FOR ADMIN ENDPOINTS
+app.include_router(
+    routes_scalping.router, tags=["Scalping Analysis"]
+)  # ADDED FOR SCALPING GPT ACTIONS
 
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility
