@@ -40379,5 +40379,3582 @@
         }
       }
     }
+  },
+  {
+    "id": "sig_20251114054739297781",
+    "saved_at": "2025-11-14T05:47:39.297807",
+    "data": {
+      "symbol": "MATIC",
+      "timestamp": "2025-11-14T05:47:33.288256",
+      "signal": "LONG",
+      "score": 54.3,
+      "confidence": "medium",
+      "price": 0.0,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 53/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 0.0,
+        "socialScore": 53.0,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": false,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": false,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "MATIC trading signal review: Neutral trends and insufficient data lead to a recommendation to SKIP this trade. No clear direction or conviction from current metrics.",
+        "layerChecks": {
+          "agreements": [],
+          "conflicts": [
+            "neutral price trend",
+            "lack of significant social sentiment",
+            "absence of data on liquidations, funding, OI trend, and smart money"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.0,
+          "recommendedPositionSize": 1.0,
+          "stopLossPrice": 0.0,
+          "stopLossDistancePct": 2.0,
+          "takeProfitPrice": null,
+          "takeProfitDistancePct": null,
+          "riskRewardRatio": null,
+          "atrValue": null,
+          "atrPercentage": null,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 100% of base | SL: 2.00% away | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054739472639",
+    "saved_at": "2025-11-14T05:47:39.472667",
+    "data": {
+      "symbol": "XRP",
+      "timestamp": "2025-11-14T05:47:32.978173",
+      "signal": "LONG",
+      "score": 53.7,
+      "confidence": "low",
+      "price": 2.301466078952725,
+      "reasons": [
+        "Overcrowded longs (74.7%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 39/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.00059,
+        "openInterest": 3669500875.3565,
+        "socialScore": 38.8,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 34.45,
+          "sellPressure": 65.55,
+          "avgTradeSize": 220.1
+        },
+        "volatility7d": 15.26
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "XRP trading signal suggests to SKIP. Overcrowded longs and low social sentiment present high risks. Smart money is long, but caution is advised due to mixed signals.",
+        "layerChecks": {
+          "agreements": [
+            "smartMoneyBias: long",
+            "fearGreedIndex: neutral",
+            "fundingRate: low"
+          ],
+          "conflicts": [
+            "Overcrowded longs (74.7%) - contrarian bearish",
+            "Social sentiment: low"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.9481,
+          "recommendedPositionSize": 0.9481,
+          "stopLossPrice": 2.08306608,
+          "stopLossDistancePct": 9.4896,
+          "takeProfitPrice": 2.62906608,
+          "takeProfitDistancePct": 14.2344,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.0728,
+          "atrPercentage": 3.1643,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 95% of base | SL: 9.49% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054739679059",
+    "saved_at": "2025-11-14T05:47:39.679091",
+    "data": {
+      "symbol": "SOL",
+      "timestamp": "2025-11-14T05:47:32.977932",
+      "signal": "LONG",
+      "score": 65.0,
+      "confidence": "low",
+      "price": 142.5303735357895,
+      "reasons": [
+        "Overcrowded longs (82.1%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 41/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.00835,
+        "openInterest": 7099323285.2673,
+        "socialScore": 40.9,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 45.39,
+          "sellPressure": 54.61,
+          "avgTradeSize": 0.12
+        },
+        "volatility7d": 23.96
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the overcrowded longs, negative funding rate, and low social sentiment for SOL, it's advised to skip this trade. The market shows mixed signals with a lean towards bearish sentiment, making it a high-risk entry.",
+        "layerChecks": {
+          "agreements": [
+            "neutral price trend",
+            "social sentiment is low",
+            "fear/greed index is neutral"
+          ],
+          "conflicts": [
+            "overcrowded longs indicating a contrarian bearish signal",
+            "negative funding rate suggesting bearish sentiment among traders"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.9163,
+          "recommendedPositionSize": 0.9163,
+          "stopLossPrice": 128.54394496,
+          "stopLossDistancePct": 9.8129,
+          "takeProfitPrice": 163.5100164,
+          "takeProfitDistancePct": 14.7194,
+          "riskRewardRatio": 1.5,
+          "atrValue": 4.66214286,
+          "atrPercentage": 3.2742,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 92% of base | SL: 9.81% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054739829605",
+    "saved_at": "2025-11-14T05:47:39.829629",
+    "data": {
+      "symbol": "SNX",
+      "timestamp": "2025-11-14T05:47:33.463614",
+      "signal": "LONG",
+      "score": 76.6,
+      "confidence": "low",
+      "price": 0.7256317662842929,
+      "reasons": [
+        "Price trend: bullish",
+        "Social sentiment: 59/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.004424,
+        "openInterest": 37403228.7192,
+        "socialScore": 58.8,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 54.6,
+          "sellPressure": 45.4,
+          "avgTradeSize": 80.47
+        },
+        "volatility7d": 30.55
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "bearish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 50,
+        "aiSummary": "Considering the mixed signals for SNX, with a bullish price trend but bearish long/short sentiment and a neutral multi-timeframe trend, it's best to skip this trade. The market shows high uncertainty, making it a risky move.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Social sentiment: moderately positive"
+          ],
+          "conflicts": [
+            "Long/short sentiment: bearish",
+            "Multi-timeframe trend: neutral"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.657,
+          "recommendedPositionSize": 0.657,
+          "stopLossPrice": 0.6262889,
+          "stopLossDistancePct": 13.6905,
+          "takeProfitPrice": 0.87464607,
+          "takeProfitDistancePct": 20.5358,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.03311429,
+          "atrPercentage": 4.5662,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 66% of base | SL: 13.69% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054739934538",
+    "saved_at": "2025-11-14T05:47:39.934659",
+    "data": {
+      "symbol": "LINK",
+      "timestamp": "2025-11-14T05:47:33.173097",
+      "signal": "LONG",
+      "score": 53.7,
+      "confidence": "low",
+      "price": 14.350414335823421,
+      "reasons": [
+        "High funding rate (0.223%) - longs overleveraged",
+        "Overcrowded longs (69.0%) - contrarian bearish",
+        "Price trend: neutral"
+      ],
+      "metrics": {
+        "fundingRate": 0.002227,
+        "openInterest": 569244946.8118,
+        "socialScore": 57.7,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 27.42,
+          "sellPressure": 72.58,
+          "avgTradeSize": 13.08
+        },
+        "volatility7d": 20.86
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the high funding rate and overcrowded long positions, alongside a neutral price trend, it's advised to skip the LINK long signal for now. The market shows mixed signals, with potential for a sharp reversal. Better to wait for clearer direction.",
+        "layerChecks": {
+          "agreements": [
+            "neutral price trend",
+            "high funding rate indicates longs overleveraged",
+            "overcrowded longs suggest contrarian bearish sentiment"
+          ],
+          "conflicts": [
+            "smart money bias towards long",
+            "long/short sentiment very bullish"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.7947,
+          "recommendedPositionSize": 0.7947,
+          "stopLossPrice": 12.72484292,
+          "stopLossDistancePct": 11.3277,
+          "takeProfitPrice": 16.78877146,
+          "takeProfitDistancePct": 16.9915,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.54185714,
+          "atrPercentage": 3.7752,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 79% of base | SL: 11.33% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054740191701",
+    "saved_at": "2025-11-14T05:47:40.191725",
+    "data": {
+      "symbol": "MKR",
+      "timestamp": "2025-11-14T05:47:33.797456",
+      "signal": "LONG",
+      "score": 55.0,
+      "confidence": "medium",
+      "price": 1308.8440808562004,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 61/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 0.0,
+        "socialScore": 60.7,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": false,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": false,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "MKR trading signal suggests a LONG position, but with neutral trends and zero open interest, it's safer to SKIP this trade. Market participation is too low to confirm a clear direction.",
+        "layerChecks": {
+          "agreements": [
+            "Social sentiment is moderately positive",
+            "Neutral price trend indicates stability"
+          ],
+          "conflicts": [
+            "Lack of open interest indicates low market participation",
+            "Zero funding rate suggests lack of conviction in direction"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.0,
+          "recommendedPositionSize": 1.0,
+          "stopLossPrice": 1282.66719924,
+          "stopLossDistancePct": 2.0,
+          "takeProfitPrice": 1348.10940328,
+          "takeProfitDistancePct": 3.0,
+          "riskRewardRatio": 1.5,
+          "atrValue": null,
+          "atrPercentage": null,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 100% of base | SL: 2.00% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054740305225",
+    "saved_at": "2025-11-14T05:47:40.305271",
+    "data": {
+      "symbol": "FTM",
+      "timestamp": "2025-11-14T05:47:34.101393",
+      "signal": "LONG",
+      "score": 54.8,
+      "confidence": "medium",
+      "price": 0.1399881637869113,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 59/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 0.0,
+        "socialScore": 59.3,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": false,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": false,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "FTM trading signal suggests a LONG position, but with neutral price trends and very low market participation (OI and funding rate at 0), it's safer to SKIP this trade. Market lacks conviction, making it a high-risk entry.",
+        "layerChecks": {
+          "agreements": [
+            "Social sentiment is moderately positive",
+            "Neutral price trend indicates stability"
+          ],
+          "conflicts": [
+            "Lack of open interest indicates low market participation",
+            "Zero funding rate suggests lack of conviction for the direction"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.0,
+          "recommendedPositionSize": 1.0,
+          "stopLossPrice": 0.1371884,
+          "stopLossDistancePct": 2.0,
+          "takeProfitPrice": 0.14418781,
+          "takeProfitDistancePct": 3.0,
+          "riskRewardRatio": 1.5,
+          "atrValue": null,
+          "atrPercentage": null,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 100% of base | SL: 2.00% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054740426927",
+    "saved_at": "2025-11-14T05:47:40.427099",
+    "data": {
+      "symbol": "COMP",
+      "timestamp": "2025-11-14T05:47:33.797835",
+      "signal": "LONG",
+      "score": 66.1,
+      "confidence": "low",
+      "price": 33.111302675493484,
+      "reasons": [
+        "Price trend: bullish",
+        "Social sentiment: 48/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 605815.0,
+        "socialScore": 48.0,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 30.38,
+          "sellPressure": 69.62,
+          "avgTradeSize": 3.53
+        },
+        "volatility7d": 14.62
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "COMP trading signal analysis suggests to SKIP. Despite bullish price trend and smart money bias, the neutral trend across timeframes and low social sentiment indicate a lack of market conviction. It's recommended to avoid taking a position now.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Long/short sentiment: bullish"
+          ],
+          "conflicts": [
+            "Low social sentiment score",
+            "Neutral multi-timeframe trend"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.7848,
+          "recommendedPositionSize": 0.7848,
+          "stopLossPrice": 29.31415981,
+          "stopLossDistancePct": 11.4678,
+          "takeProfitPrice": 38.80701697,
+          "takeProfitDistancePct": 17.2017,
+          "riskRewardRatio": 1.5,
+          "atrValue": 1.26571429,
+          "atrPercentage": 3.8228,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 78% of base | SL: 11.47% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054740547282",
+    "saved_at": "2025-11-14T05:47:40.547315",
+    "data": {
+      "symbol": "SHIB",
+      "timestamp": "2025-11-14T05:47:34.295861",
+      "signal": "LONG",
+      "score": 60.5,
+      "confidence": "low",
+      "price": 9.161045666504921e-06,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 40/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.004424,
+        "openInterest": 68000944.8241,
+        "socialScore": 39.6,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": false,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 87.97,
+          "sellPressure": 12.03,
+          "avgTradeSize": 112878.42
+        },
+        "volatility7d": 15.36
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 30,
+        "aiSummary": "SHIB trading signal suggests to SKIP. Neutral trends, low social sentiment, and a negative funding rate indicate a lack of market conviction and potential bearish sentiment. Better to wait for clearer signals.",
+        "layerChecks": {
+          "agreements": [
+            "Neutral price trend",
+            "Low social sentiment",
+            "Negative funding rate"
+          ],
+          "conflicts": [
+            "Lack of clear trend across multiple timeframes",
+            "Low social score does not support a strong bullish sentiment"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.0885,
+          "recommendedPositionSize": 1.0885,
+          "stopLossPrice": 8.41e-06,
+          "stopLossDistancePct": 8.1868,
+          "takeProfitPrice": 1.029e-05,
+          "takeProfitDistancePct": 12.2974,
+          "riskRewardRatio": 1.5,
+          "atrValue": 2.5e-07,
+          "atrPercentage": 2.7562,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 109% of base | SL: 8.19% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054740977726",
+    "saved_at": "2025-11-14T05:47:40.977756",
+    "data": {
+      "symbol": "NEAR",
+      "timestamp": "2025-11-14T05:47:33.585810",
+      "signal": "LONG",
+      "score": 58.4,
+      "confidence": "low",
+      "price": 2.4025296028763026,
+      "reasons": [
+        "High funding rate (0.891%) - longs overleveraged",
+        "Overcrowded longs (68.3%) - contrarian bearish",
+        "Price trend: bullish"
+      ],
+      "metrics": {
+        "fundingRate": 0.008907,
+        "openInterest": 238813087.6692,
+        "socialScore": 41.0,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 88.15,
+          "sellPressure": 11.85,
+          "avgTradeSize": 82.98
+        },
+        "volatility7d": 38.14
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "NEAR trading signal suggests a LONG position, but high funding rates and overcrowded longs hint at potential pullback risks. Given the mixed signals and low confidence score, we're skipping this trade to prioritize capital protection.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Buy pressure high according to CoinAPI metrics"
+          ],
+          "conflicts": [
+            "High funding rate indicates longs are overleveraged",
+            "Overcrowded longs suggest a contrarian bearish view"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.8365,
+          "recommendedPositionSize": 0.8365,
+          "stopLossPrice": 2.14410102,
+          "stopLossDistancePct": 10.7565,
+          "takeProfitPrice": 2.79017248,
+          "takeProfitDistancePct": 16.1348,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.08614286,
+          "atrPercentage": 3.5863,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 84% of base | SL: 10.76% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054741090693",
+    "saved_at": "2025-11-14T05:47:41.090758",
+    "data": {
+      "symbol": "OP",
+      "timestamp": "2025-11-14T05:47:33.854409",
+      "signal": "LONG",
+      "score": 59.1,
+      "confidence": "low",
+      "price": 0.3817020455673647,
+      "reasons": [
+        "High funding rate (0.331%) - longs overleveraged",
+        "Overcrowded longs (66.2%) - contrarian bearish",
+        "Price trend: bullish"
+      ],
+      "metrics": {
+        "fundingRate": 0.003307,
+        "openInterest": 83419950.0269,
+        "socialScore": 49.8,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": false,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 65,
+        "aiSummary": "Skipping the LONG signal on OP due to high funding rates and overcrowded longs, despite bullish trends. Risk of pullback too high. Preserve capital.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Long/short sentiment: very bullish"
+          ],
+          "conflicts": [
+            "High funding rate indicates longs are overleveraged",
+            "Overcrowded longs suggest a contrarian bearish view"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.6632,
+          "recommendedPositionSize": 0.6632,
+          "stopLossPrice": 0.32988776,
+          "stopLossDistancePct": 13.5745,
+          "takeProfitPrice": 0.45942347,
+          "takeProfitDistancePct": 20.3618,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.01727143,
+          "atrPercentage": 4.5237,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 66% of base | SL: 13.57% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054741213646",
+    "saved_at": "2025-11-14T05:47:41.213674",
+    "data": {
+      "symbol": "PEPE",
+      "timestamp": "2025-11-14T05:47:34.420737",
+      "signal": "SHORT",
+      "score": 47.7,
+      "confidence": "medium",
+      "price": 5.310548224383821e-06,
+      "reasons": [
+        "High funding rate (0.330%) - longs overleveraged",
+        "Price trend: neutral",
+        "Social sentiment: 38/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.003299,
+        "openInterest": 184784719.034,
+        "socialScore": 37.8,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": false,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 32.08,
+          "sellPressure": 67.92,
+          "avgTradeSize": 68247993.08
+        },
+        "volatility7d": 24.61
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the high funding rate, neutral trend, and low social sentiment for PEPE, the signal leans towards a short. However, due to the lack of clear price movement and uncertain smart money involvement, it's advised to SKIP this trade for now. Better to wait for more definitive signals.",
+        "layerChecks": {
+          "agreements": [
+            "High funding rate indicates longs may be overleveraged",
+            "Neutral price trend suggests lack of directional momentum",
+            "Social sentiment is low, indicating lack of retail interest"
+          ],
+          "conflicts": [
+            "Lack of significant price change across all timeframes",
+            "No clear evidence of smart money positioning or institutional footprints"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.8101,
+          "recommendedPositionSize": 0.8101,
+          "stopLossPrice": 5.91e-06,
+          "stopLossDistancePct": 11.2983,
+          "takeProfitPrice": 4.41e-06,
+          "takeProfitDistancePct": 16.9319,
+          "riskRewardRatio": 1.5,
+          "atrValue": 2e-07,
+          "atrPercentage": 3.7033,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 81% of base | SL: 11.30% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054741335011",
+    "saved_at": "2025-11-14T05:47:41.335044",
+    "data": {
+      "symbol": "ARB",
+      "timestamp": "2025-11-14T05:47:33.798211",
+      "signal": "LONG",
+      "score": 60.8,
+      "confidence": "low",
+      "price": 0.23959988970069943,
+      "reasons": [
+        "High funding rate (0.201%) - longs overleveraged",
+        "Price trend: bullish",
+        "Social sentiment: 49/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.002009,
+        "openInterest": 125180506.999,
+        "socialScore": 49.3,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 44.99,
+          "sellPressure": 55.01,
+          "avgTradeSize": 1426.51
+        },
+        "volatility7d": 36.13
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the high funding rate and neutral trend, it's best to skip ARB for now. The bullish sentiment is countered by overleveraged longs, making the current setup too risky.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Social sentiment: moderately positive",
+            "Smart money bias: long"
+          ],
+          "conflicts": [
+            "High funding rate indicates longs overleveraged",
+            "Neutral multiTimeframeTrend suggests lack of clear direction"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.7934,
+          "recommendedPositionSize": 0.7934,
+          "stopLossPrice": 0.2123856,
+          "stopLossDistancePct": 11.3582,
+          "takeProfitPrice": 0.28042132,
+          "takeProfitDistancePct": 17.0373,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00907143,
+          "atrPercentage": 3.7813,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 79% of base | SL: 11.36% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054741541115",
+    "saved_at": "2025-11-14T05:47:41.541146",
+    "data": {
+      "symbol": "DOT",
+      "timestamp": "2025-11-14T05:47:34.063625",
+      "signal": "LONG",
+      "score": 70.8,
+      "confidence": "low",
+      "price": 2.867036527954528,
+      "reasons": [
+        "Overcrowded longs (74.6%) - contrarian bearish",
+        "Price trend: bullish",
+        "Social sentiment: 38/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.003388,
+        "openInterest": 202213306.3988,
+        "socialScore": 38.3,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 77.45,
+          "sellPressure": 22.55,
+          "avgTradeSize": 85.76
+        },
+        "volatility7d": 28.52
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 45,
+        "aiSummary": "Considering the mixed signals for DOT, with bullish price trends but significant bearish indicators like overcrowded longs and low social sentiment, it's advised to skip this trade. Better opportunities with clearer signals might be around the corner.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Buy pressure from trades data"
+          ],
+          "conflicts": [
+            "Overcrowded longs indicating a contrarian bearish signal",
+            "Low social sentiment score"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.901,
+          "recommendedPositionSize": 0.901,
+          "stopLossPrice": 2.58075082,
+          "stopLossDistancePct": 9.9854,
+          "takeProfitPrice": 3.29646509,
+          "takeProfitDistancePct": 14.9781,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.09542857,
+          "atrPercentage": 3.3297,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 90% of base | SL: 9.99% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054741684512",
+    "saved_at": "2025-11-14T05:47:41.684536",
+    "data": {
+      "symbol": "CRV",
+      "timestamp": "2025-11-14T05:47:33.288601",
+      "signal": "LONG",
+      "score": 67.8,
+      "confidence": "low",
+      "price": 0.4416148246732807,
+      "reasons": [
+        "Price trend: bullish",
+        "Social sentiment: 53/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.00014,
+        "openInterest": 93812360.1694,
+        "socialScore": 53.4,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 39.84,
+          "sellPressure": 60.16,
+          "avgTradeSize": 199.49
+        },
+        "volatility7d": 29.98
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "CRV trading signal suggests a LONG position, but with neutral trends and higher sell than buy pressure, it's safer to SKIP this trade. Market sentiment and smart money are positive, yet the lack of clear direction advises caution.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Social sentiment: moderately positive",
+            "Smart money bias: long"
+          ],
+          "conflicts": [
+            "MultiTimeframe Trend: neutral",
+            "Sell pressure higher than buy pressure"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.7315,
+          "recommendedPositionSize": 0.7315,
+          "stopLossPrice": 0.38727195,
+          "stopLossDistancePct": 12.3055,
+          "takeProfitPrice": 0.52312914,
+          "takeProfitDistancePct": 18.4582,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.01811429,
+          "atrPercentage": 4.101,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 73% of base | SL: 12.31% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054741817436",
+    "saved_at": "2025-11-14T05:47:41.817474",
+    "data": {
+      "symbol": "ADA",
+      "timestamp": "2025-11-14T05:47:32.978479",
+      "signal": "LONG",
+      "score": 53.4,
+      "confidence": "low",
+      "price": 0.5200224400022687,
+      "reasons": [
+        "High funding rate (0.404%) - longs overleveraged",
+        "Overcrowded longs (70.6%) - contrarian bearish",
+        "Price trend: neutral"
+      ],
+      "metrics": {
+        "fundingRate": 0.004039,
+        "openInterest": 660147299.2679,
+        "socialScore": 53.8,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 33.53,
+          "sellPressure": 66.47,
+          "avgTradeSize": 270.69
+        },
+        "volatility7d": 19.82
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "Skipping ADA long signal due to high funding rate and overcrowded long positions, suggesting a potential pullback. Neutral price trend also fails to provide a clear direction. Better to wait for more favorable conditions.",
+        "layerChecks": {
+          "agreements": [
+            "smartMoneyBias: long",
+            "longShortSentiment: very_bullish",
+            "socialScore: 53.8"
+          ],
+          "conflicts": [
+            "High funding rate (0.404%) - longs overleveraged",
+            "Overcrowded longs (70.6%) - contrarian bearish indication"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.9217,
+          "recommendedPositionSize": 0.9217,
+          "stopLossPrice": 0.46925815,
+          "stopLossDistancePct": 9.7619,
+          "takeProfitPrice": 0.59616888,
+          "takeProfitDistancePct": 14.6429,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.01692143,
+          "atrPercentage": 3.2547,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 92% of base | SL: 9.76% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054741924615",
+    "saved_at": "2025-11-14T05:47:41.924665",
+    "data": {
+      "symbol": "ATOM",
+      "timestamp": "2025-11-14T05:47:33.518007",
+      "signal": "LONG",
+      "score": 64.4,
+      "confidence": "low",
+      "price": 2.8579166088655135,
+      "reasons": [
+        "Overcrowded longs (68.9%) - contrarian bearish",
+        "Price trend: bullish",
+        "Social sentiment: 44/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.000356,
+        "openInterest": 92579067.948,
+        "socialScore": 44.5,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 40.73,
+          "sellPressure": 59.27,
+          "avgTradeSize": 38.91
+        },
+        "volatility7d": 14.3
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "neutral",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "ATOM trading signal analysis: Despite a bullish price trend, the risk of a reversal is high due to overcrowded longs and a neutral overall trend. Recommendation: Skip this trade.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Social sentiment: neutral",
+            "Funding Rate: slightly bearish"
+          ],
+          "conflicts": [
+            "Overcrowded longs (68.9%) - contrarian bearish",
+            "MultiTimeframe Trend: neutral"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.9149,
+          "recommendedPositionSize": 0.9149,
+          "stopLossPrice": 2.57655948,
+          "stopLossDistancePct": 9.8448,
+          "takeProfitPrice": 3.2799523,
+          "takeProfitDistancePct": 14.7673,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.09378571,
+          "atrPercentage": 3.2792,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 91% of base | SL: 9.84% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054742056992",
+    "saved_at": "2025-11-14T05:47:42.057039",
+    "data": {
+      "symbol": "BCH",
+      "timestamp": "2025-11-14T05:47:34.826515",
+      "signal": "LONG",
+      "score": 70.1,
+      "confidence": "low",
+      "price": 501.53925195914866,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 67/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.004362,
+        "openInterest": 331832116.6361,
+        "socialScore": 66.9,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": false,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 55,
+        "aiSummary": "Today's BCH signal suggests a LONG, but with a neutral price trend and a negative funding rate conflicting with bullish sentiment, it's best to SKIP this trade. Market direction appears unclear, caution advised.",
+        "layerChecks": {
+          "agreements": [
+            "Social sentiment is moderately positive",
+            "Smart money bias towards long",
+            "Long/short sentiment is bullish"
+          ],
+          "conflicts": [
+            "Neutral price trend across multiple timeframes",
+            "Negative funding rate indicating potential bearish sentiment"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.0833,
+          "recommendedPositionSize": 1.0833,
+          "stopLossPrice": 459.88210909,
+          "stopLossDistancePct": 8.3059,
+          "takeProfitPrice": 564.02496626,
+          "takeProfitDistancePct": 12.4588,
+          "riskRewardRatio": 1.5,
+          "atrValue": 13.88571429,
+          "atrPercentage": 2.7694,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 108% of base | SL: 8.31% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054742171020",
+    "saved_at": "2025-11-14T05:47:42.171051",
+    "data": {
+      "symbol": "SUI",
+      "timestamp": "2025-11-14T05:47:34.654465",
+      "signal": "LONG",
+      "score": 66.5,
+      "confidence": "low",
+      "price": 1.81679157660923,
+      "reasons": [
+        "Overcrowded longs (67.6%) - contrarian bearish",
+        "Price trend: bullish",
+        "Social sentiment: 41/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.000437,
+        "openInterest": 729239936.8394,
+        "socialScore": 40.9,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 6.43,
+          "sellPressure": 93.57,
+          "avgTradeSize": 135.82
+        },
+        "volatility7d": 26.58
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the mixed signals for SUI, especially the bearish indicators like overcrowded longs and high sell pressure, it's advised to skip this trade. The bullish price trend is contradicted by low social sentiment and a neutral Fear/Greed Index, suggesting uncertainty.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Fear/Greed Index: neutral"
+          ],
+          "conflicts": [
+            "Overcrowded longs (67.6%) - contrarian bearish",
+            "Social sentiment: low",
+            "Sell pressure significantly outweighs buy pressure"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.8277,
+          "recommendedPositionSize": 0.8277,
+          "stopLossPrice": 1.61915587,
+          "stopLossDistancePct": 10.8783,
+          "takeProfitPrice": 2.11324514,
+          "takeProfitDistancePct": 16.3174,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.06587857,
+          "atrPercentage": 3.6247,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 83% of base | SL: 10.88% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054742269858",
+    "saved_at": "2025-11-14T05:47:42.269898",
+    "data": {
+      "symbol": "BNB",
+      "timestamp": "2025-11-14T05:47:32.977822",
+      "signal": "LONG",
+      "score": 54.1,
+      "confidence": "low",
+      "price": 915.2622263320129,
+      "reasons": [
+        "Overcrowded longs (78.2%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 59/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.00087,
+        "openInterest": 1350731710.012,
+        "socialScore": 59.1,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 0.93,
+          "sellPressure": 99.07,
+          "avgTradeSize": 0.06
+        },
+        "volatility7d": 13.28
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "neutral",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the mixed signals for BNB, with overcrowded longs and high sell pressure, it's advised to skip this trade. The market lacks a clear direction, and the risk of a sharp pullback is elevated.",
+        "layerChecks": {
+          "agreements": [
+            "Social sentiment is moderately positive",
+            "Neutral price trend suggests lack of clear direction",
+            "Funding rate is low, indicating no excessive leverage on either side"
+          ],
+          "conflicts": [
+            "Overcrowded longs indicate a potential for a sharp pullback",
+            "High sell pressure from coinAPI metrics suggests bearish sentiment among larger traders"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.3974,
+          "recommendedPositionSize": 1.3974,
+          "stopLossPrice": 856.29079775,
+          "stopLossDistancePct": 6.4431,
+          "takeProfitPrice": 1003.71936921,
+          "takeProfitDistancePct": 9.6647,
+          "riskRewardRatio": 1.5,
+          "atrValue": 19.65714286,
+          "atrPercentage": 2.1469,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 140% of base | SL: 6.44% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054742379803",
+    "saved_at": "2025-11-14T05:47:42.379891",
+    "data": {
+      "symbol": "LTC",
+      "timestamp": "2025-11-14T05:47:34.531167",
+      "signal": "LONG",
+      "score": 52.1,
+      "confidence": "low",
+      "price": 95.89096294889762,
+      "reasons": [
+        "High funding rate (0.852%) - longs overleveraged",
+        "Overcrowded longs (73.0%) - contrarian bearish",
+        "Price trend: neutral"
+      ],
+      "metrics": {
+        "fundingRate": 0.008516,
+        "openInterest": 456016595.6176,
+        "socialScore": 37.6,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 14.65,
+          "sellPressure": 85.35,
+          "avgTradeSize": 2.92
+        },
+        "volatility7d": 21.98
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Skipping LTC long signal due to high funding rate and overcrowded long positions, suggesting a high risk of pullback. Neutral price trend and unclear OI direction also dampen confidence. Better to wait for clearer signals.",
+        "layerChecks": {
+          "agreements": [
+            "smartMoneyBias: long",
+            "longShortSentiment: very_bullish",
+            "socialScore: 37.6"
+          ],
+          "conflicts": [
+            "High funding rate (0.852%) - longs overleveraged",
+            "Overcrowded longs (73.0%) - contrarian bearish indication"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.9002,
+          "recommendedPositionSize": 0.9002,
+          "stopLossPrice": 86.30596295,
+          "stopLossDistancePct": 9.9957,
+          "takeProfitPrice": 110.26846295,
+          "takeProfitDistancePct": 14.9936,
+          "riskRewardRatio": 1.5,
+          "atrValue": 3.195,
+          "atrPercentage": 3.3326,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 90% of base | SL: 10.00% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054742489728",
+    "saved_at": "2025-11-14T05:47:42.489752",
+    "data": {
+      "symbol": "AAVE",
+      "timestamp": "2025-11-14T05:47:33.288454",
+      "signal": "LONG",
+      "score": 60.4,
+      "confidence": "low",
+      "price": 189.8759447150498,
+      "reasons": [
+        "High funding rate (0.952%) - longs overleveraged",
+        "Price trend: bullish",
+        "Social sentiment: 43/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.009524,
+        "openInterest": 262247043.276,
+        "socialScore": 43.3,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 58.84,
+          "sellPressure": 41.16,
+          "avgTradeSize": 0.25
+        },
+        "volatility7d": 25.44
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "AAVE signal review suggests to SKIP. Despite a bullish price trend and smart money leaning long, the high funding rate and moderate social sentiment present significant risks. Better to wait for more favorable conditions.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Long/short sentiment: bullish"
+          ],
+          "conflicts": [
+            "High funding rate indicates longs are overleveraged",
+            "Social sentiment is moderate at 43/100"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.7127,
+          "recommendedPositionSize": 0.7127,
+          "stopLossPrice": 165.90380185,
+          "stopLossDistancePct": 12.6252,
+          "takeProfitPrice": 225.83415901,
+          "takeProfitDistancePct": 18.9377,
+          "riskRewardRatio": 1.5,
+          "atrValue": 7.99071429,
+          "atrPercentage": 4.2092,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 71% of base | SL: 12.63% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054742593315",
+    "saved_at": "2025-11-14T05:47:42.593385",
+    "data": {
+      "symbol": "AVAX",
+      "timestamp": "2025-11-14T05:47:32.978318",
+      "signal": "LONG",
+      "score": 64.1,
+      "confidence": "low",
+      "price": 15.83695930111547,
+      "reasons": [
+        "Overcrowded longs (71.1%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 45/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.004683,
+        "openInterest": 458325669.5005,
+        "socialScore": 45.1,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 45.91,
+          "sellPressure": 54.09,
+          "avgTradeSize": 12.68
+        },
+        "volatility7d": 21.16
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "AVAX trading signal analysis suggests to SKIP. Despite smart money leaning long and a very bullish sentiment, the overcrowded longs and neutral price trend present significant risks. Market direction is unclear, advising caution.",
+        "layerChecks": {
+          "agreements": [
+            "smartMoneyBias: long",
+            "longShortSentiment: very_bullish",
+            "fearGreedIndex: neutral"
+          ],
+          "conflicts": [
+            "Overcrowded longs - contrarian bearish signal",
+            "Neutral price trend indicating lack of clear direction"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.9068,
+          "recommendedPositionSize": 0.9068,
+          "stopLossPrice": 14.26603072,
+          "stopLossDistancePct": 9.9194,
+          "takeProfitPrice": 18.19335217,
+          "takeProfitDistancePct": 14.8791,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.52364286,
+          "atrPercentage": 3.3083,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 91% of base | SL: 9.92% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054742689548",
+    "saved_at": "2025-11-14T05:47:42.689632",
+    "data": {
+      "symbol": "APT",
+      "timestamp": "2025-11-14T05:47:33.941968",
+      "signal": "LONG",
+      "score": 71.4,
+      "confidence": "low",
+      "price": 2.9155528193365035,
+      "reasons": [
+        "Overcrowded longs (70.2%) - contrarian bearish",
+        "Price trend: bullish",
+        "Social sentiment: 47/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.017155,
+        "openInterest": 226299464.9616,
+        "socialScore": 46.7,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 41.21,
+          "sellPressure": 58.79,
+          "avgTradeSize": 67.21
+        },
+        "volatility7d": 20.08
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "APT LONG signal reviewed but recommending to SKIP. Despite bullish price trend and smart money interest, concerns like negative funding rate and overcrowded longs outweigh positives. Caution advised.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Long/short sentiment: very bullish"
+          ],
+          "conflicts": [
+            "Overcrowded longs (70.2%) - contrarian bearish",
+            "Social sentiment: 47/100",
+            "Funding Rate: -0.017155"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.8256,
+          "recommendedPositionSize": 0.8256,
+          "stopLossPrice": 2.59776711,
+          "stopLossDistancePct": 10.8997,
+          "takeProfitPrice": 3.39223138,
+          "takeProfitDistancePct": 16.3495,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.10592857,
+          "atrPercentage": 3.6339,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 83% of base | SL: 10.90% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054742814166",
+    "saved_at": "2025-11-14T05:47:42.814208",
+    "data": {
+      "symbol": "SUSHI",
+      "timestamp": "2025-11-14T05:47:33.797054",
+      "signal": "LONG",
+      "score": 64.4,
+      "confidence": "low",
+      "price": 0.4636472907100942,
+      "reasons": [
+        "Price trend: bullish",
+        "Social sentiment: 42/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 6753964.0,
+        "socialScore": 41.8,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 57.32,
+          "sellPressure": 42.68,
+          "avgTradeSize": 76.88
+        },
+        "volatility7d": 42.54
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "neutral",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the neutral multi-timeframe trend and the liquidation imbalance favoring longs, it's risky to enter a long position on SUSHI now. Better to skip this trade and wait for clearer signals.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Long/Short Sentiment: very bullish",
+            "Social sentiment: moderately positive"
+          ],
+          "conflicts": [
+            "MultiTimeframe Trend: neutral",
+            "Liquidation Imbalance: long"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.6895,
+          "recommendedPositionSize": 0.6895,
+          "stopLossPrice": 0.40311158,
+          "stopLossDistancePct": 13.0564,
+          "takeProfitPrice": 0.55445086,
+          "takeProfitDistancePct": 19.5846,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.02017857,
+          "atrPercentage": 4.3507,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 69% of base | SL: 13.06% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054742987203",
+    "saved_at": "2025-11-14T05:47:42.987240",
+    "data": {
+      "symbol": "DOGE",
+      "timestamp": "2025-11-14T05:47:34.180345",
+      "signal": "LONG",
+      "score": 66.7,
+      "confidence": "low",
+      "price": 0.1634515088135042,
+      "reasons": [
+        "Overcrowded longs (71.9%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 62/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.005309,
+        "openInterest": 1438040596.5341,
+        "socialScore": 62.1,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 1.36,
+          "sellPressure": 98.64,
+          "avgTradeSize": 2619.18
+        },
+        "volatility7d": 17.16
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "DOGE trading signal suggests to SKIP. Despite moderate social sentiment and smart money leaning long, the overcrowded longs and negative funding rate hint at potential downside. Caution advised.",
+        "layerChecks": {
+          "agreements": [
+            "Social sentiment is moderately positive",
+            "Smart money bias towards long",
+            "Neutral price trend indicating lack of strong directional bias"
+          ],
+          "conflicts": [
+            "Overcrowded longs suggesting a contrarian bearish view",
+            "Negative funding rate indicating bearish sentiment among traders"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.981,
+          "recommendedPositionSize": 0.981,
+          "stopLossPrice": 0.14845364,
+          "stopLossDistancePct": 9.1757,
+          "takeProfitPrice": 0.18594831,
+          "takeProfitDistancePct": 13.7636,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00499929,
+          "atrPercentage": 3.058,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 98% of base | SL: 9.18% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054743229423",
+    "saved_at": "2025-11-14T05:47:43.229472",
+    "data": {
+      "symbol": "MANA",
+      "timestamp": "2025-11-14T05:47:35.897464",
+      "signal": "LONG",
+      "score": 66.9,
+      "confidence": "low",
+      "price": 0.20963487337061182,
+      "reasons": [
+        "Price trend: bullish",
+        "Social sentiment: 58/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 669282.0,
+        "socialScore": 57.8,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 28.62,
+          "sellPressure": 71.38,
+          "avgTradeSize": 690.55
+        },
+        "volatility7d": 21.41
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "MANA trading signal suggests a LONG position, but with neutral trends and high sell pressure, it's safer to SKIP this trade. Market conditions don't strongly support a bullish move at this time.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Social sentiment: moderately positive",
+            "Smart money bias: long"
+          ],
+          "conflicts": [
+            "MultiTimeframe Trend: neutral",
+            "Sell pressure outweighs buy pressure significantly"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.853,
+          "recommendedPositionSize": 0.853,
+          "stopLossPrice": 0.18747774,
+          "stopLossDistancePct": 10.5694,
+          "takeProfitPrice": 0.24287057,
+          "takeProfitDistancePct": 15.8541,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00738571,
+          "atrPercentage": 3.517,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 85% of base | SL: 10.57% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054743397843",
+    "saved_at": "2025-11-14T05:47:43.397878",
+    "data": {
+      "symbol": "GALA",
+      "timestamp": "2025-11-14T05:47:35.840967",
+      "signal": "LONG",
+      "score": 71.6,
+      "confidence": "low",
+      "price": 0.009163192737388666,
+      "reasons": [
+        "Price trend: bullish",
+        "Social sentiment: 41/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.005182,
+        "openInterest": 43878887.1727,
+        "socialScore": 41.4,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 42.08,
+          "sellPressure": 57.92,
+          "avgTradeSize": 8065.33
+        },
+        "volatility7d": 23.89
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "GALA trading signal analysis suggests to SKIP. Despite a bullish price trend and smart money leaning long, the neutral trend across timeframes and low social sentiment highlight significant uncertainty. Better to wait for clearer market direction.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Long/short sentiment: very bullish"
+          ],
+          "conflicts": [
+            "Low social sentiment score",
+            "Neutral multi-timeframe trend"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.7052,
+          "recommendedPositionSize": 0.7052,
+          "stopLossPrice": 0.00799256,
+          "stopLossDistancePct": 12.7754,
+          "takeProfitPrice": 0.01091914,
+          "takeProfitDistancePct": 19.1631,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00039021,
+          "atrPercentage": 4.2539,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 71% of base | SL: 12.78% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054743480180",
+    "saved_at": "2025-11-14T05:47:43.480247",
+    "data": {
+      "symbol": "AXS",
+      "timestamp": "2025-11-14T05:47:36.364028",
+      "signal": "LONG",
+      "score": 65.1,
+      "confidence": "low",
+      "price": 1.262790743539492,
+      "reasons": [
+        "Price trend: bullish",
+        "Social sentiment: 36/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 12148748.0,
+        "socialScore": 35.5,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 2.75,
+          "sellPressure": 97.25,
+          "avgTradeSize": 268.07
+        },
+        "volatility7d": 28.95
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the mixed signals for AXS, with bullish price trend but low social sentiment and neutral trends across timeframes, it's advised to skip this trade. Market conviction seems lacking, suggesting a cautious approach.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Long/short sentiment: very bullish"
+          ],
+          "conflicts": [
+            "Social sentiment: low",
+            "MultiTimeframe Trend: neutral"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.7529,
+          "recommendedPositionSize": 0.7529,
+          "stopLossPrice": 1.11193361,
+          "stopLossDistancePct": 11.9463,
+          "takeProfitPrice": 1.48907644,
+          "takeProfitDistancePct": 17.9195,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.05028571,
+          "atrPercentage": 3.9846,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 75% of base | SL: 11.95% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054743663631",
+    "saved_at": "2025-11-14T05:47:43.663671",
+    "data": {
+      "symbol": "SAND",
+      "timestamp": "2025-11-14T05:47:35.356271",
+      "signal": "LONG",
+      "score": 65.7,
+      "confidence": "low",
+      "price": 0.18487972549621648,
+      "reasons": [
+        "Price trend: bullish",
+        "Social sentiment: 43/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 1766976.0,
+        "socialScore": 42.8,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 10.21,
+          "sellPressure": 89.79,
+          "avgTradeSize": 277.12
+        },
+        "volatility7d": 21.03
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "SAND trading signal suggests a LONG position, but with neutral trends across timeframes and only moderate social sentiment, it's best to skip this one. Market conviction isn't strong enough to justify the risk.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Long/short sentiment: very bullish"
+          ],
+          "conflicts": [
+            "Social sentiment: moderate",
+            "MultiTimeframe Trend: neutral"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.8106,
+          "recommendedPositionSize": 0.8106,
+          "stopLossPrice": 0.16435115,
+          "stopLossDistancePct": 11.1037,
+          "takeProfitPrice": 0.21567259,
+          "takeProfitDistancePct": 16.6556,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00684286,
+          "atrPercentage": 3.7008,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 81% of base | SL: 11.10% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054743799411",
+    "saved_at": "2025-11-14T05:47:43.799436",
+    "data": {
+      "symbol": "ETC",
+      "timestamp": "2025-11-14T05:47:35.322443",
+      "signal": "LONG",
+      "score": 62.9,
+      "confidence": "low",
+      "price": 15.041390468613992,
+      "reasons": [
+        "High funding rate (0.258%) - longs overleveraged",
+        "Price trend: bullish",
+        "Social sentiment: 76/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.002579,
+        "openInterest": 100582889.0945,
+        "socialScore": 75.6,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 62.06,
+          "sellPressure": 37.94,
+          "avgTradeSize": 7.31
+        },
+        "volatility7d": 27.34
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 45,
+        "aiSummary": "ETC trading signal suggests a LONG, but with a high funding rate indicating overleveraged longs and a neutral trend across timeframes, it's safer to SKIP this trade. Positive social sentiment and smart money bias are noted, but the risk of a pullback is too high.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Social sentiment: positive",
+            "Smart money bias: long"
+          ],
+          "conflicts": [
+            "High funding rate indicates longs overleveraged",
+            "MultiTimeframe Trend: neutral"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.1569,
+          "recommendedPositionSize": 1.1569,
+          "stopLossPrice": 13.87139047,
+          "stopLossDistancePct": 7.7785,
+          "takeProfitPrice": 16.79639047,
+          "takeProfitDistancePct": 11.6678,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.39,
+          "atrPercentage": 2.5931,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 116% of base | SL: 7.78% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054743940767",
+    "saved_at": "2025-11-14T05:47:43.940863",
+    "data": {
+      "symbol": "XLM",
+      "timestamp": "2025-11-14T05:47:36.592802",
+      "signal": "LONG",
+      "score": 70.9,
+      "confidence": "low",
+      "price": 0.2677129438293369,
+      "reasons": [
+        "Price trend: bullish",
+        "Social sentiment: 47/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.011435,
+        "openInterest": 115132634.1154,
+        "socialScore": 47.0,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 76.64,
+          "sellPressure": 23.36,
+          "avgTradeSize": 593.02
+        },
+        "volatility7d": 19.88
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "neutral",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "neutral",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the mixed signals for XLM, including a bullish price trend but negative funding rate and low social sentiment, we're advising to SKIP this trade. The market shows high uncertainty, making it prudent to wait for clearer signals.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Buy pressure from trades data indicates potential accumulation",
+            "Neutral fear/greed index suggests market is not in extreme sentiment"
+          ],
+          "conflicts": [
+            "Negative funding rate indicates bearish sentiment among futures traders",
+            "Lack of significant social sentiment support (47/100)"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.8362,
+          "recommendedPositionSize": 0.8362,
+          "stopLossPrice": 0.23888507,
+          "stopLossDistancePct": 10.7682,
+          "takeProfitPrice": 0.31095475,
+          "takeProfitDistancePct": 16.1523,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00960929,
+          "atrPercentage": 3.5878,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 84% of base | SL: 10.77% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054744096891",
+    "saved_at": "2025-11-14T05:47:44.097021",
+    "data": {
+      "symbol": "BTC",
+      "timestamp": "2025-11-14T05:47:36.664629",
+      "signal": "LONG",
+      "score": 52.5,
+      "confidence": "low",
+      "price": 97230.52763376736,
+      "reasons": [
+        "High funding rate (0.773%) - longs overleveraged",
+        "Overcrowded longs (75.4%) - contrarian bearish",
+        "Price trend: neutral"
+      ],
+      "metrics": {
+        "fundingRate": 0.007735,
+        "openInterest": 66473783106.718,
+        "socialScore": 42.2,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 2.59,
+          "sellPressure": 97.41,
+          "avgTradeSize": 0.01
+        },
+        "volatility7d": 11.15
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "BTC trading signal suggests a LONG position, but high funding rates and overcrowded longs signal risk. Neutral trend and low confidence advise against trading. Stay on the sidelines for now.",
+        "layerChecks": {
+          "agreements": [
+            "smartMoneyBias: long",
+            "longShortSentiment: very_bullish",
+            "fearGreedIndex: 50"
+          ],
+          "conflicts": [
+            "High funding rate (0.773%) - longs overleveraged",
+            "Overcrowded longs (75.4%) - contrarian bearish"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.5517,
+          "recommendedPositionSize": 1.5517,
+          "stopLossPrice": 91590.67763377,
+          "stopLossDistancePct": 5.8005,
+          "takeProfitPrice": 105690.30263376,
+          "takeProfitDistancePct": 8.7007,
+          "riskRewardRatio": 1.5,
+          "atrValue": 1879.95,
+          "atrPercentage": 1.9334,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 155% of base | SL: 5.80% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054744351396",
+    "saved_at": "2025-11-14T05:47:44.351427",
+    "data": {
+      "symbol": "ALGO",
+      "timestamp": "2025-11-14T05:47:36.209592",
+      "signal": "LONG",
+      "score": 58.3,
+      "confidence": "low",
+      "price": 0.16310454377328942,
+      "reasons": [
+        "High funding rate (0.622%) - longs overleveraged",
+        "Price trend: bullish",
+        "Social sentiment: 33/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.006218,
+        "openInterest": 45215488.0354,
+        "socialScore": 32.8,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 45.19,
+          "sellPressure": 54.81,
+          "avgTradeSize": 810.7
+        },
+        "volatility7d": 21.63
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "neutral",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the high funding rate and low social sentiment against a bullish price trend, we're skipping the ALGO long signal. The market shows mixed signals, making it a high-risk entry at this time.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Long/short sentiment: very bullish",
+            "Fear/Greed Index: neutral"
+          ],
+          "conflicts": [
+            "High funding rate indicates longs are overleveraged",
+            "Social sentiment is low"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.817,
+          "recommendedPositionSize": 0.817,
+          "stopLossPrice": 0.14512596,
+          "stopLossDistancePct": 11.0227,
+          "takeProfitPrice": 0.19007242,
+          "takeProfitDistancePct": 16.5341,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00599286,
+          "atrPercentage": 3.6721,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 82% of base | SL: 11.02% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054744443822",
+    "saved_at": "2025-11-14T05:47:44.443905",
+    "data": {
+      "symbol": "HBAR",
+      "timestamp": "2025-11-14T05:47:36.468768",
+      "signal": "LONG",
+      "score": 68.1,
+      "confidence": "low",
+      "price": 0.16108294437989384,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 42/100"
+      ],
+      "metrics": {
+        "fundingRate": -0.007344,
+        "openInterest": 121503092.589,
+        "socialScore": 42.0,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 52.8,
+          "sellPressure": 47.2,
+          "avgTradeSize": 1410.23
+        },
+        "volatility7d": 26.26
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "neutral",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "HBAR trading signal analysis suggests to SKIP. Despite a slight bias from smart money towards long, the overall neutral trends and low social sentiment indicate a lack of clear direction. Better to wait for stronger signals.",
+        "layerChecks": {
+          "agreements": [
+            "smartMoneyBias: long",
+            "fearGreedIndex: neutral",
+            "buyPressure: slightly more than sell pressure"
+          ],
+          "conflicts": [
+            "neutral price trend across all timeframes",
+            "social sentiment: low"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.9001,
+          "recommendedPositionSize": 0.9001,
+          "stopLossPrice": 0.14497723,
+          "stopLossDistancePct": 9.9984,
+          "takeProfitPrice": 0.18524152,
+          "takeProfitDistancePct": 14.9976,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00536857,
+          "atrPercentage": 3.3331,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 90% of base | SL: 10.00% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054744616135",
+    "saved_at": "2025-11-14T05:47:44.616168",
+    "data": {
+      "symbol": "VET",
+      "timestamp": "2025-11-14T05:47:36.613124",
+      "signal": "LONG",
+      "score": 58.8,
+      "confidence": "low",
+      "price": 0.015848168821185647,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 46/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 0.0,
+        "socialScore": 45.7,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 60.59,
+          "sellPressure": 39.41,
+          "avgTradeSize": 7493.1
+        },
+        "volatility7d": 22.38
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "VET trading signal suggests a LONG position, but with neutral price trends, low social sentiment, and lack of market participation (0.0 funding rate & OI), it's safer to SKIP this trade. Market lacks conviction; better opportunities may arise.",
+        "layerChecks": {
+          "agreements": [
+            "smartMoneyBias: long",
+            "longShortSentiment: bullish",
+            "buyPressure: 60.59"
+          ],
+          "conflicts": [
+            "Price trend: neutral",
+            "Social sentiment: 46/100",
+            "Funding Rate: 0.0, Open Interest: 0.0 indicating lack of market participation"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.0,
+          "recommendedPositionSize": 1.0,
+          "stopLossPrice": 0.01553121,
+          "stopLossDistancePct": 2.0,
+          "takeProfitPrice": 0.01632361,
+          "takeProfitDistancePct": 3.0,
+          "riskRewardRatio": 1.5,
+          "atrValue": null,
+          "atrPercentage": null,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 100% of base | SL: 2.00% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251114054745061170",
+    "saved_at": "2025-11-14T05:47:45.061211",
+    "data": {
+      "symbol": "UNI",
+      "timestamp": "2025-11-14T05:47:33.173251",
+      "signal": "LONG",
+      "score": 60.3,
+      "confidence": "low",
+      "price": 7.517053146724846,
+      "reasons": [
+        "High funding rate (0.390%) - longs overleveraged",
+        "Price trend: bullish",
+        "Social sentiment: 43/100"
+      ],
+      "metrics": {
+        "fundingRate": 0.003898,
+        "openInterest": 486324701.5579,
+        "socialScore": 43.1,
+        "priceTrend": "bullish"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 30.17,
+          "sellPressure": 69.83,
+          "avgTradeSize": 12.46
+        },
+        "volatility7d": 77.74
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the high funding rate and moderate social sentiment against bullish trends, we're skipping the UNI long signal for now. Better to wait for more aligned indicators.",
+        "layerChecks": {
+          "agreements": [
+            "Price trend: bullish",
+            "Smart money bias: long",
+            "Long/short sentiment: very bullish"
+          ],
+          "conflicts": [
+            "High funding rate indicates longs are overleveraged",
+            "Social sentiment is moderate at 43/100"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.4868,
+          "recommendedPositionSize": 0.4868,
+          "stopLossPrice": 6.12719602,
+          "stopLossDistancePct": 18.4894,
+          "takeProfitPrice": 9.60183884,
+          "takeProfitDistancePct": 27.7341,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.46328571,
+          "atrPercentage": 6.1632,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 49% of base | SL: 18.49% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
   }
 ]
