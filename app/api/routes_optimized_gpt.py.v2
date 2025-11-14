@@ -1,0 +1,331 @@
+"""
+Optimized GPT Actions Integration - Refactored
+Thin routing layer delegating to helper/service modules
+"""
+from fastapi import APIRouter, Query, Depends
+import os
+import time
+
+from app.core.signal_engine import signal_engine
+from app.services.smc_analyzer import smc_analyzer
+from app.services.openai_service import openai_service_legacy
+from app.services.smart_money_service import smart_money_service
+from app.middleware.auth import get_optional_api_key
+from app.utils.logger import default_logger, log_api_call
+
+from app.utils.gpt_schema_builder import build_maximal_gpt_schema
+from app.utils.gpt_helpers import (
+    calculate_risk_score,
+    calculate_position_size,
+    calculate_stop_loss,
+    calculate_take_profit,
+    detect_market_regime,
+    assess_volatility,
+    assess_liquidity,
+    assess_sentiment,
+    generate_final_recommendation,
+)
+from app.services.portfolio_optimizer_service import portfolio_optimizer_service
+from app.services.risk_assessment_service import risk_assessment_service
+from app.utils.trading_strategies import TRADING_STRATEGIES, DEFAULT_TOP_COINS, WHALE_SCAN_COINS
+
+router = APIRouter(prefix="/gpt", tags=["Optimized GPT Actions"])
+
+
+@router.get("/actions/maximal-schema")
+async def get_maximal_gpt_schema():
+    """
+    🚀 **MAXIMAL GPT Actions Schema** - Ultimate API Capabilities
+    
+    Complete OpenAPI schema with ALL CryptoSatX features
+    """
+    base_url = os.getenv("BASE_URL", "https://guardiansofthetoken.org")
+    
+    replit_domain = os.getenv("REPLIT_DOMAINS")
+    if replit_domain and "localhost" in base_url:
+        base_url = f"https://{replit_domain.split(',')[0]}"
+    elif not base_url or base_url == "http://localhost:8000":
+        base_url = "http://localhost:8000"
+    
+    return build_maximal_gpt_schema(base_url)
+
+
+@router.get("/actions/ultimate-signal/{symbol}")
+async def get_ultimate_signal(
+    symbol: str,
+    include_ai_validation: bool = Query(True),
+    include_smc: bool = Query(True),
+    include_whale_data: bool = Query(True),
+    risk_level: str = Query("moderate"),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """
+    🚀 **ULTIMATE SIGNAL** - Maximum AI-Powered Trading Signal
+    """
+    start_time = time.time()
+    
+    try:
+        symbol = symbol.upper()
+        signal = await signal_engine.build_signal(symbol, debug=False)
+        
+        response = {
+            "symbol": symbol,
+            "timestamp": signal.get("timestamp"),
+            "ultimateSignal": {
+                "primary": signal,
+                "confidence": "MAXIMAL",
+                "version": "3.0.0-MAXIMAL",
+            },
+        }
+        
+        if include_ai_validation:
+            try:
+                ai_analysis = await openai_service_legacy.analyze_signal_with_validation(signal)
+                response["ultimateSignal"]["aiValidation"] = ai_analysis
+            except Exception as e:
+                response["ultimateSignal"]["aiValidation"] = {"success": False, "error": str(e)}
+        
+        if include_smc:
+            try:
+                smc_analysis = await smc_analyzer.analyze_smc(symbol, "1HRS")
+                response["ultimateSignal"]["smcAnalysis"] = smc_analysis
+            except Exception as e:
+                response["ultimateSignal"]["smcAnalysis"] = {"success": False, "error": str(e)}
+        
+        if include_whale_data:
+            try:
+                whale_scan = await smart_money_service.scan_smart_money(
+                    coins=symbol, min_accumulation_score=7, min_distribution_score=7
+                )
+                response["ultimateSignal"]["whaleActivity"] = whale_scan
+            except Exception as e:
+                response["ultimateSignal"]["whaleActivity"] = {"success": False, "error": str(e)}
+        
+        risk_score = calculate_risk_score(signal, risk_level)
+        response["ultimateSignal"]["riskAssessment"] = {
+            "riskScore": risk_score,
+            "riskLevel": risk_level,
+            "positionSize": calculate_position_size(risk_score, risk_level),
+            "stopLoss": calculate_stop_loss(signal, risk_level),
+            "takeProfit": calculate_take_profit(signal, risk_level),
+        }
+        
+        response["ultimateSignal"]["marketContext"] = {
+            "marketRegime": detect_market_regime(signal),
+            "volatility": assess_volatility(signal),
+            "liquidity": assess_liquidity(signal),
+            "sentiment": assess_sentiment(signal),
+        }
+        
+        response["ultimateSignal"]["finalRecommendation"] = generate_final_recommendation(
+            response["ultimateSignal"]
+        )
+        
+        duration = time.time() - start_time
+        log_api_call(
+            default_logger,
+            f"/gpt/actions/ultimate-signal/{symbol}",
+            symbol=symbol,
+            duration=duration,
+            status="success",
+        )
+        
+        return response
+        
+    except Exception as e:
+        return {
+            "success": False,
+            "error": f"Failed to generate ultimate signal: {str(e)}",
+            "symbol": symbol.upper(),
+        }
+
+
+@router.get("/actions/portfolio-optimizer")
+async def optimize_portfolio(
+    risk_tolerance: int = Query(5),
+    investment_amount: float = Query(10000),
+    time_horizon: str = Query("medium_term"),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """
+    💼 **AI Portfolio Optimizer** - Maximum Returns with Controlled Risk
+    """
+    try:
+        portfolio_data = []
+        for coin in DEFAULT_TOP_COINS:
+            try:
+                signal = await signal_engine.build_signal(coin, debug=False)
+                
+                expected_return = portfolio_optimizer_service.calculate_expected_return(
+                    signal, risk_tolerance
+                )
+                risk = portfolio_optimizer_service.calculate_coin_risk(signal, risk_tolerance)
+                
+                portfolio_data.append({
+                    "symbol": coin,
+                    "allocation": 0,
+                    "expectedReturn": expected_return,
+                    "risk": risk,
+                    "signal": signal.get("signal", "NEUTRAL"),
+                    "confidence": signal.get("confidence", "low"),
+                })
+            except Exception:
+                continue
+        
+        optimized_portfolio = portfolio_optimizer_service.optimize_portfolio_allocation(
+            portfolio_data, risk_tolerance, investment_amount
+        )
+        
+        return {
+            "success": True,
+            "portfolioOptimization": {
+                "riskTolerance": risk_tolerance,
+                "investmentAmount": investment_amount,
+                "timeHorizon": time_horizon,
+                **optimized_portfolio,
+            },
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": f"Portfolio optimization failed: {str(e)}"}
+
+
+@router.get("/smart-money/accumulation")
+async def find_whale_accumulation(
+    min_score: int = Query(8),
+    exclude_overbought_coins: bool = Query(True),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """
+    📈 Whale Accumulation Finder
+    """
+    try:
+        scan_result = await smart_money_service.scan_smart_money(
+            coins=WHALE_SCAN_COINS,
+            min_accumulation_score=min_score,
+            min_distribution_score=0,
+        )
+        
+        if not scan_result.get("success"):
+            return scan_result
+        
+        accumulating_coins = [
+            coin for coin in scan_result.get("data", [])
+            if coin.get("accumulationScore", 0) >= min_score
+        ]
+        
+        if exclude_overbought_coins:
+            accumulating_coins = [
+                coin for coin in accumulating_coins
+                if coin.get("signal", {}).get("score", 50) < 75
+            ]
+        
+        accumulating_coins.sort(
+            key=lambda x: x.get("accumulationScore", 0), reverse=True
+        )
+        
+        return {
+            "success": True,
+            "minScore": min_score,
+            "excludeOverbought": exclude_overbought_coins,
+            "totalFound": len(accumulating_coins),
+            "opportunities": accumulating_coins[:10],
+        }
+        
+    except Exception as e:
+        return {"success": False, "error": f"Whale accumulation scan failed: {str(e)}"}
+
+
+@router.get("/portfolio/optimize")
+async def optimize_portfolio_public(
+    risk_tolerance: int = Query(5),
+    investment_amount: float = Query(10000),
+    time_horizon: str = Query("medium_term"),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """
+    💼 Portfolio Optimizer - Public endpoint (delegates to /actions/portfolio-optimizer)
+    """
+    return await optimize_portfolio(risk_tolerance, investment_amount, time_horizon, api_key)
+
+
+@router.get("/risk/assess/{symbol}")
+async def assess_risk(
+    symbol: str,
+    position_size: float = Query(None),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """
+    ⚠️ Risk Assessment
+    """
+    try:
+        symbol = symbol.upper()
+        signal = await signal_engine.build_signal(symbol, debug=False)
+        
+        result = risk_assessment_service.assess_coin_risk(symbol, signal, position_size)
+        
+        return result
+        
+    except Exception as e:
+        return {"success": False, "error": f"Risk assessment failed: {str(e)}"}
+
+
+@router.get("/strategies/recommend")
+async def recommend_strategies(
+    symbol: str = Query(None),
+    strategy_type: str = Query("all"),
+    timeframe: str = Query("swing"),
+    api_key: str = Depends(get_optional_api_key),
+):
+    """
+    🎯 Trading Strategy Recommendations
+    """
+    try:
+        import copy
+        strategies = copy.deepcopy(TRADING_STRATEGIES)
+        for strategy in strategies.values():
+            strategy["parameters"]["timeframe"] = timeframe
+        
+        if strategy_type != "all" and strategy_type in strategies:
+            selected_strategies = {strategy_type: strategies[strategy_type]}
+        else:
+            selected_strategies = strategies
+        
+        result = {
+            "success": True,
+            "strategyType": strategy_type,
+            "timeframe": timeframe,
+            "recommendedStrategies": selected_strategies,
+        }
+        
+        if symbol:
+            try:
+                signal = await signal_engine.build_signal(symbol, debug=False)
+                score = signal.get("score", 50)
+                
+                if score > 65:
+                    result["primaryRecommendation"] = "momentum"
+                    result["reasoning"] = "Strong bullish signal - use momentum strategy"
+                elif score < 35:
+                    result["primaryRecommendation"] = "momentum"
+                    result["reasoning"] = "Strong bearish signal - use short momentum strategy"
+                elif 45 <= score <= 55:
+                    result["primaryRecommendation"] = "mean_reversion"
+                    result["reasoning"] = "Neutral signal - use mean reversion"
+                else:
+                    result["primaryRecommendation"] = "breakout"
+                    result["reasoning"] = "Moderate signal - wait for breakout"
+                
+                result["symbolAnalysis"] = {
+                    "symbol": symbol,
+                    "currentSignal": signal.get("signal"),
+                    "score": score,
+                    "confidence": signal.get("confidence"),
+                }
+            except Exception as e:
+                result["symbolAnalysisError"] = str(e)
+        
+        return result
+        
+    except Exception as e:
+        return {"success": False, "error": f"Strategy recommendation failed: {str(e)}"}
