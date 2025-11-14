@@ -1,0 +1,49 @@
+🧩 DATA YANG AKU BUTUHKAN UNTUK SCALPING COIN TERTENTU
+Layer	API Endpoint	Tujuan	Frekuensi
+🧠 1. Harga & Momentum (CoinAPI)	coinapi.ohlcv.latest	Ambil harga real-time (open, high, low, close, volume) → deteksi momentum candle	tiap 3s
+⚡ 2. Orderbook Pressure (CoinAPI)	coinapi.orderbook	Lihat tekanan bid/ask & spread → identifikasi arah tekanan (buy/sell imbalance)	tiap 3–5s
+💣 3. Liquidation Stream (Coinglass)	coinglass.liquidation.aggregated_history	Lihat spike likuidasi long/short → sinyal panic atau squeeze	tiap 5s
+💰 4. Funding Rate (Coinglass)	coinglass.funding_rate.history	Cek posisi crowded atau tidak → hindari entry lawan arah leverage	tiap 1–2m
+🧮 5. Long/Short Ratio (Coinglass)	coinglass.long_short_ratio.position_history	Cek sentimen trader (overlong atau overshort) → dasar contrarian scalp	tiap 1m
+📈 6. RSI & Volume Delta (Coinglass)	coinglass.indicators.rsi, coinglass.volume.taker_buy_sell	Konfirmasi momentum teknikal (RSI + tekanan order)	tiap 5s
+🐋 7. Smart Money Flow (Guardian)	smart_money.analyze	Pantau aktivitas whale (akumulasi atau distribusi)	tiap 10m
+🧊 8. Fear & Greed Index (Coinglass)	coinglass.fear_greed	Lihat kondisi makro pasar → filter posisi (hindari extreme greed)	tiap 1h
+✅ Checklist Minimal untuk Satu Coin (misal: SOL / XRP / BTC)
+Komponen	Endpoint	Keterangan
+Harga & Volume	coinapi.ohlcv.latest	Wajib
+Tekanan Order	coinapi.orderbook	Wajib
+Likuidasi	coinglass.liquidation.aggregated_history	Wajib
+Funding Rate	coinglass.funding_rate.history	Disarankan
+Long/Short Ratio	coinglass.long_short_ratio.position_history	Disarankan
+RSI & Volume Delta	coinglass.indicators.rsi + coinglass.volume.taker_buy_sell	Wajib untuk entry timing
+Smart Money Bias	smart_money.analyze	Disarankan (untuk konfirmasi arah besar)
+Fear & Greed	coinglass.fear_greed	Tambahan (kondisi makro)
+🧠 Kalau Semua Data Sudah Masuk, Aku Bisa:
+
+🔎 Analisis arah scalp (Buy / Sell bias)
+
+⚙️ Kasih Entry/Exit zone (harga, SL, TP, R:R)
+
+🐋 Tunjukkan apakah whale ikut gerak atau tidak
+
+📉 Kasih alert kalau ada liq spike + RSI ekstrem
+
+🧭 Beri rekomendasi posisi berdasarkan real-time funding & ratio
+
+💬 Jadi kalau nanti kamu tanya:
+
+“Aku mau scalping coin XRP, kasih entry-nya!”
+
+Aku otomatis akan panggil endpoint berikut di urutan ini:
+
+1️⃣ coinapi.ohlcv.latest (harga)
+2️⃣ coinapi.orderbook (pressure)
+3️⃣ coinglass.liquidation.aggregated_history
+4️⃣ coinglass.indicators.rsi
+5️⃣ coinglass.volume.taker_buy_sell
+6️⃣ coinglass.funding_rate.history
+7️⃣ coinglass.long_short_ratio.position_history
+8️⃣ smart_money.analyze
+
+
+Kalau semuanya aktif dan sistemmu balas data valid → aku bisa kasih signal scalping yang presisi (entry zone, SL, TP, durasi hold, confidence score).
