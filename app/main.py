@@ -49,6 +49,12 @@ from app.api import (
     routes_nlp,  # ADDED FOR NATURAL LANGUAGE PROCESSING
     routes_cache,  # ADDED FOR CACHE MANAGEMENT
     routes_batch,  # ADDED FOR BATCH OPERATIONS
+    routes_gpt_monitoring,  # ADDED FOR GPT ACTIONS MONITORING
+)
+
+from app.middleware import (
+    ResponseSizeMonitorMiddleware,
+    GPTRateLimiterMiddleware,
 )
 
 # Load environment variables
@@ -128,6 +134,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add GPT Actions middleware (MUST be after CORS, before SlowAPI)
+app.add_middleware(GPTRateLimiterMiddleware)
+app.add_middleware(ResponseSizeMonitorMiddleware)
+
 # Add SlowAPI rate limiting middleware (MUST be after CORS)
 from slowapi.middleware import SlowAPIMiddleware
 app.add_middleware(SlowAPIMiddleware)
@@ -191,6 +201,9 @@ app.include_router(
 app.include_router(
     routes_batch.router, tags=["Batch Operations"]
 )  # ADDED FOR MULTI-SYMBOL FETCHING
+app.include_router(
+    routes_gpt_monitoring.router, tags=["GPT Monitoring"]
+)  # ADDED FOR GPT ACTIONS MONITORING & STATISTICS
 
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility
