@@ -136,11 +136,20 @@ class GPTActionsTestSuite:
                 }
             )
             
+            # CRITICAL: Assert HTTP 200 before size check (error responses are small but invalid)
+            if response.status_code != 200:
+                print(f"❌ FAIL - HTTP {response.status_code}")
+                print(f"Response: {response.text[:500]}")
+                raise AssertionError(
+                    f"/scalping/analyze returned HTTP {response.status_code} instead of 200. "
+                    f"Regression test cannot validate size for failed requests."
+                )
+            
             size_bytes = len(response.text.encode('utf-8'))
             size_kb = size_bytes / 1024
             limit_kb = 45
             
-            print(f"Status: {response.status_code}")
+            print(f"Status: {response.status_code} ✓")
             print(f"Response Size: {size_kb:.2f} KB ({size_bytes} bytes)")
             print(f"Limit: < {limit_kb} KB")
             
@@ -164,11 +173,20 @@ class GPTActionsTestSuite:
         async with httpx.AsyncClient(timeout=TIMEOUT) as client:
             response = await client.get(f"{self.base_url}/scalping/quick/BTC")
             
+            # CRITICAL: Assert HTTP 200 before size check (error responses are small but invalid)
+            if response.status_code != 200:
+                print(f"❌ FAIL - HTTP {response.status_code}")
+                print(f"Response: {response.text[:500]}")
+                raise AssertionError(
+                    f"/scalping/quick returned HTTP {response.status_code} instead of 200. "
+                    f"Regression test cannot validate size for failed requests."
+                )
+            
             size_bytes = len(response.text.encode('utf-8'))
             size_kb = size_bytes / 1024
             limit_kb = 40
             
-            print(f"Status: {response.status_code}")
+            print(f"Status: {response.status_code} ✓")
             print(f"Response Size: {size_kb:.2f} KB ({size_bytes} bytes)")
             print(f"Limit: < {limit_kb} KB")
             

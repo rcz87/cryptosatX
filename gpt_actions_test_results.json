@@ -5,21 +5,21 @@
     "failed": 0,
     "within_size_limit": 10,
     "exceeded_size_limit": 0,
-    "test_date": "2025-11-15T05:00:31.076222"
+    "test_date": "2025-11-15T05:05:32.782371"
   },
   "results": [
     {
       "endpoint": "/gpt/health",
       "method": "GET",
       "description": "GPT Actions Health Check",
-      "timestamp": "2025-11-15T04:59:50.767685",
+      "timestamp": "2025-11-15T05:04:57.185108",
       "success": true,
       "response_size_bytes": 126,
       "response_size_kb": 0.12,
       "within_limit": true,
       "status_code": 200,
       "error": null,
-      "response_time_ms": 33.34,
+      "response_time_ms": 25.92,
       "response_preview": {
         "ok": true,
         "data": {
@@ -34,27 +34,27 @@
       "endpoint": "/gpt/signal",
       "method": "POST",
       "description": "Get Trading Signal (BTC)",
-      "timestamp": "2025-11-15T04:59:50.820446",
+      "timestamp": "2025-11-15T05:04:57.228109",
       "success": true,
-      "response_size_bytes": 3384,
+      "response_size_bytes": 3379,
       "response_size_kb": 3.3,
       "within_limit": true,
       "status_code": 200,
       "error": null,
-      "response_time_ms": 6732.42,
+      "response_time_ms": 8010.81,
       "response_preview": {
         "ok": true,
         "data": {
           "symbol": "BTC",
-          "timestamp": "2025-11-15T04:59:52.693105",
+          "timestamp": "2025-11-15T05:04:58.667132",
           "signal": "NEUTRAL",
-          "score": 47.5,
+          "score": 47.6,
           "confidence": "low",
-          "price": 96104.53281614002,
+          "price": 96121.1219679972,
           "reasons": [
-            "High funding rate (0.767%) - longs overleveraged",
+            "High funding rate (0.760%) - longs overleveraged",
             "Price trend: neutral",
-            "Social sentiment: 42/100"
+            "Social sentiment: 44/100"
           ],
           "mode": "aggressive",
           "mode_info": {
@@ -69,9 +69,9 @@
             }
           },
           "metrics": {
-            "fundingRate": 0.007668,
-            "openInterest": 67582642027.4924,
-            "socialScore": 42.5,
+            "fundingRate": 0.007598,
+            "openInterest": 67572805332.6635,
+            "socialScore": 43.8,
             "priceTrend": "neutral"
           },
           "premiumDataAvailable": true,
@@ -136,7 +136,7 @@
             }
           },
           "lunarCrushMetrics": {
-            "altRank": 1298,
+            "altRank": 998,
             "socialMetrics": {
               "volume": 299540,
               "engagement": 177281195,
@@ -164,9 +164,9 @@
               "whaleAsks": 0
             },
             "trades": {
-              "buyPressure": 43.47,
-              "sellPressure": 56.53,
-              "avgTradeSize": 0.01
+              "buyPressure": 88.16,
+              "sellPressure": 11.84,
+              "avgTradeSize": 0.0
             },
             "volatility7d": 14.35
           },
@@ -180,9 +180,9 @@
           "aiVerdictLayer": {
             "verdict": "SKIP",
             "riskMode": "AVOID",
-            "riskMultiplier": 0,
+            "riskMultiplier": 0.0,
             "aiConfidence": 40,
-            "aiSummary": "Today's BTC signal suggests skipping. High funding rates show longs are overleveraged, and the market lacks a clear direction. Despite bullish sentiment from some quarters, the mixed signals present too much risk for a confident trade.",
+            "aiSummary": "BTC trading signal review: High funding rate and neutral trend suggest high risk without clear direction. Social sentiment is low, and despite bullish long/short sentiment, it's best to SKIP this trade due to conflicting indicators.",
             "layerChecks": {
               "agreements": [
                 "High funding rate indicates longs are overleveraged",
@@ -199,13 +199,13 @@
             "volatilityMetrics": {
               "recommendedPositionMultiplier": 1.347,
               "recommendedPositionSize": 1.347,
-              "stopLossPrice": 102526.39710185,
-              "stopLossDistancePct": 6.6822,
-              "takeProfitPrice": 86471.73638758,
-              "takeProfitDistancePct": 10.0232,
+              "stopLossPrice": 102542.98625371,
+              "stopLossDistancePct": 6.681,
+              "takeProfitPrice": 86488.32553943,
+              "takeProfitDistancePct": 10.0215,
               "riskRewardRatio": 1.5,
               "atrValue": 2140.62142857,
-              "atrPercentage": 2.2272,
+              "atrPercentage": 2.2271,
               "volatilityClassification": "UNKNOWN",
               "tradePlanSummary": "Position: 135% of base | SL: 6.68% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
               "timeframe": "4h"
@@ -219,201 +219,158 @@
       "endpoint": "/gpt/smart-money-scan",
       "method": "POST",
       "description": "Smart Money Accumulation Scan",
-      "timestamp": "2025-11-15T04:59:57.569740",
+      "timestamp": "2025-11-15T05:05:05.255534",
       "success": true,
-      "response_size_bytes": 5576,
-      "response_size_kb": 5.45,
+      "response_size_bytes": 5403,
+      "response_size_kb": 5.28,
       "within_limit": true,
       "status_code": 200,
       "error": null,
-      "response_time_ms": 27293.54,
+      "response_time_ms": 22912.42,
       "response_preview": {
         "ok": true,
         "data": {
           "success": true,
-          "timestamp": "2025-11-15T05:00:24.870188",
+          "timestamp": "2025-11-15T05:05:28.172968",
           "coinsScanned": 38,
           "coinsSuccessful": 38,
           "coinsFailed": 0,
           "summary": {
-            "accumulationSignals": 13,
-            "distributionSignals": 3,
+            "accumulationSignals": 10,
+            "distributionSignals": 6,
             "neutralCoins": 22
           },
           "accumulation": [
             {
-              "symbol": "DOT",
-              "price": 2.8761937949443754,
+              "symbol": "ETC",
+              "price": 15.219026163769891,
               "signalType": "LONG",
-              "compositeScore": 58.1,
+              "compositeScore": 62.3,
               "accumulationScore": 7,
-              "distributionScore": 0,
-              "dominantPattern": "accumulation",
-              "reasons": [
-                "Very high buy pressure (84.9%)",
-                "Negative funding (-0.131%) - very quiet",
-                "Sideways price action - no pump yet"
-              ]
-            },
-            {
-              "symbol": "AAVE",
-              "price": 178.23799719620132,
-              "signalType": "LONG",
-              "compositeScore": 59.6,
-              "accumulationScore": 7,
-              "distributionScore": 0,
-              "dominantPattern": "accumulation",
-              "reasons": [
-                "Very high buy pressure (98.5%)",
-                "Negative funding (-0.075%) - very quiet",
-                "Sideways price action - no pump yet"
-              ]
-            },
-            {
-              "symbol": "PEPE",
-              "price": 5.070484571279446e-06,
-              "signalType": "LONG",
-              "compositeScore": 55.6,
-              "accumulationScore": 7,
-              "distributionScore": 0,
-              "dominantPattern": "accumulation",
-              "reasons": [
-                "Very high buy pressure (96.5%)",
-                "Negative funding (-0.297%) - very quiet",
-                "Sideways price action - no pump yet"
-              ]
-            },
-            {
-              "symbol": "VET",
-              "price": 0.01590524611510322,
-              "signalType": "LONG",
-              "compositeScore": 55.7,
-              "accumulationScore": 6,
               "distributionScore": 0,
               "dominantPattern": "accumulation",
               "reasons": [
                 "Very high buy pressure (100.0%)",
-                "Low funding (0.000%) - not crowded",
+                "Negative funding (-1.152%) - very quiet",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "DOT",
+              "price": 2.8769628282974544,
+              "signalType": "LONG",
+              "compositeScore": 58.2,
+              "accumulationScore": 6,
+              "distributionScore": 0,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "High buy pressure (76.4%)",
+                "Negative funding (-0.090%) - very quiet",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "BNB",
+              "price": 928.6355407138904,
+              "signalType": "NEUTRAL",
+              "compositeScore": 46.1,
+              "accumulationScore": 5,
+              "distributionScore": 4,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (98.8%)",
                 "Sideways price action - no pump yet"
               ]
             },
             {
               "symbol": "SOL",
-              "price": 142.39050815632154,
+              "price": 142.4781455190765,
+              "signalType": "NEUTRAL",
+              "compositeScore": 47.3,
+              "accumulationScore": 5,
+              "distributionScore": 2,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (99.9%)",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "XRP",
+              "price": 2.283129938999876,
+              "signalType": "NEUTRAL",
+              "compositeScore": 47.1,
+              "accumulationScore": 5,
+              "distributionScore": 2,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (85.7%)",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "ADA",
+              "price": 0.5070801616142377,
               "signalType": "NEUTRAL",
               "compositeScore": 48.2,
               "accumulationScore": 5,
               "distributionScore": 2,
               "dominantPattern": "accumulation",
               "reasons": [
-                "Very high buy pressure (99.7%)",
-                "Sideways price action - no pump yet"
-              ]
-            },
-            {
-              "symbol": "ADA",
-              "price": 0.5070700739790296,
-              "signalType": "NEUTRAL",
-              "compositeScore": 47.4,
-              "accumulationScore": 5,
-              "distributionScore": 2,
-              "dominantPattern": "accumulation",
-              "reasons": [
-                "Very high buy pressure (88.1%)",
-                "Sideways price action - no pump yet"
-              ]
-            },
-            {
-              "symbol": "AVAX",
-              "price": 15.54787559586216,
-              "signalType": "LONG",
-              "compositeScore": 59.8,
-              "accumulationScore": 5,
-              "distributionScore": 0,
-              "dominantPattern": "accumulation",
-              "reasons": [
-                "Moderate buy pressure (64.9%)",
-                "Negative funding (-1.204%) - very quiet",
+                "Very high buy pressure (82.3%)",
                 "Sideways price action - no pump yet"
               ]
             },
             {
               "symbol": "UNI",
-              "price": 7.414331082388931,
+              "price": 7.411074074165326,
               "signalType": "NEUTRAL",
-              "compositeScore": 49.5,
+              "compositeScore": 49.6,
               "accumulationScore": 5,
               "distributionScore": 2,
               "dominantPattern": "accumulation",
               "reasons": [
-                "Very high buy pressure (82.7%)",
+                "Very high buy pressure (95.9%)",
                 "Sideways price action - no pump yet"
               ]
             },
             {
-              "symbol": "CRV",
-              "price": 0.44505431936769146,
+              "symbol": "NEAR",
+              "price": 2.5359444988322,
               "signalType": "NEUTRAL",
-              "compositeScore": 50.7,
+              "compositeScore": 51.1,
               "accumulationScore": 5,
               "distributionScore": 2,
               "dominantPattern": "accumulation",
               "reasons": [
-                "Very high buy pressure (99.4%)",
+                "Very high buy pressure (88.6%)",
                 "Sideways price action - no pump yet"
               ]
             },
             {
-              "symbol": "SUSHI",
-              "price": 0.4683997173633395,
+              "symbol": "SHIB",
+              "price": 9.196151853264902e-06,
+              "signalType": "SHORT",
+              "compositeScore": 44.2,
+              "accumulationScore": 5,
+              "distributionScore": 2,
+              "dominantPattern": "accumulation",
+              "reasons": [
+                "Very high buy pressure (100.0%)",
+                "Sideways price action - no pump yet"
+              ]
+            },
+            {
+              "symbol": "MANA",
+              "price": 0.20927207802743705,
               "signalType": "NEUTRAL",
-              "compositeScore": 47.6,
+              "compositeScore": 54.5,
               "accumulationScore": 5,
               "distributionScore": 0,
               "dominantPattern": "accumulation",
               "reasons": [
-                "High buy pressure (67.4%)",
+                "High buy pressure (76.3%)",
                 "Low funding (0.000%) - not crowded",
-                "Sideways price action - no pump yet"
-              ]
-            },
-            {
-              "symbol": "ARB",
-              "price": 0.24439966123808873,
-              "signalType": "NEUTRAL",
-              "compositeScore": 53.2,
-              "accumulationScore": 5,
-              "distributionScore": 0,
-              "dominantPattern": "accumulation",
-              "reasons": [
-                "Very high buy pressure (89.4%)",
-                "Sideways price action - no pump yet"
-              ]
-            },
-            {
-              "symbol": "APT",
-              "price": 2.9809801156556337,
-              "signalType": "LONG",
-              "compositeScore": 61.8,
-              "accumulationScore": 5,
-              "distributionScore": 0,
-              "dominantPattern": "accumulation",
-              "reasons": [
-                "Moderate buy pressure (61.4%)",
-                "Negative funding (-1.405%) - very quiet",
-                "Sideways price action - no pump yet"
-              ]
-            },
-            {
-              "symbol": "SUI",
-              "price": 1.7886374427662466,
-              "signalType": "NEUTRAL",
-              "compositeScore": 47.7,
-              "accumulationScore": 5,
-              "distributionScore": 2,
-              "dominantPattern": "accumulation",
-              "reasons": [
-                "Very high buy pressure (83.2%)",
                 "Sideways price action - no pump yet"
               ]
             }
@@ -421,72 +378,110 @@
           "distribution": [
             {
               "symbol": "ETH",
-              "price": 3171.853396286769,
+              "price": 3170.0349990034842,
               "signalType": "SHORT",
-              "compositeScore": 43.4,
+              "compositeScore": 42.5,
               "accumulationScore": 2,
-              "distributionScore": 6,
+              "distributionScore": 7,
               "dominantPattern": "distribution",
               "reasons": [
-                "High sell pressure (70.9%)",
-                "Very high funding (0.706%) - longs overcrowded",
+                "Very high sell pressure (96.9%)",
+                "Very high funding (0.695%) - longs overcrowded",
                 "Very high social activity (100.0) - retail FOMO"
               ]
             },
             {
-              "symbol": "BTC",
-              "price": 96104.53281861005,
+              "symbol": "SUI",
+              "price": 1.789445757446027,
+              "signalType": "NEUTRAL",
+              "compositeScore": 48.6,
+              "accumulationScore": 2,
+              "distributionScore": 5,
+              "dominantPattern": "distribution",
+              "reasons": [
+                "Very high sell pressure (80.1%)",
+                "Very high funding (0.632%) - longs overcrowded"
+              ]
+            },
+            {
+              "symbol": "LTC",
+              "price": 104.02201802280346,
+              "signalType": "SHORT",
+              "compositeScore": 44.0,
+              "accumulationScore": 2,
+              "distributionScore": 5,
+              "dominantPattern": "distribution",
+              "reasons": [
+                "Very high sell pressure (90.0%)",
+                "Very high funding (0.800%) - longs overcrowded"
+              ]
+            },
+            {
+              "symbol": "GALA",
+              "price": 0.009207343951655398,
+              "signalType": "NEUTRAL",
+              "compositeScore": 48.7,
+              "accumulationScore": 2,
+              "distributionScore": 5,
+              "dominantPattern": "distribution",
+              "reasons": [
+                "Very high sell pressure (93.3%)",
+                "Very high funding (0.800%) - longs overcrowded"
+              ]
+            },
+            {
+              "symbol": "XLM",
+              "price": 0.26476311524249807,
               "signalType": "NEUTRAL",
               "compositeScore": 47.5,
               "accumulationScore": 2,
               "distributionScore": 5,
               "dominantPattern": "distribution",
               "reasons": [
-                "Moderate sell pressure (58.2%)",
-                "Very high funding (0.767%) - longs overcrowded",
-                "Very high social activity (100.0) - retail FOMO"
+                "Very high sell pressure (94.7%)",
+                "Very high funding (0.572%) - longs overcrowded"
               ]
             },
             {
-              "symbol": "SNX",
-              "price": 0.7290665452691943,
-              "signalType": "NEUTRAL",
-              "compositeScore": 45.4,
+              "symbol": "ALGO",
+              "price": 0.16639425348632136,
+              "signalType": "SHORT",
+              "compositeScore": 44.6,
               "accumulationScore": 2,
               "distributionScore": 5,
               "dominantPattern": "distribution",
               "reasons": [
                 "Very high sell pressure (100.0%)",
-                "Very high funding (0.810%) - longs overcrowded"
+                "Very high funding (0.833%) - longs overcrowded"
               ]
             }
           ],
           "neutral": [
             {
-              "symbol": "BNB",
-              "price": 927.9875206398252,
+              "symbol": "BTC",
+              "price": 96120.68660015149,
               "signalType": "NEUTRAL",
-              "compositeScore": 46.1,
-              "accumulationScore": 2,
+              "compositeScore": 47.6,
+              "accumulationScore": 4,
               "distributionScore": 4,
               "dominantPattern": "distribution",
               "reasons": []
             },
             {
-              "symbol": "XRP",
-              "price": 2.282979240883398,
-              "signalType": "NEUTRAL",
-              "compositeScore": 46.2,
-              "accumulationScore": 2,
-              "distributionScore": 4,
-              "dominantPattern": "distribution",
+              "symbol": "AVAX",
+              "price": 15.539082053024703,
+              "signalType": "LONG",
+              "compositeScore": 60.7,
+              "accumulationScore": 4,
+              "distributionScore": 3,
+              "dominantPattern": "accumulation",
               "reasons": []
             },
             {
               "symbol": "MATIC",
-              "price": 0.17308546282223797,
+              "price": 0.17309755052361087,
               "signalType": "NEUTRAL",
-              "compositeScore": 49.5,
+              "compositeScore": 49.4,
               "accumulationScore": 3,
               "distributionScore": 0,
               "dominantPattern": "accumulation",
@@ -494,21 +489,21 @@
             },
             {
               "symbol": "LINK",
-              "price": 14.152787954877791,
+              "price": 14.147573386486785,
               "signalType": "NEUTRAL",
-              "compositeScore": 47.3,
-              "accumulationScore": 4,
-              "distributionScore": 1,
-              "dominantPattern": "accumulation",
+              "compositeScore": 48.5,
+              "accumulationScore": 2,
+              "distributionScore": 3,
+              "dominantPattern": "distribution",
               "reasons": []
             },
             {
-              "symbol": "MKR",
-              "price": 1224.9535521917273,
-              "signalType": "NEUTRAL",
-              "compositeScore": 50.6,
-              "accumulationScore": 3,
-              "distributionScore": 0,
+              "symbol": "AAVE",
+              "price": 178.2876544162811,
+              "signalType": "LONG",
+              "compositeScore": 59.6,
+              "accumulationScore": 4,
+              "distributionScore": 3,
               "dominantPattern": "accumulation",
               "reasons": []
             }
@@ -522,14 +517,14 @@
       "endpoint": "/gpt/mss-discover",
       "method": "POST",
       "description": "MSS Discovery (Emerging Cryptocurrencies)",
-      "timestamp": "2025-11-15T05:00:24.879298",
+      "timestamp": "2025-11-15T05:05:28.181631",
       "success": true,
       "response_size_bytes": 48,
       "response_size_kb": 0.05,
       "within_limit": true,
       "status_code": 200,
       "error": null,
-      "response_time_ms": 1070.01,
+      "response_time_ms": 1015.28,
       "response_preview": {
         "ok": true,
         "data": [],
@@ -540,17 +535,17 @@
       "endpoint": "/scalping/quick/BTC",
       "method": "GET",
       "description": "Quick Scalping Analysis (BTC)",
-      "timestamp": "2025-11-15T05:00:25.963834",
+      "timestamp": "2025-11-15T05:05:29.208150",
       "success": true,
-      "response_size_bytes": 9142,
-      "response_size_kb": 8.93,
+      "response_size_bytes": 9153,
+      "response_size_kb": 8.94,
       "within_limit": true,
       "status_code": 200,
       "error": null,
-      "response_time_ms": 1650.1,
+      "response_time_ms": 486.06,
       "response_preview": {
         "symbol": "BTC",
-        "timestamp": "2025-11-15T05:00:25.999326",
+        "timestamp": "2025-11-15T05:05:29.238229",
         "ready": true,
         "critical_data_available": 5,
         "recommended_data_available": 2,
@@ -565,7 +560,7 @@
         },
         "price": {
           "symbol": "BTC",
-          "price": 96126.10340388883,
+          "price": 96130.59743233878,
           "source": "coinapi",
           "success": true
         },
@@ -682,19 +677,34 @@
               ],
               "asks": [
                 {
+                  "price": 90290.0,
+                  "quantity": 3.267,
+                  "value": 294977.43
+                },
+                {
+                  "price": 90300.0,
+                  "quantity": 3.331,
+                  "value": 300789.3
+                },
+                {
+                  "price": 90310.0,
+                  "quantity": 2.04,
+                  "value": 184232.4
+                },
+                {
                   "price": 90320.0,
-                  "quantity": 20.236,
-                  "value": 1827715.52
+                  "quantity": 20.258,
+                  "value": 1829702.5599999998
                 },
                 {
                   "price": 90340.0,
-                  "quantity": 23.409,
-                  "value": 2114769.06
+                  "quantity": 23.174,
+                  "value": 2093539.16
                 },
                 {
                   "price": 90360.0,
-                  "quantity": 12.549,
-                  "value": 1133927.64
+                  "quantity": 12.533,
+                  "value": 1132481.88
                 },
                 {
                   "price": 90380.0,
@@ -703,8 +713,8 @@
                 },
                 {
                   "price": 90400.0,
-                  "quantity": 1.998,
-                  "value": 180619.2
+                  "quantity": 2.882,
+                  "value": 260532.80000000002
                 },
                 {
                   "price": 90410.0,
@@ -728,8 +738,8 @@
                 },
                 {
                   "price": 90460.0,
-                  "quantity": 2.357,
-                  "value": 213214.22000000003
+                  "quantity": 1.474,
+                  "value": 133338.04
                 },
                 {
                   "price": 90480.0,
@@ -738,8 +748,8 @@
                 },
                 {
                   "price": 90500.0,
-                  "quantity": 41.281,
-                  "value": 3735930.5
+                  "quantity": 41.183,
+                  "value": 3727061.5
                 },
                 {
                   "price": 90520.0,
@@ -758,33 +768,18 @@
                 },
                 {
                   "price": 90550.0,
-                  "quantity": 27.982,
-                  "value": 2533770.1
+                  "quantity": 27.815,
+                  "value": 2518648.25
                 },
                 {
                   "price": 90580.0,
                   "quantity": 8.173,
                   "value": 740310.34
-                },
-                {
-                  "price": 90600.0,
-                  "quantity": 6.966,
-                  "value": 631119.6
-                },
-                {
-                  "price": 90610.0,
-                  "quantity": 10.592,
-                  "value": 959741.12
-                },
-                {
-                  "price": 90620.0,
-                  "quantity": 23.002,
-                  "value": 2084441.24
                 }
               ],
-              "bidLiquidity": 464571521.0200008,
-              "askLiquidity": 736208770.85,
-              "totalLevels": 1018
+              "bidLiquidity": 464275755.27000046,
+              "askLiquidity": 730895462.2699995,
+              "totalLevels": 1022
             }
           ],
           "note": "Detailed orderbook snapshots with individual price levels. Raw orderbook over time!",
@@ -795,7 +790,7 @@
           "error": "No data"
         },
         "rsi": {
-          "currentRsi": 50.84900045,
+          "currentRsi": 51.03068676,
           "signal": "NEUTRAL",
           "success": true
         },
@@ -1203,23 +1198,23 @@
       "endpoint": "/scalping/analyze",
       "method": "POST",
       "description": "Complete Scalping Analysis (ETH) - GPT Optimized",
-      "timestamp": "2025-11-15T05:00:27.633234",
+      "timestamp": "2025-11-15T05:05:29.713148",
       "success": true,
       "response_size_bytes": 15315,
       "response_size_kb": 14.96,
       "within_limit": true,
       "status_code": 200,
       "error": null,
-      "response_time_ms": 1011.51,
+      "response_time_ms": 986.75,
       "response_preview": {
         "symbol": "ETH",
-        "timestamp": "2025-11-15T05:00:27.668402",
+        "timestamp": "2025-11-15T05:05:29.740267",
         "ready": true,
         "critical_data_available": 5,
         "recommended_data_available": 2,
         "price": {
           "symbol": "ETH",
-          "price": 3170.8202368521306,
+          "price": 3171.1025557833036,
           "source": "coinapi",
           "success": true
         },
@@ -1236,8 +1231,8 @@
               "bids": [
                 {
                   "price": 1585.0,
-                  "quantity": 1.936,
-                  "value": 3068.56
+                  "quantity": 1.898,
+                  "value": 3008.33
                 },
                 {
                   "price": 1587.0,
@@ -1338,8 +1333,8 @@
               "asks": [
                 {
                   "price": 2481.0,
-                  "quantity": 1103.052,
-                  "value": 2736672.0119999996
+                  "quantity": 1101.564,
+                  "value": 2732980.284
                 },
                 {
                   "price": 2482.0,
@@ -1353,8 +1348,8 @@
                 },
                 {
                   "price": 2484.0,
-                  "quantity": 3.904,
-                  "value": 9697.536
+                  "quantity": 3.906,
+                  "value": 9702.504
                 },
                 {
                   "price": 2485.0,
@@ -1433,12 +1428,12 @@
                 },
                 {
                   "price": 2500.0,
-                  "quantity": 2194.53,
-                  "value": 5486325.000000001
+                  "quantity": 2194.297,
+                  "value": 5485742.5
                 }
               ],
-              "bidLiquidity": 134839030.75899982,
-              "askLiquidity": 571950172.1330005,
+              "bidLiquidity": 140583695.34599975,
+              "askLiquidity": 572623104.0439998,
               "totalLevels": 1378
             }
           ],
@@ -1463,7 +1458,7 @@
           "success": true
         },
         "rsi": {
-          "currentRsi": 48.84450295,
+          "currentRsi": 48.92527438,
           "signal": "NEUTRAL",
           "success": true
         },
@@ -1854,7 +1849,7 @@
         },
         "smart_money": {
           "success": true,
-          "timestamp": "2025-11-15T05:00:28.577692",
+          "timestamp": "2025-11-15T05:05:30.589408",
           "coinsScanned": 1,
           "coinsSuccessful": 0,
           "coinsFailed": 1,
@@ -1872,14 +1867,14 @@
         },
         "whale_positions": {
           "success": true,
-          "totalPositions": 935,
+          "totalPositions": 934,
           "summary": {
-            "totalValue": 5365646600.284001,
-            "totalPnl": 82258604.13069987,
+            "totalValue": 5362757247.870908,
+            "totalPnl": 81902059.13539988,
             "longCount": 462,
-            "shortCount": 473,
+            "shortCount": 472,
             "megaWhaleCount": 10,
-            "avgLeverage": 15.447058823529412
+            "avgLeverage": 15.450749464668094
           },
           "megaWhales": [
             {
@@ -1888,17 +1883,17 @@
               "positionSize": 53000.187,
               "side": "LONG",
               "entryPrice": 3243.65,
-              "markPrice": 3172.6,
-              "liqPrice": 2234.0745,
+              "markPrice": 3172.0,
+              "liqPrice": 2239.5865,
               "leverage": 15,
-              "marginBalance": 11211659.558,
-              "positionValue": 168174893.3697,
-              "unrealizedPnl": -3739279.4167,
-              "pnlPercent": -2.2234468782923003,
-              "fundingFee": 205641.5007,
+              "marginBalance": 11203532.8626,
+              "positionValue": 168052992.9396,
+              "unrealizedPnl": -3861179.8468,
+              "pnlPercent": -2.2975965969185377,
+              "fundingFee": 207743.0243,
               "marginMode": "cross",
               "createTime": 1762280547000,
-              "updateTime": 1763182665000,
+              "updateTime": 1763182968000,
               "classification": "MEGA_WHALE"
             },
             {
@@ -1907,17 +1902,17 @@
               "positionSize": -49507.5498,
               "side": "SHORT",
               "entryPrice": 3533.67,
-              "markPrice": 3172.6,
-              "liqPrice": 4265.6023,
+              "markPrice": 3172.0,
+              "liqPrice": 4264.0727,
               "leverage": 10,
-              "marginBalance": 15703299.7211,
-              "positionValue": 157032997.2106,
-              "unrealizedPnl": 17910841.2522,
-              "pnlPercent": 11.405781950515422,
-              "fundingFee": -12983302.475,
+              "marginBalance": 15692903.1356,
+              "positionValue": 156929031.356,
+              "unrealizedPnl": 18014807.1067,
+              "pnlPercent": 11.47958854460311,
+              "fundingFee": -12985265.5112,
               "marginMode": "cross",
               "createTime": 1746805712000,
-              "updateTime": 1763182739000,
+              "updateTime": 1763183001000,
               "classification": "MEGA_WHALE"
             },
             {
@@ -1926,17 +1921,17 @@
               "positionSize": -1231.98352,
               "side": "SHORT",
               "entryPrice": 111499.3,
-              "markPrice": 96144.0,
-              "liqPrice": 105500.7111,
+              "markPrice": 96155.0,
+              "liqPrice": 105501.8977,
               "leverage": 20,
               "marginBalance": 5921097.5946,
               "positionValue": 118421951.893,
               "unrealizedPnl": 18943389.5177,
               "pnlPercent": 15.996518563396316,
-              "fundingFee": -9047035.3815,
+              "fundingFee": -9048515.5173,
               "marginMode": "cross",
               "createTime": 1746781132000,
-              "updateTime": 1763182797000,
+              "updateTime": 1763183088000,
               "classification": "MEGA_WHALE"
             },
             {
@@ -1945,17 +1940,17 @@
               "positionSize": 34712889.0,
               "side": "LONG",
               "entryPrice": 2.3178,
-              "markPrice": 2.2842,
-              "liqPrice": 0.834,
+              "markPrice": 2.2852,
+              "liqPrice": 0.8446,
               "leverage": 10,
-              "marginBalance": 7930159.492,
-              "positionValue": 79301594.9205,
-              "unrealizedPnl": -1154796.045,
-              "pnlPercent": -1.4562078431810674,
-              "fundingFee": 40560.9489,
+              "marginBalance": 7925646.8165,
+              "positionValue": 79256468.1648,
+              "unrealizedPnl": -1199922.8007,
+              "pnlPercent": -1.5139746048296903,
+              "fundingFee": 41968.3852,
               "marginMode": "cross",
               "createTime": 1762979565000,
-              "updateTime": 1763182665000,
+              "updateTime": 1763182968000,
               "classification": "MEGA_WHALE"
             },
             {
@@ -1964,17 +1959,17 @@
               "positionSize": 669.0743,
               "side": "LONG",
               "entryPrice": 96914.8,
-              "markPrice": 96144.0,
-              "liqPrice": 88023.6831,
+              "markPrice": 96155.0,
+              "liqPrice": 88046.2069,
               "leverage": 25,
-              "marginBalance": 2573340.0467,
-              "positionValue": 64333501.1679,
-              "unrealizedPnl": -509716.7442,
-              "pnlPercent": -0.7923037530162115,
-              "fundingFee": 10552.2885,
+              "marginBalance": 2572456.8686,
+              "positionValue": 64311421.716,
+              "unrealizedPnl": -531796.1961,
+              "pnlPercent": -0.826907852307197,
+              "fundingFee": 11356.1311,
               "marginMode": "cross",
               "createTime": 1763135633000,
-              "updateTime": 1763182703000,
+              "updateTime": 1763183006000,
               "classification": "MEGA_WHALE"
             },
             {
@@ -1983,17 +1978,17 @@
               "positionSize": 639.6313,
               "side": "LONG",
               "entryPrice": 110297.6,
-              "markPrice": 96144.0,
-              "liqPrice": 71348.2526,
+              "markPrice": 96155.0,
+              "liqPrice": 71350.7254,
               "leverage": 20,
-              "marginBalance": 3075347.2904,
-              "positionValue": 61506945.808,
-              "unrealizedPnl": -9042856.1212,
-              "pnlPercent": -14.70217062870943,
-              "fundingFee": 303995.3846,
+              "marginBalance": 3073300.4702,
+              "positionValue": 61466009.4048,
+              "unrealizedPnl": -9083792.5244,
+              "pnlPercent": -14.778562350739868,
+              "fundingFee": 304763.8536,
               "marginMode": "cross",
               "createTime": 1756463617000,
-              "updateTime": 1763182683000,
+              "updateTime": 1763182989000,
               "classification": "MEGA_WHALE"
             },
             {
@@ -2002,17 +1997,17 @@
               "positionSize": -1574360.34,
               "side": "SHORT",
               "entryPrice": 42.0835,
-              "markPrice": 38.487,
-              "liqPrice": 70.7643,
+              "markPrice": 38.563,
+              "liqPrice": 70.8492,
               "leverage": 5,
-              "marginBalance": 12108720.247,
-              "positionValue": 60543601.235,
-              "unrealizedPnl": 5711026.8725,
-              "pnlPercent": 9.432915710336832,
-              "fundingFee": -5256851.0544,
+              "marginBalance": 12130131.5476,
+              "positionValue": 60650657.7382,
+              "unrealizedPnl": 5603970.3694,
+              "pnlPercent": 9.239752013225761,
+              "fundingFee": -5257607.9085,
               "marginMode": "cross",
               "createTime": 1747940081000,
-              "updateTime": 1763182739000,
+              "updateTime": 1763183001000,
               "classification": "MEGA_WHALE"
             },
             {
@@ -2021,17 +2016,17 @@
               "positionSize": -604.38311,
               "side": "SHORT",
               "entryPrice": 100296.6,
-              "markPrice": 96144.0,
-              "liqPrice": 158319.2409,
+              "markPrice": 96155.0,
+              "liqPrice": 158215.1345,
               "leverage": 20,
-              "marginBalance": 2905662.4588,
-              "positionValue": 58113249.1758,
-              "unrealizedPnl": 2504355.4337,
-              "pnlPercent": 4.3094397047461666,
-              "fundingFee": -125948.6716,
+              "marginBalance": 2904755.8841,
+              "positionValue": 58095117.6825,
+              "unrealizedPnl": 2522486.927,
+              "pnlPercent": 4.341994693574482,
+              "fundingFee": -126674.7926,
               "marginMode": "cross",
               "createTime": 1741665503000,
-              "updateTime": 1763182705000,
+              "updateTime": 1763183008000,
               "classification": "MEGA_WHALE"
             },
             {
@@ -2040,17 +2035,17 @@
               "positionSize": -569.4354,
               "side": "SHORT",
               "entryPrice": 103305.7,
-              "markPrice": 96144.0,
-              "liqPrice": 101619.941,
+              "markPrice": 96155.0,
+              "liqPrice": 101614.2191,
               "leverage": 40,
-              "marginBalance": 1368410.2097,
-              "positionValue": 54736408.3896,
-              "unrealizedPnl": 4089521.3971,
-              "pnlPercent": 7.471300213912127,
-              "fundingFee": -261380.0879,
+              "marginBalance": 1368196.6715,
+              "positionValue": 54727866.8586,
+              "unrealizedPnl": 4098062.9281,
+              "pnlPercent": 7.488073559834035,
+              "fundingFee": -262064.2218,
               "marginMode": "cross",
               "createTime": 1760235928000,
-              "updateTime": 1763182771000,
+              "updateTime": 1763183061000,
               "classification": "MEGA_WHALE"
             },
             {
@@ -2059,24 +2054,24 @@
               "positionSize": 526.20189,
               "side": "LONG",
               "entryPrice": 104235.5,
-              "markPrice": 96144.0,
-              "liqPrice": 84894.8602,
+              "markPrice": 96155.0,
+              "liqPrice": 84896.0768,
               "leverage": 20,
-              "marginBalance": 2529584.0357,
-              "positionValue": 50591680.7141,
-              "unrealizedPnl": -4257253.3659,
-              "pnlPercent": -8.4149277229161,
-              "fundingFee": 67407.1256,
+              "marginBalance": 2529189.3843,
+              "positionValue": 50583787.6857,
+              "unrealizedPnl": -4265146.3942,
+              "pnlPercent": -8.431844646947532,
+              "fundingFee": 68039.3177,
               "marginMode": "cross",
               "createTime": 1762793568000,
-              "updateTime": 1763182651000,
+              "updateTime": 1763183104000,
               "classification": "MEGA_WHALE"
             }
           ],
           "topPositions": {
             "bias": "SHORT",
-            "longValue": 617761248.1699001,
-            "shortValue": 1040302568.1725,
+            "longValue": 617545644.0856,
+            "shortValue": 1040204432.3832,
             "ratio": 0.59,
             "positionCount": 30
           },
@@ -2096,15 +2091,15 @@
           "latest": {
             "open": 3171.995,
             "high": 3172.0,
-            "low": 3171.49,
-            "close": 3171.65,
-            "volume": 11.8676,
+            "low": 3168.59,
+            "close": 3170.565,
+            "volume": 407.3040000000001,
             "timestamp": "2025-11-15T05:00:00.0000000Z"
           },
           "trend": {
             "direction": "NEUTRAL",
-            "changePct": 0.97,
-            "interpretation": "1.0% gain over 6 periods"
+            "changePct": 0.93,
+            "interpretation": "0.9% gain over 6 periods"
           },
           "source": "coinapi"
         },
@@ -2113,17 +2108,17 @@
           "symbol": "ETH",
           "tradeCount": 20,
           "summary": {
-            "buyVolume": 2.1325,
-            "sellVolume": 0.0,
-            "totalVolume": 2.1325,
-            "buyPercent": 100.0,
-            "sellPercent": 0.0,
-            "avgPrice": 3170.74
+            "buyVolume": 0.0,
+            "sellVolume": 0.1899,
+            "totalVolume": 0.1899,
+            "buyPercent": 0.0,
+            "sellPercent": 100.0,
+            "avgPrice": 3171.09
           },
           "pressure": {
-            "direction": "BUY",
+            "direction": "SELL",
             "strength": 50.0,
-            "interpretation": "BUY pressure with 50.0% dominance"
+            "interpretation": "SELL pressure with 50.0% dominance"
           },
           "source": "coinapi"
         },
@@ -2143,11 +2138,11 @@
           "message": "All critical data available - ready for scalping execution",
           "whale_bias": {
             "bias": "SHORT",
-            "longValue": 617761248.1699001,
-            "shortValue": 1040302568.1725,
-            "longPercent": 37.25798983616012,
-            "shortPercent": 62.74201016383988,
-            "ratio": 0.593828437100873,
+            "longValue": 617545644.0856,
+            "shortValue": 1040204432.3832,
+            "longPercent": 37.25203532495344,
+            "shortPercent": 62.74796467504656,
+            "ratio": 0.5936771896566029,
             "confidence": 0.34,
             "interpretation": "Whales SHORT bias (37.3% LONG vs 62.7% SHORT)"
           }
@@ -2158,21 +2153,21 @@
       "endpoint": "/invoke",
       "method": "POST",
       "description": "Unified RPC - Get Signal (SOL)",
-      "timestamp": "2025-11-15T05:00:28.669911",
+      "timestamp": "2025-11-15T05:05:30.715141",
       "success": true,
       "response_size_bytes": 221,
       "response_size_kb": 0.22,
       "within_limit": true,
       "status_code": 200,
       "error": null,
-      "response_time_ms": 766.8,
+      "response_time_ms": 693.73,
       "response_preview": {
         "ok": false,
         "operation": "signals.get",
         "data": null,
         "error": "AttributeError: 'str' object has no attribute 'get'",
         "meta": {
-          "execution_time_ms": 735.24,
+          "execution_time_ms": 676.69,
           "namespace": "signals",
           "error_type": "AttributeError",
           "timeout_limit_s": 45
@@ -2183,21 +2178,21 @@
       "endpoint": "/invoke",
       "method": "POST",
       "description": "Unified RPC - Liquidation History",
-      "timestamp": "2025-11-15T05:00:29.470311",
+      "timestamp": "2025-11-15T05:05:31.425182",
       "success": true,
       "response_size_bytes": 313,
       "response_size_kb": 0.31,
       "within_limit": true,
       "status_code": 200,
       "error": null,
-      "response_time_ms": 20.97,
+      "response_time_ms": 14.99,
       "response_preview": {
         "ok": false,
         "operation": "coinglass.liquidation.aggregated_history",
         "data": null,
         "error": "TypeError: CoinglassComprehensiveService.get_liquidation_aggregated_history() got an unexpected keyword argument 'mode'",
         "meta": {
-          "execution_time_ms": 0.07,
+          "execution_time_ms": 0.08,
           "namespace": "coinglass",
           "error_type": "TypeError",
           "timeout_limit_s": 45
@@ -2208,26 +2203,26 @@
       "endpoint": "/analytics/history/latest?limit=5",
       "method": "GET",
       "description": "Analytics - Latest 5 Signals",
-      "timestamp": "2025-11-15T05:00:29.507791",
+      "timestamp": "2025-11-15T05:05:31.457710",
       "success": true,
-      "response_size_bytes": 4152,
+      "response_size_bytes": 4151,
       "response_size_kb": 4.05,
       "within_limit": true,
       "status_code": 200,
       "error": null,
-      "response_time_ms": 139.04,
+      "response_time_ms": 15.62,
       "response_preview": {
         "success": true,
         "count": 5,
         "signals": [
           {
-            "id": 205,
+            "id": 218,
             "symbol": "VET",
             "signal": "LONG",
             "score": 55.7,
             "confidence": "low",
-            "price": 0.01590525,
-            "timestamp": "2025-11-15T05:00:17.466266",
+            "price": 0.01590345,
+            "timestamp": "2025-11-15T05:03:26.384360",
             "reasons": [
               "Price trend: neutral",
               "Social sentiment: 62/100"
@@ -2260,7 +2255,7 @@
             "coinAPIMetrics": {
               "trades": {
                 "buyPressure": 100.0,
-                "avgTradeSize": 1638.34,
+                "avgTradeSize": 1910.2,
                 "sellPressure": 0.0
               },
               "orderbook": {
@@ -2273,16 +2268,16 @@
             },
             "smcAnalysis": {},
             "ai_validation": {},
-            "created_at": "2025-11-15T05:00:24.885196"
+            "created_at": "2025-11-15T05:03:34.006683"
           },
           {
-            "id": 200,
+            "id": 220,
             "symbol": "AXS",
             "signal": "LONG",
             "score": 55.7,
             "confidence": "low",
-            "price": 1.28392778,
-            "timestamp": "2025-11-15T05:00:17.440629",
+            "price": 1.28372679,
+            "timestamp": "2025-11-15T05:03:26.122622",
             "reasons": [
               "Price trend: neutral",
               "Social sentiment: 62/100"
@@ -2291,7 +2286,7 @@
               "priceTrend": "neutral",
               "fundingRate": 0.0,
               "socialScore": 62.2,
-              "openInterest": 12267661.0
+              "openInterest": 12251047.0
             },
             "comprehensiveMetrics": {
               "fundingRates": {
@@ -2314,9 +2309,9 @@
             "lunarCrushMetrics": {},
             "coinAPIMetrics": {
               "trades": {
-                "buyPressure": 50.0,
-                "avgTradeSize": 0.0,
-                "sellPressure": 50.0
+                "buyPressure": 52.17,
+                "avgTradeSize": 453.12,
+                "sellPressure": 47.83
               },
               "orderbook": {
                 "imbalance": 0.0,
@@ -2328,25 +2323,25 @@
             },
             "smcAnalysis": {},
             "ai_validation": {},
-            "created_at": "2025-11-15T05:00:23.416999"
+            "created_at": "2025-11-15T05:03:33.996723"
           },
           {
-            "id": 199,
+            "id": 211,
             "symbol": "HBAR",
             "signal": "LONG",
             "score": 63.0,
             "confidence": "low",
-            "price": 0.1575005,
-            "timestamp": "2025-11-15T05:00:17.338138",
+            "price": 0.15749086,
+            "timestamp": "2025-11-15T05:03:26.119245",
             "reasons": [
               "Price trend: neutral",
               "Social sentiment: 45/100"
             ],
             "metrics": {
               "priceTrend": "neutral",
-              "fundingRate": -0.004774,
+              "fundingRate": -0.004682,
               "socialScore": 44.7,
-              "openInterest": 122567217.9075
+              "openInterest": 122533656.2454
             },
             "comprehensiveMetrics": {
               "fundingRates": {
@@ -2369,9 +2364,9 @@
             "lunarCrushMetrics": {},
             "coinAPIMetrics": {
               "trades": {
-                "buyPressure": 30.31,
-                "avgTradeSize": 166.86,
-                "sellPressure": 69.69
+                "buyPressure": 3.72,
+                "avgTradeSize": 662.98,
+                "sellPressure": 96.28
               },
               "orderbook": {
                 "imbalance": 0.0,
@@ -2383,25 +2378,25 @@
             },
             "smcAnalysis": {},
             "ai_validation": {},
-            "created_at": "2025-11-15T05:00:23.409736"
+            "created_at": "2025-11-15T05:03:31.838121"
           },
           {
-            "id": 203,
+            "id": 213,
             "symbol": "MANA",
             "signal": "LONG",
-            "score": 55.4,
+            "score": 55.0,
             "confidence": "low",
-            "price": 0.20911262,
-            "timestamp": "2025-11-15T05:00:17.233297",
+            "price": 0.20917807,
+            "timestamp": "2025-11-15T05:03:26.062577",
             "reasons": [
               "Price trend: neutral",
-              "Social sentiment: 57/100"
+              "Social sentiment: 50/100"
             ],
             "metrics": {
               "priceTrend": "neutral",
               "fundingRate": 0.0,
-              "socialScore": 57.4,
-              "openInterest": 648390.0
+              "socialScore": 50.0,
+              "openInterest": 648918.0
             },
             "comprehensiveMetrics": {
               "fundingRates": {
@@ -2424,9 +2419,9 @@
             "lunarCrushMetrics": {},
             "coinAPIMetrics": {
               "trades": {
-                "buyPressure": 24.39,
-                "avgTradeSize": 1591.0,
-                "sellPressure": 75.61
+                "buyPressure": 100.0,
+                "avgTradeSize": 37.0,
+                "sellPressure": 0.0
               },
               "orderbook": {
                 "imbalance": 0.0,
@@ -2438,16 +2433,16 @@
             },
             "smcAnalysis": {},
             "ai_validation": {},
-            "created_at": "2025-11-15T05:00:24.058630"
+            "created_at": "2025-11-15T05:03:32.658708"
           },
           {
-            "id": 204,
-            "symbol": "SAND",
+            "id": 215,
+            "symbol": "MANA",
             "signal": "LONG",
             "score": 55.0,
             "confidence": "low",
-            "price": 0.18487852,
-            "timestamp": "2025-11-15T05:00:17.140978",
+            "price": 0.20917807,
+            "timestamp": "2025-11-15T05:03:26.062577",
             "reasons": [
               "Price trend: neutral",
               "Social sentiment: 50/100"
@@ -2455,8 +2450,8 @@
             "metrics": {
               "priceTrend": "neutral",
               "fundingRate": 0.0,
-              "socialScore": 50.4,
-              "openInterest": 1731137.0
+              "socialScore": 50.0,
+              "openInterest": 648918.0
             },
             "comprehensiveMetrics": {
               "fundingRates": {
@@ -2479,9 +2474,9 @@
             "lunarCrushMetrics": {},
             "coinAPIMetrics": {
               "trades": {
-                "buyPressure": 50.0,
-                "avgTradeSize": 0.0,
-                "sellPressure": 50.0
+                "buyPressure": 100.0,
+                "avgTradeSize": 37.0,
+                "sellPressure": 0.0
               },
               "orderbook": {
                 "imbalance": 0.0,
@@ -2489,11 +2484,11 @@
                 "whaleBids": 0,
                 "spreadPercent": 0.0
               },
-              "volatility7d": 21.41
+              "volatility7d": 21.2
             },
             "smcAnalysis": {},
             "ai_validation": {},
-            "created_at": "2025-11-15T05:00:24.064078"
+            "created_at": "2025-11-15T05:03:32.957496"
           }
         ]
       }
@@ -2502,14 +2497,14 @@
       "endpoint": "/openapi-gpt.json",
       "method": "GET",
       "description": "Optimized OpenAPI Schema for GPT Actions (< 45KB)",
-      "timestamp": "2025-11-15T05:00:29.662482",
+      "timestamp": "2025-11-15T05:05:31.483685",
       "success": true,
       "response_size_bytes": 31759,
       "response_size_kb": 31.01,
       "within_limit": true,
       "status_code": 200,
       "error": null,
-      "response_time_ms": 174.27,
+      "response_time_ms": 182.01,
       "response_preview": {
         "openapi": "3.1.0",
         "info": {
