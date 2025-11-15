@@ -54454,5 +54454,348 @@
         }
       }
     }
+  },
+  {
+    "id": "sig_20251115043303603430",
+    "saved_at": "2025-11-15T04:33:03.603457",
+    "data": {
+      "symbol": "ETH",
+      "timestamp": "2025-11-15T04:32:57.627881",
+      "signal": "SHORT",
+      "score": 43.2,
+      "confidence": "medium",
+      "price": 3167.8660419451326,
+      "reasons": [
+        "High funding rate (0.699%) - longs overleveraged",
+        "Overcrowded longs (75.4%) - contrarian bearish",
+        "Price trend: neutral"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": 0.006994,
+        "openInterest": 36605263101.3696,
+        "socialScore": 50.0,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 71.4,
+        "quality_level": "good",
+        "services_total": 16,
+        "services_successful": 9,
+        "services_failed": [
+          {
+            "name": "social_basic",
+            "tier": "critical",
+            "error": "HTTP error: 429"
+          },
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "Failed to fetch current data"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 2,
+          "total": 3,
+          "success_rate": 66.7
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 4,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 64.83,
+          "sellPressure": 35.17,
+          "avgTradeSize": 0.07
+        },
+        "volatility7d": 19.19
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "balanced",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": 40,
+        "aiSummary": "Considering the mixed signals from high funding rates and smart money bias towards longs, alongside a neutral price trend, it's advised to skip the short signal on ETH for now. Let's wait for clearer market direction.",
+        "layerChecks": {
+          "agreements": [
+            "High funding rate indicates longs are overleveraged",
+            "Overcrowded longs suggest a potential contrarian bearish move",
+            "Neutral price trend shows lack of clear direction"
+          ],
+          "conflicts": [
+            "Smart money bias is long, indicating potential upward pressure",
+            "Liquidation imbalance is balanced, not favoring shorts"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.8365,
+          "recommendedPositionSize": 0.8365,
+          "stopLossPrice": 3508.62961337,
+          "stopLossDistancePct": 10.7569,
+          "takeProfitPrice": 2656.72068481,
+          "takeProfitDistancePct": 16.1353,
+          "riskRewardRatio": 1.5,
+          "atrValue": 113.58785714,
+          "atrPercentage": 3.5863,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 84% of base | SL: 10.76% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251115043456070315",
+    "saved_at": "2025-11-15T04:34:56.070368",
+    "data": {
+      "symbol": "ETH",
+      "timestamp": "2025-11-15T04:34:50.419535",
+      "signal": "SHORT",
+      "score": 42.5,
+      "confidence": "medium",
+      "price": 3170.2053972884196,
+      "reasons": [
+        "High funding rate (0.699%) - longs overleveraged",
+        "Price trend: neutral",
+        "Social sentiment: 39/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": 0.006987,
+        "openInterest": 36622865703.3031,
+        "socialScore": 38.6,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": true,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 85.7,
+        "quality_level": "excellent",
+        "services_total": 16,
+        "services_successful": 13,
+        "services_failed": [
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 3,
+          "total": 3,
+          "success_rate": 100.0
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 7,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 622,
+        "socialMetrics": {
+          "volume": 103516,
+          "engagement": 29531549,
+          "dominance": 10.852770069017142,
+          "tweetVolume": 424671,
+          "redditVolume": 25090,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 85.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 100,
+          "momentumLevel": "very_strong",
+          "volumeChange24h": null,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 100.0,
+          "sellPressure": 0.0,
+          "avgTradeSize": 0.01
+        },
+        "volatility7d": 19.19
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "balanced",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0,
+        "aiConfidence": 40,
+        "aiSummary": "Today's analysis on ETH suggests skipping the short signal. Despite a high funding rate hinting at overleveraged longs, the very bullish long/short sentiment and smart money leaning long conflict with shorting. Better to wait for clearer signals.",
+        "layerChecks": {
+          "agreements": [
+            "High funding rate indicates longs may be overleveraged",
+            "Neutral price trend suggests lack of clear direction",
+            "Social sentiment is relatively low"
+          ],
+          "conflicts": [
+            "Long/short sentiment is very bullish, conflicting with a short signal",
+            "Smart money bias is towards long positions"
+          ]
+        },
+        "source": "openai_v2",
+        "model": "gpt-4-turbo-preview",
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.8374,
+          "recommendedPositionSize": 0.8374,
+          "stopLossPrice": 3510.96896871,
+          "stopLossDistancePct": 10.7489,
+          "takeProfitPrice": 2659.06004016,
+          "takeProfitDistancePct": 16.1234,
+          "riskRewardRatio": 1.5,
+          "atrValue": 113.58785714,
+          "atrPercentage": 3.5824,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 84% of base | SL: 10.75% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
   }
 ]

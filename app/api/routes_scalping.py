@@ -156,12 +156,61 @@ def compress_for_gpt_mode(result: Dict[str, Any]) -> Dict[str, Any]:
             }
         trades.pop("metadata", None)
     
-    # 9. Remove any remaining verbose fields
+    # 9. Compress RSI - Current value only (remove history array)
+    if compressed.get("rsi"):
+        rsi = compressed["rsi"]
+        # Keep only current RSI and signal, remove massive history array
+        compressed_rsi = {
+            "currentRsi": rsi.get("currentRsi", 0),
+            "signal": rsi.get("signal", "NEUTRAL"),
+            "success": rsi.get("success", True)
+        }
+        compressed["rsi"] = compressed_rsi
+    
+    # 10. Compress Fear/Greed - Current index only (remove history array)
+    if compressed.get("fear_greed"):
+        fg = compressed["fear_greed"]
+        # Keep only current index and sentiment, remove massive history array
+        compressed_fg = {
+            "currentIndex": fg.get("currentIndex", 50),
+            "sentiment": fg.get("sentiment", "NEUTRAL"),
+            "success": fg.get("success", True)
+        }
+        compressed["fear_greed"] = compressed_fg
+    
+    # 11. Compress funding - Essential metrics only
+    if compressed.get("funding"):
+        fund = compressed["funding"]
+        if isinstance(fund, dict):
+            compressed_fund = {
+                "currentRate": fund.get("currentRate", fund.get("fundingRate", 0)),
+                "predictedRate": fund.get("predictedRate", 0),
+                "signal": fund.get("signal", "NEUTRAL"),
+                "success": fund.get("success", True)
+            }
+            compressed["funding"] = compressed_fund
+    
+    # 12. Compress Long/Short Ratio - Summary only
+    if compressed.get("ls_ratio"):
+        lsr = compressed["ls_ratio"]
+        if isinstance(lsr, dict):
+            compressed_lsr = {
+                "ratio": lsr.get("ratio", lsr.get("longShortRatio", 1)),
+                "longPercent": lsr.get("longPercent", lsr.get("longAccount", 50)),
+                "shortPercent": lsr.get("shortPercent", lsr.get("shortAccount", 50)),
+                "signal": lsr.get("signal", "NEUTRAL"),
+                "success": lsr.get("success", True)
+            }
+            compressed["ls_ratio"] = compressed_lsr
+    
+    # 13. Remove any remaining verbose fields
     for key in list(compressed.keys()):
         if compressed.get(key) and isinstance(compressed[key], dict):
             compressed[key].pop("debug", None)
             compressed[key].pop("raw_response", None)
             compressed[key].pop("provider_metadata", None)
+            compressed[key].pop("history", None)  # Remove all history arrays
+            compressed[key].pop("metadata", None)
     
     return compressed
 
