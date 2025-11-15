@@ -6,6 +6,7 @@ Provides social sentiment and community engagement metrics
 import os
 import httpx
 from typing import Dict, Optional
+from app.utils.logger import logger
 
 
 class LunarCrushService:
@@ -60,15 +61,15 @@ class LunarCrushService:
                 }
 
         except httpx.HTTPStatusError as e:
-            print(f"LunarCrush HTTP error for {symbol}: {e}")
+            logger.error(f"LunarCrush HTTP error for {symbol}: {e}")
             return self._get_default_response(
                 symbol, f"HTTP error: {e.response.status_code}"
             )
         except httpx.RequestError as e:
-            print(f"LunarCrush request error for {symbol}: {e}")
+            logger.error(f"LunarCrush request error for {symbol}: {e}")
             return self._get_default_response(symbol, f"Request error: {str(e)}")
         except Exception as e:
-            print(f"LunarCrush unexpected error for {symbol}: {e}")
+            logger.error(f"LunarCrush unexpected error for {symbol}: {e}")
             return self._get_default_response(symbol, f"Unexpected error: {str(e)}")
 
     def _get_default_response(self, symbol: str, error: str = "") -> Dict:
@@ -114,7 +115,7 @@ class LunarCrushService:
             return market_data
 
         except Exception as e:
-            print(f"LunarCrush market data error for {symbol}: {e}")
+            logger.error(f"LunarCrush market data error for {symbol}: {e}")
             return {
                 "symbol": symbol,
                 "socialScore": 50.0,
@@ -221,15 +222,15 @@ class LunarCrushService:
                     },
                     "coins": coins,
                 }
-        
+
         except httpx.HTTPStatusError as e:
-            print(f"LunarCrush coins list HTTP error: {e}")
+            logger.error(f"LunarCrush coins list HTTP error: {e}")
             return {
                 "success": False,
                 "error": f"HTTP error: {e.response.status_code}",
             }
         except Exception as e:
-            print(f"LunarCrush coins list error: {e}")
+            logger.error(f"LunarCrush coins list error: {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -280,16 +281,16 @@ class LunarCrushService:
                     "config": data.get("config", {}),
                     "data": data.get("data", {}),
                 }
-        
+
         except httpx.HTTPStatusError as e:
-            print(f"LunarCrush topic HTTP error for {topic}: {e}")
+            logger.error(f"LunarCrush topic HTTP error for {topic}: {e}")
             return {
                 "success": False,
                 "error": f"HTTP error: {e.response.status_code}",
                 "topic": topic,
             }
         except Exception as e:
-            print(f"LunarCrush topic error for {topic}: {e}")
+            logger.error(f"LunarCrush topic error for {topic}: {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -377,15 +378,15 @@ class LunarCrushService:
                     },
                     "note": "Topics ranked by social activity. Lower rank = more trending. Compare rank changes for momentum detection.",
                 }
-        
+
         except httpx.HTTPStatusError as e:
-            print(f"LunarCrush topics list HTTP error: {e}")
+            logger.error(f"LunarCrush topics list HTTP error: {e}")
             return {
                 "success": False,
                 "error": f"HTTP error: {e.response.status_code}",
             }
         except Exception as e:
-            print(f"LunarCrush topics list error: {e}")
+            logger.error(f"LunarCrush topics list error: {e}")
             return {
                 "success": False,
                 "error": str(e),
@@ -497,9 +498,9 @@ class LunarCrushService:
             })
             
             return result
-            
+
         except Exception as e:
-            print(f"LunarCrush sentiment error for {symbol}: {e}")
+            logger.error(f"LunarCrush sentiment error for {symbol}: {e}")
             return {
                 "success": False,
                 "symbol": symbol,

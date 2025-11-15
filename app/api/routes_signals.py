@@ -19,6 +19,7 @@ from app.services.openai_service import get_openai_service
 # ADDED FOR PHASE 2 - Outcome tracking
 from app.services.outcome_tracker import outcome_tracker
 from datetime import datetime
+from app.utils.logger import logger
 
 router = APIRouter()
 
@@ -37,17 +38,17 @@ async def persist_signal_with_tracking(signal: dict):
     try:
         # Step 1: Save signal and get signal_id
         save_result = await signal_history.save_signal(signal)
-        
+
         if not save_result.get("success"):
-            print(f"[ERROR] Failed to save signal: {save_result.get('message')}")
+            logger.error(f"Failed to save signal: {save_result.get('message')}")
             return
-        
+
         signal_id = save_result.get("signal_id")
         if not signal_id:
-            print("[ERROR] No signal_id returned from save_signal")
+            logger.error("No signal_id returned from save_signal")
             return
-        
-        print(f"[SUCCESS] Signal saved with ID: {signal_id}")
+
+        logger.info(f"Signal saved with ID: {signal_id}")
         
         # Step 2: Extract AI verdict metadata (with safe defaults)
         ai_verdict = signal.get("aiVerdictLayer", {})
@@ -56,7 +57,7 @@ async def persist_signal_with_tracking(signal: dict):
         
         # Skip tracking if verdict is SKIP/WAIT (not actionable)
         if verdict in ["SKIP", "WAIT"]:
-            print(f"[INFO] Skipping outcome tracking for {verdict} verdict")
+            logger.info(f"Skipping outcome tracking for {verdict} verdict")
             return
         
         # Step 3: Record outcome entry
@@ -65,7 +66,7 @@ async def persist_signal_with_tracking(signal: dict):
         
         # Validate non-zero price (critical for P&L calculation)
         if entry_price <= 0:
-            print(f"[ERROR] Invalid entry price ({entry_price}) for {signal.get('symbol')} - cannot track outcome")
+            logger.error(f"Invalid entry price ({entry_price}) for {signal.get('symbol')} - cannot track outcome")
             return
         
         entry_timestamp = datetime.utcnow()
@@ -79,21 +80,19 @@ async def persist_signal_with_tracking(signal: dict):
             entry_price=entry_price,
             entry_timestamp=entry_timestamp
         )
-        
+
         if not outcome_id:
-            print("[ERROR] Failed to record outcome entry")
+            logger.error("Failed to record outcome entry")
             return
-        
-        print(f"[SUCCESS] Outcome entry recorded: {outcome_id}")
-        
+
+        logger.info(f"Outcome entry recorded: {outcome_id}")
+
         # Step 4: Schedule background tracking
         await outcome_tracker.schedule_outcome_tracking(outcome_id)
-        print(f"[SUCCESS] Outcome tracking scheduled for {signal.get('symbol')}")
-        
+        logger.info(f"Outcome tracking scheduled for {signal.get('symbol')}")
+
     except Exception as e:
-        print(f"[ERROR] persist_signal_with_tracking failed: {e}")
-        import traceback
-        traceback.print_exc()
+        logger.error(f"persist_signal_with_tracking failed: {e}", exc_info=True)
 
 
 @router.get("/signals/{symbol}")

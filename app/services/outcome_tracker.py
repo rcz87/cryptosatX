@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
 import httpx
 from app.storage.database import db
+from app.utils.logger import logger
 
 
 class OutcomeTracker:
@@ -80,7 +81,7 @@ class OutcomeTracker:
                     await db.sqlite_conn.commit()
                     return outcome_id
         except Exception as e:
-            print(f"[ERROR] Failed to record signal entry: {e}")
+            logger.error(f"Failed to record signal entry: {e}")
             return None
 
     async def get_current_price(self, symbol: str) -> Optional[float]:
@@ -104,10 +105,10 @@ class OutcomeTracker:
             if response.status_code == 200:
                 data = response.json()
                 return float(data["price"])
-            
+
             return None
         except Exception as e:
-            print(f"[ERROR] Failed to fetch price for {symbol}: {e}")
+            logger.error(f"Failed to fetch price for {symbol}: {e}")
             return None
 
     def calculate_pnl(
@@ -123,7 +124,7 @@ class OutcomeTracker:
         """
         # Safety guard: prevent division by zero
         if entry_price <= 0 or current_price <= 0:
-            print(f"[ERROR] Invalid price for P&L calculation: entry={entry_price}, current={current_price}")
+            logger.error(f"Invalid price for P&L calculation: entry={entry_price}, current={current_price}")
             return 0.0
         
         if signal_type == "LONG":
@@ -203,13 +204,13 @@ class OutcomeTracker:
                         record = None
 
             if not record:
-                print(f"[ERROR] Outcome record {outcome_id} not found")
+                logger.error(f"Outcome record {outcome_id} not found")
                 return False
 
             # Get current price
             current_price = await self.get_current_price(record["symbol"])
             if not current_price:
-                print(f"[ERROR] Could not fetch price for {record['symbol']}")
+                logger.error(f"Could not fetch price for {record['symbol']}")
                 return False
 
             # Calculate metrics
@@ -249,11 +250,11 @@ class OutcomeTracker:
                 )
                 await db.sqlite_conn.commit()
 
-            print(f"[SUCCESS] Updated outcome {outcome_id} at {interval}: {outcome} ({pnl:+.2f}%)")
+            logger.info(f"Updated outcome {outcome_id} at {interval}: {outcome} ({pnl:+.2f}%)")
             return True
 
         except Exception as e:
-            print(f"[ERROR] Failed to update outcome: {e}")
+            logger.error(f"Failed to update outcome: {e}")
             return False
 
     async def schedule_outcome_tracking(
@@ -331,7 +332,7 @@ class OutcomeTracker:
                     return [row[0] for row in rows]
 
         except Exception as e:
-            print(f"[ERROR] Failed to get pending outcomes: {e}")
+            logger.error(f"Failed to get pending outcomes: {e}")
             return []
 
     async def process_pending_outcomes(self):
@@ -339,20 +340,20 @@ class OutcomeTracker:
         Process all pending outcomes across all intervals
         Called periodically by background job or on-demand
         """
-        print("[INFO] Processing pending outcome tracking...")
-        
+        logger.info("Processing pending outcome tracking...")
+
         for interval in ["1h", "4h", "24h"]:
             pending = await self.get_pending_outcomes(interval)
-            
+
             if pending:
-                print(f"[INFO] Found {len(pending)} pending outcomes for {interval}")
-                
+                logger.info(f"Found {len(pending)} pending outcomes for {interval}")
+
                 for outcome_id in pending:
                     await self.update_outcome(outcome_id, interval)
                     # Small delay to avoid rate limits
                     await asyncio.sleep(0.5)
             else:
-                print(f"[INFO] No pending outcomes for {interval}")
+                logger.info(f"No pending outcomes for {interval}")
 
     async def close(self):
         """Close HTTP client"""

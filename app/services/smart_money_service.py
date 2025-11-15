@@ -13,6 +13,7 @@ import asyncio
 from typing import Dict, List, Optional
 import httpx
 from datetime import datetime
+from app.utils.logger import logger
 
 
 class SmartMoneyService:
@@ -90,7 +91,7 @@ class SmartMoneyService:
                 return response.json()
             return None
         except Exception as e:
-            print(f"Error fetching {symbol}: {str(e)}")
+            logger.error(f"Error fetching {symbol}: {str(e)}")
             return None
 
     def _calculate_accumulation_score(self, data: Dict) -> tuple[int, List[str]]:

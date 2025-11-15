@@ -8,6 +8,7 @@ import os
 import httpx
 from typing import Dict, Optional
 from datetime import datetime
+from app.utils.logger import logger
 
 
 class TelegramNotifier:
@@ -23,8 +24,8 @@ class TelegramNotifier:
         self.enabled = bool(self.bot_token and self.chat_id)
 
         if not self.enabled:
-            print(
-                "[WARNING] Telegram notifier disabled - missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID"
+            logger.warning(
+                "Telegram notifier disabled - missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID"
             )
 
     async def send_signal_alert(self, signal_data: Dict) -> Dict:
@@ -56,12 +57,12 @@ class TelegramNotifier:
                 from app.storage.signal_history import signal_history
 
                 save_result = await signal_history.save_signal(signal_data)
-                print(
-                    f"[SUCCESS] Signal saved to database: {save_result.get('message', 'success')}"
+                logger.info(
+                    f"Signal saved to database: {save_result.get('message', 'success')}"
                 )
             except Exception as save_error:
                 # Don't fail Telegram send if database save fails
-                print(f"[WARNING] Failed to save signal to database: {save_error}")
+                logger.warning(f"Failed to save signal to database: {save_error}")
 
             return {
                 "success": True,

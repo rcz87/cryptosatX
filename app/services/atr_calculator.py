@@ -7,6 +7,7 @@ Phase 2: Risk Model V2 - Volatility-Adjusted Position Sizing
 import httpx
 from typing import List, Dict, Optional
 from datetime import datetime, timedelta
+from app.utils.logger import logger
 
 
 class ATRCalculator:
@@ -96,9 +97,9 @@ class ATRCalculator:
                 
             # Fallback to Binance if OKX fails
             return await self._get_binance_ohlc(symbol, timeframe, limit)
-        
+
         except Exception as e:
-            print(f"[ERROR] Failed to fetch OHLC from OKX: {e}")
+            logger.error(f"Failed to fetch OHLC from OKX: {e}")
             # Try Binance fallback
             return await self._get_binance_ohlc(symbol, timeframe, limit)
 
