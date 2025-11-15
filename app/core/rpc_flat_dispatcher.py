@@ -376,7 +376,20 @@ class FlatRPCDispatcher:
 
         elif operation == "coinglass.indicators.rsi_list":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-            return await coinglass_comprehensive.get_rsi_list()
+            limit = args.get("limit", 20)
+            signal_filter = args.get("signal_filter")
+            
+            # Validate signal_filter (Pydantic already validates, but double-check for safety)
+            if signal_filter and signal_filter.upper() not in ["OVERSOLD", "OVERBOUGHT", "NEUTRAL"]:
+                return {
+                    "success": False,
+                    "error": f"Invalid signal_filter '{signal_filter}'. Must be one of: OVERSOLD, OVERBOUGHT, NEUTRAL"
+                }
+            
+            return await coinglass_comprehensive.get_rsi_list(
+                limit=limit,
+                signal_filter=signal_filter
+            )
 
         elif operation == "coinglass.indicators.rsi":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive

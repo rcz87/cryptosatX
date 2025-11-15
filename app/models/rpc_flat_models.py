@@ -2,7 +2,7 @@
 RPC Flat Models - GPT Actions Compatible
 Uses flat parameters instead of nested args for GPT Actions compatibility
 """
-from typing import Optional
+from typing import Optional, Literal
 from pydantic import BaseModel, Field
 
 
@@ -60,6 +60,7 @@ class FlatInvokeRequest(BaseModel):
     min_galaxy_score: Optional[int] = Field(None, description="Minimum Galaxy score (LunarCrush)")
     include_raw: Optional[bool] = Field(None, description="Include raw data in response")
     include_content: Optional[bool] = Field(None, description="Include full article content in news feed (false for GPT Actions)")
+    signal_filter: Optional[Literal["OVERSOLD", "OVERBOUGHT", "NEUTRAL"]] = Field(None, description="Filter RSI signals: OVERSOLD, OVERBOUGHT, or NEUTRAL")
     start_date: Optional[str] = Field(None, description="Start date (YYYY-MM-DD)")
     end_date: Optional[str] = Field(None, description="End date (YYYY-MM-DD)")
 

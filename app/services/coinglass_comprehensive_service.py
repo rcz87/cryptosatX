@@ -3980,13 +3980,21 @@ class CoinglassComprehensiveService:
     
     # ==================== TECHNICAL INDICATORS ====================
     
-    async def get_rsi_list(self) -> Dict:
+    async def get_rsi_list(
+        self, 
+        limit: int = 20,
+        signal_filter: str = None
+    ) -> Dict:
         """
         Get RSI LIST - Multi-timeframe RSI for all major coins! (45TH ENDPOINT!)
         Endpoint: /api/futures/rsi/list
         
         Shows RSI across 15m, 1h, 4h, 12h, 24h, 1w for BTC, ETH, SOL, etc!
         Perfect for scanning overbought/oversold conditions across the market.
+        
+        Args:
+            limit: Number of coins to return (default: 20, max: 100) - GPT Actions friendly
+            signal_filter: Filter by signal type ("OVERSOLD", "OVERBOUGHT", or None for all)
         """
         try:
             client = await self._get_client()
@@ -4007,6 +4015,10 @@ class CoinglassComprehensiveService:
                     rsi_24h = float(coin.get("rsi_24h", 50))
                     signal = "OVERSOLD" if rsi_24h < 30 else "OVERBOUGHT" if rsi_24h > 70 else "NEUTRAL"
                     
+                    # Apply signal filter if specified
+                    if signal_filter and signal != signal_filter.upper():
+                        continue
+                    
                     formatted.append({
                         "symbol": coin.get("symbol"),
                         "currentPrice": float(coin.get("current_price", 0)),
@@ -4023,11 +4035,19 @@ class CoinglassComprehensiveService:
                         "signal": signal
                     })
                 
+                # Apply limit protection (like news feed pattern)
+                limit = min(max(1, limit), 100)
+                total_count = len(formatted)
+                formatted = formatted[:limit]
+                
                 return {
                     "success": True,
                     "coinCount": len(formatted),
+                    "totalAvailable": total_count,
+                    "limit": limit,
+                    "signalFilter": signal_filter,
                     "coins": formatted,
-                    "note": "Multi-timeframe RSI for all major coins. Scan for overbought/oversold conditions!",
+                    "note": f"Showing {len(formatted)} of {total_count} coins. Use limit/signal_filter to refine results.",
                     "source": "rsi_list"
                 }
             

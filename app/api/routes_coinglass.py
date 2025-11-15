@@ -1149,11 +1149,22 @@ async def get_exchange_chain_transactions(
 
 
 @router.get("/indicators/rsi-list")
-async def get_rsi_list():
-    """📊 ENDPOINT #45: RSI LIST - Multi-timeframe RSI for all major coins!"""
+async def get_rsi_list(
+    limit: int = Query(20, description="Number of coins to return (max: 100)", ge=1, le=100),
+    signal_filter: Optional[str] = Query(None, description="Filter by signal: OVERSOLD, OVERBOUGHT, or NEUTRAL", regex="^(OVERSOLD|OVERBOUGHT|NEUTRAL)$")
+):
+    """📊 ENDPOINT #45: RSI LIST - Multi-timeframe RSI for all major coins!
+    
+    GPT-friendly pagination:
+    - Default limit=20 for optimal response size
+    - Use signal_filter=OVERSOLD to find oversold coins only
+    - Use signal_filter=OVERBOUGHT to find overbought coins only
+    
+    Example: /coinglass/indicators/rsi-list?limit=10&signal_filter=OVERSOLD
+    """
     service = CoinglassComprehensiveService()
     try:
-        return await service.get_rsi_list()
+        return await service.get_rsi_list(limit=limit, signal_filter=signal_filter)
     finally:
         await service.close()
 
@@ -1286,11 +1297,21 @@ async def get_economic_calendar():
 
 
 @router.get("/news/feed")
-async def get_news_feed():
-    """📰 ENDPOINT #58: Crypto News Feed - Latest articles from major sources!"""
+async def get_news_feed(
+    limit: int = Query(10, description="Number of articles (max: 50)", ge=1, le=50),
+    include_content: bool = Query(False, description="Include full article content (for GPT Actions, use False)")
+):
+    """📰 ENDPOINT #58: Crypto News Feed - Latest articles from major sources!
+    
+    GPT-friendly defaults:
+    - limit=10 for optimal response size
+    - include_content=False to exclude large article bodies
+    
+    Example: /coinglass/news/feed?limit=5&include_content=false
+    """
     service = CoinglassComprehensiveService()
     try:
-        return await service.get_news_feed()
+        return await service.get_news_feed(limit=limit, include_content=include_content)
     finally:
         await service.close()
 

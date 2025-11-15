@@ -258,12 +258,25 @@ class RPCDispatcher:
     async def _coinglass_fear_greed(self, args: Dict) -> Dict:
         """Get Fear & Greed Index"""
         from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-        return await coinglass_comprehensive.get_indicators_fear_greed()
+        return await coinglass_comprehensive.get_fear_greed_index()
     
     async def _coinglass_rsi_list(self, args: Dict) -> Dict:
-        """Get RSI list"""
+        """Get RSI list with pagination support"""
         from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-        return await coinglass_comprehensive.get_indicators_rsi_list()
+        limit = args.get("limit", 20)
+        signal_filter = args.get("signal_filter")
+        
+        # Validate signal_filter
+        if signal_filter and signal_filter.upper() not in ["OVERSOLD", "OVERBOUGHT", "NEUTRAL"]:
+            return {
+                "success": False,
+                "error": f"Invalid signal_filter '{signal_filter}'. Must be one of: OVERSOLD, OVERBOUGHT, NEUTRAL"
+            }
+        
+        return await coinglass_comprehensive.get_rsi_list(
+            limit=limit,
+            signal_filter=signal_filter
+        )
     
     async def _coinglass_supported_coins(self, args: Dict) -> Dict:
         """Get supported coins"""
