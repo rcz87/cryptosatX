@@ -649,8 +649,8 @@ class FlatRPCDispatcher:
             from app.services.mss_service import MSSService
             mss = MSSService()
             symbol = args["symbol"]
-            include_raw = args.get("include_raw", False)
-            return await mss.analyze_coin(symbol, include_raw=include_raw)
+            # Method calculate_mss_score is the correct method
+            return await mss.calculate_mss_score(symbol)
 
         elif operation == "mss.scan":
             from app.services.mss_service import MSSService

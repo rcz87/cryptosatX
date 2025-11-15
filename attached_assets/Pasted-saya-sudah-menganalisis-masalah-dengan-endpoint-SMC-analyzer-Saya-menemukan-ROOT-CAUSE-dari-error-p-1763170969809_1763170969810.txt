@@ -1,0 +1,79 @@
+saya sudah menganalisis masalah dengan endpoint SMC analyzer. Saya menemukan ROOT CAUSE dari error parsing tersebut.
+
+🔍 Analisis Masalah
+Error yang Terjadi:
+Endpoint mss.analyze error dengan pesan "API internal analyze_coin not found"
+Root Cause:
+File app/core/rpc_dispatcher.py pada line 334 memanggil method yang tidak ada:
+
+async def _mss_analyze(self, args: Dict) -> Dict:
+    """MSS analyze - FIXED"""
+    from app.services.mss_service import MSSService
+    mss = MSSService()
+    symbol = args["symbol"]
+    include_raw = args.get("include_raw", False)
+    return await mss.analyze_coin(symbol, include_raw=include_raw)  # ❌ METHOD TIDAK ADA!
+Fakta:
+✅ MSSService class di app/services/mss_service.py TIDAK memiliki method analyze_coin
+✅ Method yang benar adalah calculate_mss_score (line 402)
+✅ Endpoint REST API /mss/analyze/{symbol} di routes_mss.py (line 141) sudah benar menggunakan calculate_mss_score
+📋 Rekomendasi Perbaikan
+Solusi 1: Fix RPC Dispatcher (RECOMMENDED)
+Ubah method call di app/core/rpc_dispatcher.py:328-334 dari:
+
+async def _mss_analyze(self, args: Dict) -> Dict:
+    """MSS analyze - FIXED"""
+    from app.services.mss_service import MSSService
+    mss = MSSService()
+    symbol = args["symbol"]
+    include_raw = args.get("include_raw", False)
+    return await mss.analyze_coin(symbol, include_raw=include_raw)  # ❌ SALAH
+Menjadi:
+
+async def _mss_analyze(self, args: Dict) -> Dict:
+    """MSS analyze - FIXED"""
+    from app.services.mss_service import MSSService
+    mss = MSSService()
+    symbol = args["symbol"]
+    # Method calculate_mss_score tidak menerima parameter include_raw
+    # Return langsung hasil calculation
+    return await mss.calculate_mss_score(symbol)  # ✅ BENAR
+Solusi 2: Add Wrapper Method (Alternative)
+Tambahkan method analyze_coin di MSSService class sebagai wrapper:
+
+async def analyze_coin(self, symbol: str, include_raw: bool = False) -> Dict:
+    """
+    Analyze coin with MSS scoring (Wrapper for calculate_mss_score)
+    
+    Args:
+        symbol: Coin symbol
+        include_raw: If False, remove phases detail from response
+    
+    Returns:
+        MSS analysis result
+    """
+    result = await self.calculate_mss_score(symbol)
+    
+    if not include_raw:
+        # Remove detailed phase breakdown
+        result.pop("phases", None)
+    
+    return result
+🎯 Rekomendasi Final
+Gunakan Solusi 1 karena:
+
+Lebih sederhana dan langsung
+Tidak menambah complexity dengan method wrapper yang tidak perlu
+Konsisten dengan implementasi endpoint REST API yang sudah ada
+Method calculate_mss_score sudah mengembalikan response yang lengkap
+File yang perlu diubah:
+
+app/core/rpc_dispatcher.py line 328-334
+Testing: Setelah fix, test dengan RPC call:
+
+{
+  "operation": "mss.analyze",
+  "args": {
+    "symbol": "BTC"
+  }
+}
