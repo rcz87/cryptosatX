@@ -11,6 +11,7 @@ from pydantic import ValidationError
 
 from app.utils.operation_catalog import get_operation_metadata
 from app.models.rpc_models import RPCResponse, SymbolArgs
+from app.utils.logger import logger
 
 
 class RPCDispatcher:
@@ -152,7 +153,7 @@ class RPCDispatcher:
             )
             
             # Log timeout for monitoring
-            print(f"⏱️  RPC TIMEOUT: {operation} after {timeout}s with args: {args}")
+            logger.info(f"⏱️  RPC TIMEOUT: {operation} after {timeout}s with args: {args}")
             
             return RPCResponse(
                 ok=False,
@@ -174,11 +175,11 @@ class RPCDispatcher:
             error_msg = str(e)
             
             # Log detailed error for debugging
-            print(f"❌ RPC ERROR: {operation}")
-            print(f"   Error Type: {error_type}")
-            print(f"   Error Message: {error_msg}")
-            print(f"   Args: {args}")
-            print(f"   Stack Trace:\n{traceback.format_exc()}")
+            logger.info(f"❌ RPC ERROR: {operation}")
+            logger.info(f"   Error Type: {error_type}")
+            logger.info(f"   Error Message: {error_msg}")
+            logger.info(f"   Args: {args}")
+            logger.info(f"   Stack Trace:\n{traceback.format_exc()}")
             
             return RPCResponse(
                 ok=False,

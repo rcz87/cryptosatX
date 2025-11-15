@@ -9,6 +9,7 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional
 from pathlib import Path
+from app.utils.logger import logger
 
 
 class SignalHistory:
@@ -62,7 +63,7 @@ class SignalHistory:
                 self._save_data(history)
             except Exception as backup_error:
                 # Don't fail if backup fails
-                print(f"⚠️ JSON backup failed: {backup_error}")
+                logger.warning(f"JSON backup failed: {backup_error}")
             
             # Get total count from database
             total_count = await self.db.get_signal_count()
@@ -77,7 +78,7 @@ class SignalHistory:
         
         except Exception as e:
             # Fallback to JSON-only if database fails
-            print(f"⚠️ Database save failed, using JSON fallback: {e}")
+            logger.warning(f"Database save failed, using JSON fallback: {e}")
             
             try:
                 signal_entry = {
@@ -143,7 +144,7 @@ class SignalHistory:
         
         except Exception as e:
             # Fallback to JSON if database fails
-            print(f"⚠️ Database query failed, using JSON fallback: {e}")
+            logger.warning(f"Database query failed, using JSON fallback: {e}")
             
             try:
                 history = self._load_data()
@@ -200,7 +201,7 @@ class SignalHistory:
         
         except Exception as e:
             # Fallback to JSON statistics
-            print(f"⚠️ Database stats failed, using JSON fallback: {e}")
+            logger.warning(f"Database stats failed, using JSON fallback: {e}")
             
             try:
                 history = self._load_data()

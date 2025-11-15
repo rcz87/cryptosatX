@@ -8,6 +8,7 @@ from app.services.coinglass_comprehensive_service import CoinglassComprehensiveS
 from app.services.coinglass_websocket_service import CoinglassWebSocketService
 import json
 import asyncio
+from app.utils.logger import logger
 
 router = APIRouter(prefix="/coinglass", tags=["Coinglass Data"])
 
@@ -2913,10 +2914,10 @@ async def websocket_liquidations(websocket: WebSocket):
         try:
             await websocket.send_json(data)
         except Exception as e:
-            print(f"Error forwarding to client: {e}")
+            logger.error(f"Error forwarding to client: {e}")
     
     try:
-        print("Client connected to WebSocket")
+        logger.info("Client connected to WebSocket")
         await websocket.send_json({
             "status": "connected",
             "message": "Real-time liquidation stream active",
@@ -2926,9 +2927,9 @@ async def websocket_liquidations(websocket: WebSocket):
         await ws_service.stream_liquidations(forward_to_client)
         
     except WebSocketDisconnect:
-        print("Client disconnected from WebSocket")
+        logger.info("Client disconnected from WebSocket")
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        logger.info(f"WebSocket error: {e}")
         try:
             await websocket.send_json({
                 "status": "error",

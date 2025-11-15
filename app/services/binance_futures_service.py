@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 from datetime import datetime
 import asyncio
 from app.utils.symbol_normalizer import normalize_symbol, Provider
+from app.utils.logger import logger
 
 
 class BinanceFuturesService:
@@ -88,7 +89,7 @@ class BinanceFuturesService:
             return perpetual_symbols
             
         except Exception as e:
-            print(f"Error getting perpetual symbols: {e}")
+            logger.error(f"Error getting perpetual symbols: {e}")
             return []
     
     # ==================== MARKET DATA ====================
@@ -410,7 +411,7 @@ class BinanceFuturesService:
             return filtered[:limit]
             
         except Exception as e:
-            print(f"Error filtering coins: {e}")
+            logger.error(f"Error filtering coins: {e}")
             return []
 
 

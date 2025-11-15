@@ -7,6 +7,7 @@ Phase 2: AI Verdict Validation System
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 from app.storage.database import db
+from app.utils.logger import logger
 
 
 class VerdictAnalyzer:
@@ -148,7 +149,7 @@ class VerdictAnalyzer:
                     }
         
         except Exception as e:
-            print(f"[ERROR] Failed to get verdict performance: {e}")
+            logger.error(f" Failed to get verdict performance: {e}")
             return {
                 "error": str(e),
                 "interval": interval,
@@ -227,7 +228,7 @@ class VerdictAnalyzer:
             return comparison
             
         except Exception as e:
-            print(f"[ERROR] Failed to compare verdicts: {e}")
+            logger.error(f" Failed to compare verdicts: {e}")
             return {"error": str(e)}
 
     async def get_signal_outcomes_history(
@@ -308,7 +309,7 @@ class VerdictAnalyzer:
                     ]
             
         except Exception as e:
-            print(f"[ERROR] Failed to get outcomes history: {e}")
+            logger.error(f" Failed to get outcomes history: {e}")
             return []
 
 

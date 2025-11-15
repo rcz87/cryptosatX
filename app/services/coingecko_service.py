@@ -7,6 +7,7 @@ import httpx
 from typing import Dict, List, Optional
 from datetime import datetime
 import asyncio
+from app.utils.logger import logger
 
 
 class CoinGeckoService:
@@ -333,7 +334,7 @@ class CoinGeckoService:
             return filtered[:limit]
             
         except Exception as e:
-            print(f"Error discovering small cap coins: {e}")
+            logger.error(f"Error discovering small cap coins: {e}")
             return []
     
     async def discover_new_listings(
@@ -395,7 +396,7 @@ class CoinGeckoService:
             return new_coins[:limit]
             
         except Exception as e:
-            print(f"Error discovering new listings: {e}")
+            logger.error(f"Error discovering new listings: {e}")
             return []
     
     async def get_coins_by_category(
@@ -452,7 +453,7 @@ class CoinGeckoService:
             return formatted[:limit]
             
         except Exception as e:
-            print(f"Error getting coins by category: {e}")
+            logger.error(f"Error getting coins by category: {e}")
             return []
 
 

@@ -5,6 +5,7 @@ Provides candlestick/OHLCV data, funding rates, and open interest without requir
 import httpx
 from typing import Dict, List, Optional
 from app.utils.symbol_normalizer import normalize_symbol, Provider
+from app.utils.logger import logger
 
 
 class OKXService:
@@ -95,13 +96,13 @@ class OKXService:
                 }
                 
         except httpx.HTTPStatusError as e:
-            print(f"OKX HTTP error for {symbol}: {e}")
+            logger.error(f"OKX HTTP error for {symbol}: {e}")
             return self._get_default_response(symbol, timeframe, f"HTTP error: {e.response.status_code}")
         except httpx.RequestError as e:
-            print(f"OKX request error for {symbol}: {e}")
+            logger.error(f"OKX request error for {symbol}: {e}")
             return self._get_default_response(symbol, timeframe, f"Request error: {str(e)}")
         except Exception as e:
-            print(f"OKX unexpected error for {symbol}: {e}")
+            logger.error(f"OKX unexpected error for {symbol}: {e}")
             return self._get_default_response(symbol, timeframe, f"Unexpected error: {str(e)}")
     
     def _get_default_response(self, symbol: str, timeframe: str, error: str = "") -> Dict:

@@ -7,6 +7,7 @@ import asyncio
 import json
 import os
 from typing import Optional, Callable
+from app.utils.logger import logger
 import websockets
 from websockets.client import WebSocketClientProtocol
 
@@ -35,10 +36,10 @@ class CoinglassWebSocketService:
         try:
             self.ws = await websockets.connect(self.get_connection_url())
             self.is_connected = True
-            print(f"✅ Connected to Coinglass WebSocket")
+            logger.info(f"✅ Connected to Coinglass WebSocket")
             return self.ws
         except Exception as e:
-            print(f"❌ WebSocket connection failed: {e}")
+            logger.error(f"❌ WebSocket connection failed: {e}")
             raise
     
     async def subscribe(self, channels: list[str]) -> None:
@@ -58,7 +59,7 @@ class CoinglassWebSocketService:
         
         await self.ws.send(json.dumps(subscribe_msg))
         self.subscribed_channels.update(channels)
-        print(f"📡 Subscribed to channels: {channels}")
+        logger.info(f"📡 Subscribed to channels: {channels}")
     
     async def unsubscribe(self, channels: list[str]) -> None:
         """Unsubscribe from WebSocket channels."""
@@ -72,7 +73,7 @@ class CoinglassWebSocketService:
         
         await self.ws.send(json.dumps(unsubscribe_msg))
         self.subscribed_channels.difference_update(channels)
-        print(f"🔕 Unsubscribed from channels: {channels}")
+        logger.info(f"🔕 Unsubscribed from channels: {channels}")
     
     async def send_ping(self) -> None:
         """Send ping to keep connection alive."""
@@ -80,7 +81,7 @@ class CoinglassWebSocketService:
             try:
                 await self.ws.send("ping")
             except Exception as e:
-                print(f"⚠️ Ping failed: {e}")
+                logger.warning(f"⚠️ Ping failed: {e}")
                 self.is_connected = False
     
     async def keepalive(self) -> None:
@@ -108,12 +109,12 @@ class CoinglassWebSocketService:
                     data = json.loads(message)
                     await message_handler(data)
                 except json.JSONDecodeError:
-                    print(f"⚠️ Failed to parse message: {message}")
+                    logger.warning(f"⚠️ Failed to parse message: {message}")
         except websockets.exceptions.ConnectionClosed:
-            print("🔌 WebSocket connection closed")
+            logger.info("🔌 WebSocket connection closed")
             self.is_connected = False
         except Exception as e:
-            print(f"❌ Listen error: {e}")
+            logger.error(f"❌ Listen error: {e}")
             self.is_connected = False
     
     async def stream_liquidations(self, message_handler: Callable) -> None:
@@ -135,13 +136,13 @@ class CoinglassWebSocketService:
                 await asyncio.gather(keepalive_task, listen_task)
                 
             except Exception as e:
-                print(f"❌ Stream error: {e}")
+                logger.error(f"❌ Stream error: {e}")
                 self.is_connected = False
                 
                 if self.ws:
                     await self.ws.close()
                 
-                print(f"🔄 Reconnecting in {self.reconnect_interval}s...")
+                logger.info(f"🔄 Reconnecting in {self.reconnect_interval}s...")
                 await asyncio.sleep(self.reconnect_interval)
     
     async def close(self) -> None:
@@ -151,9 +152,9 @@ class CoinglassWebSocketService:
         if self.ws:
             try:
                 await self.ws.close()
-                print("🔌 WebSocket connection closed")
+                logger.info("🔌 WebSocket connection closed")
             except Exception as e:
-                print(f"⚠️ Error closing WebSocket: {e}")
+                logger.warning(f"⚠️ Error closing WebSocket: {e}")
 
 
 async def process_liquidation(data: dict) -> None:
@@ -186,4 +187,4 @@ async def process_liquidation(data: dict) -> None:
             price = liq.get("price", 0)
             volume_usd = liq.get("volUsd", 0)
             
-            print(f"🔥 {side} Liquidation: {asset} on {exchange} | ${volume_usd:,.2f} @ ${price:,.2f}")
+            logger.info(f"🔥 {side} Liquidation: {asset} on {exchange} | ${volume_usd:,.2f} @ ${price:,.2f}")

@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 from app.models.rpc_flat_models import FlatRPCResponse
 from app.utils.operation_catalog import get_operation_metadata, OPERATION_CATALOG
+from app.utils.logger import logger
 
 
 class FlatRPCDispatcher:
@@ -162,8 +163,8 @@ class FlatRPCDispatcher:
             error_msg += f" Suggestions: {'; '.join(suggestions)}"
             
             # Log timeout for monitoring
-            print(f"⏱️  FLAT RPC TIMEOUT: {operation} after {timeout}s")
-            print(f"   Args: {json.dumps(args, indent=2, default=str)}")
+            logger.info(f"⏱️  FLAT RPC TIMEOUT: {operation} after {timeout}s")
+            logger.info(f"   Args: {json.dumps(args, indent=2, default=str)}")
             
             return FlatRPCResponse(
                 ok=False,
@@ -185,14 +186,14 @@ class FlatRPCDispatcher:
             error_msg = str(e)
             
             # Log detailed error for debugging
-            print(f"❌ FLAT RPC ERROR: {operation}")
-            print(f"   Error Type: {error_type}")
-            print(f"   Error Message: {error_msg}")
-            print(f"   Args: {json.dumps(args, indent=2, default=str)}")
+            logger.info(f"❌ FLAT RPC ERROR: {operation}")
+            logger.info(f"   Error Type: {error_type}")
+            logger.info(f"   Error Message: {error_msg}")
+            logger.info(f"   Args: {json.dumps(args, indent=2, default=str)}")
             
             # Only log full stack trace for unexpected errors
             if error_type not in ["ValueError", "KeyError", "ValidationError"]:
-                print(f"   Stack Trace:\n{traceback.format_exc()}")
+                logger.info(f"   Stack Trace:\n{traceback.format_exc()}")
 
             return FlatRPCResponse(
                 ok=False,

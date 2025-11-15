@@ -10,6 +10,7 @@ from typing import Optional
 from datetime import datetime
 from app.utils.gpt_schema_builder import build_gpt_actions_schema
 from app.utils.telegram_formatters import format_mss_alert, format_smart_money_alert
+from app.utils.logger import logger
 
 router = APIRouter()
 
@@ -101,8 +102,8 @@ async def get_complete_gpt_schema_v3(request: Request):
     # Get fresh OpenAPI schema
     app_openapi = app.openapi()
     
-    print(f"[DEBUG GPT SCHEMA] Generated fresh OpenAPI schema")
-    print(f"[DEBUG GPT SCHEMA] OpenAPI has {len(app_openapi.get('paths', {}))} total paths")
+    logger.info(f"[DEBUG GPT SCHEMA] Generated fresh OpenAPI schema")
+    logger.info(f"[DEBUG GPT SCHEMA] OpenAPI has {len(app_openapi.get('paths', {}))} total paths")
     
     # Build filtered GPT Actions schema with all relevant tags
     schema = build_gpt_actions_schema(
@@ -129,9 +130,9 @@ async def get_complete_gpt_schema_v3(request: Request):
         base_url=base_url
     )
     
-    print(f"[DEBUG GPT SCHEMA] Built filtered schema with {len(schema.get('paths', {}))} paths")
+    logger.info(f"[DEBUG GPT SCHEMA] Built filtered schema with {len(schema.get('paths', {}))} paths")
     coinglass_count = len([p for p in schema.get('paths', {}) if 'coinglass' in p])
-    print(f"[DEBUG GPT SCHEMA] Coinglass endpoints in filtered schema: {coinglass_count}")
+    logger.info(f"[DEBUG GPT SCHEMA] Coinglass endpoints in filtered schema: {coinglass_count}")
     
     return schema
 

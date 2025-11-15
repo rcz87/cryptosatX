@@ -11,6 +11,7 @@ import os
 import httpx
 from typing import Dict, Optional, List
 from datetime import datetime
+from app.utils.logger import logger
 
 
 class CoinglassComprehensiveService:
@@ -107,7 +108,7 @@ class CoinglassComprehensiveService:
             return {"success": False, "error": "Invalid response structure"}
             
         except Exception as e:
-            print(f"[CoinsMarkets] Error: {str(e)}")
+            logger.error(f"[CoinsMarkets] Error: {str(e)}")
             return {"success": False, "error": str(e)}
     
     async def get_perpetual_market(self, symbol: str) -> Dict:

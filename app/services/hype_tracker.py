@@ -6,6 +6,7 @@ import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Optional
 from app.storage.database import db
+from app.utils.logger import logger
 
 
 class HypeTrackerService:
@@ -70,7 +71,7 @@ class HypeTrackerService:
                 return True
                 
         except Exception as e:
-            print(f"[ERROR] Failed to save hype snapshot: {e}")
+            logger.error(f"Failed to save hype snapshot: {e}")
             return False
     
     async def get_hype_history(
@@ -108,7 +109,7 @@ class HypeTrackerService:
             return []
             
         except Exception as e:
-            print(f"[ERROR] Failed to get hype history: {e}")
+            logger.error(f"Failed to get hype history: {e}")
             return []
     
     async def detect_hype_spike(
@@ -153,7 +154,7 @@ class HypeTrackerService:
             return None
             
         except Exception as e:
-            print(f"[ERROR] Failed to detect hype spike: {e}")
+            logger.error(f"Failed to detect hype spike: {e}")
             return None
     
     async def track_and_alert(self, coin_data: Dict) -> Dict:
@@ -234,7 +235,7 @@ class HypeTrackerService:
             return []
             
         except Exception as e:
-            print(f"[ERROR] Failed to get trending hype coins: {e}")
+            logger.error(f"Failed to get trending hype coins: {e}")
             return []
 
 
@@ -289,5 +290,5 @@ Hype increased by **{change_pct:+.1f}%** in last 6 hours!
         }
         
     except Exception as e:
-        print(f"[ERROR] Failed to send hype spike alert: {e}")
+        logger.error(f"Failed to send hype spike alert: {e}")
         return {"success": False, "message": str(e)}

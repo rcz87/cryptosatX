@@ -6,6 +6,7 @@ Phase 2: Risk Model V2
 
 from typing import Dict, Optional
 from app.services.atr_calculator import atr_calculator
+from app.utils.logger import logger
 
 
 class PositionSizer:
@@ -68,7 +69,7 @@ class PositionSizer:
             atr_data = await atr_calculator.get_atr(symbol=symbol, timeframe=timeframe)
             
             if not atr_data or "atr_percentage" not in atr_data:
-                print(f"[WARN] No ATR data for {symbol}, using base size")
+                logger.warning(f"No ATR data for {symbol}, using base size")
                 return {
                     "symbol": symbol,
                     "timeframe": timeframe,
@@ -110,7 +111,7 @@ class PositionSizer:
             }
         
         except Exception as e:
-            print(f"[ERROR] Failed to calculate position size: {e}")
+            logger.error(f"Failed to calculate position size: {e}")
             return None
 
     def _interpret_sizing(self, multiplier: float, volatility: float) -> str:
@@ -150,7 +151,7 @@ class PositionSizer:
             atr_data = await atr_calculator.get_atr(symbol=symbol, timeframe=timeframe)
             
             if not atr_data:
-                print(f"[WARN] No ATR data for {symbol}, using default SL")
+                logger.warning(f"No ATR data for {symbol}, using default SL")
                 default_sl_pct = 2.0  # 2% default
                 sl_distance = entry_price * (default_sl_pct / 100)
                 
@@ -191,7 +192,7 @@ class PositionSizer:
             }
         
         except Exception as e:
-            print(f"[ERROR] Failed to calculate stop loss: {e}")
+            logger.error(f"Failed to calculate stop loss: {e}")
             return None
 
     async def calculate_take_profit(
@@ -245,7 +246,7 @@ class PositionSizer:
             }
         
         except Exception as e:
-            print(f"[ERROR] Failed to calculate take profit: {e}")
+            logger.error(f"Failed to calculate take profit: {e}")
             return None
 
     async def get_complete_trade_plan(
@@ -304,7 +305,7 @@ class PositionSizer:
             }
         
         except Exception as e:
-            print(f"[ERROR] Failed to generate trade plan: {e}")
+            logger.error(f"Failed to generate trade plan: {e}")
             return {
                 "error": str(e),
                 "symbol": symbol

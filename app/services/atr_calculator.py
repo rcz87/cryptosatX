@@ -156,7 +156,7 @@ class ATRCalculator:
             return None
         
         except Exception as e:
-            print(f"[ERROR] Failed to fetch OHLC from Binance: {e}")
+            logger.error(f" Failed to fetch OHLC from Binance: {e}")
             return None
 
     def calculate_true_range(
@@ -211,7 +211,7 @@ class ATRCalculator:
             ATR value or None if insufficient data
         """
         if len(true_ranges) < period:
-            print(f"[WARN] Insufficient data for ATR calculation: {len(true_ranges)} < {period}")
+            logger.warning(f" Insufficient data for ATR calculation: {len(true_ranges)} < {period}")
             return None
         
         # Use the last N periods for ATR calculation
@@ -241,7 +241,7 @@ class ATRCalculator:
             )
             
             if not candles or len(candles) < period:
-                print(f"[ERROR] Insufficient OHLC data for {symbol} {timeframe}")
+                logger.error(f" Insufficient OHLC data for {symbol} {timeframe}")
                 return None
             
             # Calculate True Range
@@ -257,7 +257,7 @@ class ATRCalculator:
             current_price = candles[-1].get("close") if candles and len(candles) > 0 else None
             
             if not current_price or current_price <= 0:
-                print(f"[ERROR] Invalid current price for {symbol}: {current_price}")
+                logger.error(f" Invalid current price for {symbol}: {current_price}")
                 return None
             
             atr_percentage = (atr_value / current_price) * 100
@@ -273,7 +273,7 @@ class ATRCalculator:
             }
         
         except Exception as e:
-            print(f"[ERROR] Failed to calculate ATR for {symbol}: {e}")
+            logger.error(f" Failed to calculate ATR for {symbol}: {e}")
             return None
 
     async def get_multi_timeframe_atr(

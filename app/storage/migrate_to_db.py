@@ -10,14 +10,15 @@ from datetime import datetime
 
 from app.storage.database import db
 from app.storage.signal_db import signal_db
+from app.utils.logger import logger
 
 
 async def migrate_json_to_postgres():
     """Migrate existing JSON signals to PostgreSQL database"""
     
-    print("=" * 60)
-    print("SIGNAL HISTORY MIGRATION: JSON → PostgreSQL")
-    print("=" * 60)
+    logger.info("=" * 60)
+    logger.info("SIGNAL HISTORY MIGRATION: JSON → PostgreSQL")
+    logger.info("=" * 60)
     
     # Initialize database connection
     await db.connect()
@@ -26,7 +27,7 @@ async def migrate_json_to_postgres():
     json_file = Path("signal_data/signal_history.json")
     
     if not json_file.exists():
-        print("✅ No JSON file found - nothing to migrate")
+        logger.info("✅ No JSON file found - nothing to migrate")
         await db.disconnect()
         return
     
@@ -34,17 +35,17 @@ async def migrate_json_to_postgres():
         with open(json_file, 'r') as f:
             history = json.load(f)
     except Exception as e:
-        print(f"❌ Failed to load JSON: {e}")
+        logger.error(f"❌ Failed to load JSON: {e}")
         await db.disconnect()
         return
     
     if not history:
-        print("✅ JSON file is empty - nothing to migrate")
+        logger.info("✅ JSON file is empty - nothing to migrate")
         await db.disconnect()
         return
     
-    print(f"📊 Found {len(history)} signals in JSON file")
-    print(f"🔄 Starting migration...\n")
+    logger.info("📊 Found {len(history)} signals in JSON file")
+    logger.info("🔄 Starting migration...\n")
     
     # Migrate each signal
     migrated = 0
@@ -56,7 +57,7 @@ async def migrate_json_to_postgres():
             
             # Skip if signal_data is empty or missing required fields
             if not signal_data.get("symbol") or not signal_data.get("signal"):
-                print(f"⚠️  Skipping invalid entry: {entry.get('id', 'unknown')}")
+                logger.warning(f"⚠️  Skipping invalid entry: {entry.get('id', 'unknown')}")
                 continue
             
             # Save to database
@@ -64,22 +65,22 @@ async def migrate_json_to_postgres():
             migrated += 1
             
             if migrated % 10 == 0:
-                print(f"   Migrated {migrated} signals...")
+                logger.info(f"   Migrated {migrated} signals...")
                 
         except Exception as e:
             errors += 1
-            print(f"❌ Error migrating signal: {e}")
+            logger.error(f"❌ Error migrating signal: {e}")
     
-    print(f"\n{'=' * 60}")
-    print(f"✅ Migration Complete!")
-    print(f"   Total signals migrated: {migrated}")
-    print(f"   Errors: {errors}")
-    print(f"   Success rate: {(migrated / len(history) * 100):.1f}%")
-    print(f"{'=' * 60}\n")
+    logger.info(f"\n" + "{'=' * 60}")
+    logger.info("✅ Migration Complete!")
+    logger.info(f"   Total signals migrated: {migrated}")
+    logger.info(f"   Errors: {errors}")
+    logger.info(f"   Success rate: {(migrated / len(history) * 100):.1f}%")
+    logger.info("=" * 60)
     
     # Verify migration
     total_in_db = await signal_db.get_signal_count()
-    print(f"📊 Total signals now in database: {total_in_db}")
+    logger.info("📊 Total signals now in database: {total_in_db}")
     
     # Cleanup
     await db.disconnect()
@@ -97,6 +98,6 @@ if __name__ == "__main__":
     result = asyncio.run(migrate_json_to_postgres())
     
     if result:
-        print(f"\n✅ Migration successful!")
-        print(f"   You can now use PostgreSQL for signal history")
-        print(f"   JSON file is kept as backup")
+        logger.info(f"\n✅ Migration successful!")
+        logger.info(f"   You can now use PostgreSQL for signal history")
+        logger.info(f"   JSON file is kept as backup")
