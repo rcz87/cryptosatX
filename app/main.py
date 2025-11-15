@@ -51,6 +51,7 @@ from app.api import (
     routes_batch,  # ADDED FOR BATCH OPERATIONS
     routes_gpt_monitoring,  # ADDED FOR GPT ACTIONS MONITORING
     routes_unified,  # ADDED FOR PHASE 3 - UNIFIED RANKING SYSTEM
+    routes_performance,  # ADDED FOR PHASE 4 - PERFORMANCE TRACKING & ANALYTICS
 )
 
 from app.middleware import (
@@ -99,10 +100,20 @@ async def lifespan(app: FastAPI):
     await auto_scanner.start()
     logger.info(f"  - AUTO_SCAN_ENABLED: {'✓' if os.getenv('AUTO_SCAN_ENABLED') == 'true' else '✗ (disabled)'}")
 
+    # Initialize performance tracker for automated outcome tracking
+    from app.services.performance_tracker import performance_tracker
+    await performance_tracker.start()
+    logger.info("🎯 Performance tracker started - tracking signal outcomes at 1h, 4h, 24h, 7d, 30d intervals")
+
     yield
 
     # Shutdown: close database connection and cleanup resources
     logger.info("🛑 Shutting down CryptoSatX API...")
+
+    # Stop performance tracker
+    from app.services.performance_tracker import performance_tracker
+    await performance_tracker.stop()
+    logger.info("🛑 Performance tracker stopped")
 
     # Stop auto-scanner
     from app.services.auto_scanner import auto_scanner
@@ -219,6 +230,9 @@ app.include_router(
 app.include_router(
     routes_unified.router, tags=["Unified Ranking System"]
 )  # ADDED FOR PHASE 3 - UNIFIED SCORING & CROSS-VALIDATION
+app.include_router(
+    routes_performance.router, tags=["Performance Tracking & Analytics"]
+)  # ADDED FOR PHASE 4 - AUTOMATED OUTCOME TRACKING & WIN RATE ANALYTICS
 
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility

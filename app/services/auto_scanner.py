@@ -22,6 +22,7 @@ from app.services.smart_money_service import SmartMoneyService
 from app.services.mss_service import MSSService
 from app.services.coinglass_service import CoinglassService
 from app.services.telegram_notifier import TelegramNotifier
+from app.services.performance_tracker import track_signal
 from app.utils.logger import default_logger
 from app.storage.signal_history import signal_history
 
@@ -421,35 +422,100 @@ MSS Score: {score}/100
             self.logger.error(f"Error sending MSS alerts: {str(e)}")
 
     async def _save_signals_to_history(self, signals: List[Dict], signal_type: str):
-        """Save signals to signal history database"""
+        """Save signals to signal history database and start performance tracking"""
         for signal in signals:
             try:
+                symbol = signal.get("symbol", "UNKNOWN")
+
                 signal_data = {
-                    "symbol": signal.get("symbol", "UNKNOWN"),
+                    "symbol": symbol,
                     "signal": signal_type,
                     "score": signal.get("score", 0),
                     "reasons": signal.get("reasons", []),
                     "timestamp": datetime.now().isoformat(),
                     "source": "auto_scanner"
                 }
-                await signal_history.save_signal(signal_data)
+
+                # Save to history
+                saved_signal = await signal_history.save_signal(signal_data)
+
+                # Start performance tracking
+                if saved_signal and saved_signal.get("id"):
+                    try:
+                        # Get current price for tracking
+                        from app.services.coinapi_service import CoinapiService
+                        coinapi = CoinapiService()
+                        price_data = await coinapi.get_current_price(symbol)
+
+                        if price_data.get("success"):
+                            # Map signal type to LONG/SHORT
+                            signal_direction = "LONG" if signal_type == "ACCUMULATION" else "SHORT"
+
+                            # Prepare tracking data
+                            tracking_data = {
+                                "id": saved_signal["id"],
+                                "symbol": symbol,
+                                "signal": signal_direction,
+                                "price": price_data["price"],
+                                "timestamp": datetime.now().isoformat(),
+                                "scanner_type": "smart_money"
+                            }
+
+                            # Start tracking
+                            await track_signal(tracking_data)
+                            self.logger.debug(f"Started tracking signal {saved_signal['id']} for {symbol}")
+                    except Exception as track_err:
+                        self.logger.warning(f"Could not start tracking for {symbol}: {track_err}")
+
             except Exception as e:
                 self.logger.error(f"Error saving signal to history: {str(e)}")
 
     async def _save_mss_discoveries(self, gems: List[Dict]):
-        """Save MSS discoveries to history"""
+        """Save MSS discoveries to history and start performance tracking"""
         for gem in gems:
             try:
+                symbol = gem.get("symbol", "UNKNOWN")
+                mss_score = gem.get("mss_score", 0)
+
                 signal_data = {
-                    "symbol": gem.get("symbol", "UNKNOWN"),
+                    "symbol": symbol,
                     "signal": "MSS_DISCOVERY",
-                    "score": gem.get("mss_score", 0),
+                    "score": mss_score,
                     "fdv": gem.get("fdv", 0),
                     "age_hours": gem.get("age_hours", 0),
                     "timestamp": datetime.now().isoformat(),
                     "source": "auto_scanner"
                 }
-                await signal_history.save_signal(signal_data)
+
+                # Save to history
+                saved_signal = await signal_history.save_signal(signal_data)
+
+                # Start performance tracking
+                if saved_signal and saved_signal.get("id"):
+                    try:
+                        # Get current price for tracking
+                        from app.services.coinapi_service import CoinapiService
+                        coinapi = CoinapiService()
+                        price_data = await coinapi.get_current_price(symbol)
+
+                        if price_data.get("success"):
+                            # Prepare tracking data
+                            tracking_data = {
+                                "id": saved_signal["id"],
+                                "symbol": symbol,
+                                "signal": "LONG",  # MSS discoveries are buy signals
+                                "price": price_data["price"],
+                                "timestamp": datetime.now().isoformat(),
+                                "unified_score": mss_score,  # MSS score as unified score
+                                "scanner_type": "mss"
+                            }
+
+                            # Start tracking
+                            await track_signal(tracking_data)
+                            self.logger.debug(f"Started tracking MSS signal {saved_signal['id']} for {symbol}")
+                    except Exception as track_err:
+                        self.logger.warning(f"Could not start tracking for {symbol}: {track_err}")
+
             except Exception as e:
                 self.logger.error(f"Error saving MSS discovery to history: {str(e)}")
 
