@@ -8,6 +8,10 @@ from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 import asyncio
 from datetime import datetime
+import copy
+import logging
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/scalping", tags=["Scalping"])
 
@@ -23,7 +27,10 @@ def compress_for_gpt_mode(result: Dict[str, Any]) -> Dict[str, Any]:
     - Reducing whale/smart money to directional bias
     - Removing verbose metadata and debug info
     """
-    compressed = result.copy()
+    logger.info("🔧 compress_for_gpt_mode CALLED - Starting compression")
+    
+    compressed = copy.deepcopy(result)
+    logger.info(f"🔧 Deep copy created, keys: {list(compressed.keys())}")
     
     # 1. Compress orderbook_history - Keep only top 3 bid/ask levels
     if compressed.get("orderbook_history"):
@@ -158,6 +165,7 @@ def compress_for_gpt_mode(result: Dict[str, Any]) -> Dict[str, Any]:
     
     # 9. Compress RSI - Current value only (remove history array)
     if compressed.get("rsi"):
+        logger.info(f"🔧 Compressing RSI - before: {list(compressed['rsi'].keys())}")
         rsi = compressed["rsi"]
         # Keep only current RSI and signal, remove massive history array
         compressed_rsi = {
@@ -166,9 +174,11 @@ def compress_for_gpt_mode(result: Dict[str, Any]) -> Dict[str, Any]:
             "success": rsi.get("success", True)
         }
         compressed["rsi"] = compressed_rsi
+        logger.info(f"🔧 Compressing RSI - after: {list(compressed['rsi'].keys())}")
     
     # 10. Compress Fear/Greed - Current index only (remove history array)
     if compressed.get("fear_greed"):
+        logger.info(f"🔧 Compressing Fear/Greed - before: {list(compressed['fear_greed'].keys())}")
         fg = compressed["fear_greed"]
         # Keep only current index and sentiment, remove massive history array
         compressed_fg = {
@@ -177,6 +187,7 @@ def compress_for_gpt_mode(result: Dict[str, Any]) -> Dict[str, Any]:
             "success": fg.get("success", True)
         }
         compressed["fear_greed"] = compressed_fg
+        logger.info(f"🔧 Compressing Fear/Greed - after: {list(compressed['fear_greed'].keys())}")
     
     # 11. Compress funding - Essential metrics only
     if compressed.get("funding"):
@@ -453,8 +464,12 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
             result["summary"]["whale_bias"] = whale_bias_summary
         
         # Apply GPT mode compression if enabled
+        logger.info(f"🔧 Checking GPT mode: request.gpt_mode = {request.gpt_mode}")
         if request.gpt_mode:
+            logger.info("🔧 GPT mode ENABLED - calling compression")
             result = compress_for_gpt_mode(result)
+        else:
+            logger.info("🔧 GPT mode DISABLED - skipping compression")
         
         return result
         

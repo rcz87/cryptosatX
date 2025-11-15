@@ -9,8 +9,10 @@ import sys
 from typing import Dict, Any, List, Optional
 import httpx
 from datetime import datetime
+import os
 
-BASE_URL = "https://guardiansofthetoken.org"
+# Use localhost for development testing, production URL for deployed testing
+BASE_URL = os.getenv("TEST_BASE_URL", "http://localhost:8000")
 MAX_RESPONSE_SIZE = 50 * 1024
 TIMEOUT = 60.0
 
