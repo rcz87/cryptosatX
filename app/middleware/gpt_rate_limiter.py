@@ -6,7 +6,7 @@ Provides separate rate limits for GPT Actions endpoints to prevent abuse
 from fastapi import Request, HTTPException
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.types import ASGIApp
-from typing import Dict, Tuple
+from typing import Dict, Tuple, Optional
 import time
 from collections import defaultdict
 from app.utils.logger import get_logger
@@ -162,9 +162,9 @@ class GPTRateLimiter:
 class GPTRateLimiterMiddleware(BaseHTTPMiddleware):
     """Middleware to apply rate limiting to GPT Actions endpoints"""
 
-    def __init__(self, app: ASGIApp):
+    def __init__(self, app: ASGIApp, limiter: Optional[GPTRateLimiter] = None):
         super().__init__(app)
-        self.limiter = GPTRateLimiter()
+        self.limiter = limiter if limiter is not None else GPTRateLimiter()
 
     async def dispatch(self, request: Request, call_next):
         """Apply rate limiting"""

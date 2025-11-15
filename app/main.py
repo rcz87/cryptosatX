@@ -55,6 +55,7 @@ from app.api import (
 from app.middleware import (
     ResponseSizeMonitorMiddleware,
     GPTRateLimiterMiddleware,
+    gpt_rate_limiter,
 )
 
 # Load environment variables
@@ -135,7 +136,7 @@ app.add_middleware(
 )
 
 # Add GPT Actions middleware (MUST be after CORS, before SlowAPI)
-app.add_middleware(GPTRateLimiterMiddleware)
+app.add_middleware(GPTRateLimiterMiddleware, limiter=gpt_rate_limiter)
 app.add_middleware(ResponseSizeMonitorMiddleware)
 
 # Add SlowAPI rate limiting middleware (MUST be after CORS)
