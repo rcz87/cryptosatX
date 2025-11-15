@@ -54260,5 +54260,27 @@
         }
       }
     }
+  },
+  {
+    "id": "sig_20251115032515521534",
+    "saved_at": "2025-11-15T03:25:15.521566",
+    "data": {
+      "symbol": "BTC",
+      "timestamp": "2025-11-15T03:25:14.520901",
+      "signal": "TEST",
+      "score": 99.9,
+      "confidence": "very_high",
+      "price": 0.0,
+      "reasons": [
+        "This is a test alert",
+        "Monitoring system is working"
+      ],
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 0.0,
+        "socialScore": 100.0,
+        "priceTrend": "test"
+      }
+    }
   }
 ]
