@@ -103,6 +103,90 @@ class GPTActionsTestSuite:
         self.results.append(result)
         return result
 
+    async def test_scalping_gpt_mode_regression(self):
+        """
+        REGRESSION TEST: Verify scalping endpoints stay under GPT Actions 50KB limit
+        
+        This test will FAIL if response sizes exceed limits, preventing regressions.
+        Limits:
+        - /scalping/analyze (gpt_mode=true): < 45 KB
+        - /scalping/quick: < 40 KB
+        """
+        print("\n" + "="*80)
+        print("🔒 REGRESSION TEST: GPT Mode Size Limits")
+        print("="*80)
+        print("Testing scalping endpoints with strict size assertions...")
+        print("="*80)
+        
+        # Test 1: Scalping Analyze with GPT Mode
+        print("\n📊 Test 1: /scalping/analyze (gpt_mode=true)")
+        print("-" * 80)
+        
+        async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+            response = await client.post(
+                f"{self.base_url}/scalping/analyze",
+                json={
+                    "symbol": "ETH",
+                    "mode": "aggressive",
+                    "include_smart_money": True,
+                    "include_fear_greed": True,
+                    "gpt_mode": True  # Critical: GPT mode enabled
+                }
+            )
+            
+            size_bytes = len(response.text.encode('utf-8'))
+            size_kb = size_bytes / 1024
+            limit_kb = 45
+            
+            print(f"Status: {response.status_code}")
+            print(f"Response Size: {size_kb:.2f} KB ({size_bytes} bytes)")
+            print(f"Limit: < {limit_kb} KB")
+            
+            if size_kb < limit_kb:
+                print(f"✅ PASS - Size is {limit_kb - size_kb:.2f} KB under limit")
+            else:
+                print(f"❌ FAIL - Size exceeds limit by {size_kb - limit_kb:.2f} KB!")
+                print(f"\n⚠️  REGRESSION DETECTED!")
+                print(f"Expected: < {limit_kb} KB")
+                print(f"Actual: {size_kb:.2f} KB")
+                print(f"This endpoint must be optimized before deployment!")
+                raise AssertionError(
+                    f"/scalping/analyze response size ({size_kb:.2f} KB) exceeds "
+                    f"GPT Actions limit of {limit_kb} KB by {size_kb - limit_kb:.2f} KB"
+                )
+        
+        # Test 2: Scalping Quick (auto gpt_mode)
+        print("\n📊 Test 2: /scalping/quick/BTC (auto gpt_mode)")
+        print("-" * 80)
+        
+        async with httpx.AsyncClient(timeout=TIMEOUT) as client:
+            response = await client.get(f"{self.base_url}/scalping/quick/BTC")
+            
+            size_bytes = len(response.text.encode('utf-8'))
+            size_kb = size_bytes / 1024
+            limit_kb = 40
+            
+            print(f"Status: {response.status_code}")
+            print(f"Response Size: {size_kb:.2f} KB ({size_bytes} bytes)")
+            print(f"Limit: < {limit_kb} KB")
+            
+            if size_kb < limit_kb:
+                print(f"✅ PASS - Size is {limit_kb - size_kb:.2f} KB under limit")
+            else:
+                print(f"❌ FAIL - Size exceeds limit by {size_kb - limit_kb:.2f} KB!")
+                print(f"\n⚠️  REGRESSION DETECTED!")
+                print(f"Expected: < {limit_kb} KB")
+                print(f"Actual: {size_kb:.2f} KB")
+                print(f"This endpoint must be optimized before deployment!")
+                raise AssertionError(
+                    f"/scalping/quick response size ({size_kb:.2f} KB) exceeds "
+                    f"GPT Actions limit of {limit_kb} KB by {size_kb - limit_kb:.2f} KB"
+                )
+        
+        print("\n" + "="*80)
+        print("✅ REGRESSION TEST PASSED - All scalping endpoints within size limits")
+        print("="*80)
+
     async def run_all_tests(self):
         """Run all GPT Actions endpoint tests"""
 
@@ -192,6 +276,9 @@ class GPTActionsTestSuite:
             "/openapi-gpt.json",
             description="Optimized OpenAPI Schema for GPT Actions (< 45KB)"
         )
+
+        # Run regression tests with strict size assertions
+        await self.test_scalping_gpt_mode_regression()
 
         self.generate_report()
 
