@@ -154,9 +154,10 @@ class GPTActionsTestSuite:
                 "symbol": "ETH",
                 "mode": "aggressive",
                 "include_smart_money": True,
-                "include_fear_greed": True
+                "include_fear_greed": True,
+                "gpt_mode": True
             },
-            description="Complete Scalping Analysis (ETH)"
+            description="Complete Scalping Analysis (ETH) - GPT Optimized"
         )
 
         await self.test_endpoint(
@@ -188,8 +189,8 @@ class GPTActionsTestSuite:
 
         await self.test_endpoint(
             "GET",
-            "/openapi.json",
-            description="OpenAPI Schema for GPT Actions"
+            "/openapi-gpt.json",
+            description="Optimized OpenAPI Schema for GPT Actions (< 45KB)"
         )
 
         self.generate_report()

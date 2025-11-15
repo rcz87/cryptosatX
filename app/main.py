@@ -230,6 +230,40 @@ def custom_openapi():
 
 app.openapi = custom_openapi
 
+
+# GPT-optimized OpenAPI endpoint (< 45 KB target)
+@app.get("/openapi-gpt.json", include_in_schema=False)
+async def get_gpt_optimized_openapi():
+    """
+    Optimized OpenAPI schema for GPT Actions (< 45 KB)
+    Filters to include only GPT-relevant endpoints
+    """
+    from fastapi.openapi.utils import get_openapi
+    from app.utils.gpt_schema_builder import build_gpt_actions_schema
+
+    # Generate full schema
+    full_schema = get_openapi(
+        title=app.title,
+        version=app.version,
+        description=app.description,
+        routes=app.routes,
+    )
+
+    # Filter to GPT-relevant tags only
+    gpt_schema = build_gpt_actions_schema(
+        app_openapi=full_schema,
+        include_tags={
+            "GPT Actions",
+            "Scalping Analysis",
+            "GPT Monitoring",
+            "Unified RPC - GPT Actions",
+            "Health",
+        },
+        base_url="https://guardiansofthetoken.org"
+    )
+
+    return gpt_schema
+
 if __name__ == "__main__":
     import uvicorn
 

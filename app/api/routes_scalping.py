@@ -24,6 +24,7 @@ class ScalpingAnalysisRequest(BaseModel):
     include_fear_greed: bool = Field(default=True, description="Include fear & greed index")
     include_coinapi: bool = Field(default=True, description="Include extended CoinAPI data (OHLCV, trades)")
     include_sentiment: bool = Field(default=True, description="Include LunarCrush sentiment and social momentum")
+    gpt_mode: bool = Field(default=False, description="GPT Actions optimization mode - reduces response size to < 50KB by limiting data verbosity")
 
 
 class ScalpingAnalysisResponse(BaseModel):
@@ -107,16 +108,23 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
     }
     
     try:
+        # Adjust limits based on GPT mode
+        liquidations_limit = 5 if request.gpt_mode else 20
+        funding_limit = 3 if request.gpt_mode else 10
+        ls_ratio_limit = 3 if request.gpt_mode else 10
+        ohlcv_limit = 6 if request.gpt_mode else 24
+        trades_limit = 20 if request.gpt_mode else 100
+
         # Fetch all layers concurrently
         tasks = []
-        
+
         # CRITICAL layers
         tasks.append(("price", coinapi.get_spot_price(symbol)))
         tasks.append(("orderbook_history", coinglass_comprehensive.get_orderbook_detailed_history(
             exchange="Binance", symbol=pair, interval="1h", limit=1
         )))
         tasks.append(("liquidations", coinglass_comprehensive.get_liquidation_aggregated_history(
-            symbol=symbol, exchange_list="Binance", interval="1m", limit=20
+            symbol=symbol, exchange_list="Binance", interval="1m", limit=liquidations_limit
         )))
         tasks.append(("rsi", coinglass_comprehensive.get_rsi_indicator(
             exchange="Binance", symbol=pair, interval="1h"
@@ -124,32 +132,32 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
         tasks.append(("volume_delta", coinglass_comprehensive.get_taker_buy_sell_volume_exchange_list(
             symbol=symbol
         )))
-        
+
         # RECOMMENDED layers
         tasks.append(("funding", coinglass_comprehensive.get_funding_rate_history(
-            exchange="Binance", symbol=pair, interval="h8", limit=10
+            exchange="Binance", symbol=pair, interval="h8", limit=funding_limit
         )))
         tasks.append(("ls_ratio", coinglass_comprehensive.get_top_long_short_position_ratio_history(
-            exchange="Binance", symbol=pair, interval="h1", limit=10
+            exchange="Binance", symbol=pair, interval="h1", limit=ls_ratio_limit
         )))
-        
+
         # OPTIONAL - Smart Money (heavy, optional)
         if request.include_smart_money:
             tasks.append(("smart_money", smart_money_service.scan_smart_money(symbol)))
-        
+
         # OPTIONAL - Hyperliquid Whale Positions (Layer 7.5)
         if request.include_whale_positions:
             tasks.append(("whale_positions", coinglass_comprehensive.get_hyperliquid_whale_positions()))
-        
+
         # OPTIONAL - Fear & Greed
         if request.include_fear_greed:
             tasks.append(("fear_greed", coinglass_comprehensive.get_fear_greed_index()))
-        
+
         # OPTIONAL - Extended CoinAPI (OHLCV + Trades)
         if request.include_coinapi:
-            tasks.append(("ohlcv", coinapi.get_ohlcv_latest(symbol, period="1HRS", limit=24)))
-            tasks.append(("trades", coinapi.get_trades(symbol, limit=100)))
-        
+            tasks.append(("ohlcv", coinapi.get_ohlcv_latest(symbol, period="1HRS", limit=ohlcv_limit)))
+            tasks.append(("trades", coinapi.get_trades(symbol, limit=trades_limit)))
+
         # OPTIONAL - LunarCrush Sentiment
         if request.include_sentiment:
             from app.services.lunarcrush_service import lunarcrush_service
@@ -254,16 +262,18 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
     summary="Quick Scalping Check",
     description="""
     **⚡ Quick scalping readiness check (no smart money analysis)**
-    
+
     Fast endpoint for checking if critical data is available.
     Perfect for rapid polling without heavy processing.
-    
+    Optimized for GPT Actions with response size < 40 KB.
+
     **Response time:** ~5-8 seconds (vs ~30s for full analysis)
     """)
 async def quick_scalping_check(symbol: str):
     """
     Quick scalping check - only critical layers, no smart money
     Fast response for GPT Actions rapid queries
+    Automatically uses GPT mode for size optimization
     """
     request = ScalpingAnalysisRequest(
         symbol=symbol,
@@ -271,9 +281,10 @@ async def quick_scalping_check(symbol: str):
         include_whale_positions=False,
         include_fear_greed=False,
         include_coinapi=False,
-        include_sentiment=False
+        include_sentiment=False,
+        gpt_mode=True  # Enable GPT mode for size optimization
     )
-    
+
     return await analyze_for_scalping(request)
 
 
