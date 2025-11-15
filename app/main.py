@@ -93,22 +93,32 @@ async def lifespan(app: FastAPI):
     cache_cleanup_task = asyncio.create_task(start_cache_cleanup_task())
     logger.info("🗄️  Cache service initialized with auto-cleanup")
 
+    # Initialize auto-scanner for 24/7 market monitoring
+    from app.services.auto_scanner import auto_scanner
+    await auto_scanner.start()
+    logger.info(f"  - AUTO_SCAN_ENABLED: {'✓' if os.getenv('AUTO_SCAN_ENABLED') == 'true' else '✗ (disabled)'}")
+
     yield
 
     # Shutdown: close database connection and cleanup resources
     logger.info("🛑 Shutting down CryptoSatX API...")
-    
+
+    # Stop auto-scanner
+    from app.services.auto_scanner import auto_scanner
+    await auto_scanner.stop()
+    logger.info("🛑 Auto-scanner stopped")
+
     # Cancel cache cleanup task
     cache_cleanup_task.cancel()
     try:
         await cache_cleanup_task
     except asyncio.CancelledError:
         pass
-    
+
     # Close ATR calculator HTTP client
     from app.services.atr_calculator import atr_calculator
     await atr_calculator.close()
-    
+
     await db.disconnect()
 
 
