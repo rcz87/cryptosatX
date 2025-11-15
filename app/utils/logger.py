@@ -209,6 +209,8 @@ def get_logger(module_name: str, level: Optional[int] = None) -> logging.Logger:
 # Create default logger instance
 default_logger = setup_json_logger()
 
+# Alias for backward compatibility with merged branch
+logger = default_logger
 
 # Convenience re-exports for backward compatibility
 __all__ = [
@@ -218,4 +220,5 @@ __all__ = [
     "log_signal_generation",
     "log_error",
     "default_logger",
+    "logger",  # Added for compatibility
 ]
