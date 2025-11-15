@@ -1,0 +1,211 @@
+🔍 ANALISA MASALAH
+Problem #1: Method Name Mismatch di RPC Dispatcher ❌
+Lokasi: /home/user/cryptosatX/app/core/rpc_dispatcher.py:261,266
+
+# SALAH - method ini tidak ada!
+async def _coinglass_fear_greed(self, args: Dict) -> Dict:
+    return await coinglass_comprehensive.get_indicators_fear_greed()  # ❌ Method tidak ada
+
+async def _coinglass_rsi_list(self, args: Dict) -> Dict:
+    return await coinglass_comprehensive.get_indicators_rsi_list()  # ❌ Method tidak ada
+Method yang benar di service:
+
+get_fear_greed_index() ✅ (bukan get_indicators_fear_greed)
+get_rsi_list() ✅ (bukan get_indicators_rsi_list)
+Impact: Ini akan menyebabkan AttributeError ketika RPC/GPT Actions mencoba call operations ini.
+
+Problem #2: RSI List Endpoint Tidak Ada Pagination 📊
+Lokasi:
+
+/home/user/cryptosatX/app/services/coinglass_comprehensive_service.py:3983
+/home/user/cryptosatX/app/api/routes_coinglass.py:1151
+Current behavior:
+
+async def get_rsi_list(self) -> Dict:
+    # Returns ALL 536 coins dengan 13 fields per coin
+    # Response size: ~80-100 KB
+    # GPT Actions limit: 50 KB
+    # Result: ResponseTooLargeError ❌
+Data yang dikembalikan per coin:
+
+symbol, currentPrice
+rsi15m, rsi1h, rsi4h, rsi12h, rsi24h, rsi1w (6 timeframes)
+priceChange15m, priceChange1h, priceChange4h, priceChange24h
+signal (OVERSOLD/OVERBOUGHT/NEUTRAL)
+Total: 536 coins × 13 fields = Response terlalu besar untuk GPT!
+
+Problem #3: News Feed Route Tidak Menerima Parameter 📰
+Lokasi: /home/user/cryptosatX/app/api/routes_coinglass.py:1288
+
+@router.get("/news/feed")
+async def get_news_feed():  # ❌ Tidak ada parameter limit
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_news_feed()  # Service punya param, tapi route tidak expose
+    finally:
+        await service.close()
+Service method sudah support pagination:
+
+async def get_news_feed(self, limit: int = 10, include_content: bool = False) -> Dict:
+    # Sudah ada limit protection!
+    limit = min(max(1, limit), 50)  # ✅ Between 1 and 50
+✅ REKOMENDASI PERBAIKAN
+Fix #1: Perbaiki Method Names di RPC Dispatcher
+File: app/core/rpc_dispatcher.py
+
+# Line 258-261: Fix fear & greed
+async def _coinglass_fear_greed(self, args: Dict) -> Dict:
+    """Get Fear & Greed Index"""
+    from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+    return await coinglass_comprehensive.get_fear_greed_index()  # ✅ FIXED
+
+# Line 263-266: Fix RSI list  
+async def _coinglass_rsi_list(self, args: Dict) -> Dict:
+    """Get RSI list"""
+    from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+    return await coinglass_comprehensive.get_rsi_list()  # ✅ FIXED
+Fix #2: Tambah Pagination ke RSI List (Seperti News Feed)
+A. Update Service Method
+File: app/services/coinglass_comprehensive_service.py:3983
+
+async def get_rsi_list(
+    self, 
+    limit: int = 20,  # ✅ NEW: Default 20 coins
+    signal_filter: str = None  # ✅ NEW: Filter by "OVERSOLD", "OVERBOUGHT", or None
+) -> Dict:
+    """
+    Get RSI LIST - Multi-timeframe RSI for all major coins! (45TH ENDPOINT!)
+    
+    Args:
+        limit: Number of coins to return (default: 20, max: 100)
+        signal_filter: Filter by signal type ("OVERSOLD", "OVERBOUGHT", or None for all)
+    """
+    try:
+        client = await self._get_client()
+        url = f"{self.base_url_v4}/api/futures/rsi/list"
+        
+        response = await client.get(url, headers=self.headers)
+        
+        if response.status_code != 200:
+            return {"success": False, "error": f"HTTP {response.status_code}"}
+        
+        data = response.json()
+        
+        if str(data.get("code")) == "0" and data.get("data"):
+            rsi_data = data["data"]
+            
+            formatted = []
+            for coin in rsi_data:
+                rsi_24h = float(coin.get("rsi_24h", 50))
+                signal = "OVERSOLD" if rsi_24h < 30 else "OVERBOUGHT" if rsi_24h > 70 else "NEUTRAL"
+                
+                # ✅ NEW: Apply signal filter if specified
+                if signal_filter and signal != signal_filter.upper():
+                    continue
+                
+                formatted.append({
+                    "symbol": coin.get("symbol"),
+                    "currentPrice": float(coin.get("current_price", 0)),
+                    "rsi15m": float(coin.get("rsi_15m", 0)),
+                    "rsi1h": float(coin.get("rsi_1h", 0)),
+                    "rsi4h": float(coin.get("rsi_4h", 0)),
+                    "rsi12h": float(coin.get("rsi_12h", 0)),
+                    "rsi24h": rsi_24h,
+                    "rsi1w": float(coin.get("rsi_1w", 0)),
+                    "priceChange15m": float(coin.get("price_change_percent_15m", 0)),
+                    "priceChange1h": float(coin.get("price_change_percent_1h", 0)),
+                    "priceChange4h": float(coin.get("price_change_percent_4h", 0)),
+                    "priceChange24h": float(coin.get("price_change_percent_24h", 0)),
+                    "signal": signal
+                })
+            
+            # ✅ NEW: Apply limit protection (like news feed)
+            limit = min(max(1, limit), 100)  # Between 1 and 100
+            total_count = len(formatted)
+            formatted = formatted[:limit]
+            
+            return {
+                "success": True,
+                "coinCount": len(formatted),
+                "totalAvailable": total_count,  # ✅ NEW: Show total before limit
+                "limit": limit,
+                "signalFilter": signal_filter,
+                "coins": formatted,
+                "note": f"Showing {len(formatted)} of {total_count} coins. Use limit/signal_filter to refine results.",
+                "source": "rsi_list"
+            }
+        
+        return {"success": False, "error": "No data"}
+        
+    except Exception as e:
+        return {"success": False, "error": str(e)}
+B. Update API Route
+File: app/api/routes_coinglass.py:1151
+
+@router.get("/indicators/rsi-list")
+async def get_rsi_list(
+    limit: int = Query(20, description="Number of coins to return (max: 100)"),  # ✅ NEW
+    signal_filter: Optional[str] = Query(None, description="Filter by signal: OVERSOLD, OVERBOUGHT")  # ✅ NEW
+):
+    """📊 ENDPOINT #45: RSI LIST - Multi-timeframe RSI for all major coins!
+    
+    Use limit to control response size (GPT-friendly default: 20)
+    Use signal_filter to get only OVERSOLD or OVERBOUGHT coins
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_rsi_list(limit=limit, signal_filter=signal_filter)  # ✅ Pass params
+    finally:
+        await service.close()
+C. Update RPC Dispatcher untuk Support Parameters
+File: app/core/rpc_dispatcher.py:263
+
+async def _coinglass_rsi_list(self, args: Dict) -> Dict:
+    """Get RSI list with pagination"""
+    from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+    limit = args.get("limit", 20)  # ✅ NEW: Default 20 for GPT
+    signal_filter = args.get("signal_filter")  # ✅ NEW: Optional filter
+    return await coinglass_comprehensive.get_rsi_list(
+        limit=limit, 
+        signal_filter=signal_filter
+    )
+Fix #3: Update News Feed Route untuk Expose Parameters
+File: app/api/routes_coinglass.py:1288
+
+@router.get("/news/feed")
+async def get_news_feed(
+    limit: int = Query(10, description="Number of articles (max: 50)"),  # ✅ NEW
+    include_content: bool = Query(False, description="Include full article content")  # ✅ NEW
+):
+    """📰 ENDPOINT #58: Crypto News Feed - Latest articles from major sources!
+    
+    Use include_content=false for GPT Actions to reduce response size
+    """
+    service = CoinglassComprehensiveService()
+    try:
+        return await service.get_news_feed(limit=limit, include_content=include_content)  # ✅ Pass params
+    finally:
+        await service.close()
+📋 SUMMARY PERBAIKAN
+| Issue | File | Line | Fix Type | Priority | |-------|------|------|----------|----------| | Method name mismatch | rpc_dispatcher.py | 261, 266 | Bug fix | 🔴 CRITICAL | | RSI list no pagination | coinglass_comprehensive_service.py | 3983 | Add params | 🔴 CRITICAL | | RSI route no params | routes_coinglass.py | 1151 | Add params | 🔴 CRITICAL | | News route no params | routes_coinglass.py | 1288 | Add params | 🟡 MEDIUM |
+
+🎯 EXPECTED RESULT SETELAH FIX
+Before ❌:
+
+GPT request → RSI List (536 coins, ~100KB) → ResponseTooLargeError
+After ✅:
+
+GPT request → RSI List (20 coins, ~4KB) → Success!
+Optional: ?limit=50&signal_filter=OVERSOLD → Only oversold coins
+🧪 TESTING SETELAH FIX
+# Test 1: Default limit (20 coins)
+curl http://localhost:8000/coinglass/indicators/rsi-list
+
+# Test 2: Custom limit
+curl "http://localhost:8000/coinglass/indicators/rsi-list?limit=10"
+
+# Test 3: Filter oversold coins only
+curl "http://localhost:8000/coinglass/indicators/rsi-list?signal_filter=OVERSOLD&limit=30"
+
+# Test 4: News feed with limit
+curl "http://localhost:8000/coinglass/news/feed?limit=5"
