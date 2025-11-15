@@ -50,6 +50,7 @@ from app.api import (
     routes_cache,  # ADDED FOR CACHE MANAGEMENT
     routes_batch,  # ADDED FOR BATCH OPERATIONS
     routes_gpt_monitoring,  # ADDED FOR GPT ACTIONS MONITORING
+    routes_unified,  # ADDED FOR PHASE 3 - UNIFIED RANKING SYSTEM
 )
 
 from app.middleware import (
@@ -215,6 +216,9 @@ app.include_router(
 app.include_router(
     routes_gpt_monitoring.router, tags=["GPT Monitoring"]
 )  # ADDED FOR GPT ACTIONS MONITORING & STATISTICS
+app.include_router(
+    routes_unified.router, tags=["Unified Ranking System"]
+)  # ADDED FOR PHASE 3 - UNIFIED SCORING & CROSS-VALIDATION
 
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility
