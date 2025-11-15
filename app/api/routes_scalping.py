@@ -12,6 +12,160 @@ from datetime import datetime
 router = APIRouter(prefix="/scalping", tags=["Scalping"])
 
 
+def compress_for_gpt_mode(result: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Compress scalping analysis result for GPT Actions (< 50KB target)
+    
+    Reduces response size by:
+    - Trimming orderbook to top 3 levels only
+    - Compressing liquidations to summary metrics
+    - Simplifying volume delta to net flow
+    - Reducing whale/smart money to directional bias
+    - Removing verbose metadata and debug info
+    """
+    compressed = result.copy()
+    
+    # 1. Compress orderbook_history - Keep only top 3 bid/ask levels
+    if compressed.get("orderbook_history"):
+        ob = compressed["orderbook_history"]
+        if ob.get("bids") and isinstance(ob["bids"], list):
+            ob["bids"] = ob["bids"][:3]
+        if ob.get("asks") and isinstance(ob["asks"], list):
+            ob["asks"] = ob["asks"][:3]
+        # Remove verbose metadata
+        ob.pop("metadata", None)
+        ob.pop("provider", None)
+        ob.pop("raw_data", None)
+    
+    # 2. Compress liquidations - Summary metrics only
+    if compressed.get("liquidations"):
+        liq = compressed["liquidations"]
+        if liq.get("data") and isinstance(liq["data"], list):
+            # Keep only summary stats
+            events = liq["data"]
+            total_long = sum(e.get("longLiquidation", 0) for e in events)
+            total_short = sum(e.get("shortLiquidation", 0) for e in events)
+            total_volume = total_long + total_short
+            
+            liq["data"] = {
+                "summary": {
+                    "totalLongLiquidations": total_long,
+                    "totalShortLiquidations": total_short,
+                    "totalVolume": total_volume,
+                    "netDirection": "LONG_SQUEEZE" if total_long > total_short else "SHORT_SQUEEZE",
+                    "ratio": round(total_long / total_short, 2) if total_short > 0 else 999,
+                    "eventCount": len(events)
+                }
+            }
+        liq.pop("metadata", None)
+        liq.pop("provider", None)
+    
+    # 3. Compress volume_delta - Net flow only
+    if compressed.get("volume_delta"):
+        vd = compressed["volume_delta"]
+        if vd.get("data"):
+            # Keep only net metrics, remove per-exchange breakdown
+            vd_data = vd["data"]
+            if isinstance(vd_data, dict):
+                vd["data"] = {
+                    "netBuys": vd_data.get("netBuys", 0),
+                    "netSells": vd_data.get("netSells", 0),
+                    "netDelta": vd_data.get("netDelta", 0),
+                    "signal": vd_data.get("signal", "NEUTRAL")
+                }
+        vd.pop("exchanges", None)
+        vd.pop("intervals", None)
+        vd.pop("metadata", None)
+    
+    # 4. Compress whale_positions - Bias + confidence only
+    if compressed.get("whale_positions"):
+        wp = compressed["whale_positions"]
+        if wp.get("topPositions") and isinstance(wp["topPositions"], list):
+            positions = wp["topPositions"]
+            long_value = sum(p.get("positionValue", 0) for p in positions if p.get("side") == "LONG")
+            short_value = sum(p.get("positionValue", 0) for p in positions if p.get("side") == "SHORT")
+            total_value = long_value + short_value
+            
+            if total_value > 0:
+                ratio = long_value / short_value if short_value > 0 else 999
+                bias = "LONG" if ratio > 1.5 else "SHORT" if ratio < 0.67 else "NEUTRAL"
+                
+                wp["topPositions"] = {
+                    "bias": bias,
+                    "longValue": long_value,
+                    "shortValue": short_value,
+                    "ratio": round(ratio, 2) if ratio != 999 else 999,
+                    "positionCount": len(positions)
+                }
+        wp.pop("metadata", None)
+        wp.pop("raw", None)
+    
+    # 5. Compress smart_money - Directional signal only
+    if compressed.get("smart_money"):
+        sm = compressed["smart_money"]
+        if sm.get("analysis"):
+            analysis = sm["analysis"]
+            # Keep only essential signal metrics
+            compressed_analysis = {
+                "signal": analysis.get("signal", "NEUTRAL"),
+                "confidence": analysis.get("confidence", 0),
+                "bias": analysis.get("institutional_bias", {}).get("direction", "NEUTRAL"),
+                "score": analysis.get("smart_money_score", 0)
+            }
+            sm["analysis"] = compressed_analysis
+        sm.pop("timeframes", None)
+        sm.pop("detailed_analysis", None)
+        sm.pop("metadata", None)
+    
+    # 6. Compress sentiment - Key metrics only
+    if compressed.get("sentiment"):
+        sent = compressed["sentiment"]
+        if sent.get("data"):
+            sent_data = sent["data"]
+            compressed_sent = {
+                "galaxyScore": sent_data.get("galaxy_score", 0),
+                "altRank": sent_data.get("alt_rank", 0),
+                "sentiment": sent_data.get("sentiment", "NEUTRAL"),
+                "socialVolume24h": sent_data.get("social_volume_24h", 0)
+            }
+            sent["data"] = compressed_sent
+        sent.pop("trending_topics", None)
+        sent.pop("raw", None)
+    
+    # 7. Compress OHLCV - Last 3 candles only
+    if compressed.get("ohlcv"):
+        ohlcv = compressed["ohlcv"]
+        if ohlcv.get("data") and isinstance(ohlcv["data"], list):
+            ohlcv["data"] = ohlcv["data"][-3:]  # Last 3 candles only
+        ohlcv.pop("metadata", None)
+    
+    # 8. Compress trades - Summary only
+    if compressed.get("trades"):
+        trades = compressed["trades"]
+        if trades.get("data") and isinstance(trades["data"], list):
+            trade_list = trades["data"]
+            buy_volume = sum(t.get("size", 0) for t in trade_list if t.get("side") == "BUY")
+            sell_volume = sum(t.get("size", 0) for t in trade_list if t.get("side") == "SELL")
+            
+            trades["data"] = {
+                "buyVolume": buy_volume,
+                "sellVolume": sell_volume,
+                "netVolume": buy_volume - sell_volume,
+                "tradeCount": len(trade_list),
+                "bias": "BUY" if buy_volume > sell_volume else "SELL"
+            }
+        trades.pop("metadata", None)
+    
+    # 9. Remove any remaining verbose fields
+    for key in list(compressed.keys()):
+        if compressed.get(key) and isinstance(compressed[key], dict):
+            compressed[key].pop("debug", None)
+            compressed[key].pop("raw_response", None)
+            compressed[key].pop("provider_metadata", None)
+    
+    return compressed
+
+
 class ScalpingAnalysisRequest(BaseModel):
     """Request model for scalping analysis"""
     symbol: str = Field(..., description="Cryptocurrency symbol (e.g., BTC, ETH, SOL, XRP)")
@@ -248,6 +402,10 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
         # Add whale bias to summary if available
         if whale_bias_summary:
             result["summary"]["whale_bias"] = whale_bias_summary
+        
+        # Apply GPT mode compression if enabled
+        if request.gpt_mode:
+            result = compress_for_gpt_mode(result)
         
         return result
         
