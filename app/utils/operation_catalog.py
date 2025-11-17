@@ -196,7 +196,21 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "monitoring.spike_monitor_status": OperationMetadata("monitoring.spike_monitor_status", "monitoring", "/spike-monitor/status", "GET", "Get spike monitor status"),
     "monitoring.spike_monitor_start": OperationMetadata("monitoring.spike_monitor_start", "monitoring", "/spike-monitor/start", "POST", "Start spike monitor"),
     "monitoring.spike_monitor_stop": OperationMetadata("monitoring.spike_monitor_stop", "monitoring", "/spike-monitor/stop", "POST", "Stop spike monitor"),
-    
+
+    # PHASE 5 - Real-Time Spike Detection System (GPT Actions)
+    "spike.check_system": OperationMetadata("spike.check_system", "spike", "/gpt/spike-alerts/check-system", "GET", "Check if spike detection system is running - get real-time status of all detectors"),
+    "spike.recent_activity": OperationMetadata("spike.recent_activity", "spike", "/gpt/spike-alerts/recent-activity", "GET", "Get recent spike detection activity - see what the system has been catching"),
+    "spike.configuration": OperationMetadata("spike.configuration", "spike", "/gpt/spike-alerts/configuration", "GET", "View spike detection configuration - thresholds, intervals, and settings"),
+    "spike.explain": OperationMetadata("spike.explain", "spike", "/gpt/spike-alerts/explain", "GET", "Explain spike detection system - get complete explanation of how it works"),
+
+    # PHASE 5 - Detailed Spike Detection Status
+    "spike.status": OperationMetadata("spike.status", "spike", "/spike-detection/status", "GET", "Get comprehensive spike detection system status - all detectors and metrics"),
+    "spike.health": OperationMetadata("spike.health", "spike", "/spike-detection/health", "GET", "Quick health check - are all spike detectors running?"),
+    "spike.price_detector_status": OperationMetadata("spike.price_detector_status", "spike", "/spike-detection/price-detector/status", "GET", "Get price spike detector status - monitoring >8% moves in 5min"),
+    "spike.liquidation_detector_status": OperationMetadata("spike.liquidation_detector_status", "spike", "/spike-detection/liquidation-detector/status", "GET", "Get liquidation spike detector status - monitoring >$50M cascades"),
+    "spike.social_monitor_status": OperationMetadata("spike.social_monitor_status", "spike", "/spike-detection/social-monitor/status", "GET", "Get social spike monitor status - monitoring viral moments"),
+    "spike.coordinator_status": OperationMetadata("spike.coordinator_status", "spike", "/spike-detection/coordinator/status", "GET", "Get spike coordinator status - multi-signal correlation engine"),
+
     "openai.analyze": OperationMetadata("openai.analyze", "openai", "/analyze/{symbol}", "GET", "OpenAI analysis for symbol", requires_symbol=True),
     "openai.sentiment_market": OperationMetadata("openai.sentiment_market", "openai", "/sentiment/market", "GET", "Get market sentiment via OpenAI"),
     "openai.validate": OperationMetadata("openai.validate", "openai", "/validate/{symbol}", "POST", "Validate signal via OpenAI", requires_symbol=True),
