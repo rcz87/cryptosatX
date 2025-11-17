@@ -56,6 +56,7 @@ from app.middleware import (
     ResponseSizeMonitorMiddleware,
     GPTRateLimiterMiddleware,
     gpt_rate_limiter,
+    DetailedRequestLoggerMiddleware,
 )
 
 # Load environment variables
@@ -134,6 +135,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Add Request Logging middleware (logs all HTTP requests with details)
+app.add_middleware(DetailedRequestLoggerMiddleware)
 
 # Add GPT Actions middleware (MUST be after CORS, before SlowAPI)
 app.add_middleware(GPTRateLimiterMiddleware, limiter=gpt_rate_limiter)

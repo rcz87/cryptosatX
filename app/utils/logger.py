@@ -6,9 +6,16 @@ For debugging, monitoring, and audit trails
 import logging
 import json
 import sys
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from typing import Any, Dict, Optional
 from pathlib import Path
+
+
+def get_wib_time() -> str:
+    """Get current time in WIB (UTC+7) timezone"""
+    utc_now = datetime.now(timezone.utc)
+    wib_time = utc_now + timedelta(hours=7)
+    return wib_time.strftime("%Y-%m-%d %H:%M:%S WIB")
 
 
 class JSONFormatter(logging.Formatter):
@@ -16,7 +23,7 @@ class JSONFormatter(logging.Formatter):
 
     def format(self, record: logging.LogRecord) -> str:
         log_data = {
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": get_wib_time(),
             "level": record.levelname,
             "logger": record.name,
             "message": record.getMessage(),
