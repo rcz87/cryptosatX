@@ -355,7 +355,7 @@ Type: Whale Accumulation
 {chr(10).join(['• ' + r for r in reasons[:5]])}
 
 💡 Action: {self._get_action_recommendation(score, 'accumulation')}
-⏰ Detected: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+⏰ Detected: {self._get_wib_timestamp()}
 """
 
                 # FIXED: Use send_custom_alert instead of send_message
@@ -385,7 +385,7 @@ Type: Whale Distribution
 {chr(10).join(['• ' + r for r in reasons[:5]])}
 
 💡 Action: {self._get_action_recommendation(score, 'distribution')}
-⏰ Detected: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+⏰ Detected: {self._get_wib_timestamp()}
 """
 
                 # FIXED: Use send_custom_alert instead of send_message
@@ -423,7 +423,7 @@ MSS Score: {score}/100
 
 💰 Expected Return: {self._get_expected_return(score)}
 💡 Action: IMMEDIATE RESEARCH + BUY
-⏰ Discovered: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
+⏰ Discovered: {self._get_wib_timestamp()}
 """
 
                 # FIXED: Use send_custom_alert instead of send_message
@@ -564,6 +564,12 @@ MSS Score: {score}/100
             return "3-8x (good potential)"
         else:
             return "2-5x (moderate potential)"
+
+    def _get_wib_timestamp(self) -> str:
+        """Get current timestamp in WIB (Western Indonesian Time / UTC+7)"""
+        from datetime import timedelta, timezone
+        wib_tz = timezone(timedelta(hours=7))
+        return datetime.now(wib_tz).strftime('%Y-%m-%d %H:%M:%S')
 
     def get_stats(self) -> Dict:
         """Get current scanner statistics"""

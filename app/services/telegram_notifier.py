@@ -349,7 +349,12 @@ class TelegramNotifier:
             return {"success": False, "message": "Telegram not configured"}
 
         try:
-            formatted_message = f"{emoji} <b>{title}</b>\n\n{message}\n\n{datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')} UTC"
+            # Convert UTC to WIB (UTC+7)
+            from datetime import timedelta, timezone
+            wib_tz = timezone(timedelta(hours=7))
+            wib_time = datetime.now(wib_tz).strftime('%Y-%m-%d %H:%M:%S')
+            
+            formatted_message = f"{emoji} <b>{title}</b>\n\n{message}\n\n{wib_time} WIB"
             result = await self._send_telegram_message(formatted_message)
 
             return {
