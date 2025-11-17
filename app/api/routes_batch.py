@@ -271,3 +271,196 @@ async def quick_market_scan(
     except Exception as e:
         logger.error(f"Error in quick market scan: {type(e).__name__}")
         raise HTTPException(status_code=500, detail="Failed to perform market scan")
+
+
+# ============================================================================
+# PARALLEL SCANNING ENDPOINTS (PHASE 2)
+# ============================================================================
+
+class ParallelScanRequest(BaseModel):
+    """Request model for parallel bulk scanning"""
+    symbols: List[str]
+    scanner_type: Optional[str] = "signals"  # 'signals', 'smart_money', 'mss', 'price'
+
+
+@router.post("/batch/parallel-scan", summary="Parallel Bulk Scan (100-1000 coins)")
+async def parallel_bulk_scan(request: ParallelScanRequest) -> Dict[str, Any]:
+    """
+    High-performance parallel scanning for 100-1000 coins
+
+    Menggunakan parallel scanner untuk scan ratusan bahkan ribuan coins dalam hitungan menit.
+
+    Performance Targets:
+    - 100 coins: 30-45 seconds
+    - 500 coins: 2-3 minutes
+    - 1000 coins: 4-6 minutes
+
+    Args:
+    - symbols: List of cryptocurrency symbols (up to 1000)
+    - scanner_type: Type of scanner ('signals', 'smart_money', 'mss', 'price')
+
+    Returns:
+    - Aggregated results with performance metrics
+    - Success/failure statistics
+    - Scan performance data
+
+    Example:
+    ```json
+    {
+      "symbols": ["BTC", "ETH", "SOL", ...],  // up to 1000
+      "scanner_type": "smart_money"
+    }
+    ```
+    """
+    try:
+        if not request.symbols or len(request.symbols) == 0:
+            raise HTTPException(status_code=400, detail="At least one symbol required")
+
+        if len(request.symbols) > 1000:
+            raise HTTPException(status_code=400, detail="Maximum 1000 symbols per parallel scan")
+
+        # Valid scanner types
+        valid_types = ['signals', 'smart_money', 'mss', 'price']
+        if request.scanner_type not in valid_types:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Invalid scanner_type. Must be one of: {valid_types}"
+            )
+
+        # Import parallel scanner
+        from app.services.parallel_scanner import parallel_scanner
+
+        logger.info(
+            f"🚀 Starting parallel scan: {len(request.symbols)} coins, "
+            f"type: {request.scanner_type}"
+        )
+
+        # Execute parallel scan
+        result = await parallel_scanner.scan_bulk(
+            coins=request.symbols,
+            scanner_type=request.scanner_type
+        )
+
+        return {
+            "ok": True,
+            "data": {
+                "scan_type": request.scanner_type,
+                "total_scanned": result["total_scanned"],
+                "successful": result["successful"],
+                "failed": result["failed"],
+                "success_rate": round(result["success_rate"] * 100, 2),
+                "results": result["results"],
+                "errors": result.get("errors", {}),
+                "failed_symbols": result.get("failed_symbols", []),
+                "performance": result["performance"]
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error in parallel scan: {type(e).__name__}: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Parallel scan failed: {str(e)}")
+
+
+@router.get("/batch/parallel-scanner/stats", summary="Get Parallel Scanner Statistics")
+async def get_parallel_scanner_stats() -> Dict[str, Any]:
+    """
+    Get statistics dari parallel scanner
+
+    Returns performance metrics, cache hit rates, dan throughput statistics.
+    """
+    try:
+        from app.services.parallel_scanner import parallel_scanner
+
+        stats = parallel_scanner.get_stats()
+
+        return {
+            "ok": True,
+            "data": {
+                "statistics": stats,
+                "status": "active"
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting parallel scanner stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get scanner stats")
+
+
+@router.post("/batch/cache/warm", summary="Warm Cache for Symbols")
+async def warm_cache_for_symbols(request: BatchSignalRequest) -> Dict[str, Any]:
+    """
+    Pre-warm cache dengan data untuk faster subsequent requests
+
+    Args:
+    - symbols: List of symbols to warm cache for
+    - mode: Signal mode to use
+
+    Returns:
+    - Number of symbols cached
+    - Performance metrics
+    """
+    try:
+        if not request.symbols or len(request.symbols) == 0:
+            raise HTTPException(status_code=400, detail="At least one symbol required")
+
+        if len(request.symbols) > 100:
+            raise HTTPException(status_code=400, detail="Maximum 100 symbols for cache warming")
+
+        from app.services.smart_cache import smart_cache
+        from app.core.rpc_dispatcher import dispatch_rpc_operation
+
+        # Define fetch function
+        async def fetch_signal(symbol: str):
+            result = await dispatch_rpc_operation(
+                "signals.get",
+                {"symbol": symbol, "mode": request.mode}
+            )
+            return result.get("data") if result.get("ok") else None
+
+        # Warm cache
+        await smart_cache.warm_cache(
+            data_type="signal",
+            identifiers=request.symbols,
+            fetch_func=fetch_signal
+        )
+
+        return {
+            "ok": True,
+            "data": {
+                "cached_symbols": len(request.symbols),
+                "cache_warmed": True
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error warming cache: {e}")
+        raise HTTPException(status_code=500, detail="Failed to warm cache")
+
+
+@router.get("/batch/cache/stats", summary="Get Cache Statistics")
+async def get_cache_stats() -> Dict[str, Any]:
+    """
+    Get cache statistics and performance metrics
+
+    Returns hit rates, sizes, and configuration.
+    """
+    try:
+        from app.services.smart_cache import smart_cache
+
+        stats = smart_cache.get_stats()
+
+        return {
+            "ok": True,
+            "data": {
+                "cache_stats": stats,
+                "status": "active"
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting cache stats: {e}")
+        raise HTTPException(status_code=500, detail="Failed to get cache stats")

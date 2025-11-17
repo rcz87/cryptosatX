@@ -443,7 +443,164 @@ async def get_system_health(admin: Dict = Depends(verify_admin)):
             "status": "success",
             "data": health_data
         }
-        
+
     except Exception as e:
         logger.error(f"Error getting system health: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+# ============================================================================
+# AUTO-SCANNER CONTROL ENDPOINTS
+# ============================================================================
+
+@router.get("/auto-scanner/status")
+async def get_auto_scanner_status(admin: Dict = Depends(verify_admin)):
+    """Get auto-scanner status and statistics"""
+    try:
+        from app.services.auto_scanner import auto_scanner
+
+        stats = auto_scanner.get_stats()
+
+        return {
+            "status": "success",
+            "data": {
+                "enabled": stats["enabled"],
+                "statistics": {
+                    "total_scans": stats["total_scans"],
+                    "smart_money_scans": stats["smart_money_scans"],
+                    "mss_scans": stats["mss_scans"],
+                    "rsi_scans": stats["rsi_scans"],
+                    "alerts_sent": stats["alerts_sent"],
+                    "last_scan_time": stats["last_scan_time"].isoformat() if stats["last_scan_time"] else None
+                },
+                "scheduled_jobs": stats.get("next_jobs", []),
+                "configuration": {
+                    "smart_money_interval_hours": auto_scanner.smart_money_interval,
+                    "mss_interval_hours": auto_scanner.mss_interval,
+                    "rsi_interval_hours": auto_scanner.rsi_interval,
+                    "accumulation_threshold": auto_scanner.accumulation_threshold,
+                    "distribution_threshold": auto_scanner.distribution_threshold,
+                    "mss_threshold": auto_scanner.mss_threshold
+                }
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"Error getting auto-scanner status: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/auto-scanner/trigger/smart-money")
+async def trigger_smart_money_scan(admin: Dict = Depends(verify_admin)):
+    """Manually trigger Smart Money scan"""
+    try:
+        from app.services.auto_scanner import auto_scanner
+
+        if not auto_scanner.enabled:
+            raise HTTPException(
+                status_code=400,
+                detail="Auto-scanner is disabled. Enable it first."
+            )
+
+        # Trigger scan
+        await auto_scanner.smart_money_auto_scan()
+
+        return {
+            "status": "success",
+            "message": "Smart Money scan completed",
+            "data": {
+                "triggered_by": admin["admin_id"],
+                "timestamp": datetime.now().isoformat()
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error triggering Smart Money scan: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/auto-scanner/trigger/mss")
+async def trigger_mss_discovery(admin: Dict = Depends(verify_admin)):
+    """Manually trigger MSS Discovery scan"""
+    try:
+        from app.services.auto_scanner import auto_scanner
+
+        if not auto_scanner.enabled:
+            raise HTTPException(
+                status_code=400,
+                detail="Auto-scanner is disabled. Enable it first."
+            )
+
+        # Trigger scan
+        await auto_scanner.mss_auto_discovery()
+
+        return {
+            "status": "success",
+            "message": "MSS Discovery scan completed",
+            "data": {
+                "triggered_by": admin["admin_id"],
+                "timestamp": datetime.now().isoformat()
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error triggering MSS Discovery: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/auto-scanner/trigger/rsi")
+async def trigger_rsi_screener(admin: Dict = Depends(verify_admin)):
+    """Manually trigger RSI screener"""
+    try:
+        from app.services.auto_scanner import auto_scanner
+
+        if not auto_scanner.enabled:
+            raise HTTPException(
+                status_code=400,
+                detail="Auto-scanner is disabled. Enable it first."
+            )
+
+        # Trigger scan
+        await auto_scanner.rsi_auto_screener()
+
+        return {
+            "status": "success",
+            "message": "RSI Screener completed",
+            "data": {
+                "triggered_by": admin["admin_id"],
+                "timestamp": datetime.now().isoformat()
+            }
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error triggering RSI screener: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/auto-scanner/trigger/daily-summary")
+async def trigger_daily_summary(admin: Dict = Depends(verify_admin)):
+    """Manually trigger daily summary report"""
+    try:
+        from app.services.auto_scanner import auto_scanner
+
+        # Trigger summary
+        await auto_scanner.send_daily_summary()
+
+        return {
+            "status": "success",
+            "message": "Daily summary sent",
+            "data": {
+                "triggered_by": admin["admin_id"],
+                "timestamp": datetime.now().isoformat()
+            }
+        }
+
+    except Exception as e:
+        logger.error(f"Error triggering daily summary: {e}")
         raise HTTPException(status_code=500, detail=str(e))
