@@ -53,6 +53,7 @@ from app.api import (
     routes_unified,  # ADDED FOR PHASE 3 - UNIFIED RANKING SYSTEM
     routes_performance,  # ADDED FOR PHASE 4 - PERFORMANCE TRACKING & ANALYTICS
     routes_spike_detection,  # ADDED FOR PHASE 5 - REAL-TIME SPIKE DETECTION
+    routes_spike_gpt,  # ADDED FOR PHASE 5 - SPIKE DETECTION GPT ACTIONS
 )
 
 from app.middleware import (
@@ -282,6 +283,9 @@ app.include_router(
 app.include_router(
     routes_spike_detection.router, tags=["Real-Time Spike Detection"]
 )  # ADDED FOR PHASE 5 - EARLY ENTRY SPIKE DETECTION SYSTEM
+app.include_router(
+    routes_spike_gpt.router, tags=["GPT Actions"]
+)  # ADDED FOR PHASE 5 - SPIKE DETECTION GPT ACTIONS (user-friendly endpoints)
 
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility
@@ -335,6 +339,7 @@ async def get_gpt_optimized_openapi():
             "GPT Monitoring",
             "Unified RPC - GPT Actions",
             "Health",
+            "Real-Time Spike Detection",  # PHASE 5 - Early Entry System
         },
         base_url="https://guardiansofthetoken.org"
     )
