@@ -31,3 +31,4 @@ websockets==15.0.1
 aiofiles==25.1.0
 aiocache==0.12.3
 alembic
+apscheduler
