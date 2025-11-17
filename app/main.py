@@ -52,6 +52,7 @@ from app.api import (
     routes_gpt_monitoring,  # ADDED FOR GPT ACTIONS MONITORING
     routes_unified,  # ADDED FOR PHASE 3 - UNIFIED RANKING SYSTEM
     routes_performance,  # ADDED FOR PHASE 4 - PERFORMANCE TRACKING & ANALYTICS
+    routes_spike_detection,  # ADDED FOR PHASE 5 - REAL-TIME SPIKE DETECTION
 )
 
 from app.middleware import (
@@ -106,6 +107,37 @@ async def lifespan(app: FastAPI):
     await performance_tracker.start()
     logger.info("🎯 Performance tracker started - tracking signal outcomes at 1h, 4h, 24h, 7d, 30d intervals")
 
+    # Initialize Real-Time Spike Detection System (PHASE 5 - EARLY ENTRY SYSTEM)
+    logger.info("=" * 50)
+    logger.info("🚀 PHASE 5: Real-Time Spike Detection System Starting...")
+    logger.info("=" * 50)
+
+    # Start Real-Time Price Spike Detector (>8% in 5min)
+    from app.services.realtime_spike_detector import realtime_spike_detector
+    asyncio.create_task(realtime_spike_detector.start())
+    logger.info("⚡ Real-Time Price Spike Detector STARTED - monitoring >8% moves in 5min, top 100 coins, 30s interval")
+
+    # Start Liquidation Spike Detector (>$50M market-wide, >$20M per coin)
+    from app.services.liquidation_spike_detector import liquidation_spike_detector
+    asyncio.create_task(liquidation_spike_detector.start())
+    logger.info("💥 Liquidation Spike Detector STARTED - monitoring large liquidation events, 60s interval")
+
+    # Start Social Spike Monitor (>100% social volume spike)
+    from app.services.social_spike_monitor import social_spike_monitor
+    asyncio.create_task(social_spike_monitor.start())
+    logger.info("📱 Social Spike Monitor STARTED - monitoring viral moments, 5min interval")
+
+    # Spike Coordinator is passive (receives signals from detectors)
+    from app.services.spike_coordinator import spike_coordinator
+    logger.info("🎯 Spike Coordinator ACTIVE - multi-signal correlation engine ready")
+
+    logger.info("=" * 50)
+    logger.info("✅ PHASE 5 Complete: Real-Time Spike Detection System ACTIVE")
+    logger.info("📊 Monitoring: Top 100 coins for >8% price moves, liquidations, social spikes")
+    logger.info("📱 Alerts: Instant Telegram notifications (no cooldown)")
+    logger.info("🎯 Correlation: Multi-signal validation for high-confidence alerts")
+    logger.info("=" * 50)
+
     yield
 
     # Shutdown: close database connection and cleanup resources
@@ -120,6 +152,16 @@ async def lifespan(app: FastAPI):
     from app.services.auto_scanner import auto_scanner
     await auto_scanner.stop()
     logger.info("🛑 Auto-scanner stopped")
+
+    # Stop spike detection system (PHASE 5)
+    from app.services.realtime_spike_detector import realtime_spike_detector
+    from app.services.liquidation_spike_detector import liquidation_spike_detector
+    from app.services.social_spike_monitor import social_spike_monitor
+
+    realtime_spike_detector.stop()
+    liquidation_spike_detector.stop()
+    social_spike_monitor.stop()
+    logger.info("🛑 Spike detection system stopped")
 
     # Cancel cache cleanup task
     cache_cleanup_task.cancel()
@@ -237,6 +279,9 @@ app.include_router(
 app.include_router(
     routes_performance.router, tags=["Performance Tracking & Analytics"]
 )  # ADDED FOR PHASE 4 - AUTOMATED OUTCOME TRACKING & WIN RATE ANALYTICS
+app.include_router(
+    routes_spike_detection.router, tags=["Real-Time Spike Detection"]
+)  # ADDED FOR PHASE 5 - EARLY ENTRY SPIKE DETECTION SYSTEM
 
 
 # Override OpenAPI schema to inject servers field for GPT Actions compatibility
