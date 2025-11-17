@@ -2,17 +2,19 @@
 Smart Money Scanner Service
 
 Detects whale accumulation and distribution patterns across multiple cryptocurrencies.
-Scans 30+ coins to identify opportunities before retail traders enter/exit.
+✅ DYNAMIC DISCOVERY: Auto-scans top 100-200 coins by volume (configurable)
+✅ FALLBACK: Uses hardcoded SCAN_LIST if dynamic discovery fails
 
 Key Metrics for Detection:
 - Accumulation: High buy pressure + low funding + low social + sideways price
 - Distribution: High sell pressure + high funding + high social + recent pump
 """
 
+import os
 import asyncio
 from typing import Dict, List, Optional
 import httpx
-from datetime import datetime
+from datetime import datetime, timedelta
 from app.utils.logger import logger
 
 
@@ -70,10 +72,116 @@ class SmartMoneyService:
     def __init__(self, base_url: str = "http://localhost:8000"):
         self.base_url = base_url
         self.client = httpx.AsyncClient(timeout=30.0)
+        
+        # ✅ NEW: Dynamic coin discovery configuration
+        self.max_coins = int(os.getenv("MAX_SMART_MONEY_COINS", "100"))
+        self.use_dynamic_discovery = os.getenv("SMART_MONEY_DYNAMIC_DISCOVERY", "true").lower() == "true"
+        
+        # Cache for discovered coins (5 min TTL to reduce API calls)
+        self._discovered_coins_cache = None
+        self._cache_timestamp = None
+        self._cache_ttl = 300  # 5 minutes
 
     async def close(self):
         """Close HTTP client"""
         await self.client.aclose()
+
+    async def _discover_top_coins(self) -> List[str]:
+        """
+        ✅ NEW: Dynamic coin discovery - fetch top coins by 24h volume
+        
+        Uses CoinGecko API to get real-time top performers (geo-friendly).
+        Falls back to SCAN_LIST if API fails.
+        
+        Returns:
+            List of coin symbols sorted by volume
+        """
+        # Check cache first
+        if self._discovered_coins_cache and self._cache_timestamp:
+            cache_age = (datetime.utcnow() - self._cache_timestamp).total_seconds()
+            if cache_age < self._cache_ttl:
+                logger.debug(f"Using cached coin list ({len(self._discovered_coins_cache)} coins, age: {cache_age:.0f}s)")
+                return self._discovered_coins_cache
+        
+        try:
+            logger.info(f"🔍 Discovering top {self.max_coins} coins by 24h volume...")
+            
+            # Import CoinGecko service (no geo-blocking!)
+            from app.services.coingecko_service import CoinGeckoService
+            coingecko = CoinGeckoService()
+            
+            try:
+                # Get top coins sorted by 24h volume
+                markets_data = await coingecko.get_coins_markets(
+                    vs_currency="usd",
+                    order="volume_desc",  # Sort by trading volume (24h)
+                    per_page=min(self.max_coins, 250),  # CoinGecko max is 250
+                    page=1
+                )
+                
+                if not markets_data.get("success"):
+                    raise Exception(f"CoinGecko API error: {markets_data.get('error')}")
+                
+                coins_list = markets_data.get("data", [])
+                
+                if not coins_list:
+                    raise Exception("No coins returned from CoinGecko")
+                
+                # Extract symbols and normalize to uppercase
+                top_coins = []
+                for coin in coins_list:
+                    symbol = coin.get("symbol", "").upper()
+                    if symbol and symbol not in top_coins:  # Avoid duplicates
+                        top_coins.append(symbol)
+                
+                # Take only requested amount
+                top_coins = top_coins[:self.max_coins]
+                
+                # Update cache
+                self._discovered_coins_cache = top_coins
+                self._cache_timestamp = datetime.utcnow()
+                
+                logger.info(f"✅ Discovered {len(top_coins)} top coins by volume")
+                logger.debug(f"Top 10: {', '.join(top_coins[:10])}")
+                
+                return top_coins
+                
+            finally:
+                # ✅ CRITICAL: Always close client to prevent resource leaks
+                await coingecko.close()
+            
+        except Exception as e:
+            logger.warning(f"⚠️  Dynamic coin discovery failed: {e}")
+            logger.info(f"📋 Falling back to hardcoded SCAN_LIST ({len(self.SCAN_LIST)} coins)")
+            return self.SCAN_LIST
+    
+    async def _get_coins_to_scan(self, custom_coins: Optional[List[str]] = None) -> List[str]:
+        """
+        ✅ NEW: Get list of coins to scan with fallback logic
+        
+        Priority:
+        1. Custom coins provided by caller
+        2. Dynamic discovery (if enabled)
+        3. Hardcoded SCAN_LIST (fallback)
+        
+        Args:
+            custom_coins: Optional custom coin list
+            
+        Returns:
+            List of coin symbols to scan
+        """
+        # Priority 1: Custom coins
+        if custom_coins:
+            logger.debug(f"Using custom coin list: {len(custom_coins)} coins")
+            return custom_coins
+        
+        # Priority 2: Dynamic discovery
+        if self.use_dynamic_discovery:
+            return await self._discover_top_coins()
+        
+        # Priority 3: Fallback to SCAN_LIST
+        logger.debug(f"Using hardcoded SCAN_LIST: {len(self.SCAN_LIST)} coins")
+        return self.SCAN_LIST
 
     async def _fetch_signal_data(self, symbol: str) -> Optional[Dict]:
         """
@@ -270,16 +378,19 @@ class SmartMoneyService:
     ) -> Dict:
         """
         Scan multiple markets for smart money patterns
+        
+        ✅ NEW: Supports dynamic coin discovery (auto-scans top coins by volume)
 
         Args:
             min_accumulation_score: Minimum score to flag accumulation (default 5)
             min_distribution_score: Minimum score to flag distribution (default 5)
-            coins: Optional list of coins to scan (uses SCAN_LIST if None)
+            coins: Optional list of coins to scan (uses dynamic discovery or SCAN_LIST)
 
         Returns:
             Dict with accumulation and distribution signals
         """
-        target_coins = coins if coins else self.SCAN_LIST
+        # ✅ NEW: Use smart coin discovery with fallback
+        target_coins = await self._get_coins_to_scan(coins)
 
         # Fetch all signal data concurrently
         tasks = [self._fetch_signal_data(symbol) for symbol in target_coins]
