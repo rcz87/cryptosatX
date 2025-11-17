@@ -232,7 +232,8 @@ class RPCDispatcher:
     async def _coinglass_markets(self, args: Dict) -> Dict:
         """Get Coinglass markets"""
         from app.services.coinglass_comprehensive_service import coinglass_comprehensive
-        return await coinglass_comprehensive.get_markets()
+        symbol = args.get("symbol")
+        return await coinglass_comprehensive.get_coins_markets(symbol=symbol)
     
     async def _coinglass_liquidations_symbol(self, args: Dict) -> Dict:
         """Get liquidations for symbol - FIXED arg passing"""
@@ -262,21 +263,24 @@ class RPCDispatcher:
         return await coinglass_comprehensive.get_fear_greed_index()
     
     async def _coinglass_rsi_list(self, args: Dict) -> Dict:
-        """Get RSI list with pagination support"""
+        """Get RSI list with pagination support - FIXED type safety"""
         from app.services.coinglass_comprehensive_service import coinglass_comprehensive
         limit = args.get("limit", 20)
         signal_filter = args.get("signal_filter")
         
-        # Validate signal_filter
+        # Validate and default signal_filter for type safety
         if signal_filter and signal_filter.upper() not in ["OVERSOLD", "OVERBOUGHT", "NEUTRAL"]:
             return {
                 "success": False,
                 "error": f"Invalid signal_filter '{signal_filter}'. Must be one of: OVERSOLD, OVERBOUGHT, NEUTRAL"
             }
         
+        # Use default "all" if None to satisfy type checker
+        filter_value = signal_filter if signal_filter else "all"
+        
         return await coinglass_comprehensive.get_rsi_list(
             limit=limit,
-            signal_filter=signal_filter
+            signal_filter=filter_value
         )
     
     async def _coinglass_supported_coins(self, args: Dict) -> Dict:
@@ -298,33 +302,50 @@ class RPCDispatcher:
         )
     
     async def _smart_money_scan_accumulation(self, args: Dict) -> Dict:
-        """Scan accumulation"""
+        """Scan accumulation - delegates to main scan"""
         from app.services.smart_money_service import smart_money_service
         min_score = args.get("min_score", 6)
-        return await smart_money_service.scan_accumulation(min_score=min_score)
+        # Use scan_markets and filter for accumulation
+        result = await smart_money_service.scan_markets(
+            min_accumulation_score=min_score,
+            min_distribution_score=10  # High threshold to filter out distribution
+        )
+        return {"accumulation_signals": result.get("accumulation", [])}
     
     async def _smart_money_scan_distribution(self, args: Dict) -> Dict:
-        """Scan distribution"""
+        """Scan distribution - delegates to main scan"""
         from app.services.smart_money_service import smart_money_service
         min_score = args.get("min_score", 6)
-        return await smart_money_service.scan_distribution(min_score=min_score)
+        # Use scan_markets and filter for distribution
+        result = await smart_money_service.scan_markets(
+            min_accumulation_score=10,  # High threshold to filter out accumulation
+            min_distribution_score=min_score
+        )
+        return {"distribution_signals": result.get("distribution", [])}
     
     async def _smart_money_analyze(self, args: Dict) -> Dict:
-        """Analyze smart money - FIXED"""
+        """Analyze smart money - FIXED method name"""
         from app.services.smart_money_service import smart_money_service
         symbol = args["symbol"]
-        return await smart_money_service.analyze_coin(symbol)
+        return await smart_money_service.analyze_any_coin(symbol)
     
     async def _mss_discover(self, args: Dict) -> Dict:
-        """MSS discover"""
+        """MSS discover - FIXED method name and parameters"""
         from app.services.mss_service import MSSService
         mss = MSSService()
-        min_score = args.get("min_mss_score", 70)
-        max_results = args.get("max_results", 10)
-        return await mss.discover_high_potential(
-            min_mss_score=min_score,
-            max_results=max_results
+        # Map GPT Action params to actual service params
+        limit = args.get("max_results", 10)
+        max_fdv = args.get("max_fdv_usd", 50000000)
+        max_age = args.get("max_age_hours", 72)
+        min_vol = args.get("min_volume_24h", 100000.0)
+        # phase1_discovery returns List[Dict], wrap it
+        results = await mss.phase1_discovery(
+            limit=limit,
+            max_fdv_usd=max_fdv,
+            max_age_hours=max_age,
+            min_volume_24h=min_vol
         )
+        return {"discovered_coins": results, "count": len(results)}
     
     async def _mss_analyze(self, args: Dict) -> Dict:
         """MSS analyze - FIXED"""
@@ -335,28 +356,35 @@ class RPCDispatcher:
         return await mss.calculate_mss_score(symbol)
     
     async def _mss_scan(self, args: Dict) -> Dict:
-        """MSS scan"""
+        """MSS scan - FIXED method name and parameters"""
         from app.services.mss_service import MSSService
         mss = MSSService()
-        min_score = args.get("min_mss_score", 60)
-        max_results = args.get("max_results", 20)
-        return await mss.scan_market(
-            min_mss_score=min_score,
-            max_results=max_results
+        # Map GPT Action params to actual service params
+        limit = args.get("max_results", 10)
+        max_fdv = args.get("max_fdv_usd", 50000000)
+        max_age = args.get("max_age_hours", 72)
+        min_score = args.get("min_mss_score", 65.0)
+        # scan_and_rank returns List[Dict], wrap it
+        results = await mss.scan_and_rank(
+            limit=limit,
+            max_fdv_usd=max_fdv,
+            max_age_hours=max_age,
+            min_mss_score=min_score
         )
+        return {"ranked_coins": results, "count": len(results)}
     
     async def _lunarcrush_coin(self, args: Dict) -> Dict:
-        """Get LunarCrush coin data - FIXED"""
-        from app.services.lunarcrush_service import lunarcrush_service
+        """Get LunarCrush coin data - FIXED service import"""
+        from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
         symbol = args["symbol"]
-        return await lunarcrush_service.get_coin_metrics(symbol)
+        return await lunarcrush_comprehensive.get_coin_metrics(symbol)
     
     async def _lunarcrush_coins_discovery(self, args: Dict) -> Dict:
-        """LunarCrush coins discovery"""
-        from app.services.lunarcrush_service import lunarcrush_service
+        """LunarCrush coins discovery - FIXED service import"""
+        from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
         min_galaxy = args.get("min_galaxy_score", 50)
         limit = args.get("limit", 20)
-        return await lunarcrush_service.discover_coins(
+        return await lunarcrush_comprehensive.discover_coins(
             min_galaxy_score=min_galaxy,
             limit=limit
         )

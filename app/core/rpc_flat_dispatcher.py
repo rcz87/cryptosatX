@@ -631,7 +631,7 @@ class FlatRPCDispatcher:
         elif operation == "smart_money.analyze":
             from app.services.smart_money_service import smart_money_service
             symbol = args["symbol"]
-            return await smart_money_service.analyze_coin(symbol)
+            return await smart_money_service.analyze_any_coin(symbol)
 
         # ===================================================================
         # MSS
@@ -639,12 +639,19 @@ class FlatRPCDispatcher:
         elif operation == "mss.discover":
             from app.services.mss_service import MSSService
             mss = MSSService()
-            min_score = args.get("min_mss_score", 75)
-            max_results = args.get("max_results", 10)
-            return await mss.discover_high_potential(
-                min_mss_score=min_score,
-                max_results=max_results
+            # Map GPT Action params to actual service params
+            limit = args.get("max_results", 10)
+            max_fdv = args.get("max_fdv_usd", 50000000)
+            max_age = args.get("max_age_hours", 72)
+            min_vol = args.get("min_volume_24h", 100000.0)
+            # phase1_discovery returns List[Dict], wrap it
+            results = await mss.phase1_discovery(
+                limit=limit,
+                max_fdv_usd=max_fdv,
+                max_age_hours=max_age,
+                min_volume_24h=min_vol
             )
+            return {"discovered_coins": results, "count": len(results)}
 
         elif operation == "mss.analyze":
             from app.services.mss_service import MSSService
@@ -656,12 +663,19 @@ class FlatRPCDispatcher:
         elif operation == "mss.scan":
             from app.services.mss_service import MSSService
             mss = MSSService()
-            min_score = args.get("min_mss_score", 60)
-            max_results = args.get("max_results", 20)
-            return await mss.scan_market(
-                min_mss_score=min_score,
-                max_results=max_results
+            # Map GPT Action params to actual service params
+            limit = args.get("max_results", 10)
+            max_fdv = args.get("max_fdv_usd", 50000000)
+            max_age = args.get("max_age_hours", 72)
+            min_score = args.get("min_mss_score", 65.0)
+            # scan_and_rank returns List[Dict], wrap it
+            results = await mss.scan_and_rank(
+                limit=limit,
+                max_fdv_usd=max_fdv,
+                max_age_hours=max_age,
+                min_mss_score=min_score
             )
+            return {"ranked_coins": results, "count": len(results)}
 
         # ===================================================================
         # LUNARCRUSH
@@ -704,7 +718,8 @@ class FlatRPCDispatcher:
             from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
             symbol = args.get("symbol")
             limit = args.get("limit", 20)
-            return await lunarcrush_comprehensive.get_news_feed(symbol=symbol, limit=limit)
+            # Symbol is optional for news feed - can return all news if None
+            return await lunarcrush_comprehensive.get_news_feed(symbol=symbol or "BTC", limit=limit)
         
         elif operation == "lunarcrush.community_activity":
             from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
@@ -730,7 +745,8 @@ class FlatRPCDispatcher:
         elif operation == "lunarcrush.aggregates":
             from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
             symbol = args.get("symbol")
-            return await lunarcrush_comprehensive.get_aggregates(symbol=symbol)
+            # Symbol is required for aggregates - use BTC as default
+            return await lunarcrush_comprehensive.get_aggregates(symbol=symbol or "BTC")
         
         elif operation == "lunarcrush.topic_trends":
             from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
