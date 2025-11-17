@@ -183,7 +183,7 @@ def retry_with_backoff(
 
                     await asyncio.sleep(delay)
 
-            raise last_exception
+            raise last_exception if last_exception else Exception("All retry attempts failed")
 
         return wrapper
     return decorator

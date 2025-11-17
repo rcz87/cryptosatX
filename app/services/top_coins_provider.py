@@ -70,7 +70,8 @@ class TopCoinsProvider:
         # Check cache
         if not force_refresh and self._is_cache_valid():
             logger.debug(f"Using cached top {self.top_n} coins")
-            return self._cached_coins[:self.top_n]
+            if self._cached_coins:
+                return self._cached_coins[:self.top_n]
 
         # Fetch fresh data
         logger.info(f"Fetching fresh top {self.top_n} coins list...")
