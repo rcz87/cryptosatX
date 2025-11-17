@@ -72,7 +72,7 @@ async def check_spike_system() -> Dict[str, Any]:
                 "correlated_spikes": coord_status.get("correlated_spikes_detected", 0),
                 "status": "✅ Multi-signal correlation active (reduces false positives by 60%)"
             },
-            "user_message": self._get_user_message(all_running, coord_status)
+            "user_message": _get_user_message(all_running, coord_status)
         }
 
     except Exception as e:
@@ -163,7 +163,7 @@ async def get_recent_spike_activity() -> Dict[str, Any]:
                 "social_alerts": social_status.get("total_spikes_detected", 0)
             },
             "activity_message": activity_message,
-            "user_message": self._get_activity_user_message(recent_signals, monitored_symbols)
+            "user_message": _get_activity_user_message(recent_signals, monitored_symbols)
         }
 
     except Exception as e:
