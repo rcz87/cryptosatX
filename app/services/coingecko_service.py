@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 from datetime import datetime
 import asyncio
 from app.utils.logger import logger
+from app.utils.retry_helper import retry_with_backoff, FAST_RETRY
 
 
 class CoinGeckoService:
@@ -36,6 +37,10 @@ class CoinGeckoService:
     
     # ==================== COIN DISCOVERY ====================
     
+    @retry_with_backoff(
+        config=FAST_RETRY,
+        exceptions=(httpx.HTTPError, httpx.TimeoutException, httpx.ConnectError)
+    )
     async def get_coins_markets(
         self,
         vs_currency: str = "usd",
@@ -80,8 +85,14 @@ class CoinGeckoService:
             
             response = await client.get(url, params=params)
             
+            # Raise exception for retry logic to work
             if response.status_code != 200:
-                return {"success": False, "error": f"HTTP {response.status_code}"}
+                logger.warning(f"CoinGecko API error: HTTP {response.status_code}")
+                raise httpx.HTTPStatusError(
+                    f"HTTP {response.status_code}", 
+                    request=response.request, 
+                    response=response
+                )
             
             data = response.json()
             
@@ -94,8 +105,13 @@ class CoinGeckoService:
                 "timestamp": datetime.utcnow().isoformat()
             }
             
+        except (httpx.HTTPError, httpx.TimeoutException, httpx.ConnectError):
+            # Re-raise for retry decorator to handle
+            raise
         except Exception as e:
-            return {"success": False, "error": str(e)}
+            # Unexpected errors - wrap in httpx.HTTPError for consistency
+            logger.error(f"CoinGecko unexpected error: {e}")
+            raise httpx.HTTPError(str(e))
     
     async def get_coin_by_id(self, coin_id: str) -> Dict:
         """

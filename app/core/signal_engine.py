@@ -26,6 +26,7 @@ from app.services.openai_service_v2 import get_openai_service_v2
 from app.services.position_sizer import position_sizer
 from app.utils import risk_rules
 from app.utils.logger import get_logger
+from app.utils.retry_helper import CircuitBreaker
 
 # Initialize module logger
 logger = get_logger(__name__)
@@ -516,6 +517,14 @@ class SignalEngine:
                 f"Weights: {self.WEIGHTS}"
             )
         logger.info(f"✅ Signal engine initialized - weights validated (sum={total_weight}%)")
+        
+        # Initialize circuit breakers for external APIs (rate limit protection)
+        self.lunarcrush_breaker = CircuitBreaker(
+            failure_threshold=5,      # Open circuit after 5 consecutive failures
+            recovery_timeout=300.0,   # Try again after 5 minutes
+            success_threshold=2       # Need 2 successes to fully recover
+        )
+        logger.info("✅ Circuit breakers initialized (LunarCrush protection enabled)")
 
     async def build_signal(
         self, 
@@ -1056,6 +1065,22 @@ class SignalEngine:
             "oiSource": oi_source
         }
     
+    async def _skipped_call(self, reason: str) -> dict:
+        """
+        Helper coroutine for skipped API calls (e.g., when circuit breaker is open).
+        Returns an error dict that matches the expected format for failed service calls.
+        
+        Args:
+            reason: Explanation why the call was skipped
+            
+        Returns:
+            Dict with success=False and error message
+        """
+        return {
+            "success": False,
+            "error": reason
+        }
+    
     async def _collect_market_data(self, symbol: str) -> Tuple[EnhancedSignalContext, DataQualityReport]:
         """
         Fetch all market data concurrently from multiple providers using asyncio.gather.
@@ -1085,23 +1110,32 @@ class SignalEngine:
         monitor = ServiceCallMonitor()
         start_time = time.time()
         
+        # Check LunarCrush circuit breaker before making calls
+        lunarcrush_enabled = self.lunarcrush_breaker.can_attempt()
+        
+        if not lunarcrush_enabled:
+            logger.warning(
+                f"🔴 LunarCrush circuit breaker is OPEN for {symbol} - skipping all LunarCrush calls to prevent rate limiting"
+            )
+        
         # Fetch all data sources in parallel
+        # Skip LunarCrush calls if circuit breaker is open
         results = await asyncio.gather(
             coinapi_service.get_spot_price(symbol),
             coinglass_service.get_funding_and_oi(symbol),
             coinglass_comprehensive.get_coins_markets(
                 symbol=symbol
             ),  # Comprehensive markets
-            lunarcrush_service.get_social_score(symbol),  # Basic social score
+            lunarcrush_service.get_social_score(symbol) if lunarcrush_enabled else self._skipped_call("LunarCrush - circuit breaker open"),
             lunarcrush_comprehensive.get_coin_comprehensive(
                 symbol
-            ),  # Comprehensive LunarCrush
+            ) if lunarcrush_enabled else self._skipped_call("LunarCrush - circuit breaker open"),
             lunarcrush_comprehensive.get_social_change(
                 symbol, "24h"
-            ),  # 24h change detection
+            ) if lunarcrush_enabled else self._skipped_call("LunarCrush - circuit breaker open"),
             lunarcrush_comprehensive.analyze_social_momentum(
                 symbol
-            ),  # Social momentum analysis
+            ) if lunarcrush_enabled else self._skipped_call("LunarCrush - circuit breaker open"),
             okx_service.get_candles(symbol, "15m", 20),
             # Premium endpoints
             coinglass_premium.get_liquidation_data(symbol),
@@ -1169,6 +1203,25 @@ class SignalEngine:
         lc_change = lc_change if not isinstance(lc_change, Exception) else {}
         lc_momentum = lc_momentum if not isinstance(lc_momentum, Exception) else {}
         candles_data = candles_data if not isinstance(candles_data, Exception) else {}
+        
+        # Record LunarCrush circuit breaker metrics
+        # Only record if calls were actually attempted (not skipped due to circuit breaker)
+        # Track success/failure to enable automatic circuit opening on repeated failures
+        if lunarcrush_enabled:
+            lunarcrush_calls = [social_data, lc_comp, lc_change, lc_momentum]
+            lunarcrush_success = any(
+                isinstance(call, dict) and call.get("success", False) 
+                for call in lunarcrush_calls
+            )
+            
+            if lunarcrush_success:
+                self.lunarcrush_breaker.record_success()
+                logger.debug(f"✅ LunarCrush call succeeded for {symbol} - circuit breaker reset")
+            else:
+                self.lunarcrush_breaker.record_failure()
+                logger.warning(f"⚠️  All LunarCrush calls failed for {symbol} - circuit breaker updated")
+        else:
+            logger.debug(f"⏭️  LunarCrush calls skipped for {symbol} due to circuit breaker - no metrics recorded")
         liq_data = liq_data if not isinstance(liq_data, Exception) else {}
         ls_data = ls_data if not isinstance(ls_data, Exception) else {}
         oi_trend_data = (
