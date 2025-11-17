@@ -315,7 +315,11 @@ class AutoScanner:
 Next report in 24 hours.
 """
 
-            await self.telegram.send_message(summary)
+            # FIXED: Use send_custom_alert instead of send_message
+            await self.telegram.send_custom_alert(
+                title="📊 CRYPTOSATX DAILY SUMMARY",
+                message=summary
+            )
             self.logger.info("✅ Daily summary sent")
 
             # Reset daily stats (optional - comment out to keep cumulative)
@@ -354,7 +358,11 @@ Type: Whale Accumulation
 ⏰ Detected: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 """
 
-                await self.telegram.send_message(message)
+                # FIXED: Use send_custom_alert instead of send_message
+                await self.telegram.send_custom_alert(
+                    title=f"{tier} - ACCUMULATION DETECTED",
+                    message=message
+                )
                 self.stats['alerts_sent'] += 1
                 await asyncio.sleep(1)  # Rate limit
 
@@ -380,7 +388,11 @@ Type: Whale Distribution
 ⏰ Detected: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 """
 
-                await self.telegram.send_message(message)
+                # FIXED: Use send_custom_alert instead of send_message
+                await self.telegram.send_custom_alert(
+                    title=f"{tier} - DISTRIBUTION DETECTED",
+                    message=message
+                )
                 self.stats['alerts_sent'] += 1
                 await asyncio.sleep(1)
 
@@ -414,7 +426,11 @@ MSS Score: {score}/100
 ⏰ Discovered: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 """
 
-                await self.telegram.send_message(message)
+                # FIXED: Use send_custom_alert instead of send_message
+                await self.telegram.send_custom_alert(
+                    title=f"{tier} - NEW GEM DISCOVERED 💎",
+                    message=message
+                )
                 self.stats['alerts_sent'] += 1
                 await asyncio.sleep(1)
 

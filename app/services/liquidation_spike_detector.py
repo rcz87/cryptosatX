@@ -89,7 +89,8 @@ class LiquidationSpikeDetector:
             logger.debug("🔍 Checking liquidation data...")
 
             # Get recent liquidation data (24h aggregated by coin)
-            liq_data = await self.coinglass.get_liquidation_coin_list(time_type="24h")
+            # FIXED: get_liquidation_coin_list doesn't accept time_type parameter
+            liq_data = await self.coinglass.get_liquidation_coin_list()
 
             if not liq_data.get("success") or not liq_data.get("data"):
                 logger.warning("No liquidation data available")
