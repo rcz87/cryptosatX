@@ -61,6 +61,12 @@ The API provides clean JSON responses, offers a debug mode, and includes OpenAPI
     - **Phase 4 - Performance Validation & Analytics**: Automated outcome tracking with WIN/LOSS/NEUTRAL classification and performance metrics.
 - **Phase 5 - Real-Time Spike Detection System**: Advanced multi-signal early-warning system for detecting market opportunities, featuring Price Spike Detector, Liquidation Spike Detector, and Social Spike Monitor, coordinated to reduce false positives. Fully integrated with GPT Actions.
 - **RPC Dispatcher Fixes & Integration Improvements**: Resolved critical method signature mismatches and implemented type safety for GPT Actions compatibility across all 202+ operations.
+- **Enterprise-Grade Resilience & Rate Limit Protection (November 2025)**: Production-hardened API resilience featuring:
+  - **Circuit Breaker Pattern for LunarCrush API**: Automatic protection against rate limiting with 3-state circuit (CLOSED/OPEN/HALF_OPEN). Opens after 5 consecutive failures, enters 5-minute cooldown, then tests recovery. When open, all LunarCrush calls are skipped to prevent wasted requests and allow API recovery.
+  - **Retry Logic with Exponential Backoff for CoinGecko**: Intelligent retry mechanism with 3 attempts and exponential backoff (1s → 2s → 4s) for handling transient failures and HTTP 429/5xx errors. Decorated on `get_coins_markets()` for reliable dynamic coin discovery.
+  - **Graceful Degradation**: Signal generation continues with 70%+ data quality even when optional services fail. Premium data acceptance threshold lowered to 2/4 endpoints for better resilience.
+  - **Comprehensive Error Tracking**: All API failures surface in data quality report with clear error messages and service tier classification (CRITICAL/IMPORTANT/OPTIONAL).
+  - **Smart Money Scanner Optimization**: MAX_SMART_MONEY_COINS reduced from 100 to 40 (default) to prevent LunarCrush rate limiting and reduce scan time from 100+ minutes to 25-30 minutes. Configurable via environment variable (recommended: 30-50, max: 250).
 
 ## External Dependencies
 - **CoinAPI**: Market data, OHLCV, order book, quotes, price aggregation, whale detection.
