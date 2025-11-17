@@ -64,6 +64,10 @@ testing_reports/
 *test_report*.json
 test_websocket.html
 verify_*.py
+test_*.py
+
+# Signal Data (auto-generated, too large for git)
+signal_data/
 
 # Documentation (temporary files)
 *_SUMMARY.txt
