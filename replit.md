@@ -35,11 +35,12 @@ The API provides clean JSON responses, offers a debug mode, and includes OpenAPI
 - **Signal Engine**: Uses an 8-factor weighted scoring system with a 3-Mode Threshold System for selectable risk profiles. Includes comprehensive error handling and data quality tracking.
 - **Hybrid AI Signal Judge**: Integrates GPT-4 and a rule-based fallback for signal validation, providing `Verdict`, `Risk Mode`, `Position Multiplier`, `AI Summary`, and `Volatility Metrics`. Includes AI verdict accuracy tracking.
 - **Multi-Modal Signal Score (MSS)**: A 3-phase framework for discovering emerging cryptocurrencies based on tokenomics, community momentum, and institutional validation.
-- **Smart Money Concept (SMC) Analyzer**: Detects institutional trading patterns across multiple timeframes with **dynamic coin discovery** (upgraded from 38 hardcoded coins to 100-200+ coins auto-discovered from CoinGecko by 24h volume). Features:
+- **Smart Money Concept (SMC) Analyzer**: Detects institutional trading patterns across multiple timeframes with **dynamic coin discovery** (upgraded from 38 hardcoded coins to 30-50+ coins auto-discovered from CoinGecko by 24h volume). Features:
   - **Dynamic Discovery**: Auto-fetches top coins by trading volume using CoinGecko API (geo-friendly, no restrictions)
   - **Intelligent Caching**: 5-minute TTL to reduce API calls and improve performance  
-  - **Configurable Scale**: `MAX_SMART_MONEY_COINS` environment variable (default: 100, max: 250)
-  - **Fallback Mechanism**: Automatically falls back to hardcoded SCAN_LIST if API fails
+  - **Configurable Scale**: `MAX_SMART_MONEY_COINS` environment variable (default: 40, recommended: 30-50, max: 250)
+  - **Rate Limit Safe**: Optimized to avoid LunarCrush API throttling (HTTP 429)
+  - **Fallback Mechanism**: Automatically falls back to hardcoded SCAN_LIST (38 coins) if API fails
   - **Toggle Control**: `SMART_MONEY_DYNAMIC_DISCOVERY` environment variable (default: true)
 - **Dynamic Coin Discovery**: Integrates CoinGecko API (replaced geo-blocked Binance Futures with geo-friendly CoinGecko).
 - **Unified RPC Endpoint**: A single POST `/invoke` endpoint provides RPC access to all operations with timeout protection.

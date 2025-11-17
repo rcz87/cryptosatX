@@ -2,8 +2,9 @@
 Smart Money Scanner Service
 
 Detects whale accumulation and distribution patterns across multiple cryptocurrencies.
-✅ DYNAMIC DISCOVERY: Auto-scans top 100-200 coins by volume (configurable)
+✅ DYNAMIC DISCOVERY: Auto-scans top 30-50 coins by volume (configurable, default: 40)
 ✅ FALLBACK: Uses hardcoded SCAN_LIST if dynamic discovery fails
+✅ RATE LIMIT SAFE: Optimized to avoid API throttling (HTTP 429)
 
 Key Metrics for Detection:
 - Accumulation: High buy pressure + low funding + low social + sideways price
@@ -74,7 +75,8 @@ class SmartMoneyService:
         self.client = httpx.AsyncClient(timeout=30.0)
         
         # ✅ NEW: Dynamic coin discovery configuration
-        self.max_coins = int(os.getenv("MAX_SMART_MONEY_COINS", "100"))
+        # Reduced from 100 to 40 to avoid LunarCrush rate limits (HTTP 429)
+        self.max_coins = int(os.getenv("MAX_SMART_MONEY_COINS", "40"))
         self.use_dynamic_discovery = os.getenv("SMART_MONEY_DYNAMIC_DISCOVERY", "true").lower() == "true"
         
         # Cache for discovered coins (5 min TTL to reduce API calls)
