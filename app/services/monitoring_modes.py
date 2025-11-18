@@ -17,7 +17,6 @@ from datetime import datetime
 from enum import Enum
 
 from app.utils.logger import default_logger
-from app.services.realtime_indicators import realtime_indicators
 
 
 class MonitoringMode(Enum):

@@ -354,11 +354,32 @@ class AutoScanner:
                 f"({len(accumulation)} accumulation, {len(distribution)} distribution)"
             )
 
+            # Enrich signals with realtime indicators
+            enriched_accumulation = []
+            for signal in accumulation:
+                symbol = signal.get("symbol")
+                enriched = await self.smart_money.get_enriched_signal(symbol)
+
+                if enriched.get("success"):
+                    signal["indicators"] = enriched.get("indicators", {})
+                    signal["alertReason"] = "Scalp mode - fast signal alert"
+                enriched_accumulation.append(signal)
+
+            enriched_distribution = []
+            for signal in distribution:
+                symbol = signal.get("symbol")
+                enriched = await self.smart_money.get_enriched_signal(symbol)
+
+                if enriched.get("success"):
+                    signal["indicators"] = enriched.get("indicators", {})
+                    signal["alertReason"] = "Scalp mode - fast signal alert"
+                enriched_distribution.append(signal)
+
             # Send alerts for all signals (scalp mode alerts everything)
             if total_signals > 0:
                 await self._send_monitoring_mode_alerts(
-                    accumulation,
-                    distribution,
+                    enriched_accumulation,
+                    enriched_distribution,
                     mode="scalp"
                 )
 
@@ -381,6 +402,8 @@ class AutoScanner:
         start_time = datetime.now()
 
         try:
+            from app.services.monitoring_modes import monitoring_modes
+
             # Scan with swing mode filtering
             results = await self.smart_money.scan_with_mode_filter(monitoring_mode="swing")
 
@@ -397,11 +420,48 @@ class AutoScanner:
                 f"({len(accumulation)} accumulation, {len(distribution)} distribution)"
             )
 
-            # Send alerts for medium-high confidence signals
-            if total_signals > 0:
+            # Enrich and validate signals with should_alert() check
+            validated_accumulation = []
+            for signal in accumulation:
+                symbol = signal.get("symbol")
+                enriched = await self.smart_money.get_enriched_signal(symbol)
+
+                if enriched.get("success"):
+                    indicators = enriched.get("indicators", {})
+                    should_alert, reason = await monitoring_modes.should_alert(signal, indicators)
+
+                    if should_alert:
+                        signal["indicators"] = indicators
+                        signal["alertReason"] = reason
+                        validated_accumulation.append(signal)
+
+            validated_distribution = []
+            for signal in distribution:
+                symbol = signal.get("symbol")
+                enriched = await self.smart_money.get_enriched_signal(symbol)
+
+                if enriched.get("success"):
+                    indicators = enriched.get("indicators", {})
+                    should_alert, reason = await monitoring_modes.should_alert(signal, indicators)
+
+                    if should_alert:
+                        signal["indicators"] = indicators
+                        signal["alertReason"] = reason
+                        validated_distribution.append(signal)
+
+            validated_total = len(validated_accumulation) + len(validated_distribution)
+
+            self.logger.info(
+                f"✅ Swing Monitor validated: {total_signals} signals scanned, "
+                f"{validated_total} passed validation "
+                f"({len(validated_accumulation)} accumulation, {len(validated_distribution)} distribution)"
+            )
+
+            # Send alerts for validated signals only
+            if validated_total > 0:
                 await self._send_monitoring_mode_alerts(
-                    accumulation,
-                    distribution,
+                    validated_accumulation,
+                    validated_distribution,
                     mode="swing"
                 )
 
@@ -621,8 +681,11 @@ Type: Whale Distribution
         try:
             from app.services.monitoring_modes import monitoring_modes
 
+            # Get max alerts per mode from environment
+            max_alerts = int(os.getenv("MAX_ALERTS_PER_MODE", "5"))
+
             # Accumulation alerts
-            for signal in accumulation_signals[:5]:  # Top 5
+            for signal in accumulation_signals[:max_alerts]:
                 # Get enriched indicators if available
                 indicators = signal.get("indicators")
 
@@ -653,7 +716,7 @@ Type: Whale Distribution
                 await asyncio.sleep(1)  # Rate limit
 
             # Distribution alerts
-            for signal in distribution_signals[:5]:  # Top 5
+            for signal in distribution_signals[:max_alerts]:
                 # Get enriched indicators if available
                 indicators = signal.get("indicators")
 

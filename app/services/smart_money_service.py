@@ -917,10 +917,41 @@ class SmartMoneyService:
                 current_volume=volume_24h
             )
 
-            # Note: Bid/Ask and whale walls require orderbook data
-            # In production, fetch from CoinAPI or Binance
-            bid_ask_pressure = {"message": "Orderbook data integration pending"}
-            whale_walls = {"message": "Orderbook data integration pending"}
+            # Fetch orderbook data from Binance for bid/ask pressure and whale walls
+            from app.services.binance_futures_service import binance_futures_service
+
+            # Convert symbol to Binance format (e.g., BTC -> BTCUSDT)
+            binance_symbol = f"{symbol}USDT" if not symbol.endswith("USDT") else symbol
+            orderbook_result = await binance_futures_service.get_orderbook(binance_symbol, limit=100)
+
+            if orderbook_result.get("success"):
+                orderbook_data = {
+                    "bids": orderbook_result.get("bids", []),
+                    "asks": orderbook_result.get("asks", [])
+                }
+
+                # Analyze bid/ask pressure
+                bid_ask_pressure = await realtime_indicators.analyze_bid_ask_pressure(
+                    symbol=symbol,
+                    orderbook_data=orderbook_data
+                )
+
+                # Detect whale walls
+                whale_walls = await realtime_indicators.detect_whale_walls(
+                    symbol=symbol,
+                    orderbook_data=orderbook_data,
+                    current_price=price
+                )
+            else:
+                # Fallback if orderbook fetch fails
+                bid_ask_pressure = {
+                    "isSignificant": False,
+                    "message": f"Orderbook fetch failed: {orderbook_result.get('error', 'Unknown')}"
+                }
+                whale_walls = {
+                    "hasWhaleWalls": False,
+                    "message": f"Orderbook fetch failed: {orderbook_result.get('error', 'Unknown')}"
+                }
 
             # OI correlation (if available)
             oi_change = signal_data.get("metrics", {}).get("oiChange24h", 0)
@@ -932,9 +963,13 @@ class SmartMoneyService:
                 price_change=price_change
             )
 
-            # BOS validation (requires structure detection)
-            # Placeholder - integrate with smc_analyzer if needed
-            bos_validation = {"message": "BOS integration pending"}
+            # BOS validation with volume spike data
+            bos_validation = await realtime_indicators.validate_bos_with_volume(
+                symbol=symbol,
+                bos_detected=False,  # Would need SMC analyzer integration
+                bos_price=price,
+                volume_spike_data=volume_spike
+            )
 
             return {
                 "success": True,
