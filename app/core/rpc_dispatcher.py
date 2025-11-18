@@ -83,6 +83,7 @@ class RPCDispatcher:
         self.handlers["spike.recent_activity"] = self._spike_recent_activity
         self.handlers["spike.configuration"] = self._spike_configuration
         self.handlers["spike.explain"] = self._spike_explain
+        self.handlers["spike.monitor_coin"] = self._spike_monitor_coin
         self.handlers["spike.status"] = self._spike_status
         self.handlers["spike.health"] = self._spike_health
         self.handlers["spike.price_detector_status"] = self._spike_price_detector_status
@@ -499,7 +500,13 @@ class RPCDispatcher:
             },
             "user_message": "🎯 You're 30-60 seconds ahead of retail traders with this system!"
         }
-    
+
+    async def _spike_monitor_coin(self, args: Dict) -> Dict:
+        """Monitor spike detection for specific coin"""
+        from app.api.routes_spike_gpt import monitor_coin_spikes
+        symbol = args.get("symbol", "BTC")
+        return await monitor_coin_spikes(symbol)
+
     async def _spike_status(self, args: Dict) -> Dict:
         """Get comprehensive spike detection status"""
         from app.services.realtime_spike_detector import realtime_spike_detector

@@ -1043,7 +1043,12 @@ class FlatRPCDispatcher:
                 },
                 "user_message": "🎯 You're 30-60 seconds ahead of retail traders with this system!"
             }
-        
+
+        elif operation == "spike.monitor_coin":
+            from app.api.routes_spike_gpt import monitor_coin_spikes
+            symbol = args.get("symbol", "BTC")
+            return await monitor_coin_spikes(symbol)
+
         elif operation == "spike.status":
             from app.services.realtime_spike_detector import realtime_spike_detector
             from app.services.liquidation_spike_detector import liquidation_spike_detector
