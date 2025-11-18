@@ -248,15 +248,19 @@ class RPCDispatcher:
         return await coinglass_comprehensive.get_coins_markets(symbol=symbol)
     
     async def _coinglass_liquidations_symbol(self, args: Dict) -> Dict:
-        """Get liquidations for symbol - FIXED arg passing"""
+        """Get liquidations for symbol - FIXED arg passing + response size optimization"""
         from app.services.coinglass_comprehensive_service import coinglass_comprehensive
         symbol = args.get("symbol", "BTC")
         exchange = args.get("exchange", "Binance")
         interval = args.get("interval", "h1")
+        # ✅ OPTIMIZATION: Reduce default limit from 100 to 20 to prevent ResponseTooLargeError
+        # This is especially important for high-volume coins like SOL, BTC, ETH
+        limit = args.get("limit", 20)  # GPT Actions have ~100KB response limit
         return await coinglass_comprehensive.get_liquidation_history(
             exchange=exchange,
             symbol=symbol,
-            interval=interval
+            interval=interval,
+            limit=limit
         )
     
     async def _coinglass_funding_rate_history(self, args: Dict) -> Dict:
