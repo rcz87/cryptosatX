@@ -118,6 +118,45 @@ class AutoScanner:
         )
         self.logger.info(f"✅ RSI Screener scheduled every {self.rsi_interval} hour(s)")
 
+        # ==================== MONITORING MODES JOBS ====================
+
+        # Get monitoring mode from environment
+        monitoring_mode = os.getenv("MONITORING_MODE", "swing").lower()
+
+        # Schedule Scalp Monitor (15 min intervals)
+        if monitoring_mode == "scalp" or os.getenv("ENABLE_SCALP_MONITOR", "false").lower() == "true":
+            self.scheduler.add_job(
+                self.scalp_monitor_scan,
+                trigger=IntervalTrigger(minutes=15),
+                id="scalp_monitor",
+                name="Scalp Monitor (15 min)",
+                replace_existing=True
+            )
+            self.logger.info("✅ Scalp Monitor scheduled every 15 minutes")
+
+        # Schedule Swing Monitor (4 hour intervals)
+        if monitoring_mode == "swing" or os.getenv("ENABLE_SWING_MONITOR", "false").lower() == "true":
+            self.scheduler.add_job(
+                self.swing_monitor_scan,
+                trigger=IntervalTrigger(hours=4),
+                id="swing_monitor",
+                name="Swing Monitor (4 hours)",
+                replace_existing=True,
+                next_run_time=datetime.now()  # Run immediately on start
+            )
+            self.logger.info("✅ Swing Monitor scheduled every 4 hours")
+
+        # Schedule Smart Money Pulse (event-driven checks every 30 min)
+        if monitoring_mode == "pulse" or os.getenv("ENABLE_PULSE_MONITOR", "false").lower() == "true":
+            self.scheduler.add_job(
+                self.pulse_monitor_scan,
+                trigger=IntervalTrigger(minutes=30),  # Check every 30 min, but only alert on big moves
+                id="pulse_monitor",
+                name="Smart Money Pulse (Event-driven)",
+                replace_existing=True
+            )
+            self.logger.info("✅ Smart Money Pulse enabled (event-driven alerts)")
+
         # Schedule Daily Summary (8 AM every day)
         self.scheduler.add_job(
             self.send_daily_summary,
@@ -284,6 +323,175 @@ class AutoScanner:
         except Exception as e:
             self.logger.error(f"❌ Error in RSI Auto-Screener: {type(e).__name__}: {str(e)}")
 
+    # ==================== MONITORING MODES SCANNERS ====================
+
+    async def scalp_monitor_scan(self):
+        """
+        Scalp Monitor - 15 minute interval scanning
+
+        Fast intraday monitoring for scalpers
+        - All signals above threshold
+        - Volume spike detection
+        - Quick alerts for entries/exits
+        """
+        self.logger.info("⚡ Starting Scalp Monitor Scan...")
+        start_time = datetime.now()
+
+        try:
+            # Scan with scalp mode filtering
+            results = await self.smart_money.scan_with_mode_filter(monitoring_mode="scalp")
+
+            if not results.get("success"):
+                self.logger.warning(f"Scalp scan failed: {results.get('error')}")
+                return
+
+            accumulation = results.get("accumulation", [])
+            distribution = results.get("distribution", [])
+            total_signals = len(accumulation) + len(distribution)
+
+            self.logger.info(
+                f"✅ Scalp Monitor complete: {total_signals} signals "
+                f"({len(accumulation)} accumulation, {len(distribution)} distribution)"
+            )
+
+            # Send alerts for all signals (scalp mode alerts everything)
+            if total_signals > 0:
+                await self._send_monitoring_mode_alerts(
+                    accumulation,
+                    distribution,
+                    mode="scalp"
+                )
+
+            duration = (datetime.now() - start_time).total_seconds()
+            self.logger.info(f"⏱️ Scalp Monitor completed in {duration:.1f}s")
+
+        except Exception as e:
+            self.logger.error(f"❌ Error in Scalp Monitor: {type(e).__name__}: {str(e)}")
+
+    async def swing_monitor_scan(self):
+        """
+        Swing Monitor - 4 hour interval scanning
+
+        Position monitoring for swing traders
+        - Medium-high confidence signals
+        - Volume confirmation required
+        - Alerts for position management
+        """
+        self.logger.info("🎯 Starting Swing Monitor Scan...")
+        start_time = datetime.now()
+
+        try:
+            # Scan with swing mode filtering
+            results = await self.smart_money.scan_with_mode_filter(monitoring_mode="swing")
+
+            if not results.get("success"):
+                self.logger.warning(f"Swing scan failed: {results.get('error')}")
+                return
+
+            accumulation = results.get("accumulation", [])
+            distribution = results.get("distribution", [])
+            total_signals = len(accumulation) + len(distribution)
+
+            self.logger.info(
+                f"✅ Swing Monitor complete: {total_signals} signals "
+                f"({len(accumulation)} accumulation, {len(distribution)} distribution)"
+            )
+
+            # Send alerts for medium-high confidence signals
+            if total_signals > 0:
+                await self._send_monitoring_mode_alerts(
+                    accumulation,
+                    distribution,
+                    mode="swing"
+                )
+
+            duration = (datetime.now() - start_time).total_seconds()
+            self.logger.info(f"⏱️ Swing Monitor completed in {duration:.1f}s")
+
+        except Exception as e:
+            self.logger.error(f"❌ Error in Swing Monitor: {type(e).__name__}: {str(e)}")
+
+    async def pulse_monitor_scan(self):
+        """
+        Smart Money Pulse - Event-driven whale detection
+
+        Precision alerts for major whale activity only
+        - Very high scores only (7+)
+        - Multi-indicator confluence required
+        - Volume spike + BOS/OI confirmation
+        - Noise-free, high-impact alerts
+        """
+        self.logger.info("🐋 Checking Smart Money Pulse...")
+        start_time = datetime.now()
+
+        try:
+            from app.services.monitoring_modes import monitoring_modes
+
+            # Scan with pulse mode filtering (very strict)
+            results = await self.smart_money.scan_with_mode_filter(monitoring_mode="pulse")
+
+            if not results.get("success"):
+                self.logger.warning(f"Pulse scan failed: {results.get('error')}")
+                return
+
+            accumulation = results.get("accumulation", [])
+            distribution = results.get("distribution", [])
+            total_signals = len(accumulation) + len(distribution)
+
+            # For PULSE mode, also check each signal with enriched indicators
+            validated_accumulation = []
+            validated_distribution = []
+
+            # Validate accumulation signals with indicators
+            for signal in accumulation:
+                symbol = signal.get("symbol")
+                enriched = await self.smart_money.get_enriched_signal(symbol)
+
+                if enriched.get("success"):
+                    indicators = enriched.get("indicators", {})
+                    should_alert, reason = await monitoring_modes.should_alert(signal, indicators)
+
+                    if should_alert:
+                        signal["alertReason"] = reason
+                        signal["indicators"] = indicators
+                        validated_accumulation.append(signal)
+
+            # Validate distribution signals with indicators
+            for signal in distribution:
+                symbol = signal.get("symbol")
+                enriched = await self.smart_money.get_enriched_signal(symbol)
+
+                if enriched.get("success"):
+                    indicators = enriched.get("indicators", {})
+                    should_alert, reason = await monitoring_modes.should_alert(signal, indicators)
+
+                    if should_alert:
+                        signal["alertReason"] = reason
+                        signal["indicators"] = indicators
+                        validated_distribution.append(signal)
+
+            validated_total = len(validated_accumulation) + len(validated_distribution)
+
+            self.logger.info(
+                f"✅ Pulse Monitor: {total_signals} signals scanned, "
+                f"{validated_total} WHALE PULSES detected "
+                f"({len(validated_accumulation)} accumulation, {len(validated_distribution)} distribution)"
+            )
+
+            # Send alerts only for validated whale pulses
+            if validated_total > 0:
+                await self._send_monitoring_mode_alerts(
+                    validated_accumulation,
+                    validated_distribution,
+                    mode="pulse"
+                )
+
+            duration = (datetime.now() - start_time).total_seconds()
+            self.logger.info(f"⏱️ Pulse Monitor completed in {duration:.1f}s")
+
+        except Exception as e:
+            self.logger.error(f"❌ Error in Pulse Monitor: {type(e).__name__}: {str(e)}")
+
     async def send_daily_summary(self):
         """
         Send daily summary report
@@ -398,6 +606,85 @@ Type: Whale Distribution
 
         except Exception as e:
             self.logger.error(f"Error sending Smart Money alerts: {str(e)}")
+
+    async def _send_monitoring_mode_alerts(
+        self,
+        accumulation_signals: List[Dict],
+        distribution_signals: List[Dict],
+        mode: str = "swing"
+    ):
+        """
+        Send alerts with monitoring mode-specific formatting
+
+        Uses MonitoringModes service to format alerts properly for each mode
+        """
+        try:
+            from app.services.monitoring_modes import monitoring_modes
+
+            # Accumulation alerts
+            for signal in accumulation_signals[:5]:  # Top 5
+                # Get enriched indicators if available
+                indicators = signal.get("indicators")
+
+                # Format message using monitoring mode formatter
+                alert_reason = signal.get("alertReason", "")
+                message = monitoring_modes.format_alert_message(
+                    signal=signal,
+                    indicators=indicators,
+                    alert_reason=alert_reason
+                )
+
+                # Send alert
+                symbol = signal.get("symbol", "UNKNOWN")
+                score = signal.get("accumulationScore", 0)
+
+                # Mode-specific title emoji
+                mode_emoji = {"scalp": "⚡", "swing": "🎯", "pulse": "🐋"}
+                emoji = mode_emoji.get(mode, "📊")
+
+                title = f"{emoji} {mode.upper()} ALERT - {symbol} ACCUMULATION ({score}/10)"
+
+                await self.telegram.send_custom_alert(
+                    title=title,
+                    message=message
+                )
+
+                self.stats['alerts_sent'] += 1
+                await asyncio.sleep(1)  # Rate limit
+
+            # Distribution alerts
+            for signal in distribution_signals[:5]:  # Top 5
+                # Get enriched indicators if available
+                indicators = signal.get("indicators")
+
+                # Format message using monitoring mode formatter
+                alert_reason = signal.get("alertReason", "")
+                message = monitoring_modes.format_alert_message(
+                    signal=signal,
+                    indicators=indicators,
+                    alert_reason=alert_reason
+                )
+
+                # Send alert
+                symbol = signal.get("symbol", "UNKNOWN")
+                score = signal.get("distributionScore", 0)
+
+                # Mode-specific title emoji
+                mode_emoji = {"scalp": "⚡", "swing": "🎯", "pulse": "🐋"}
+                emoji = mode_emoji.get(mode, "📊")
+
+                title = f"{emoji} {mode.upper()} ALERT - {symbol} DISTRIBUTION ({score}/10)"
+
+                await self.telegram.send_custom_alert(
+                    title=title,
+                    message=message
+                )
+
+                self.stats['alerts_sent'] += 1
+                await asyncio.sleep(1)  # Rate limit
+
+        except Exception as e:
+            self.logger.error(f"Error sending monitoring mode alerts: {str(e)}")
 
     async def _send_mss_alerts(self, gems: List[Dict]):
         """Send Telegram alerts for MSS discoveries"""
