@@ -407,12 +407,12 @@ class CoinGeckoService:
     ) -> List[Dict]:
         """
         Get coins from specific category
-        
+
         Args:
             category: Category ID (e.g., 'meme-token', 'layer-1', 'defi')
             limit: Max results
             min_volume: Minimum 24h volume filter
-            
+
         Returns:
             List of coins in category
         """
@@ -424,16 +424,16 @@ class CoinGeckoService:
                 category=category,
                 price_change_percentage="24h,7d"
             )
-            
+
             if not result.get("success"):
                 return []
-            
+
             coins = result.get("data", [])
-            
+
             # Filter by volume if specified
             if min_volume > 0:
                 coins = [c for c in coins if (c.get("total_volume") or 0) >= min_volume]
-            
+
             # Format response
             formatted = []
             for coin in coins:
@@ -449,12 +449,215 @@ class CoinGeckoService:
                     "marketCapRank": coin.get("market_cap_rank"),
                     "image": coin.get("image")
                 })
-            
+
             return formatted[:limit]
-            
+
         except Exception as e:
             logger.error(f"Error getting coins by category: {e}")
             return []
+
+    # ==================== ORDERBOOK ESTIMATION ====================
+
+    def _normalize_symbol_for_coingecko(self, symbol: str) -> str:
+        """
+        Convert symbol to CoinGecko ID
+
+        Args:
+            symbol: Symbol like 'BTC', 'BTCUSDT', or 'bitcoin'
+
+        Returns:
+            CoinGecko ID like 'bitcoin'
+        """
+        # Symbol mapping
+        symbol_map = {
+            "BTC": "bitcoin",
+            "ETH": "ethereum",
+            "SOL": "solana",
+            "BNB": "binancecoin",
+            "XRP": "ripple",
+            "ADA": "cardano",
+            "DOGE": "dogecoin",
+            "AVAX": "avalanche-2",
+            "DOT": "polkadot",
+            "MATIC": "matic-network",
+            "LINK": "chainlink",
+            "UNI": "uniswap",
+            "ATOM": "cosmos",
+            "LTC": "litecoin",
+            "BCH": "bitcoin-cash",
+            "NEAR": "near",
+            "APT": "aptos",
+            "ARB": "arbitrum",
+            "OP": "optimism",
+            "INJ": "injective-protocol"
+        }
+
+        # Remove USDT/PERP suffix if present
+        symbol = symbol.upper().replace("USDT", "").replace("PERP", "")
+
+        # Check direct mapping
+        if symbol in symbol_map:
+            return symbol_map[symbol]
+
+        # Return lowercase for direct use
+        return symbol.lower()
+
+    async def get_orderbook_estimate(self, symbol: str) -> Dict:
+        """
+        Estimate orderbook pressure from market data
+
+        Since CoinGecko doesn't provide full orderbook depth, we estimate
+        bid/ask pressure from price action and volume data
+
+        Args:
+            symbol: Crypto symbol (e.g., 'BTC', 'ETH')
+
+        Returns:
+            Dict with estimated orderbook pressure:
+            {
+                "success": True,
+                "bids": [[price, volume], ...],  # Estimated
+                "asks": [[price, volume], ...],  # Estimated
+                "bidPressure": float,
+                "askPressure": float
+            }
+        """
+        try:
+            coin_id = self._normalize_symbol_for_coingecko(symbol)
+
+            # Get detailed coin data by ID
+            client = await self._get_client()
+            url = f"{self.base_url}/coins/{coin_id}"
+
+            params = {
+                "localization": "false",
+                "tickers": "false",
+                "market_data": "true",
+                "community_data": "false",
+                "developer_data": "false"
+            }
+
+            response = await client.get(url, params=params)
+
+            if response.status_code != 200:
+                return {
+                    "success": False,
+                    "error": f"HTTP {response.status_code} - Coin {symbol} not found"
+                }
+
+            data = response.json()
+            market_data = data.get("market_data", {})
+
+            if not market_data:
+                return {
+                    "success": False,
+                    "error": "No market data available"
+                }
+
+            # Extract coin data from market_data
+            coin_data = {
+                "id": coin_id,
+                "current_price": market_data.get("current_price", {}).get("usd", 0),
+                "price_change_percentage_24h": market_data.get("price_change_percentage_24h", 0),
+                "price_change_percentage_1h_in_currency": market_data.get("price_change_percentage_1h_in_currency", {}).get("usd", 0),
+                "total_volume": market_data.get("total_volume", {}).get("usd", 0),
+                "high_24h": market_data.get("high_24h", {}).get("usd", 0),
+                "low_24h": market_data.get("low_24h", {}).get("usd", 0)
+            }
+
+            # Extract key metrics
+            current_price = coin_data.get("current_price", 0)
+            price_change_24h = coin_data.get("price_change_percentage_24h", 0)
+            price_change_1h = coin_data.get("price_change_percentage_1h_in_currency", 0)
+            volume_24h = coin_data.get("total_volume", 0)
+            high_24h = coin_data.get("high_24h", 0)
+            low_24h = coin_data.get("low_24h", 0)
+
+            if current_price == 0:
+                return {
+                    "success": False,
+                    "error": "No price data available"
+                }
+
+            # Estimate bid/ask pressure from price action
+            # Strong uptrend = more buy pressure
+            # Strong downtrend = more sell pressure
+
+            if price_change_1h > 3:  # Strong 1h pump
+                bid_pressure = 70.0
+                ask_pressure = 30.0
+            elif price_change_1h > 1:  # Moderate 1h increase
+                bid_pressure = 60.0
+                ask_pressure = 40.0
+            elif price_change_1h < -3:  # Strong 1h dump
+                bid_pressure = 30.0
+                ask_pressure = 70.0
+            elif price_change_1h < -1:  # Moderate 1h decrease
+                bid_pressure = 40.0
+                ask_pressure = 60.0
+            elif price_change_24h > 10:  # Strong 24h uptrend
+                bid_pressure = 65.0
+                ask_pressure = 35.0
+            elif price_change_24h < -10:  # Strong 24h downtrend
+                bid_pressure = 35.0
+                ask_pressure = 65.0
+            else:  # Sideways/balanced
+                bid_pressure = 50.0
+                ask_pressure = 50.0
+
+            # Estimate spread from volatility (high - low)
+            if high_24h > 0 and low_24h > 0:
+                volatility = ((high_24h - low_24h) / low_24h) * 100
+                spread_pct = min(volatility / 10, 2.0)  # Cap at 2%
+            else:
+                spread_pct = 0.5  # Default 0.5% spread
+
+            # Create estimated orderbook levels (5 levels)
+            spread_amount = current_price * (spread_pct / 100)
+            bid_price = current_price - (spread_amount / 2)
+            ask_price = current_price + (spread_amount / 2)
+
+            # Estimate volume distribution
+            estimated_volume = volume_24h / 1000  # Rough estimate per level
+
+            bids = []
+            asks = []
+
+            for i in range(5):
+                bid_level_price = bid_price * (1 - (i * 0.001))  # 0.1% increments
+                ask_level_price = ask_price * (1 + (i * 0.001))
+
+                # Decreasing volume with depth
+                bid_qty = estimated_volume * (bid_pressure / 100) * (0.4 - i * 0.05)
+                ask_qty = estimated_volume * (ask_pressure / 100) * (0.4 - i * 0.05)
+
+                bids.append([bid_level_price, max(bid_qty, 0)])
+                asks.append([ask_level_price, max(ask_qty, 0)])
+
+            return {
+                "success": True,
+                "symbol": symbol,
+                "bids": bids,
+                "asks": asks,
+                "lastPrice": current_price,
+                "bidPressure": bid_pressure,
+                "askPressure": ask_pressure,
+                "spread": spread_pct,
+                "priceChange1h": price_change_1h,
+                "priceChange24h": price_change_24h,
+                "volume24h": volume_24h,
+                "estimated": True,  # Flag that this is estimated
+                "source": "coingecko",
+                "timestamp": datetime.utcnow().isoformat()
+            }
+
+        except Exception as e:
+            logger.error(f"Error estimating orderbook for {symbol}: {e}")
+            return {
+                "success": False,
+                "symbol": symbol,
+                "error": str(e)
+            }
 
 
 # Global instance for easy import
