@@ -16,13 +16,22 @@ def rule_based_risk_mode(signal_data: Dict[str, Any]) -> str:
     signal = signal_data.get("signal", "NEUTRAL").upper()
     
     metrics = signal_data.get("metrics", {})
+    if not isinstance(metrics, dict):
+        metrics = {}
     funding_rate = abs(metrics.get("fundingRate", 0)) * 100
     
     premium = signal_data.get("premiumMetrics", {})
+    if not isinstance(premium, dict):
+        premium = {}
+    
     ls_ratio = premium.get("longShortRatio", {})
+    if not isinstance(ls_ratio, dict):
+        ls_ratio = {}
     long_pct = ls_ratio.get("longAccountPct", 50)
     
     liquidations = premium.get("liquidations", {})
+    if not isinstance(liquidations, dict):
+        liquidations = {}
     long_liq_pct = liquidations.get("longLiqPct", 50)
     
     if score < 50:
@@ -116,26 +125,42 @@ def get_risk_warnings(signal_data: Dict[str, Any]) -> Tuple[list, list]:
     agreements = []
     
     metrics = signal_data.get("metrics", {})
+    if not isinstance(metrics, dict):
+        metrics = {}
+    
     premium = signal_data.get("premiumMetrics", {})
+    if not isinstance(premium, dict):
+        premium = {}
+    
     signal = signal_data.get("signal", "NEUTRAL").upper()
     score = signal_data.get("score", 50)
     
     funding_rate = abs(metrics.get("fundingRate", 0)) * 100
     
     ls_ratio = premium.get("longShortRatio", {})
+    if not isinstance(ls_ratio, dict):
+        ls_ratio = {}
     long_pct = ls_ratio.get("longAccountPct", 50)
     ls_sentiment = ls_ratio.get("sentiment", "neutral")
     
     liquidations = premium.get("liquidations", {})
+    if not isinstance(liquidations, dict):
+        liquidations = {}
     liq_imbalance = liquidations.get("imbalance", "balanced")
     
     oi_trend_data = premium.get("oiTrend", {})
+    if not isinstance(oi_trend_data, dict):
+        oi_trend_data = {}
     oi_change = oi_trend_data.get("oiChangePct", 0)
     
     top_trader = premium.get("topTraderRatio", {})
+    if not isinstance(top_trader, dict):
+        top_trader = {}
     smart_money_bias = top_trader.get("smartMoneyBias", "neutral")
     
     fear_greed = signal_data.get("fearGreedIndex", {})
+    if not isinstance(fear_greed, dict):
+        fear_greed = {}
     fg_value = fear_greed.get("value", 50)
     fg_sentiment = fear_greed.get("sentiment", "neutral")
     

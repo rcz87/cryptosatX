@@ -940,8 +940,16 @@ class SignalEngine:
                 timeframe="4h"
             )
             
-            if not trade_plan or "error" in trade_plan:
-                logger.error(f"⚠️  Failed to calculate volatility metrics: {trade_plan.get('error') if trade_plan else 'unknown error'}")
+            if not trade_plan:
+                logger.error(f"⚠️  Failed to calculate volatility metrics: trade_plan is None")
+                return None
+            
+            if not isinstance(trade_plan, dict):
+                logger.error(f"⚠️  Failed to calculate volatility metrics: trade_plan is not a dict (got {type(trade_plan).__name__})")
+                return None
+            
+            if "error" in trade_plan:
+                logger.error(f"⚠️  Failed to calculate volatility metrics: {trade_plan.get('error', 'unknown error')}")
                 return None
             
             position_sizing = trade_plan.get("position_sizing", {}) or {}
