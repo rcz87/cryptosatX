@@ -30,10 +30,19 @@ REPLIT_ENVIRONMENT = "production"
 PORT = "8000"
 
 [workflows]
-runButton = "CryptoSatX Enhanced"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "CryptoSatX Enhanced"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "api-server"
+
+[[workflows.workflow]]
+name = "Project"
 mode = "parallel"
 author = "agent"
 
@@ -51,7 +60,6 @@ outputType = "console"
 [[workflows.workflow.tasks]]
 task = "shell.exec"
 args = "PORT=$PORT python3 main.py"
-waitForPort = 8000
 
 [agent]
 expertMode = true
@@ -64,4 +72,8 @@ externalPort = 80
 [[ports]]
 localPort = 32823
 externalPort = 3000
+
+[[ports]]
+localPort = 45749
+externalPort = 3001
 

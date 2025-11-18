@@ -35,3 +35,4 @@ if __name__ == "__main__":
         access_log=True,
         use_colors=False,  # Better for Replit logs
     )
+# Force reload: Tue Nov 18 07:15:43 AM UTC 2025
