@@ -16,7 +16,7 @@ from sqlalchemy.dialects import postgresql
 
 
 revision: str = 'phase4_perf_001'
-down_revision: Union[str, Sequence[str], None] = '20251115_1600_high_priority_fixes'
+down_revision: Union[str, Sequence[str], None] = 'high_priority_fixes'
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
