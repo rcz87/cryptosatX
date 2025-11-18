@@ -871,6 +871,174 @@ class SmartMoneyService:
                 "error": str(e)
             }
 
+    # ==================== MONITORING MODES INTEGRATION ====================
+
+    async def get_enriched_signal(self, symbol: str) -> Dict:
+        """
+        Get signal data enriched with realtime indicators
+
+        Combines smart money analysis with:
+        - Volume spike detection
+        - Bid/Ask pressure
+        - Whale walls
+        - OI correlation
+        - BOS validation
+
+        Args:
+            symbol: Crypto symbol to analyze
+
+        Returns:
+            Dict with enriched signal data including all indicators
+        """
+        try:
+            from app.services.realtime_indicators import realtime_indicators
+
+            # Get base signal data
+            signal_data = await self._fetch_signal_data(symbol)
+
+            if not signal_data:
+                return {
+                    "success": False,
+                    "symbol": symbol,
+                    "error": "Could not fetch signal data"
+                }
+
+            # Calculate smart money scores
+            accum_score, accum_reasons = self._calculate_accumulation_score(signal_data)
+            dist_score, dist_reasons = self._calculate_distribution_score(signal_data)
+
+            # Get current metrics
+            price = signal_data.get("price", 0)
+            volume_24h = signal_data.get("metrics", {}).get("volume24h", 0)
+
+            # Enrich with realtime indicators
+            volume_spike = await realtime_indicators.detect_volume_spike(
+                symbol=symbol,
+                current_volume=volume_24h
+            )
+
+            # Note: Bid/Ask and whale walls require orderbook data
+            # In production, fetch from CoinAPI or Binance
+            bid_ask_pressure = {"message": "Orderbook data integration pending"}
+            whale_walls = {"message": "Orderbook data integration pending"}
+
+            # OI correlation (if available)
+            oi_change = signal_data.get("metrics", {}).get("oiChange24h", 0)
+            price_change = signal_data.get("comprehensiveMetrics", {}).get("priceChanges", {}).get("24h", 0)
+
+            oi_correlation = await realtime_indicators.analyze_oi_price_correlation(
+                symbol=symbol,
+                oi_change=oi_change,
+                price_change=price_change
+            )
+
+            # BOS validation (requires structure detection)
+            # Placeholder - integrate with smc_analyzer if needed
+            bos_validation = {"message": "BOS integration pending"}
+
+            return {
+                "success": True,
+                "symbol": symbol,
+                "timestamp": datetime.utcnow().isoformat(),
+                "signal": {
+                    "price": price,
+                    "accumulationScore": accum_score,
+                    "distributionScore": dist_score,
+                    "dominantPattern": "accumulation" if accum_score > dist_score else "distribution",
+                    "reasons": accum_reasons if accum_score > dist_score else dist_reasons
+                },
+                "indicators": {
+                    "volumeSpike": volume_spike,
+                    "bidAskPressure": bid_ask_pressure,
+                    "whaleWalls": whale_walls,
+                    "oiCorrelation": oi_correlation,
+                    "bosValidation": bos_validation
+                }
+            }
+
+        except Exception as e:
+            logger.error(f"Error getting enriched signal for {symbol}: {e}")
+            return {
+                "success": False,
+                "symbol": symbol,
+                "error": str(e)
+            }
+
+    async def scan_with_mode_filter(
+        self,
+        monitoring_mode: Optional[str] = None
+    ) -> Dict:
+        """
+        Scan markets with monitoring mode filtering
+
+        Uses MonitoringModes service to filter signals based on mode:
+        - scalp: All signals, 15min updates
+        - swing: Medium-high confidence, 4h updates
+        - pulse: Only whale moves, event-driven
+
+        Args:
+            monitoring_mode: Optional mode override ("scalp", "swing", "pulse")
+
+        Returns:
+            Filtered scan results based on mode
+        """
+        try:
+            from app.services.monitoring_modes import monitoring_modes
+
+            # Override mode if specified
+            if monitoring_mode:
+                from app.services.monitoring_modes import MonitoringMode
+                try:
+                    mode = MonitoringMode(monitoring_mode.lower())
+                    monitoring_modes.set_mode(mode)
+                except ValueError:
+                    logger.warning(f"Invalid mode: {monitoring_mode}")
+
+            # Get mode config
+            config = monitoring_modes.get_mode_config()
+
+            # Perform base scan
+            scan_result = await self.scan_markets(
+                min_accumulation_score=config["min_accumulation_score"],
+                min_distribution_score=config["min_distribution_score"]
+            )
+
+            if not scan_result.get("success"):
+                return scan_result
+
+            # Filter signals based on mode
+            accumulation_filtered = await monitoring_modes.filter_signals(
+                scan_result.get("accumulation", []),
+                signal_type="accumulation"
+            )
+
+            distribution_filtered = await monitoring_modes.filter_signals(
+                scan_result.get("distribution", []),
+                signal_type="distribution"
+            )
+
+            return {
+                "success": True,
+                "monitoringMode": monitoring_modes.get_active_mode().value,
+                "modeConfig": config,
+                "timestamp": scan_result.get("timestamp"),
+                "coinsScanned": scan_result.get("coinsScanned"),
+                "summary": {
+                    "accumulationSignals": len(accumulation_filtered),
+                    "distributionSignals": len(distribution_filtered),
+                    "totalAlerts": len(accumulation_filtered) + len(distribution_filtered)
+                },
+                "accumulation": accumulation_filtered,
+                "distribution": distribution_filtered
+            }
+
+        except Exception as e:
+            logger.error(f"Error in scan_with_mode_filter: {e}")
+            return {
+                "success": False,
+                "error": str(e)
+            }
+
 
 # Singleton instance
 smart_money_service = SmartMoneyService()
