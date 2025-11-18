@@ -141,10 +141,11 @@ class SocialSpikeMonitor:
             
             if not change_data.get("success"):
                 return None
-            
-            social_vol_change = change_data.get("socialVolumeChange", 0)
+
+            # Handle None values from API by using 'or 0'
+            social_vol_change = change_data.get("socialVolumeChange") or 0
             spike_level = change_data.get("spikeLevel", "normal")
-            
+
             # Check if spike exceeds threshold
             if abs(social_vol_change) < self.min_spike_threshold:
                 return None
@@ -184,9 +185,10 @@ class SocialSpikeMonitor:
     async def _send_spike_alert(self, symbol: str, change_data: Dict):
         """Send Telegram alert for detected spike"""
         try:
-            social_vol_change = change_data.get("socialVolumeChange", 0)
-            engagement_change = change_data.get("socialEngagementChange", 0)
-            sentiment_change = change_data.get("sentimentChange", 0)
+            # Handle None values from API by using 'or 0'
+            social_vol_change = change_data.get("socialVolumeChange") or 0
+            engagement_change = change_data.get("socialEngagementChange") or 0
+            sentiment_change = change_data.get("sentimentChange") or 0
             spike_level = change_data.get("spikeLevel", "normal")
             
             # Get current price info
