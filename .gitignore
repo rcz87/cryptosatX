@@ -38,6 +38,11 @@ env/
 # Environment variables
 .env
 
+# Database files (auto-generated)
+*.db
+*.sqlite
+*.sqlite3
+
 # IDE
 .vscode/
 .idea/
