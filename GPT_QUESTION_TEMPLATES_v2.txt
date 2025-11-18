@@ -1,0 +1,1396 @@
+# 🎯 CRYPTOSATX - COMPLETE USER GUIDE & TEMPLATES v2.0
+Master guide untuk menggunakan 202+ API operations via GPT Actions
+Updated: November 2025 | Includes AI Verdict Layer, Spike Detection, Analytics
+
+═══════════════════════════════════════════════════════════════════════
+📚 TABLE OF CONTENTS
+═══════════════════════════════════════════════════════════════════════
+
+PART 1: QUICK START TEMPLATES (10 Main + 5 NEW Templates)
+PART 2: FEATURE DEEP DIVE (11 Features Explained - NEW: AI Verdict, Spike Detection, Analytics)
+PART 3: REAL-WORLD WORKFLOWS (Trading Scenarios with AI Verdict)
+PART 4: INTERPRETATION GUIDE (Reading Results + AI Verdict + Volatility Metrics)
+PART 5: DECISION TREES (When to Use What - Updated)
+PART 6: COMMON MISTAKES & PRO TIPS (Production Safeguards Edition)
+PART 7: ADVANCED STRATEGIES (AI Verdict Optimization, Circuit Breaker Awareness)
+PART 8: UNDERSTANDING AI VERDICT (NEW - GPT-4 Signal Validation)
+PART 9: VOLATILITY METRICS GUIDE (NEW - ATR-Based Position Sizing)
+PART 10: PRODUCTION SAFEGUARDS (NEW - Circuit Breaker, Rate Limits, Data Quality)
+
+═══════════════════════════════════════════════════════════════════════
+PART 1: QUICK START TEMPLATES
+═══════════════════════════════════════════════════════════════════════
+
+## 📊 TEMPLATE 1: ANALISIS TRADING SIGNAL KOMPREHENSIF (AI-POWERED)
+**Trigger:** signals.get + coinglass.liquidations.symbol + coinglass.funding_rate.history + coinglass.indicators.fear_greed
+
+### 🎯 USE CASE:
+Gunakan ini ketika mau trading decision quick & comprehensive dengan AI validation. Perfect untuk:
+- ✅ Morning market check (cek kondisi market hari ini)
+- ✅ Before entering position (verify signal strength + AI verdict)
+- ✅ Risk assessment (understand current sentiment + position sizing)
+- ✅ AI-powered signal confirmation (CONFIRM/DOWNSIZE/SKIP/WAIT)
+
+### Pertanyaan:
+"Analisis lengkap BTC sekarang: sinyal trading dengan AI verdict, liquidation data, funding rate, dan sentimen pasar. Kasih tau recommended position size juga"
+
+### Pertanyaan Alternatif:
+- "Gimana kondisi ETH hari ini? Kasih analisis lengkap: AI verdict, position size, liquidations, funding, sama fear & greed"
+- "SOL sekarang bullish atau bearish? Cek semua data dengan AI validation: signal, verdict, risk mode, liq data, funding rate"
+- "Analisis komprehensif AVAX dengan AI verdict: score, verdict (CONFIRM/SKIP?), berapa position size recommended, liquidations, funding"
+- "BTC entry sekarang bagus ga? Cek AI verdict + volatility metrics + stop loss/take profit levels"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ {"operation": "signals.get", "symbol": "BTC"}
+✅ {"operation": "coinglass.liquidations.symbol", "symbol": "BTC"}
+✅ {"operation": "coinglass.funding_rate.history", "symbol": "BTC"}
+✅ {"operation": "coinglass.indicators.fear_greed"}
+
+### Expected Response (UPDATED with AI Verdict):
+- **Trading Signal:** LONG/SHORT/NEUTRAL
+- **Score & Confidence:** 0-100 dengan level (High/Medium/Low)
+- **🤖 AI VERDICT:** CONFIRM / DOWNSIZE / SKIP / WAIT
+- **Position Size Multiplier:** 0.0x - 1.5x (volatility-adjusted)
+- **Risk Mode:** NORMAL / REDUCED / AVOID / AGGRESSIVE
+- **Volatility Metrics:**
+  - ATR percentage
+  - Stop Loss level (% dari entry)
+  - Take Profit level (R:R 1.5:1)
+- **Top 3 Contributing Factors** dengan penjelasan
+- **AI Summary:** Human-readable analysis dari GPT-4
+- **Risk Warnings:** Specific concerns dari AI
+- **Liquidation Volumes:** Longs vs shorts liquidated
+- **Funding Rate:** Current & trend (positive/negative %)
+- **Fear & Greed Index:** 0-100
+- **Recommendations:** Entry/exit suggestions
+
+### 📖 HOW TO INTERPRET (UPDATED):
+
+**AI Verdict: CONFIRM + Position Size: 1.2x + Score 75+:**
+→ High confidence trade, AI validated, slightly aggressive position
+→ **ACTION:** Execute with recommended position size
+
+**AI Verdict: DOWNSIZE + Position Size: 0.5x + Score 60-70:**
+→ Moderate confidence, mixed signals, reduced exposure
+→ **ACTION:** Enter with half position, wait for confirmation
+
+**AI Verdict: SKIP + Position Size: 0.0x:**
+→ Low confidence, conflicting data, or high risk
+→ **ACTION:** Avoid this trade completely
+
+**AI Verdict: WAIT + Data Quality < 50%:**
+→ Insufficient data from external APIs
+→ **ACTION:** Wait for API recovery, retry in 5-10 minutes
+
+**High Liquidations on Longs + Positive Funding + AI Verdict: SKIP:**
+→ Overcrowded trade, AI detected reversal risk
+→ **ACTION:** Strong contrarian signal, consider opposite direction
+
+**Fear & Greed < 25 + AI Verdict: CONFIRM + Accumulation Score 8+:**
+→ Extreme Fear + Whale accumulation + AI validation
+→ **ACTION:** Excellent contrarian buy opportunity
+
+**Stop Loss: 2.8% + Take Profit: 4.2% (R:R 1.5:1):**
+→ ATR-based risk management, adaptive to volatility
+→ **ACTION:** Set SL 2.8% below entry, TP1 at 4.2% above
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🐋 TEMPLATE 2: SMART MONEY & WHALE TRACKING (DYNAMIC DISCOVERY)
+**Trigger:** smart_money.scan + coinglass.open_interest.history + coinglass.hyperliquid.whale_alerts
+
+### 🎯 USE CASE:
+Detect whale accumulation BEFORE retail enters dengan dynamic coin discovery. Perfect untuk:
+- ✅ Finding early entry opportunities (top 30-50 coins by volume)
+- ✅ Spotting institutional buying before pumps
+- ✅ Identifying distribution (exit signals)
+- ✅ Dynamic discovery (tidak hardcoded, auto-fetch top coins)
+
+### Pertanyaan:
+"Scan smart money untuk top 30 coins (by volume), fokus yang whale lagi akumulasi. Sama cek open interest BTC juga"
+
+### Pertanyaan Alternatif:
+- "Mana coins yang lagi di-accumulate whale? Scan top 20 coins dengan smart money score tertinggi (dynamic discovery)"
+- "Cari whale activity di top 40 coins by trading volume. Mana yang lagi pump karena institutional buying?"
+- "Detect smart money patterns: scan 30 coins (CoinGecko top volume), highlight yang ada accumulation pattern score 7+"
+- "Whale lagi masuk ke mana? Scan smart money max 50 coins + cek OI trend untuk ETH, SOL, AVAX"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ {"operation": "smart_money.scan", "limit": 30}  ← Recommended: 30, Max: 50
+✅ {"operation": "coinglass.open_interest.history", "symbol": "BTC"}
+✅ {"operation": "coinglass.hyperliquid.whale_alerts"}
+
+### Expected Response (UPDATED with Dynamic Discovery):
+- **📊 Coin Discovery Method:** CoinGecko API (top by 24h volume)
+- **Scan Results:** 30-50 coins analyzed
+- **Top Accumulation Plays:**
+  - Symbol + Accumulation Score (0-10)
+  - Distribution Score (0-10)
+  - Dominant Pattern (accumulation/distribution/neutral)
+  - Current Price & 24h Volume
+- **Smart Money Intelligence:**
+  - Buy pressure percentage
+  - Sell pressure percentage
+  - Funding rate context
+  - Social activity level
+- **Open Interest Analysis:**
+  - OI trend (rising/falling %)
+  - OI change 24h/7d
+  - Correlation with price
+- **Whale Alerts (Hyperliquid):**
+  - Recent whale positions
+  - Position sizes
+  - Long/Short direction
+- **⚡ Circuit Breaker Status:** LunarCrush API availability
+- **Recommended Watchlist:** Top 5-10 coins untuk monitor
+
+### 📖 HOW TO INTERPRET (UPDATED):
+
+**Accumulation Score 8-10 + Rising OI + Low Social (<40):**
+→ Very strong whale accumulation, retail unaware
+→ **ACTION:** Prime entry before FOMO, target 2-5x
+
+**Distribution Score 7-10 + Declining OI + High Social (>75):**
+→ Whales selling to euphoric retail
+→ **ACTION:** Exit positions, consider short
+
+**Dynamic Discovery: 40 coins scanned, 8 with Accumulation 7+:**
+→ CoinGecko top volume auto-selected, high-quality signals
+→ **ACTION:** Review top 8, prioritize by volume & score
+
+**Circuit Breaker: OPEN (LunarCrush cooldown):**
+→ Social data unavailable for 5 minutes
+→ **ACTION:** Signal still valid with 70%+ quality, social metrics skipped
+
+**Rising OI + Accumulation + Low Funding (<0.05%):**
+→ New whale positions opening, not crowded
+→ **ACTION:** Strong confirmation, enter with confidence
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🚀 TEMPLATE 3: MSS DISCOVERY - EMERGING COINS (TIER SYSTEM)
+**Trigger:** mss.discover + lunarcrush.coin + new_listings.binance + market.get
+
+### 🎯 USE CASE:
+Find next 10x-100x gems before mainstream dengan tier classification. Perfect untuk:
+- ✅ Small-cap gem hunting (Tier 1-3 classification)
+- ✅ Early project discovery (emerging coins MSS 60+)
+- ✅ Portfolio diversification dengan high-risk/high-reward
+- ✅ MSS 3-phase scoring (Tokenomics, Community, Institutional)
+
+### Pertanyaan:
+"Discover emerging cryptocurrencies dengan MSS score 75+, Tier 1-2 only. Cari coins yang punya social buzz tinggi dan baru listing di Binance (7 hari terakhir)"
+
+### Pertanyaan Alternatif:
+- "Cari hidden gems: MSS score minimal 80, social momentum naik, market cap under $500M, Tier 1 preferred"
+- "Discover 10 emerging altcoins Tier 1-2 yang lagi trending di social media dengan MSS breakdown lengkap"
+- "Mana coins baru yang potential 10x-100x? Cek MSS discovery (score 75+) + Binance new listings + institutional validation"
+- "Find next 100x gem: high MSS score (85+), Tier 1, strong community (score 80+), low mcap (<$100M)"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ {"operation": "mss.discover", "min_mss_score": 75, "max_results": 10}
+✅ {"operation": "lunarcrush.coin", "symbol": "[top_MSS_coins]"}
+✅ {"operation": "new_listings.binance", "days": 7}
+✅ {"operation": "market.get", "symbol": "[selected_coins]"}
+
+### Expected Response (UPDATED with Tier System):
+- **5-10 Emerging Coins** dengan MSS breakdown:
+  
+  **Per Coin Analysis:**
+  - Symbol & Name
+  - **Overall MSS Score:** 0-100
+  - **Tier Classification:** Tier 1 (Premium) / Tier 2 (Strong) / Tier 3 (Emerging)
+  
+  **3-Phase Breakdown:**
+  1. **Discovery Phase (Tokenomics):** 0-100
+     - Token distribution fairness
+     - Vesting schedule quality
+     - Supply metrics
+  
+  2. **Social Confirmation (Community):** 0-100
+     - Social sentiment score
+     - Community engagement
+     - Influencer activity
+     - Galaxy Score™ ranking
+  
+  3. **Institutional Validation (Whale Activity):** 0-100
+     - Whale accumulation detected
+     - Institutional interest
+     - Exchange listings quality
+
+- **Market Data:**
+  - Current Price & Market Cap
+  - 24h Volume & Volume/MCap ratio
+  - Binance listing date (if new)
+  
+- **LunarCrush Social Metrics:**
+  - Social volume (mentions)
+  - Social engagement (interactions)
+  - AltRank™ position
+  
+- **Investment Thesis:** Why this coin (AI-generated)
+- **Risk Assessment:** Potential concerns
+- **Tier-Specific Recommendations**
+
+### 📖 HOW TO INTERPRET (UPDATED with Tiers):
+
+**MSS 85-95 + Tier 1 + New Binance Listing:**
+→ Premium opportunity, all 3 phases validated
+→ **ACTION:** Top candidate, allocate 5-10% portfolio
+
+**MSS 75-85 + Tier 2 + High Social (80+):**
+→ Strong potential, community-driven
+→ **ACTION:** Good entry, allocate 2-5% portfolio
+
+**MSS 60-75 + Tier 3 + Low MCap (<$50M):**
+→ High risk/high reward, early stage
+→ **ACTION:** Speculative play, max 1-2% allocation
+
+**Discovery Phase 90+ + Social Confirmation 60 + Institutional 40:**
+→ Great tokenomics but lacking awareness
+→ **ACTION:** Hidden gem potential, accumulate before hype
+
+**Low Social (<50) + High MSS (80+) + Tier 1:**
+→ Undervalued, retail hasn't discovered yet
+→ **ACTION:** Ideal accumulation zone, 3-6 month hold
+
+═══════════════════════════════════════════════════════════════════════
+
+## 📈 TEMPLATE 4: TECHNICAL ANALYSIS ADVANCED (11 COINGLASS INDICATORS)
+**Trigger:** coinglass.indicators.* (RSI, MACD, Whale Index, CGDI, Golden Ratio, etc.) + market.get
+
+### 🎯 USE CASE:
+Confirm trend & find entry/exit zones dengan 11 premium indicators. Perfect untuk:
+- ✅ Timing entries (oversold/overbought zones)
+- ✅ Trend confirmation (MACD, Golden Ratio)
+- ✅ Spotting divergences (RSI, Price divergence)
+- ✅ Institutional sentiment (Whale Index, Top Trader ratio)
+
+### Pertanyaan:
+"Technical analysis BTC: semua 11 indicators Coinglass (RSI, MACD, Whale Index, CGDI, Golden Ratio, Bollinger Bands, dll). Plus cek trader positioning (long/short ratio) dan kasih entry zones"
+
+### Pertanyaan Alternatif:
+- "Deep dive ETH indicators: RSI list (multiple timeframes), MACD, Bollinger Bands, CGDI, Whale Index, sama top trader ratio. Highlight divergences"
+- "Cek semua technical indicators SOL: 11 Coinglass indicators + long/short ratio + funding. Ada setup bagus ga?"
+- "Analisis teknikal lengkap AVAX: scan RSI oversold/overbought, MACD crossover, whale index rising, plus OI trend. Entry point mana?"
+- "Scan RSI untuk top 50 coins, highlight yang oversold (<30) + whale index rising + MACD bullish crossover"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ {"operation": "coinglass.indicators.rsi", "symbol": "BTC"}
+✅ {"operation": "coinglass.indicators.macd", "symbol": "BTC"}
+✅ {"operation": "coinglass.indicators.whale_index", "symbol": "BTC"}
+✅ {"operation": "coinglass.indicators.cgdi", "symbol": "BTC"}
+✅ {"operation": "coinglass.indicators.golden_ratio", "symbol": "BTC"}
+✅ {"operation": "coinglass.indicators.bollinger_bands", "symbol": "BTC"}
+✅ {"operation": "coinglass.indicators.stochastic_rsi", "symbol": "BTC"}
+✅ {"operation": "coinglass.long_short_ratio.position_history", "symbol": "BTC"}
+✅ {"operation": "coinglass.long_short_ratio.account_history", "symbol": "BTC"}
+✅ {"operation": "coinglass.long_short_ratio.top_trader_history", "symbol": "BTC"}
+✅ {"operation": "market.get", "symbol": "BTC"}
+
+### Expected Response (UPDATED - All 11 Indicators):
+- **RSI Analysis:**
+  - Current RSI value (0-100)
+  - Multiple timeframes (1h, 4h, 1d)
+  - Oversold (<30) / Overbought (>70)
+  - Divergence detection
+  
+- **MACD (Moving Average Convergence Divergence):**
+  - Signal line crossover (bullish/bearish)
+  - Histogram direction
+  - Trend strength
+  
+- **Whale Index:**
+  - Institutional sentiment (0-100)
+  - Whale buying/selling pressure
+  - Smart money bias
+  
+- **CGDI (Coinglass DeFi Index):**
+  - Overall DeFi market health
+  - Correlation with BTC
+  
+- **Golden Ratio (BTC-specific):**
+  - BTC dominance trend
+  - Altseason indicator
+  
+- **Bollinger Bands:**
+  - Price position (upper/middle/lower)
+  - Volatility (bandwidth)
+  - Squeeze/expansion
+  
+- **Stochastic RSI:**
+  - Momentum oscillator
+  - Oversold/overbought (more sensitive)
+  
+- **Long/Short Ratios (3 types):**
+  - Position ratio (open positions)
+  - Account ratio (number of traders)
+  - Top trader ratio (smart money)
+  
+- **Combined Technical Outlook:**
+  - Overall trend (bullish/bearish/neutral)
+  - Entry zones with confluence
+  - Exit zones / resistance levels
+  - Recommended risk/reward setup
+
+### 📖 HOW TO INTERPRET (UPDATED):
+
+**RSI < 30 + Stochastic RSI < 20 + Price at Lower Bollinger:**
+→ Triple oversold signal, bounce likely
+→ **ACTION:** Buy zone, set tight SL below recent low
+
+**RSI > 70 + MACD Bearish Crossover + Whale Index Declining:**
+→ Overbought + trend reversal + whales selling
+→ **ACTION:** Take profit zone, reduce exposure
+
+**MACD Bullish Crossover + RSI > 50 + Whale Index Rising:**
+→ Strong uptrend confirmation + institutional support
+→ **ACTION:** Trend continuation trade, ride the wave
+
+**Long Ratio > 70% + Top Trader Ratio < 45% + Whale Index Flat:**
+→ Retail overleveraged long, smart money not participating
+→ **ACTION:** Contrarian short opportunity, crowded trade
+
+**Golden Ratio Rising + BTC RSI > 60 + Altcoin RSI < 40:**
+→ Bitcoin outperforming, altseason not yet
+→ **ACTION:** Stay in BTC, wait for rotation to alts
+
+**RSI Bullish Divergence (higher lows) + Price Lower Lows:**
+→ Momentum shifting despite price drop
+→ **ACTION:** Reversal setup, accumulate for bounce
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🔥 TEMPLATE 5: MARKET OVERVIEW & MULTI-COIN COMPARISON
+**Trigger:** signals.get (batch) + coinglass.liquidation.aggregated_history + analytics.verdict_performance
+
+### 🎯 USE CASE:
+Compare opportunities & find strongest plays dengan AI verdict comparison. Perfect untuk:
+- ✅ Portfolio rotation decisions (which coin to prioritize)
+- ✅ Sector comparison (L1s vs DeFi vs Memes) dengan AI insights
+- ✅ Finding relative strength (leader vs laggard)
+- ✅ AI verdict win rate analysis (which verdicts performing best)
+
+### Pertanyaan:
+"Compare BTC, ETH, SOL, AVAX, MATIC dengan AI verdict: mana yang paling bullish hari ini? Kasih signal, score, AI verdict (CONFIRM/SKIP?), position size recommended, liquidations, sama funding rate semua coins. Plus cek AI verdict performance (win rate)"
+
+### Pertanyaan Alternatif:
+- "Battle of L1s: bandingkan AI verdict untuk ETH vs SOL vs AVAX vs MATIC. Mana yang AI recommend CONFIRM? Include position sizing"
+- "Top 5 DeFi coins (UNI, AAVE, LINK, CRV, SUSHI): cek signal + AI verdict semua, rank dari best verdict (CONFIRM) ke worst (SKIP)"
+- "Compare meme coins: DOGE vs SHIB vs PEPE. Signal, AI verdict, volatility metrics, liq data, social sentiment. Mana yang paling safe?"
+- "Scan 10 coins: BTC, ETH, BNB, SOL, XRP, ADA, DOGE, AVAX, MATIC, LINK. Rank berdasarkan composite score + AI verdict confidence"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ {"operation": "signals.get", "symbol": "BTC"} ← Repeat untuk setiap coin
+✅ {"operation": "coinglass.liquidation.aggregated_history"}
+✅ {"operation": "coinglass.funding_rate.history", "symbol": "[each_coin]"}
+✅ {"operation": "market.get", "symbol": "[each_coin]"}
+✅ {"operation": "coinglass.indicators.fear_greed"}
+✅ {"operation": "analytics.verdict_performance"}  ← NEW: AI verdict accuracy tracking
+
+### Expected Response (UPDATED with AI Verdict Comparison):
+- **Comparison Table (5-10 coins):**
+  
+  | Symbol | Signal | Score | AI Verdict | Position Size | Risk Mode | Price | 24h % |
+  |--------|--------|-------|------------|---------------|-----------|-------|-------|
+  | BTC    | LONG   | 78    | CONFIRM    | 1.2x          | NORMAL    | $43k  | +2.5% |
+  | ETH    | LONG   | 72    | CONFIRM    | 1.0x          | NORMAL    | $2.3k | +3.1% |
+  | SOL    | LONG   | 68    | DOWNSIZE   | 0.5x          | REDUCED   | $98   | +1.8% |
+  | AVAX   | NEUTRAL| 52    | WAIT       | 0.0x          | AVOID     | $38   | -0.5% |
+  | MATIC  | SHORT  | 45    | SKIP       | 0.0x          | AVOID     | $0.9  | -2.2% |
+
+- **Liquidation Comparison:**
+  - Total liquidations per coin (24h)
+  - Long vs Short liq percentage
+  - Which coin most vulnerable
+  
+- **Funding Rate Comparison:**
+  - Current funding rate per coin
+  - Most expensive to hold (highest +funding)
+  - Cheapest to hold (lowest funding)
+  
+- **AI Verdict Performance Metrics:**
+  - CONFIRM signals: Win rate % (last 100 signals)
+  - DOWNSIZE signals: Win rate % (last 100 signals)
+  - Overall AI accuracy: X%
+  - Best performing verdict type
+  
+- **Recommendations:**
+  - 🥇 **Best LONG:** [Symbol] - AI CONFIRM, score 78, position 1.2x
+  - 🥈 **Best SHORT:** [Symbol] - AI CONFIRM short, score 42, position 1.0x
+  - ❌ **Avoid:** [Symbol] - AI SKIP, low quality data
+  - ⏳ **Wait:** [Symbol] - AI WAIT, insufficient data
+
+- **Market Sentiment Overview:**
+  - Overall market direction (bullish/bearish/mixed)
+  - Fear & Greed Index
+  - Sector rotation insights
+
+### 📖 HOW TO INTERPRET (UPDATED with AI Verdicts):
+
+**ETH: Score 72 + AI CONFIRM + Position 1.0x vs SOL: Score 68 + AI DOWNSIZE + Position 0.5x:**
+→ ETH stronger conviction despite similar scores
+→ **ACTION:** Prioritize ETH over SOL, allocate 2:1 ratio
+
+**Multiple CONFIRM verdicts + High overall AI accuracy (>65%):**
+→ High-confidence market environment, AI performing well
+→ **ACTION:** Execute CONFIRM signals with recommended sizing
+
+**All coins showing WAIT verdict + Data Quality <50%:**
+→ API issues, insufficient data for reliable signals
+→ **ACTION:** Pause trading, wait for data recovery (5-10 mins)
+
+**BTC: CONFIRM 1.2x + Alts: SKIP/WAIT:**
+→ Bitcoin strength, altcoins weak
+→ **ACTION:** Stay in BTC, delay altcoin entries
+
+**Highest Score != Best AI Verdict:**
+→ AI considers more than score (volatility, risk warnings)
+→ **ACTION:** Trust AI verdict over raw score
+
+═══════════════════════════════════════════════════════════════════════
+
+## 💥 TEMPLATE 6 (NEW): SPIKE DETECTION - REAL-TIME ALERTS
+**Trigger:** spike_detection.monitor + spike_detection.price_spike + spike_detection.liquidation_spike + spike_detection.social_spike
+
+### 🎯 USE CASE:
+Catch market opportunities EARLY dengan multi-signal spike detection. Perfect untuk:
+- ✅ Scalping opportunities (price spikes detected real-time)
+- ✅ Liquidation cascade predictions (domino effect)
+- ✅ Viral trend detection (social spikes before pump)
+- ✅ Early warning system (coordinated spikes = high confidence)
+
+### Pertanyaan:
+"Monitor spikes untuk BTC: price spike, liquidation spike, social spike. Ada signal coordinated spike (2-3 spike types bersamaan)? Kalau ada, itu bullish atau bearish?"
+
+### Pertanyaan Alternatif:
+- "Real-time spike detection ETH: cek apakah ada price pump sudden (>2%), liquidation cascade (>$20M shorts), atau social viral trend"
+- "Scan spike detection untuk top 20 coins: highlight yang ada coordinated spike (price + liquidation + social together). Itu golden opportunity"
+- "SOL spike alert: ada ga liquidation spike >$10M dalam 15 menit? Plus cek social spike momentum (>50% increase)"
+- "Monitor BTC untuk pump signal: detect price spike >1.5%, short liquidation spike, dan social buzz rising (3-signal confluence)"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ {"operation": "spike_detection.monitor", "symbol": "BTC"}  ← All-in-one
+✅ {"operation": "spike_detection.price_spike", "symbol": "BTC"}
+✅ {"operation": "spike_detection.liquidation_spike", "symbol": "BTC"}
+✅ {"operation": "spike_detection.social_spike", "symbol": "BTC"}
+
+### Expected Response (NEW - Phase 5 Feature):
+- **🎯 Coordinated Spike Detection:**
+  - Spike types detected (0-3)
+  - Confidence level (Low / Medium / High)
+  - Direction (Bullish / Bearish)
+  
+- **📈 Price Spike Detector:**
+  - Spike magnitude (% change in 5m/15m/1h)
+  - Volume spike confirmation
+  - Threshold: >1.5% move in <15 mins
+  - Breakout level (support/resistance)
+  
+- **💥 Liquidation Spike Detector:**
+  - Liquidation volume spike ($M in 15 mins)
+  - Long vs Short liquidations
+  - Threshold: >$5M in 15 mins
+  - Cascade risk (domino effect prediction)
+  
+- **🚀 Social Spike Monitor:**
+  - Social volume change (% increase)
+  - Engagement spike (likes, retweets)
+  - Threshold: >50% increase in 1h
+  - Viral trend probability
+  
+- **⚡ Spike Confluence Analysis:**
+  - **3-Signal Spike (All 3 detected):** VERY HIGH confidence
+  - **2-Signal Spike (Any 2):** HIGH confidence
+  - **1-Signal Spike (Only 1):** MEDIUM confidence
+  - **No Spike:** Continue monitoring
+  
+- **Trading Implications:**
+  - Entry opportunity (if bullish spike)
+  - Exit signal (if bearish spike)
+  - Stop loss adjustment (volatility spike)
+  - Risk level (high volatility expected)
+
+### 📖 HOW TO INTERPRET (Spike Detection):
+
+**3-Signal Bullish Spike (Price +2.5%, Shorts Liquidated $15M, Social +75%):**
+→ GOLDEN SIGNAL - All systems firing
+→ **ACTION:** Immediate entry, momentum trade, tight SL
+
+**2-Signal Bearish Spike (Price -1.8%, Longs Liquidated $10M):**
+→ Strong dump signal, cascade starting
+→ **ACTION:** Exit longs immediately, consider short
+
+**1-Signal Social Spike (+60%) but No Price/Liq Spike:**
+→ Hype building but not confirmed
+→ **ACTION:** Watch closely, prepare for price spike
+
+**Liquidation Spike $20M Shorts + Price Spike +3% (No Social):**
+→ Short squeeze in progress, retail unaware
+→ **ACTION:** Enter before FOMO, exit when social spikes
+
+**Price Spike -2% + Social Spike +80% (Positive news):**
+→ Sell-the-news event, divergence
+→ **ACTION:** Fade the hype, exit on euphoria
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🤖 TEMPLATE 7 (NEW): AI VERDICT DEEP DIVE & PERFORMANCE TRACKING
+**Trigger:** signals.get + analytics.verdict_performance + analytics.verdict_compare + analytics.outcomes_history
+
+### 🎯 USE CASE:
+Understand AI verdict accuracy & optimize based on performance. Perfect untuk:
+- ✅ Validating AI verdict reliability (win rates per verdict type)
+- ✅ Performance tracking (how CONFIRM signals perform vs DOWNSIZE)
+- ✅ Strategy optimization (which verdicts to follow blindly)
+- ✅ P&L analysis (actual outcomes dari AI recommendations)
+
+### Pertanyaan:
+"Analisis AI verdict performance: berapa win rate untuk CONFIRM signals vs DOWNSIZE vs SKIP? Cek historical outcomes (1h, 4h, 24h) dan compare effectiveness. Plus kasih signal BTC dengan AI verdict sekarang"
+
+### Pertanyaan Alternatif:
+- "AI verdict accuracy check: dari 100 CONFIRM signals terakhir, berapa % yang profit? Compare dengan DOWNSIZE signals win rate"
+- "Performance review AI verdict 30 hari terakhir: average P&L per verdict type, best performing verdict, worst performing verdict"
+- "Cek ETH signal dengan AI verdict sekarang, PLUS show me historical accuracy dari verdict type yang sama (CONFIRM accuracy = X%?)"
+- "Analytics deep dive: verdict performance comparison, outcomes history breakdown (WIN/LOSS/NEUTRAL classification), tracking stats"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ {"operation": "signals.get", "symbol": "BTC"}  ← Current signal with AI verdict
+✅ {"operation": "analytics.verdict_performance"}  ← Win rates per verdict
+✅ {"operation": "analytics.verdict_compare"}  ← Compare effectiveness
+✅ {"operation": "analytics.outcomes_history", "limit": 100}  ← Historical P&L
+✅ {"operation": "analytics.tracking_stats"}  ← System performance metrics
+
+### Expected Response (NEW - Analytics Feature):
+- **Current Signal with AI Verdict:**
+  - BTC: LONG, Score 75, Verdict: CONFIRM, Position: 1.2x
+  
+- **📊 AI Verdict Performance (Last 100 Signals):**
+  
+  | Verdict Type | Total Signals | Win | Loss | Neutral | Win Rate | Avg P&L |
+  |--------------|---------------|-----|------|---------|----------|---------|
+  | CONFIRM      | 45            | 32  | 8    | 5       | 71.1%    | +3.2%   |
+  | DOWNSIZE     | 28            | 18  | 7    | 3       | 64.3%    | +1.8%   |
+  | SKIP         | 20            | N/A | N/A  | N/A     | N/A      | 0.0%    |
+  | WAIT         | 7             | N/A | N/A  | N/A     | N/A      | 0.0%    |
+  
+  **Overall AI Accuracy:** 68.5%
+  **Best Verdict:** CONFIRM (71% win rate)
+  **Recommended:** Follow CONFIRM blindly, use caution with DOWNSIZE
+
+- **Verdict Comparison Analysis:**
+  - CONFIRM signals: Best for swing trades (4h-24h hold)
+  - DOWNSIZE signals: Best for quick scalps (1h-4h)
+  - SKIP signals: 85% avoided losses (validated by hindsight)
+  
+- **Outcomes History (Last 100 Tracked Signals):**
+  - WIN: 50 signals (50%)
+  - LOSS: 28 signals (28%)
+  - NEUTRAL: 22 signals (22%)
+  - Average WIN: +4.8%
+  - Average LOSS: -2.1%
+  - Risk/Reward Ratio: 2.3:1 (good)
+  
+- **Tracking Statistics:**
+  - Total signals tracked: 1,247
+  - Signals with outcome data: 892 (71.5%)
+  - Average monitoring time: 18.5 hours
+  - Auto-classification accuracy: 94.2%
+
+- **Insights & Recommendations:**
+  - Trust CONFIRM verdicts with 70%+ confidence
+  - DOWNSIZE verdicts = reduce position, not skip
+  - SKIP verdicts rarely wrong (high precision)
+  - WAIT verdicts = temporary, retry in 5-10 mins
+
+### 📖 HOW TO INTERPRET (AI Verdict Analytics):
+
+**Current Signal: CONFIRM + Historical CONFIRM Win Rate: 71%:**
+→ High probability trade, AI track record strong
+→ **ACTION:** Execute with full recommended position size
+
+**Current Signal: DOWNSIZE + Historical DOWNSIZE Win Rate: 64%:**
+→ Moderate probability, still positive expectancy
+→ **ACTION:** Enter with 50% position as recommended
+
+**SKIP signals avoided 85% of losses:**
+→ AI excellent at risk detection
+→ **ACTION:** NEVER ignore SKIP verdicts
+
+**CONFIRM signals: 71% win rate + 2.3:1 R:R:**
+→ Positive expectancy system
+→ **ACTION:** Follow CONFIRM signals systematically
+
+**Recent performance degrading (win rate dropping):**
+→ Market regime change or data quality issues
+→ **ACTION:** Reduce position sizes, wait for recovery
+
+═══════════════════════════════════════════════════════════════════════
+
+## 📉 TEMPLATE 8 (NEW): VOLATILITY ANALYSIS & RISK MANAGEMENT
+**Trigger:** signals.get (volatility metrics) + market.get + coinglass.indicators.bollinger_bands
+
+### 🎯 USE CASE:
+Optimize position sizing based on volatility dengan ATR-based approach. Perfect untuk:
+- ✅ Adaptive position sizing (bigger in low vol, smaller in high vol)
+- ✅ Stop loss optimization (ATR-based distance)
+- ✅ Risk/Reward calculation (1.5:1 minimum)
+- ✅ Volatility regime identification (compression vs expansion)
+
+### Pertanyaan:
+"Analisis volatility BTC: berapa ATR sekarang? Recommended position size untuk volatility level ini? Kasih stop loss dan take profit levels yang optimal (ATR-based)"
+
+### Pertanyaan Alternatif:
+- "ETH volatility check: high/low/normal? Kalau high volatility, position size dikurangi jadi berapa? SL harus lebih lebar ga?"
+- "Compare volatility: BTC vs ETH vs SOL. Mana yang paling stable untuk position sizing? Recommended allocation per coin based on vol"
+- "SOL lagi volatile ga? Cek ATR percentage + Bollinger Bands width. Kalau lagi squeeze, potential breakout kemana?"
+- "Volatility-adjusted portfolio: scan top 10 coins, kasih recommended position size untuk masing-masing based on ATR (total allocation 100%)"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ {"operation": "signals.get", "symbol": "BTC"}  ← Includes volatility metrics
+✅ {"operation": "market.get", "symbol": "BTC"}  ← Price data for ATR calc
+✅ {"operation": "coinglass.indicators.bollinger_bands", "symbol": "BTC"}  ← Vol indicator
+
+### Expected Response (Volatility-Focused):
+- **Current Price:** $43,250
+- **ATR (Average True Range):**
+  - ATR Value: $1,210 (2.8% of price)
+  - ATR 14-period (standard)
+  - Volatility Level: NORMAL (2-4% range)
+  
+- **📊 Volatility Classification:**
+  - Very Low (<1%): 1.5x-2.0x position multiplier
+  - Low (1-2%): 1.0x-1.25x multiplier
+  - **NORMAL (2-4%):** 0.75x-1.0x multiplier ← BTC saat ini
+  - High (4-8%): 0.5x-0.75x multiplier
+  - Very High (>8%): 0.25x-0.5x multiplier
+  
+- **Position Sizing Recommendation:**
+  - Base Position: $1,000
+  - ATR Multiplier: 0.9x (normal volatility)
+  - **Recommended Position:** $900
+  
+- **ATR-Based Stop Loss:**
+  - SL Distance: 1.5x ATR = $1,815
+  - SL Percentage: 4.2% from entry
+  - SL Price: $41,435 (if long entry at $43,250)
+  
+- **Take Profit Levels:**
+  - TP1 (1.5:1 R:R): 6.3% from entry = $46,000
+  - TP2 (2.5:1 R:R): 10.5% from entry = $47,800
+  - TP3 (5:1 R:R): 21% from entry = $52,400
+  
+- **Bollinger Bands Analysis:**
+  - Current Position: Middle band
+  - Band Width: Normal (not squeezed)
+  - Expansion/Compression: Neutral
+  
+- **Risk Management Summary:**
+  - Risk Amount: $90 (at $900 position with 4.2% SL)
+  - Potential Reward (TP1): $135 (R:R 1.5:1)
+  - Max Loss: -4.2% | Max Gain TP1: +6.3%
+
+### 📖 HOW TO INTERPRET (Volatility Metrics):
+
+**ATR 2.8% (Normal) + AI Verdict CONFIRM + Position 0.9x:**
+→ Standard risk environment, slight reduction for safety
+→ **ACTION:** Execute trade with $900 position, SL at 4.2%
+
+**ATR 6.5% (High) + Position Multiplier 0.6x:**
+→ High volatility detected, position size reduced
+→ **ACTION:** Smaller position, wider SL (1.5x ATR = 9.75%)
+
+**ATR <1% (Very Low) + Position Multiplier 1.8x:**
+→ Low volatility = opportunity for larger size
+→ **ACTION:** Aggressive sizing, tighter SL (1.5% acceptable)
+
+**Bollinger Bands Squeezed + ATR Declining:**
+→ Volatility compression, breakout imminent
+→ **ACTION:** Position for breakout, expect ATR expansion
+
+**ATR Rising + Bollinger Bands Expanding:**
+→ Volatility explosion in progress
+→ **ACTION:** Reduce positions, expect large moves
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🔄 TEMPLATE 9 (UPDATED): REAL-TIME LIQUIDATION MONITORING
+**Trigger:** coinglass.liquidation.aggregated_history + coinglass.liquidation.pairs + spike_detection.liquidation_spike
+
+### 🎯 USE CASE:
+Pantau liquidation cascades real-time untuk catch domino effects. Perfect untuk:
+- ✅ Predicting short squeezes (massive short liquidations)
+- ✅ Spotting long traps (massive long liquidations)
+- ✅ Cascade detection (liquidation spike >$10M in 15 mins)
+- ✅ Cross-exchange analysis (which exchange most vulnerable)
+
+### Pertanyaan:
+"Monitor liquidations real-time untuk BTC: ada spike >$10M dalam 15 menit? Breakdown longs vs shorts. Plus cek liquidation spike detector - ada cascade risk?"
+
+### Pertanyaan Alternatif:
+- "Real-time liq watch ETH: berapa total liquidations 1 jam terakhir? Longs or shorts yang kena lebih banyak? Predict cascade potential"
+- "Scan liquidations untuk top 10 coins: highlight yang ada liquidation spike (>$5M shorts atau longs). Red flag atau opportunity?"
+- "SOL liquidation heatmap: di price level berapa ada massive liquidation cluster? Predict domino effect kalau price hit that level"
+- "Cross-exchange liquidation comparison: Binance vs Bybit vs OKX vs Hyperliquid. Exchange mana yang paling vulnerable untuk cascade?"
+
+### API Calls yang Akan Dipanggil GPT:
+✅ {"operation": "coinglass.liquidation.aggregated_history"}  ← All exchanges
+✅ {"operation": "coinglass.liquidation.pairs"}  ← Specific pairs
+✅ {"operation": "spike_detection.liquidation_spike", "symbol": "BTC"}  ← Spike detector
+✅ {"operation": "coinglass.liquidation.heatmap", "symbol": "BTC"}  ← Price levels
+
+### Expected Response (Real-Time Liq Monitoring):
+- **Last 15 Minutes Liquidations:**
+  - Total: $8.5M
+  - Longs: $6.2M (73%)
+  - Shorts: $2.3M (27%)
+  - **Spike Detected:** NO (threshold: $10M)
+  
+- **Last 1 Hour Liquidations:**
+  - Total: $28.4M
+  - Longs: $19.1M (67%)
+  - Shorts: $9.3M (33%)
+  
+- **Last 24 Hours Liquidations:**
+  - Total: $145.8M
+  - Longs: $87.5M (60%)
+  - Shorts: $58.3M (40%)
+  
+- **💥 Liquidation Spike Detector:**
+  - Spike Status: NORMAL (no cascade)
+  - Largest 15-min spike: $6.8M (longs)
+  - Cascade Risk: LOW
+  - Direction: Bearish (more longs liquidated)
+  
+- **Liquidation Heatmap (Price Levels):**
+  - Massive Long Cluster: $42,000 (liquidation wall)
+  - Massive Short Cluster: $44,500 (squeeze zone)
+  - Current Price: $43,250
+  - Magnet Zone: $42,000 (likely to get pulled down)
+  
+- **Cross-Exchange Breakdown:**
+  - Binance: $52M (36%)
+  - Bybit: $38M (26%)
+  - OKX: $31M (21%)
+  - Hyperliquid: $24.8M (17%)
+  
+- **Cascade Prediction:**
+  - If price drops to $42,000: +$85M long liquidations
+  - If price rises to $44,500: +$42M short liquidations
+  - Domino Effect Probability: 35% (moderate)
+
+### 📖 HOW TO INTERPRET (Liq Monitoring):
+
+**Longs 73% of recent liquidations + Price dropping:**
+→ Long trap in progress, retail getting rekt
+→ **ACTION:** Avoid long entries, consider short
+
+**Liquidation cluster at $42k + Current price $43,250:**
+→ Price likely to get pulled to liquidation magnet
+→ **ACTION:** Set buy orders at $42k, expect wick down
+
+**Massive short cluster at $44,500 + Low short liq so far:**
+→ Shorts heavily positioned, squeeze potential
+→ **ACTION:** Long entry, target $44,500 squeeze
+
+**Liquidation spike $15M in 15 mins (shorts):**
+→ Short squeeze triggered, cascade starting
+→ **ACTION:** Immediate long entry, momentum trade
+
+**Cross-exchange: Binance 50% of total liq:**
+→ Binance traders most leveraged/vulnerable
+→ **ACTION:** Monitor Binance funding rate closely
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🌐 TEMPLATE 10 (UPDATED): FULL MARKET SCAN WITH CIRCUIT BREAKER AWARENESS
+**Trigger:** signals.get (batch) + mss.discover + smart_money.scan + analytics.verdict_performance + check circuit breaker status
+
+### 🎯 USE CASE:
+Comprehensive market overview dengan awareness of API limitations. Perfect untuk:
+- ✅ Weekly market review (Sunday night routine)
+- ✅ Finding new opportunities across all sectors
+- ✅ Understanding current data quality & API status
+- ✅ Circuit breaker awareness (LunarCrush rate limiting)
+
+### Pertanyaan:
+"Full market scan: signals untuk top 20 coins dengan AI verdict, MSS discovery emerging coins (score 75+), smart money scan top 30 coins, dan AI verdict performance. Kalau ada circuit breaker active untuk LunarCrush, kasih tau juga"
+
+### Pertanyaan Alternatif:
+- "Weekly review: comprehensive scan semua - top signals, emerging gems, whale activity, AI performance stats. Highlight circuit breaker status (LunarCrush API available?)"
+- "Market overview lengkap: scan 30 coins signals + AI verdicts, discover MSS coins baru, cek whale accumulation patterns. Inform kalau ada API rate limiting"
+- "Full scan dengan safeguards awareness: top 20 signals, MSS discovery, smart money, plus data quality report (berapa % services available?)"
+- "Complete market analysis: signals batch, analytics performance, emerging coins discovery, smart money scan. Skip LunarCrush kalau circuit breaker open"
+
+### API Calls yang Akan Dipanggil GPT (with Fallbacks):
+✅ {"operation": "signals.get"} (batch 20 coins)  ← Core signals
+✅ {"operation": "mss.discover", "min_mss_score": 75, "limit": 10}  ← Emerging coins
+✅ {"operation": "smart_money.scan", "limit": 30}  ← Whale activity
+✅ {"operation": "analytics.verdict_performance"}  ← AI performance
+✅ {"operation": "coinglass.indicators.fear_greed"}  ← Market sentiment
+✅ (LunarCrush calls may be skipped if circuit breaker OPEN)
+
+### Expected Response (with Circuit Breaker Awareness):
+- **⚠️ System Status Report:**
+  - Circuit Breaker: CLOSED (LunarCrush available) OR OPEN (cooldown 5 mins)
+  - Data Quality: 85% (good) or 70% (acceptable, some services down)
+  - API Response Time: Normal / Slow / Degraded
+  
+- **📊 Top 20 Coins Signals Summary:**
+  
+  **CONFIRM Signals (High Confidence):**
+  1. BTC - Score 78, Position 1.2x, LONG
+  2. ETH - Score 75, Position 1.0x, LONG
+  3. SOL - Score 71, Position 1.0x, LONG
+  
+  **DOWNSIZE Signals (Moderate):**
+  4. AVAX - Score 65, Position 0.5x, LONG
+  5. MATIC - Score 62, Position 0.5x, NEUTRAL
+  
+  **SKIP Signals (Avoid):**
+  15. XRP - Score 48, Position 0.0x, NEUTRAL
+  16. DOGE - Score 45, Position 0.0x, SHORT
+  
+  **WAIT Signals (Data Issues):**
+  18. ADA - Data quality 45% (LunarCrush down)
+  
+- **🚀 MSS Discovery (Emerging Coins):**
+  - Top 5 gems with MSS 75+
+  - Tier 1-2 coins only
+  - Social buzz rising
+  - (If circuit breaker OPEN: Limited social data available)
+  
+- **🐋 Smart Money Scan (30 Coins):**
+  - Top 10 accumulation plays
+  - Top 5 distribution warnings
+  - Dynamic discovery from CoinGecko (top volume)
+  
+- **📈 AI Verdict Performance:**
+  - CONFIRM: 71% win rate
+  - Overall accuracy: 68.5%
+  - Recommendation: Trust CONFIRM signals
+  
+- **😱 Market Sentiment:**
+  - Fear & Greed: 45 (Neutral)
+  - Overall bias: Slightly bullish
+  
+- **⚡ Circuit Breaker Details (if applicable):**
+  - LunarCrush Status: OPEN (last failed: 12:35 UTC)
+  - Cooldown Remaining: 3 minutes
+  - Impact: Social sentiment data unavailable
+  - Fallback: Signals still generated with 70%+ quality
+  - Action: Social data will resume after cooldown
+
+### 📖 HOW TO INTERPRET (Full Scan):
+
+**Circuit Breaker OPEN + Data Quality 72%:**
+→ LunarCrush rate limited, but signals still valid
+→ **ACTION:** Proceed with signals, social data less reliable
+
+**Multiple CONFIRM signals + AI 71% win rate:**
+→ High-conviction environment, AI performing well
+→ **ACTION:** Execute CONFIRM trades systematically
+
+**High WAIT signals (5+) + Overall data quality <60%:**
+→ API issues widespread, data unreliable
+→ **ACTION:** Pause trading, wait for recovery
+
+**MSS Discovery: 8 Tier 1 coins + Smart Money: 10 accumulation:**
+→ Many opportunities emerging
+→ **ACTION:** Review all, prioritize by confluence
+
+**Circuit Breaker cycling OPEN/CLOSED frequently:**
+→ LunarCrush API unstable today
+→ **ACTION:** Reduce reliance on social metrics
+
+═══════════════════════════════════════════════════════════════════════
+PART 8: UNDERSTANDING AI VERDICT (NEW)
+═══════════════════════════════════════════════════════════════════════
+
+## 🤖 WHAT IS AI VERDICT?
+
+AI Verdict adalah layer validasi GPT-4 yang menganalisis semua signal data dan memberikan 4 possible verdicts:
+
+### CONFIRM (Green Flag) ✅
+**Meaning:** AI validates signal dengan high confidence
+**Position Sizing:** 1.0x - 1.5x (full to aggressive)
+**When Given:**
+- All 8 factors align nicely
+- No major risk warnings detected
+- Data quality high (>70%)
+- Volatility acceptable
+- Historical win rate strong
+
+**What To Do:**
+→ Execute trade dengan full recommended position size
+→ Follow AI's stop loss / take profit levels
+→ Hold dengan confidence, AI sudah validate
+
+**Example:**
+"BTC LONG, Score 78, Verdict: CONFIRM, Position 1.2x"
+→ AI says: "Strong uptrend, low risk, go for it"
+
+---
+
+### DOWNSIZE (Yellow Flag) ⚠️
+**Meaning:** Moderate confidence, proceed dengan caution
+**Position Sizing:** 0.5x (half position)
+**When Given:**
+- Mixed signals (beberapa bullish, beberapa bearish)
+- Some risk warnings present
+- Data quality acceptable (60-70%)
+- Moderate volatility
+- Historical performance moderate
+
+**What To Do:**
+→ Enter dengan 50% of normal position size
+→ Use tighter stop loss
+→ Monitor closely, ready to exit
+→ Don't add to position unless upgrade to CONFIRM
+
+**Example:**
+"ETH LONG, Score 68, Verdict: DOWNSIZE, Position 0.5x"
+→ AI says: "Potentially good but risky, reduce exposure"
+
+---
+
+### SKIP (Red Flag) 🚫
+**Meaning:** Low confidence, avoid this trade
+**Position Sizing:** 0.0x (no trade)
+**When Given:**
+- Conflicting signals across multiple factors
+- Major risk warnings detected (extreme funding, liq imbalance)
+- Low score (<55) but tempting to trade
+- High volatility + low conviction
+- Overcrowded trade (contrarian signal)
+
+**What To Do:**
+→ DO NOT ENTER this trade
+→ Wait for better setup
+→ If already in position, consider exiting
+→ Look for other opportunities
+
+**Example:**
+"SOL SHORT, Score 52, Verdict: SKIP, Position 0.0x"
+→ AI says: "Too risky, data conflicting, avoid"
+
+---
+
+### WAIT (Gray Flag) ⏳
+**Meaning:** Insufficient data quality, cannot assess properly
+**Position Sizing:** 0.0x (no trade)
+**When Given:**
+- Data quality <50% (API failures)
+- Critical data sources unavailable
+- Circuit breaker OPEN for important services
+- Too many missing metrics
+
+**What To Do:**
+→ DO NOT TRADE on incomplete data
+→ Wait 5-10 minutes for API recovery
+→ Retry the signal request
+→ If persistent, check system status
+
+**Example:**
+"BTC NEUTRAL, Score N/A, Verdict: WAIT, Data Quality 45%"
+→ AI says: "Not enough data, wait for APIs to recover"
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 HOW AI VERDICT WORKS (Behind the Scenes)
+
+**Step 1: Data Collection**
+- System collects data dari 8 factors
+- Coinglass (Liq, Funding, OI, Indicators)
+- LunarCrush (Social sentiment) - circuit breaker protected
+- CoinAPI (Market data)
+- Binance/OKX (Futures data)
+
+**Step 2: Score Calculation**
+- Weighted scoring 0-100
+- Each factor contributes based on weight
+- Final score = composite of all 8
+
+**Step 3: GPT-4 Validation**
+- AI receives: score, all 8 factors, market context
+- AI analyzes: risk warnings, data quality, confluence
+- AI considers: volatility, historical performance
+- AI outputs: CONFIRM/DOWNSIZE/SKIP/WAIT + reasoning
+
+**Step 4: Position Sizing**
+- ATR (volatility) measured
+- Base multiplier from AI verdict
+- Volatility adjustment applied
+- Final position size = verdict multiplier × volatility multiplier
+
+**Step 5: Risk Management**
+- Stop loss calculated (1.5x ATR distance)
+- Take profit levels (1.5:1, 2.5:1 R:R ratios)
+- Risk warnings highlighted
+- Trade plan provided
+
+═══════════════════════════════════════════════════════════════════════
+
+## 📊 AI VERDICT PERFORMANCE TRACKING
+
+System automatically tracks ALL signals dengan outcome monitoring:
+
+**Outcome Classification:**
+- **WIN:** Price moved in predicted direction >2% within monitoring period
+- **LOSS:** Price moved against prediction >2%
+- **NEUTRAL:** Price moved <2% either direction (choppy)
+
+**Monitoring Periods:**
+- 1 hour after signal
+- 4 hours after signal
+- 24 hours after signal
+- Final outcome = best performance across timeframes
+
+**Performance Metrics:**
+- Win rate per verdict type (CONFIRM, DOWNSIZE)
+- Average P&L per verdict
+- Best timeframe (1h/4h/24h holds)
+- Overall AI accuracy
+
+**How to Use Performance Data:**
+→ Check analytics.verdict_performance before trading session
+→ If CONFIRM win rate >65%, follow CONFIRM signals blindly
+→ If overall accuracy declining, reduce position sizes
+→ Trust SKIP verdicts (highest precision, avoid losses)
+
+═══════════════════════════════════════════════════════════════════════
+PART 9: VOLATILITY METRICS GUIDE (NEW)
+═══════════════════════════════════════════════════════════════════════
+
+## 📉 WHAT IS ATR (Average True Range)?
+
+ATR mengukur volatility dengan melihat average price range over 14 periods.
+
+**Formula:** ATR = average of (High - Low) over 14 candles
+
+**Example:**
+- BTC price: $43,000
+- ATR: $1,200 (14-period)
+- ATR %: 2.79% ($1,200 / $43,000)
+
+### ATR INTERPRETATION:
+
+**ATR < 1% (Very Low Volatility):**
+- Price barely moving
+- Low risk environment
+- **Position Sizing:** 1.5x-2.0x (aggressive)
+- **Stop Loss:** Tighter (1.5-2% acceptable)
+
+**ATR 1-2% (Low Volatility):**
+- Calm market, small moves
+- Below average risk
+- **Position Sizing:** 1.0x-1.25x
+- **Stop Loss:** 2-3% from entry
+
+**ATR 2-4% (Normal Volatility):**
+- Standard crypto volatility
+- Average risk environment
+- **Position Sizing:** 0.75x-1.0x (standard)
+- **Stop Loss:** 3-5% from entry
+
+**ATR 4-8% (High Volatility):**
+- Large price swings
+- Elevated risk
+- **Position Sizing:** 0.5x-0.75x (reduced)
+- **Stop Loss:** 5-10% from entry (wider)
+
+**ATR > 8% (Very High Volatility):**
+- Extreme price movements
+- Very high risk
+- **Position Sizing:** 0.25x-0.5x (minimal)
+- **Stop Loss:** 10-15% from entry (very wide)
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 VOLATILITY-ADJUSTED POSITION SIZING
+
+**The Formula:**
+
+Final Position = Base Position × AI Verdict Multiplier × ATR Multiplier
+
+**Example 1: Low Volatility + CONFIRM**
+- Base Position: $1,000
+- AI Verdict: CONFIRM (1.2x)
+- ATR: 1.5% (Low volatility = 1.2x)
+- Final Position: $1,000 × 1.2 × 1.2 = $1,440
+→ Aggressive sizing kalau low vol + high conviction
+
+**Example 2: High Volatility + CONFIRM**
+- Base Position: $1,000
+- AI Verdict: CONFIRM (1.2x)
+- ATR: 6% (High volatility = 0.6x)
+- Final Position: $1,000 × 1.2 × 0.6 = $720
+→ Conservative sizing kalau high vol (risk protection)
+
+**Example 3: Normal Volatility + DOWNSIZE**
+- Base Position: $1,000
+- AI Verdict: DOWNSIZE (0.5x)
+- ATR: 3% (Normal volatility = 0.9x)
+- Final Position: $1,000 × 0.5 × 0.9 = $450
+→ Half position + slight vol adjustment
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🛡️ ATR-BASED STOP LOSS CALCULATION
+
+**Standard Approach:** SL = Entry Price ± (1.5 × ATR)
+
+**Example (LONG Entry):**
+- Entry Price: $43,000
+- ATR: $1,200
+- SL Distance: 1.5 × $1,200 = $1,800
+- SL Price: $43,000 - $1,800 = $41,200
+- SL Percentage: 4.2% from entry
+
+**Example (SHORT Entry):**
+- Entry Price: $43,000
+- ATR: $1,200
+- SL Distance: 1.5 × $1,200 = $1,800
+- SL Price: $43,000 + $1,800 = $44,800
+- SL Percentage: 4.2% from entry
+
+**Why 1.5x ATR?**
+→ Gives trade "room to breathe" (normal fluctuation)
+→ Not too tight (avoid premature SL hit)
+→ Not too wide (limit max loss)
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🎯 TAKE PROFIT LEVELS (RISK/REWARD OPTIMIZATION)
+
+**Minimum R:R Ratio:** 1.5:1 (risk $100 to make $150)
+
+**Formula:**
+- TP1 = Entry + (SL Distance × 1.5)
+- TP2 = Entry + (SL Distance × 2.5)
+- TP3 = Entry + (SL Distance × 5.0)
+
+**Example (LONG with 4.2% SL):**
+- Entry: $43,000
+- SL Distance: 4.2% ($1,800)
+- TP1 (1.5:1): $43,000 + ($1,800 × 1.5) = $45,700 (+6.3%)
+- TP2 (2.5:1): $43,000 + ($1,800 × 2.5) = $47,500 (+10.5%)
+- TP3 (5:1): $43,000 + ($1,800 × 5.0) = $52,000 (+20.9%)
+
+**Scaling Out Strategy:**
+- TP1: Close 50% of position (secure profit)
+- TP2: Close 30% of position (let winners run)
+- TP3: Close final 20% (home run potential)
+
+═══════════════════════════════════════════════════════════════════════
+PART 10: PRODUCTION SAFEGUARDS (NEW)
+═══════════════════════════════════════════════════════════════════════
+
+## ⚡ CIRCUIT BREAKER PATTERN (LunarCrush Protection)
+
+**What It Is:**
+System yang auto-skip LunarCrush API calls ketika rate limit terdeteksi.
+
+**How It Works:**
+
+**3 States:**
+1. **CLOSED:** Normal operation, LunarCrush available
+2. **OPEN:** Rate limit detected, skip LunarCrush calls
+3. **HALF_OPEN:** Testing recovery after cooldown
+
+**Trigger Conditions:**
+- 5 consecutive LunarCrush API failures (HTTP 429)
+- Circuit opens instantly
+- 5-minute cooldown period
+- Auto-test recovery after cooldown
+
+**Impact on Signals:**
+- Social sentiment data unavailable
+- Signal generation continues (degraded mode)
+- Data quality typically 70-80% (still acceptable)
+- MSS Discovery may be limited (social phase affected)
+
+**What You'll See:**
+"⚠️ LunarCrush circuit breaker OPEN (cooldown 3 mins). Signals generated with available data (quality: 75%)"
+
+**What To Do:**
+→ Proceed with signals if quality >70%
+→ Understand social metrics unreliable
+→ Wait 5 mins if you need social data
+→ System auto-recovers, no action needed
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🔄 RETRY LOGIC (CoinGecko Resilience)
+
+**What It Is:**
+Auto-retry mechanism untuk handle transient API failures.
+
+**How It Works:**
+- 3 retry attempts with exponential backoff
+- Delay progression: 1s → 2s → 4s
+- Handles HTTP 429 (rate limit) and 5xx errors
+- Ensures reliable coin discovery
+
+**Example Sequence:**
+1. Attempt 1: CoinGecko API call → HTTP 429 (rate limited)
+2. Wait 1 second
+3. Attempt 2: Retry → HTTP 429 again
+4. Wait 2 seconds
+5. Attempt 3: Retry → Success! Data received
+
+**Affected Operations:**
+- smart_money.scan (coin discovery)
+- mss.discover (emerging coins)
+- market data fetching
+
+**What You'll See:**
+Usually transparent (auto-handled behind scenes)
+If all retries fail: "CoinGecko unavailable after 3 attempts"
+
+**What To Do:**
+→ System handles automatically
+→ If persistent failures, wait 2-3 minutes
+→ Fallback to hardcoded coin lists if needed
+
+═══════════════════════════════════════════════════════════════════════
+
+## 📊 DATA QUALITY THRESHOLDS
+
+**Quality Scoring:**
+System tracks successful data fetches across 16-17 services.
+
+**Quality Levels:**
+- **Excellent (85-100%):** All systems firing, high confidence
+- **Good (70-84%):** Most data available, acceptable
+- **Acceptable (50-69%):** Degraded but usable
+- **Poor (<50%):** Insufficient, signal generation SKIPPED
+
+**Minimum Thresholds:**
+- Signal generation: 50% minimum
+- Premium data: 2/4 endpoints minimum (Coinglass services)
+- Critical services: Must have price data + at least 1 factor
+
+**Service Tiers:**
+- **CRITICAL:** Price data, liquidations, funding rate
+  → If unavailable, signal WAIT verdict
+- **IMPORTANT:** Long/Short ratio, OI trend, fear & greed
+  → If unavailable, signal continues with warning
+- **OPTIONAL:** Social sentiment, whale index, MSS
+  → If unavailable, signal continues normally
+
+**What You'll See:**
+```
+Data Quality: 75% (good) - 12/16 services successful
+Failed services (4):
+- social_basic (critical): HTTP 429
+- lunarcrush_comprehensive (optional): Rate limited
+- social_momentum (optional): Timeout
+- oi_trend (optional): Unknown error
+```
+
+**What To Do:**
+→ Quality >70%: Proceed normally
+→ Quality 50-70%: Proceed with caution (incomplete data)
+→ Quality <50%: WAIT verdict, retry in 5-10 mins
+→ Check circuit breaker status for social failures
+
+═══════════════════════════════════════════════════════════════════════
+
+## 🛡️ GRACEFUL DEGRADATION
+
+**Philosophy:**
+Signal generation continues even when some services fail, as long as minimum quality met.
+
+**Fallback Strategy:**
+
+**If LunarCrush fails:**
+→ Skip social sentiment factor (10% weight)
+→ Redistribute weight to other 7 factors
+→ Signal still generated with 90% of data
+
+**If Coinglass premium fails:**
+→ Use basic Coinglass data
+→ Skip advanced indicators
+→ Quality drops to 60-70% but signal continues
+
+**If CoinGecko fails (Smart Money):**
+→ Fallback to hardcoded 38 coins
+→ Still analyze top coins
+→ Limited discovery but functional
+
+**If OpenAI (GPT-4) fails:**
+→ Fallback to rule-based verdict
+→ No AI summary, but risk assessment continues
+→ Conservative approach (higher SKIP rate)
+
+**Complete Fallback Chain:**
+1. Try premium APIs first
+2. If fail, try backup APIs
+3. If fail, use cached data (5 min TTL)
+4. If fail, use rule-based estimates
+5. If <50% quality, WAIT verdict
+
+═══════════════════════════════════════════════════════════════════════
+
+## ⚠️ RATE LIMIT BEST PRACTICES
+
+**For Users:**
+
+**1. Respect Smart Money Limits:**
+- Recommended: 20-30 coins per scan
+- Maximum: 50 coins
+- Exceeding 50 causes timeout / rate limiting
+
+**2. Avoid Rapid-Fire Requests:**
+- Wait 10-15 seconds between signal requests
+- Use batch operations when comparing multiple coins
+- System has 5-min cache, repeated requests use cache
+
+**3. Monitor Circuit Breaker Status:**
+- Check for LunarCrush OPEN status
+- If open, wait 5 mins before social-heavy operations
+- MSS Discovery, Smart Money less reliable during cooldown
+
+**4. Check Data Quality:**
+- Always review quality % in response
+- If <70%, consider waiting for recovery
+- WAIT verdicts = temporary, retry in 5-10 mins
+
+**5. Optimize API Usage:**
+- Use analytics.verdict_performance once per session
+- Use market.summary instead of multiple market.get
+- Batch signal requests instead of individual calls
+
+═══════════════════════════════════════════════════════════════════════
+END OF COMPREHENSIVE GUIDE
+═══════════════════════════════════════════════════════════════════════
+
+Version: 2.0 (November 2025)
+System: CryptoSatX AI-Powered Trading Signals
+Operations: 202+ available
+Endpoint: https://guardiansofthetoken.org/invoke
+
+**New in v2.0:**
+✅ AI Verdict Layer (GPT-4 validation)
+✅ Volatility-Adjusted Position Sizing (ATR-based)
+✅ Spike Detection System (Phase 5)
+✅ Analytics & Performance Tracking
+✅ Circuit Breaker & Retry Logic awareness
+✅ Smart Money Dynamic Discovery (30-50 coins)
+✅ Production Safeguards documentation
+✅ Data Quality & Graceful Degradation
+✅ 15 comprehensive templates (5 new!)
+
+**Coming in Future Versions:**
+- Advanced scalping strategies
+- Multi-timeframe confluence detection
+- Portfolio optimization tools
+- Automated trading signal webhooks
+- Risk management calculator
+
+═══════════════════════════════════════════════════════════════════════
+
+For questions, feedback, or advanced use cases:
+Contact: https://guardiansofthetoken.org
+Documentation: Check /docs folder in GitHub repo
