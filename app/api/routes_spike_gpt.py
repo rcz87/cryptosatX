@@ -309,3 +309,148 @@ async def explain_spike_system() -> Dict[str, Any]:
             "It's like having a 24/7 market scanner that never sleeps!"
         )
     }
+
+
+@router.get(
+    "/monitor-coin/{symbol}",
+    summary="🔍 Monitor specific coin for spike detection",
+    description="Get real-time spike detection status and recent alerts for a specific coin like SOL, BTC, ETH"
+)
+async def monitor_coin_spikes(symbol: str) -> Dict[str, Any]:
+    """
+    Monitor real-time spike detection for a specific coin
+
+    Args:
+        symbol: Coin symbol (e.g., SOL, BTC, ETH)
+
+    Returns user-friendly monitoring status for the coin
+    """
+    try:
+        symbol = symbol.upper()
+
+        # Get coordinator status to check if coin has recent signals
+        coord_status = await spike_coordinator.get_status()
+        monitored_symbols = coord_status.get("monitored_symbols", [])
+
+        # Check if coin is being tracked
+        is_monitored = symbol in monitored_symbols
+
+        # Get recent signals for this coin from coordinator
+        recent_signals = coord_status.get("recent_signals_by_coin", {}).get(symbol, [])
+
+        # Get detector statuses
+        price_status = await realtime_spike_detector.get_status()
+        liq_status = await liquidation_spike_detector.get_status()
+        social_status = await social_spike_monitor.get_status()
+
+        # Build coin-specific status
+        coin_alerts = {
+            "price_spikes": [],
+            "liquidation_events": [],
+            "social_spikes": []
+        }
+
+        alert_count = len(recent_signals)
+        last_alert_time = None
+
+        if recent_signals:
+            # Sort by timestamp
+            recent_signals.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+            last_alert_time = recent_signals[0].get("timestamp")
+
+            # Categorize by type
+            for signal in recent_signals[:5]:  # Last 5 signals
+                signal_type = signal.get("type", "unknown")
+                if "price" in signal_type.lower():
+                    coin_alerts["price_spikes"].append(signal)
+                elif "liquidation" in signal_type.lower():
+                    coin_alerts["liquidation_events"].append(signal)
+                elif "social" in signal_type.lower():
+                    coin_alerts["social_spikes"].append(signal)
+
+        # Determine monitoring status message
+        if not is_monitored:
+            status_message = f"🔍 ${symbol} is being monitored but no recent spike activity detected."
+            activity_level = "QUIET"
+        elif alert_count >= 3:
+            status_message = f"🔥 HIGH ACTIVITY on ${symbol}! {alert_count} signals detected recently. Check details below."
+            activity_level = "HIGH"
+        elif alert_count > 0:
+            status_message = f"📊 ${symbol} has {alert_count} recent signal(s). Moderate activity detected."
+            activity_level = "MODERATE"
+        else:
+            status_message = f"✅ ${symbol} is being monitored. No significant spikes detected recently."
+            activity_level = "LOW"
+
+        return {
+            "success": True,
+            "symbol": symbol,
+            "monitoring_status": {
+                "is_monitored": is_monitored or realtime_spike_detector.is_running,
+                "activity_level": activity_level,
+                "recent_alerts_count": alert_count,
+                "last_alert_time": last_alert_time,
+                "status_message": status_message
+            },
+            "detectors": {
+                "price_detector": {
+                    "running": realtime_spike_detector.is_running,
+                    "threshold": "8% in 5 minutes",
+                    "interval": f"{price_status.get('check_interval', 30)}s"
+                },
+                "liquidation_detector": {
+                    "running": liquidation_spike_detector.is_running,
+                    "threshold": "$20M per coin",
+                    "interval": f"{liq_status.get('check_interval', 60)}s"
+                },
+                "social_monitor": {
+                    "running": social_spike_monitor.is_running,
+                    "threshold": "100% social volume increase",
+                    "interval": f"{social_status.get('check_interval', 300)}s"
+                }
+            },
+            "recent_alerts": {
+                "price_spikes": coin_alerts["price_spikes"][:3],
+                "liquidation_events": coin_alerts["liquidation_events"][:3],
+                "social_spikes": coin_alerts["social_spikes"][:3]
+            },
+            "user_message": _get_coin_monitor_message(symbol, activity_level, alert_count, is_monitored)
+        }
+
+    except Exception as e:
+        logger.error(f"Error monitoring coin {symbol} for spikes: {e}")
+        return {
+            "success": False,
+            "symbol": symbol,
+            "error": str(e),
+            "user_message": f"Could not retrieve spike monitoring data for ${symbol}. Please try again."
+        }
+
+
+def _get_coin_monitor_message(symbol: str, activity_level: str, alert_count: int, is_monitored: bool) -> str:
+    """Get user-friendly message for coin monitoring"""
+    if activity_level == "HIGH":
+        return (
+            f"🔥 ${symbol} is experiencing HIGH spike activity! "
+            f"{alert_count} signals detected. This could be a strong trading opportunity. "
+            f"Check your Telegram for detailed alerts with entry/exit recommendations."
+        )
+    elif activity_level == "MODERATE":
+        return (
+            f"📊 ${symbol} has moderate activity with {alert_count} recent signal(s). "
+            f"Monitor closely for potential trading opportunities. "
+            f"System will send instant Telegram alerts if activity intensifies."
+        )
+    elif activity_level == "LOW":
+        return (
+            f"✅ ${symbol} is being monitored 24/7. "
+            f"No significant spikes detected recently. "
+            f"You'll receive instant Telegram alerts when price moves >8%, "
+            f"liquidations exceed $20M, or social volume spikes."
+        )
+    else:  # QUIET
+        return (
+            f"🔍 ${symbol} is being monitored but showing minimal activity. "
+            f"System will alert you immediately if any significant moves occur. "
+            f"Perfect time to set up positions before the next move!"
+        )

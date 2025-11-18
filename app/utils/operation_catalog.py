@@ -202,6 +202,7 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "spike.recent_activity": OperationMetadata("spike.recent_activity", "spike", "/gpt/spike-alerts/recent-activity", "GET", "Get recent spike detection activity - see what the system has been catching"),
     "spike.configuration": OperationMetadata("spike.configuration", "spike", "/gpt/spike-alerts/configuration", "GET", "View spike detection configuration - thresholds, intervals, and settings"),
     "spike.explain": OperationMetadata("spike.explain", "spike", "/gpt/spike-alerts/explain", "GET", "Explain spike detection system - get complete explanation of how it works"),
+    "spike.monitor_coin": OperationMetadata("spike.monitor_coin", "spike", "/gpt/spike-alerts/monitor-coin/{symbol}", "GET", "Monitor real-time spike detection for specific coin - get current status and recent alerts", requires_symbol=True),
 
     # PHASE 5 - Detailed Spike Detection Status
     "spike.status": OperationMetadata("spike.status", "spike", "/spike-detection/status", "GET", "Get comprehensive spike detection system status - all detectors and metrics"),
