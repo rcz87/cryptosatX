@@ -62,6 +62,7 @@ class RPCDispatcher:
         self.handlers["smart_money.scan_accumulation"] = self._smart_money_scan_accumulation
         self.handlers["smart_money.scan_distribution"] = self._smart_money_scan_distribution
         self.handlers["smart_money.analyze"] = self._smart_money_analyze
+        self.handlers["smart_money.get"] = self._smart_money_analyze  # Alias for analyze
         
         # MSS
         self.handlers["mss.discover"] = self._mss_discover
