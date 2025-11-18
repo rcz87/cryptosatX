@@ -55,6 +55,7 @@ Production-ready FastAPI backend for generating real-time cryptocurrency futures
 ### Documentation
 - `GET /docs` - Interactive API documentation (Swagger UI)
 - `GET /redoc` - Alternative documentation (ReDoc)
+- **Technical Guides**: See `/docs` folder for setup guides and reference documentation
 
 ## 🎨 Interactive Dashboard
 
