@@ -917,12 +917,18 @@ class SmartMoneyService:
                 current_volume=volume_24h
             )
 
-            # Fetch orderbook data from Binance for bid/ask pressure and whale walls
+            # Fetch orderbook data from Binance (with CoinGecko fallback)
             from app.services.binance_futures_service import binance_futures_service
+            from app.services.coingecko_service import coingecko_service
 
-            # Convert symbol to Binance format (e.g., BTC -> BTCUSDT)
+            # Try Binance first
             binance_symbol = f"{symbol}USDT" if not symbol.endswith("USDT") else symbol
             orderbook_result = await binance_futures_service.get_orderbook(binance_symbol, limit=100)
+
+            # If Binance fails (e.g., HTTP 403), fallback to CoinGecko
+            if not orderbook_result.get("success"):
+                logger.info(f"Binance orderbook failed for {symbol}, using CoinGecko fallback...")
+                orderbook_result = await coingecko_service.get_orderbook_estimate(symbol)
 
             if orderbook_result.get("success"):
                 orderbook_data = {
@@ -942,15 +948,23 @@ class SmartMoneyService:
                     orderbook_data=orderbook_data,
                     current_price=price
                 )
+
+                # Add source metadata
+                source = orderbook_result.get("source", "binance")
+                bid_ask_pressure["source"] = source
+                whale_walls["source"] = source
+                if orderbook_result.get("estimated"):
+                    bid_ask_pressure["estimated"] = True
+                    whale_walls["estimated"] = True
             else:
-                # Fallback if orderbook fetch fails
+                # Both Binance and CoinGecko failed
                 bid_ask_pressure = {
                     "isSignificant": False,
-                    "message": f"Orderbook fetch failed: {orderbook_result.get('error', 'Unknown')}"
+                    "message": f"Orderbook unavailable (tried Binance & CoinGecko): {orderbook_result.get('error', 'Unknown')}"
                 }
                 whale_walls = {
                     "hasWhaleWalls": False,
-                    "message": f"Orderbook fetch failed: {orderbook_result.get('error', 'Unknown')}"
+                    "message": f"Orderbook unavailable (tried Binance & CoinGecko): {orderbook_result.get('error', 'Unknown')}"
                 }
 
             # OI correlation (if available)
