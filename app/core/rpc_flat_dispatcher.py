@@ -277,7 +277,15 @@ class FlatRPCDispatcher:
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
             exchange = args.get("exchange", "Binance")
             symbol = args.get("symbol", "BTC")
-            return await coinglass_comprehensive.get_liquidation_coin_list(exchange=exchange, symbol=symbol)
+            interval = args.get("interval", "h1")
+            # ✅ OPTIMIZATION: Reduce default limit from 100 to 20 to prevent ResponseTooLargeError
+            limit = args.get("limit", 20)
+            return await coinglass_comprehensive.get_liquidation_history(
+                exchange=exchange,
+                symbol=symbol,
+                interval=interval,
+                limit=limit
+            )
 
         elif operation == "coinglass.liquidations.heatmap":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
@@ -286,6 +294,9 @@ class FlatRPCDispatcher:
 
         elif operation == "coinglass.liquidation.history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            # ✅ OPTIMIZATION: Apply default limit if not specified
+            if "limit" not in args:
+                args["limit"] = 20  # Prevent ResponseTooLargeError
             return await coinglass_comprehensive.get_liquidation_history(**args)
 
         elif operation == "coinglass.liquidation.order":
@@ -299,6 +310,9 @@ class FlatRPCDispatcher:
 
         elif operation == "coinglass.liquidation.aggregated_history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            # ✅ OPTIMIZATION: Apply default limit if not specified
+            if "limit" not in args:
+                args["limit"] = 20
             return await coinglass_comprehensive.get_liquidation_aggregated_history(**args)
 
         # ===================================================================
@@ -309,7 +323,8 @@ class FlatRPCDispatcher:
             exchange = args.get("exchange", "Binance")
             symbol = args.get("symbol", "BTCUSDT")
             interval = args.get("interval", "1d")
-            limit = args.get("limit", 100)
+            # ✅ OPTIMIZATION: Reduce default limit from 100 to 20
+            limit = args.get("limit", 20)
             return await coinglass_comprehensive.get_funding_rate_history(
                 exchange=exchange, symbol=symbol, interval=interval, limit=limit
             )
@@ -325,10 +340,16 @@ class FlatRPCDispatcher:
 
         elif operation == "coinglass.funding_rate.oi_weight_history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            # ✅ OPTIMIZATION: Apply default limit if not specified
+            if "limit" not in args:
+                args["limit"] = 20
             return await coinglass_comprehensive.get_oi_weighted_funding_rate_history(**args)
 
         elif operation == "coinglass.funding_rate.vol_weight_history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            # ✅ OPTIMIZATION: Apply default limit if not specified
+            if "limit" not in args:
+                args["limit"] = 20
             return await coinglass_comprehensive.get_volume_weighted_funding_rate_history(**args)
 
         # ===================================================================
@@ -339,7 +360,8 @@ class FlatRPCDispatcher:
             exchange = args.get("exchange", "Binance")
             symbol = args.get("symbol", "BTCUSDT")
             interval = args.get("interval", "1d")
-            limit = args.get("limit", 100)
+            # ✅ OPTIMIZATION: Reduce default limit from 100 to 20
+            limit = args.get("limit", 20)
             unit = args.get("unit", "usd")
             return await coinglass_comprehensive.get_open_interest_history(
                 exchange=exchange, symbol=symbol, interval=interval, limit=limit, unit=unit
@@ -352,14 +374,23 @@ class FlatRPCDispatcher:
 
         elif operation == "coinglass.open_interest.aggregated_history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            # ✅ OPTIMIZATION: Apply default limit if not specified
+            if "limit" not in args:
+                args["limit"] = 20
             return await coinglass_comprehensive.get_aggregated_oi_history(**args)
 
         elif operation == "coinglass.open_interest.aggregated_stablecoin_history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            # ✅ OPTIMIZATION: Apply default limit if not specified
+            if "limit" not in args:
+                args["limit"] = 20
             return await coinglass_comprehensive.get_aggregated_stablecoin_oi_history(**args)
 
         elif operation == "coinglass.open_interest.aggregated_coin_margin_history":
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
+            # ✅ OPTIMIZATION: Apply default limit if not specified
+            if "limit" not in args:
+                args["limit"] = 20
             return await coinglass_comprehensive.get_aggregated_coin_margin_oi_history(**args)
 
         elif operation == "coinglass.open_interest.exchange_history_chart":
