@@ -346,14 +346,81 @@ class BinanceFuturesService:
                 "timestamp": datetime.utcnow().isoformat(),
                 "source": "binance_futures"
             }
-            
+
         except Exception as e:
             return {
                 "success": False,
                 "symbol": symbol,
                 "error": str(e)
             }
-    
+
+    async def get_orderbook(self, symbol: str, limit: int = 100) -> Dict:
+        """
+        Get orderbook depth data for a symbol
+        Endpoint: /fapi/v1/depth
+
+        Args:
+            symbol: Trading pair (e.g., 'BTCUSDT')
+            limit: Depth limit (5, 10, 20, 50, 100, 500, 1000)
+
+        Returns:
+            Dict with bids and asks orderbook data:
+            {
+                "success": True,
+                "symbol": "BTCUSDT",
+                "bids": [[price, quantity], ...],  # Sorted by price descending
+                "asks": [[price, quantity], ...],  # Sorted by price ascending
+                "timestamp": "...",
+                "lastUpdateId": 12345
+            }
+        """
+        try:
+            client = await self._get_client()
+            url = f"{self.base_url}/fapi/v1/depth"
+
+            # Validate limit
+            valid_limits = [5, 10, 20, 50, 100, 500, 1000]
+            if limit not in valid_limits:
+                # Use closest valid limit
+                limit = min(valid_limits, key=lambda x: abs(x - limit))
+
+            params = {
+                "symbol": symbol.upper(),
+                "limit": limit
+            }
+
+            response = await client.get(url, params=params)
+
+            if response.status_code != 200:
+                return {
+                    "success": False,
+                    "error": f"HTTP {response.status_code}",
+                    "symbol": symbol
+                }
+
+            data = response.json()
+
+            # Convert string prices/quantities to floats for easier processing
+            bids = [[float(price), float(qty)] for price, qty in data.get("bids", [])]
+            asks = [[float(price), float(qty)] for price, qty in data.get("asks", [])]
+
+            return {
+                "success": True,
+                "symbol": symbol.upper(),
+                "bids": bids,
+                "asks": asks,
+                "lastUpdateId": data.get("lastUpdateId", 0),
+                "timestamp": datetime.utcnow().isoformat()
+            }
+
+        except Exception as e:
+            logger.error(f"Error fetching orderbook for {symbol}: {e}")
+            return {
+                "success": False,
+                "symbol": symbol,
+                "error": str(e)
+            }
+
     async def filter_coins_by_criteria(
         self,
         min_volume_usdt: float = 1000000,  # Min $1M volume
