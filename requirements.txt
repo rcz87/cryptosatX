@@ -32,3 +32,4 @@ aiofiles==25.1.0
 aiocache==0.12.3
 alembic
 apscheduler
+redis[hiredis]>=5.0.0
