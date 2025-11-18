@@ -1,949 +1,5 @@
 [
   {
-    "id": "sig_20251113001916191574",
-    "saved_at": "2025-11-13T00:19:16.191621",
-    "data": {
-      "symbol": "COMP",
-      "timestamp": "2025-11-13T00:19:15.023797",
-      "signal": "LONG",
-      "score": 61.1,
-      "confidence": "low",
-      "price": 33.090093662157635,
-      "reasons": [
-        "Overcrowded longs (61.5%) - contrarian bearish",
-        "Price trend: neutral",
-        "Social sentiment: 61/100"
-      ],
-      "metrics": {
-        "fundingRate": 0.0,
-        "openInterest": 583609.0,
-        "socialScore": 60.6,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": true,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": true,
-      "coinapiDataAvailable": true,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "neutral",
-        "priceChanges": {
-          "5m": 0.0,
-          "15m": 0.0,
-          "1h": 0.0,
-          "4h": 0.0,
-          "24h": 0.0
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.0,
-          "oiVolumeRatio": 0.0
-        },
-        "fundingRates": {
-          "oiWeighted": 0.0,
-          "volumeWeighted": 0.0
-        }
-      },
-      "lunarCrushMetrics": {
-        "altRank": 209,
-        "socialMetrics": {
-          "volume": 0,
-          "engagement": 0,
-          "dominance": 0.0,
-          "tweetVolume": 0,
-          "redditVolume": 0,
-          "urlShares": 0
-        },
-        "sentiment": {
-          "averageSentiment": 0.0,
-          "correlationRank": 0.0
-        },
-        "momentum": {
-          "momentumScore": 30.7,
-          "momentumLevel": "weak",
-          "volumeChange24h": 0.0,
-          "spikeLevel": "normal"
-        }
-      },
-      "coinAPIMetrics": {
-        "orderbook": {
-          "imbalance": 0.0,
-          "spreadPercent": 0.0,
-          "whaleBids": 0,
-          "whaleAsks": 0
-        },
-        "trades": {
-          "buyPressure": 66.76,
-          "sellPressure": 33.24,
-          "avgTradeSize": 2.5
-        },
-        "volatility7d": 16.53
-      },
-      "premiumMetrics": {
-        "liquidationImbalance": "long",
-        "longShortSentiment": "very_bullish",
-        "oiTrend": "unknown",
-        "smartMoneyBias": "long",
-        "fearGreedIndex": 50
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001916294900",
-    "saved_at": "2025-11-13T00:19:16.294932",
-    "data": {
-      "symbol": "NEAR",
-      "timestamp": "2025-11-13T00:19:15.123367",
-      "signal": "LONG",
-      "score": 53.7,
-      "confidence": "low",
-      "price": 2.528,
-      "reasons": [
-        "High funding rate (0.550%) - longs overleveraged",
-        "Overcrowded longs (68.4%) - contrarian bearish",
-        "Price trend: neutral"
-      ],
-      "metrics": {
-        "fundingRate": 0.005498,
-        "openInterest": 251423964.2133,
-        "socialScore": 57.3,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": true,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": true,
-      "coinapiDataAvailable": true,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "strongly_bearish",
-        "priceChanges": {
-          "5m": -0.04,
-          "15m": -0.55,
-          "1h": -0.47,
-          "4h": 0.12,
-          "24h": -1.48
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.0775,
-          "oiVolumeRatio": 0.5071
-        },
-        "fundingRates": {
-          "oiWeighted": 0.005498,
-          "volumeWeighted": 0.003903
-        }
-      },
-      "lunarCrushMetrics": {
-        "altRank": 52,
-        "socialMetrics": {
-          "volume": 0,
-          "engagement": 0,
-          "dominance": 0.0,
-          "tweetVolume": 0,
-          "redditVolume": 0,
-          "urlShares": 0
-        },
-        "sentiment": {
-          "averageSentiment": 0.0,
-          "correlationRank": 0.0
-        },
-        "momentum": {
-          "momentumScore": 29.7,
-          "momentumLevel": "very_weak",
-          "volumeChange24h": 0.0,
-          "spikeLevel": "normal"
-        }
-      },
-      "coinAPIMetrics": {
-        "orderbook": {
-          "imbalance": 0.0,
-          "spreadPercent": 0.0,
-          "whaleBids": 0,
-          "whaleAsks": 0
-        },
-        "trades": {
-          "buyPressure": 80.85,
-          "sellPressure": 19.15,
-          "avgTradeSize": 77.82
-        },
-        "volatility7d": 53.3
-      },
-      "premiumMetrics": {
-        "liquidationImbalance": "long",
-        "longShortSentiment": "very_bullish",
-        "oiTrend": "unknown",
-        "smartMoneyBias": "long",
-        "fearGreedIndex": 50
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001916390002",
-    "saved_at": "2025-11-13T00:19:16.390037",
-    "data": {
-      "symbol": "ARB",
-      "timestamp": "2025-11-13T00:19:15.302079",
-      "signal": "LONG",
-      "score": 64.9,
-      "confidence": "low",
-      "price": 0.2605,
-      "reasons": [
-        "Overcrowded longs (62.5%) - contrarian bearish",
-        "Price trend: neutral",
-        "Social sentiment: 66/100"
-      ],
-      "metrics": {
-        "fundingRate": -0.000855,
-        "openInterest": 136530933.0058,
-        "socialScore": 66.0,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": true,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": true,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "bullish",
-        "priceChanges": {
-          "5m": 0.08,
-          "15m": 0.12,
-          "1h": 0.42,
-          "4h": 0.31,
-          "24h": -5.89
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.0952,
-          "oiVolumeRatio": 0.3955
-        },
-        "fundingRates": {
-          "oiWeighted": -0.000855,
-          "volumeWeighted": -0.002152
-        }
-      },
-      "coinAPIMetrics": {
-        "orderbook": {
-          "imbalance": 0.0,
-          "spreadPercent": 0.0,
-          "whaleBids": 0,
-          "whaleAsks": 0
-        },
-        "trades": {
-          "buyPressure": 69.12,
-          "sellPressure": 30.88,
-          "avgTradeSize": 556.32
-        },
-        "volatility7d": 22.31
-      },
-      "premiumMetrics": {
-        "liquidationImbalance": "long",
-        "longShortSentiment": "very_bullish",
-        "oiTrend": "unknown",
-        "smartMoneyBias": "long",
-        "fearGreedIndex": 50
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001916563901",
-    "saved_at": "2025-11-13T00:19:16.563927",
-    "data": {
-      "symbol": "FTM",
-      "timestamp": "2025-11-13T00:19:15.615055",
-      "signal": "LONG",
-      "score": 54.1,
-      "confidence": "medium",
-      "price": 0.14300116405831056,
-      "reasons": [
-        "Price trend: neutral",
-        "Social sentiment: 49/100"
-      ],
-      "metrics": {
-        "fundingRate": 0.0,
-        "openInterest": 0.0,
-        "socialScore": 49.4,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": false,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": false,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "neutral",
-        "priceChanges": {
-          "5m": 0.0,
-          "15m": 0.0,
-          "1h": 0.0,
-          "4h": 0.0,
-          "24h": 0.0
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.0,
-          "oiVolumeRatio": 0.0
-        },
-        "fundingRates": {
-          "oiWeighted": 0.0,
-          "volumeWeighted": 0.0
-        }
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001916636266",
-    "saved_at": "2025-11-13T00:19:16.636343",
-    "data": {
-      "symbol": "OP",
-      "timestamp": "2025-11-13T00:19:15.601732",
-      "signal": "LONG",
-      "score": 66.6,
-      "confidence": "low",
-      "price": 0.4011,
-      "reasons": [
-        "Overcrowded longs (66.6%) - contrarian bearish",
-        "Price trend: neutral",
-        "Social sentiment: 62/100"
-      ],
-      "metrics": {
-        "fundingRate": -0.003563,
-        "openInterest": 84402258.6598,
-        "socialScore": 61.5,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": true,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": false,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "bullish",
-        "priceChanges": {
-          "5m": 0.22,
-          "15m": 0.12,
-          "1h": 0.22,
-          "4h": 0.5,
-          "24h": -1.64
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.1111,
-          "oiVolumeRatio": 0.3733
-        },
-        "fundingRates": {
-          "oiWeighted": -0.003563,
-          "volumeWeighted": -0.005541
-        }
-      },
-      "premiumMetrics": {
-        "liquidationImbalance": "long",
-        "longShortSentiment": "very_bullish",
-        "oiTrend": "unknown",
-        "smartMoneyBias": "long",
-        "fearGreedIndex": 50
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001916686889",
-    "saved_at": "2025-11-13T00:19:16.686916",
-    "data": {
-      "symbol": "APT",
-      "timestamp": "2025-11-13T00:19:15.642019",
-      "signal": "LONG",
-      "score": 66.9,
-      "confidence": "low",
-      "price": 3.0382,
-      "reasons": [
-        "Overcrowded longs (71.0%) - contrarian bearish",
-        "Price trend: neutral",
-        "Social sentiment: 66/100"
-      ],
-      "metrics": {
-        "fundingRate": -0.01084,
-        "openInterest": 238616869.0374,
-        "socialScore": 65.6,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": true,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": true,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "neutral",
-        "priceChanges": {
-          "5m": 0.27,
-          "15m": 0.01,
-          "1h": -0.28,
-          "4h": 0.52,
-          "24h": -1.92
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.1089,
-          "oiVolumeRatio": 0.9018
-        },
-        "fundingRates": {
-          "oiWeighted": -0.01084,
-          "volumeWeighted": -0.014193
-        }
-      },
-      "coinAPIMetrics": {
-        "orderbook": {
-          "imbalance": 0.0,
-          "spreadPercent": 0.0,
-          "whaleBids": 0,
-          "whaleAsks": 0
-        },
-        "trades": {
-          "buyPressure": 90.37,
-          "sellPressure": 9.63,
-          "avgTradeSize": 192.37
-        },
-        "volatility7d": 23.75
-      },
-      "premiumMetrics": {
-        "liquidationImbalance": "long",
-        "longShortSentiment": "very_bullish",
-        "oiTrend": "unknown",
-        "smartMoneyBias": "long",
-        "fearGreedIndex": 50
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001916808111",
-    "saved_at": "2025-11-13T00:19:16.808141",
-    "data": {
-      "symbol": "SUI",
-      "timestamp": "2025-11-13T00:19:15.994986",
-      "signal": "LONG",
-      "score": 53.6,
-      "confidence": "low",
-      "price": 1.9754,
-      "reasons": [
-        "High funding rate (0.240%) - longs overleveraged",
-        "Overcrowded longs (68.4%) - contrarian bearish",
-        "Price trend: neutral"
-      ],
-      "metrics": {
-        "fundingRate": 0.002397,
-        "openInterest": 778687170.0587,
-        "socialScore": 56.4,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": true,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": true,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "bullish",
-        "priceChanges": {
-          "5m": 0.28,
-          "15m": 0.13,
-          "1h": 0.17,
-          "4h": 0.19,
-          "24h": -2.13
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.1072,
-          "oiVolumeRatio": 0.4738
-        },
-        "fundingRates": {
-          "oiWeighted": 0.002397,
-          "volumeWeighted": 0.001624
-        }
-      },
-      "coinAPIMetrics": {
-        "orderbook": {
-          "imbalance": 0.0,
-          "spreadPercent": 0.0,
-          "whaleBids": 0,
-          "whaleAsks": 0
-        },
-        "trades": {
-          "buyPressure": 54.21,
-          "sellPressure": 45.79,
-          "avgTradeSize": 18.48
-        },
-        "volatility7d": 15.64
-      },
-      "premiumMetrics": {
-        "liquidationImbalance": "long",
-        "longShortSentiment": "very_bullish",
-        "oiTrend": "unknown",
-        "smartMoneyBias": "long",
-        "fearGreedIndex": 50
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001916845155",
-    "saved_at": "2025-11-13T00:19:16.845174",
-    "data": {
-      "symbol": "DOGE",
-      "timestamp": "2025-11-13T00:19:16.015870",
-      "signal": "LONG",
-      "score": 65.9,
-      "confidence": "low",
-      "price": 0.17084,
-      "reasons": [
-        "Overcrowded longs (70.6%) - contrarian bearish",
-        "Price trend: neutral",
-        "Social sentiment: 52/100"
-      ],
-      "metrics": {
-        "fundingRate": -0.002487,
-        "openInterest": 1385943984.481,
-        "socialScore": 51.9,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": true,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": true,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "bullish",
-        "priceChanges": {
-          "5m": 0.11,
-          "15m": 0.23,
-          "1h": 0.26,
-          "4h": 0.82,
-          "24h": -1.09
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.0535,
-          "oiVolumeRatio": 0.3001
-        },
-        "fundingRates": {
-          "oiWeighted": -0.002487,
-          "volumeWeighted": -0.006529
-        }
-      },
-      "coinAPIMetrics": {
-        "orderbook": {
-          "imbalance": 0.0,
-          "spreadPercent": 0.0,
-          "whaleBids": 0,
-          "whaleAsks": 0
-        },
-        "trades": {
-          "buyPressure": 87.97,
-          "sellPressure": 12.03,
-          "avgTradeSize": 45.4
-        },
-        "volatility7d": 16.79
-      },
-      "premiumMetrics": {
-        "liquidationImbalance": "long",
-        "longShortSentiment": "very_bullish",
-        "oiTrend": "unknown",
-        "smartMoneyBias": "long",
-        "fearGreedIndex": 50
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001916876230",
-    "saved_at": "2025-11-13T00:19:16.876257",
-    "data": {
-      "symbol": "OP",
-      "timestamp": "2025-11-13T00:19:15.601732",
-      "signal": "LONG",
-      "score": 66.6,
-      "confidence": "low",
-      "price": 0.4011,
-      "reasons": [
-        "Overcrowded longs (66.6%) - contrarian bearish",
-        "Price trend: neutral",
-        "Social sentiment: 62/100"
-      ],
-      "metrics": {
-        "fundingRate": -0.003563,
-        "openInterest": 84402258.6598,
-        "socialScore": 61.5,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": true,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": false,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "bullish",
-        "priceChanges": {
-          "5m": 0.22,
-          "15m": 0.12,
-          "1h": 0.22,
-          "4h": 0.5,
-          "24h": -1.64
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.1111,
-          "oiVolumeRatio": 0.3733
-        },
-        "fundingRates": {
-          "oiWeighted": -0.003563,
-          "volumeWeighted": -0.005541
-        }
-      },
-      "premiumMetrics": {
-        "liquidationImbalance": "long",
-        "longShortSentiment": "very_bullish",
-        "oiTrend": "unknown",
-        "smartMoneyBias": "long",
-        "fearGreedIndex": 50
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001916910135",
-    "saved_at": "2025-11-13T00:19:16.910174",
-    "data": {
-      "symbol": "FTM",
-      "timestamp": "2025-11-13T00:19:15.615055",
-      "signal": "LONG",
-      "score": 54.1,
-      "confidence": "medium",
-      "price": 0.14300116405831056,
-      "reasons": [
-        "Price trend: neutral",
-        "Social sentiment: 49/100"
-      ],
-      "metrics": {
-        "fundingRate": 0.0,
-        "openInterest": 0.0,
-        "socialScore": 49.4,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": false,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": false,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "neutral",
-        "priceChanges": {
-          "5m": 0.0,
-          "15m": 0.0,
-          "1h": 0.0,
-          "4h": 0.0,
-          "24h": 0.0
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.0,
-          "oiVolumeRatio": 0.0
-        },
-        "fundingRates": {
-          "oiWeighted": 0.0,
-          "volumeWeighted": 0.0
-        }
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001916947934",
-    "saved_at": "2025-11-13T00:19:16.947957",
-    "data": {
-      "symbol": "APT",
-      "timestamp": "2025-11-13T00:19:15.642019",
-      "signal": "LONG",
-      "score": 66.9,
-      "confidence": "low",
-      "price": 3.0382,
-      "reasons": [
-        "Overcrowded longs (71.0%) - contrarian bearish",
-        "Price trend: neutral",
-        "Social sentiment: 66/100"
-      ],
-      "metrics": {
-        "fundingRate": -0.01084,
-        "openInterest": 238616869.0374,
-        "socialScore": 65.6,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": true,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": true,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "neutral",
-        "priceChanges": {
-          "5m": 0.27,
-          "15m": 0.01,
-          "1h": -0.28,
-          "4h": 0.52,
-          "24h": -1.92
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.1089,
-          "oiVolumeRatio": 0.9018
-        },
-        "fundingRates": {
-          "oiWeighted": -0.01084,
-          "volumeWeighted": -0.014193
-        }
-      },
-      "coinAPIMetrics": {
-        "orderbook": {
-          "imbalance": 0.0,
-          "spreadPercent": 0.0,
-          "whaleBids": 0,
-          "whaleAsks": 0
-        },
-        "trades": {
-          "buyPressure": 90.37,
-          "sellPressure": 9.63,
-          "avgTradeSize": 192.37
-        },
-        "volatility7d": 23.75
-      },
-      "premiumMetrics": {
-        "liquidationImbalance": "long",
-        "longShortSentiment": "very_bullish",
-        "oiTrend": "unknown",
-        "smartMoneyBias": "long",
-        "fearGreedIndex": 50
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001917056677",
-    "saved_at": "2025-11-13T00:19:17.056706",
-    "data": {
-      "symbol": "SUI",
-      "timestamp": "2025-11-13T00:19:15.994986",
-      "signal": "LONG",
-      "score": 53.6,
-      "confidence": "low",
-      "price": 1.9754,
-      "reasons": [
-        "High funding rate (0.240%) - longs overleveraged",
-        "Overcrowded longs (68.4%) - contrarian bearish",
-        "Price trend: neutral"
-      ],
-      "metrics": {
-        "fundingRate": 0.002397,
-        "openInterest": 778687170.0587,
-        "socialScore": 56.4,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": true,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": true,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "bullish",
-        "priceChanges": {
-          "5m": 0.28,
-          "15m": 0.13,
-          "1h": 0.17,
-          "4h": 0.19,
-          "24h": -2.13
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.1072,
-          "oiVolumeRatio": 0.4738
-        },
-        "fundingRates": {
-          "oiWeighted": 0.002397,
-          "volumeWeighted": 0.001624
-        }
-      },
-      "coinAPIMetrics": {
-        "orderbook": {
-          "imbalance": 0.0,
-          "spreadPercent": 0.0,
-          "whaleBids": 0,
-          "whaleAsks": 0
-        },
-        "trades": {
-          "buyPressure": 54.21,
-          "sellPressure": 45.79,
-          "avgTradeSize": 18.48
-        },
-        "volatility7d": 15.64
-      },
-      "premiumMetrics": {
-        "liquidationImbalance": "long",
-        "longShortSentiment": "very_bullish",
-        "oiTrend": "unknown",
-        "smartMoneyBias": "long",
-        "fearGreedIndex": 50
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001917094526",
-    "saved_at": "2025-11-13T00:19:17.094547",
-    "data": {
-      "symbol": "DOGE",
-      "timestamp": "2025-11-13T00:19:16.015870",
-      "signal": "LONG",
-      "score": 65.9,
-      "confidence": "low",
-      "price": 0.17084,
-      "reasons": [
-        "Overcrowded longs (70.6%) - contrarian bearish",
-        "Price trend: neutral",
-        "Social sentiment: 52/100"
-      ],
-      "metrics": {
-        "fundingRate": -0.002487,
-        "openInterest": 1385943984.481,
-        "socialScore": 51.9,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": true,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": true,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "bullish",
-        "priceChanges": {
-          "5m": 0.11,
-          "15m": 0.23,
-          "1h": 0.26,
-          "4h": 0.82,
-          "24h": -1.09
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.0535,
-          "oiVolumeRatio": 0.3001
-        },
-        "fundingRates": {
-          "oiWeighted": -0.002487,
-          "volumeWeighted": -0.006529
-        }
-      },
-      "coinAPIMetrics": {
-        "orderbook": {
-          "imbalance": 0.0,
-          "spreadPercent": 0.0,
-          "whaleBids": 0,
-          "whaleAsks": 0
-        },
-        "trades": {
-          "buyPressure": 87.97,
-          "sellPressure": 12.03,
-          "avgTradeSize": 45.4
-        },
-        "volatility7d": 16.79
-      },
-      "premiumMetrics": {
-        "liquidationImbalance": "long",
-        "longShortSentiment": "very_bullish",
-        "oiTrend": "unknown",
-        "smartMoneyBias": "long",
-        "fearGreedIndex": 50
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001917366076",
-    "saved_at": "2025-11-13T00:19:17.366110",
-    "data": {
-      "symbol": "PEPE",
-      "timestamp": "2025-11-13T00:19:16.520938",
-      "signal": "LONG",
-      "score": 62.2,
-      "confidence": "low",
-      "price": 5.742e-06,
-      "reasons": [
-        "Price trend: neutral",
-        "Social sentiment: 62/100"
-      ],
-      "metrics": {
-        "fundingRate": -0.005562,
-        "openInterest": 193180846.205,
-        "socialScore": 61.8,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": false,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": true,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "bullish",
-        "priceChanges": {
-          "5m": 0.21,
-          "15m": 0.19,
-          "1h": 0.21,
-          "4h": 0.23,
-          "24h": -1.91
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.0803,
-          "oiVolumeRatio": 0.3907
-        },
-        "fundingRates": {
-          "oiWeighted": -0.005562,
-          "volumeWeighted": -0.009357
-        }
-      },
-      "coinAPIMetrics": {
-        "orderbook": {
-          "imbalance": 0.0,
-          "spreadPercent": 0.0,
-          "whaleBids": 0,
-          "whaleAsks": 0
-        },
-        "trades": {
-          "buyPressure": 2.2,
-          "sellPressure": 97.8,
-          "avgTradeSize": 165781557.73
-        },
-        "volatility7d": 15.61
-      }
-    }
-  },
-  {
-    "id": "sig_20251113001917546218",
-    "saved_at": "2025-11-13T00:19:17.546244",
-    "data": {
-      "symbol": "PEPE",
-      "timestamp": "2025-11-13T00:19:16.520938",
-      "signal": "LONG",
-      "score": 62.2,
-      "confidence": "low",
-      "price": 5.742e-06,
-      "reasons": [
-        "Price trend: neutral",
-        "Social sentiment: 62/100"
-      ],
-      "metrics": {
-        "fundingRate": -0.005562,
-        "openInterest": 193180846.205,
-        "socialScore": 61.8,
-        "priceTrend": "neutral"
-      },
-      "premiumDataAvailable": false,
-      "comprehensiveDataAvailable": true,
-      "lunarcrushDataAvailable": false,
-      "coinapiDataAvailable": true,
-      "comprehensiveMetrics": {
-        "multiTimeframeTrend": "bullish",
-        "priceChanges": {
-          "5m": 0.21,
-          "15m": 0.19,
-          "1h": 0.21,
-          "4h": 0.23,
-          "24h": -1.91
-        },
-        "advancedRatios": {
-          "oiMarketCapRatio": 0.0803,
-          "oiVolumeRatio": 0.3907
-        },
-        "fundingRates": {
-          "oiWeighted": -0.005562,
-          "volumeWeighted": -0.009357
-        }
-      },
-      "coinAPIMetrics": {
-        "orderbook": {
-          "imbalance": 0.0,
-          "spreadPercent": 0.0,
-          "whaleBids": 0,
-          "whaleAsks": 0
-        },
-        "trades": {
-          "buyPressure": 2.2,
-          "sellPressure": 97.8,
-          "avgTradeSize": 165781557.73
-        },
-        "volatility7d": 15.61
-      }
-    }
-  },
-  {
     "id": "sig_20251113001917728566",
     "saved_at": "2025-11-13T00:19:17.728582",
     "data": {
@@ -133612,6 +132668,2518 @@
       ],
       "timestamp": "2025-11-18T05:34:49.179456",
       "source": "auto_scanner"
+    }
+  },
+  {
+    "id": "sig_20251118054923360400",
+    "saved_at": "2025-11-18T05:49:23.360427",
+    "data": {
+      "symbol": "USDC",
+      "timestamp": "2025-11-18T05:49:21.685233",
+      "signal": "SHORT",
+      "score": 43.7,
+      "confidence": "medium",
+      "price": 1.0008831778483074,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 59/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 134260.0,
+        "socialScore": 58.9,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": true,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 75.0,
+        "quality_level": "good",
+        "services_total": 17,
+        "services_successful": 13,
+        "services_failed": [
+          {
+            "name": "funding_oi_data",
+            "tier": "critical",
+            "error": "Symbol USDC not found in market data"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 7,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 608,
+        "socialMetrics": {
+          "volume": 11002,
+          "engagement": 4333362,
+          "dominance": 1.3091681035149534,
+          "tweetVolume": 64379,
+          "redditVolume": 2525,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 86.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 100,
+          "momentumLevel": "very_strong",
+          "volumeChange24h": null,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 98.45,
+          "sellPressure": 1.55,
+          "avgTradeSize": 6271.58
+        },
+        "volatility7d": 0.13
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "short",
+        "longShortSentiment": "bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "neutral",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": null,
+        "aiSummary": "USDC SHORT SIGNAL: Skipping - low conviction score (43.7/100). Key concerns: Low conviction score (43.7/100), Price trend: neutral (unclear direction).",
+        "layerChecks": {
+          "agreements": [],
+          "conflicts": [
+            "Low conviction score (43.7/100)",
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 2.0,
+          "recommendedPositionSize": 2.0,
+          "stopLossPrice": 1.00156889,
+          "stopLossDistancePct": 0.0685,
+          "takeProfitPrice": 0.99985461,
+          "takeProfitDistancePct": 0.1028,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00022857,
+          "atrPercentage": 0.0228,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 200% of base | SL: 0.07% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054925412714",
+    "saved_at": "2025-11-18T05:49:25.412730",
+    "data": {
+      "symbol": "UNI",
+      "timestamp": "2025-11-18T05:49:23.328717",
+      "signal": "LONG",
+      "score": 58.6,
+      "confidence": "low",
+      "price": 7.391785055776473,
+      "reasons": [
+        "Overcrowded longs (67.2%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 62/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": -0.000576,
+        "openInterest": 530148459.1217,
+        "socialScore": 62.3,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": true,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 85.7,
+        "quality_level": "excellent",
+        "services_total": 16,
+        "services_successful": 11,
+        "services_failed": [
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "Failed to fetch current data"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 3,
+          "total": 3,
+          "success_rate": 100.0
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 5,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 1523,
+        "socialMetrics": {
+          "volume": 2529,
+          "engagement": 583379,
+          "dominance": 0.30093493308392266,
+          "tweetVolume": 33162,
+          "redditVolume": 3224,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 88.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 50.0,
+          "momentumLevel": "neutral",
+          "volumeChange24h": 0.0,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 89.89,
+          "sellPressure": 10.11,
+          "avgTradeSize": 20.39
+        },
+        "volatility7d": 27.95
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "DOWNSIZE",
+        "riskMode": "REDUCED",
+        "riskMultiplier": 0.5,
+        "aiConfidence": null,
+        "aiSummary": "UNI LONG SIGNAL: Partial position recommended (50% size). Price trend: neutral (unclear direction). Supporting factors: Low funding rate (0.058%) - favorable for longs",
+        "layerChecks": {
+          "agreements": [
+            "Low funding rate (0.058%) - favorable for longs"
+          ],
+          "conflicts": [
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.5603,
+          "recommendedPositionSize": 0.5603,
+          "stopLossPrice": 6.40232078,
+          "stopLossDistancePct": 13.386,
+          "takeProfitPrice": 10.36017788,
+          "takeProfitDistancePct": 40.158,
+          "riskRewardRatio": 3.0,
+          "atrValue": 0.39578571,
+          "atrPercentage": 5.3542,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 56% of base | SL: 13.39% away | TP: 3.0:1 R:R | Risk Mode: REDUCED",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054925933727",
+    "saved_at": "2025-11-18T05:49:25.933768",
+    "data": {
+      "symbol": "UNI",
+      "timestamp": "2025-11-18T05:49:23.328717",
+      "signal": "LONG",
+      "score": 58.6,
+      "confidence": "low",
+      "price": 7.391785055776473,
+      "reasons": [
+        "Overcrowded longs (67.2%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 62/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": -0.000576,
+        "openInterest": 530148459.1217,
+        "socialScore": 62.3,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": true,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 85.7,
+        "quality_level": "excellent",
+        "services_total": 16,
+        "services_successful": 11,
+        "services_failed": [
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "Failed to fetch current data"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 3,
+          "total": 3,
+          "success_rate": 100.0
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 5,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "lunarCrushMetrics": {
+        "altRank": 1523,
+        "socialMetrics": {
+          "volume": 2529,
+          "engagement": 583379,
+          "dominance": 0.30093493308392266,
+          "tweetVolume": 33162,
+          "redditVolume": 3224,
+          "urlShares": 0
+        },
+        "sentiment": {
+          "averageSentiment": 88.0,
+          "correlationRank": 0.0
+        },
+        "momentum": {
+          "momentumScore": 50.0,
+          "momentumLevel": "neutral",
+          "volumeChange24h": 0.0,
+          "spikeLevel": "normal"
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 89.89,
+          "sellPressure": 10.11,
+          "avgTradeSize": 20.39
+        },
+        "volatility7d": 27.95
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "DOWNSIZE",
+        "riskMode": "REDUCED",
+        "riskMultiplier": 0.5,
+        "aiConfidence": null,
+        "aiSummary": "UNI LONG SIGNAL: Partial position recommended (50% size). Price trend: neutral (unclear direction). Supporting factors: Low funding rate (0.058%) - favorable for longs",
+        "layerChecks": {
+          "agreements": [
+            "Low funding rate (0.058%) - favorable for longs"
+          ],
+          "conflicts": [
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.5603,
+          "recommendedPositionSize": 0.5603,
+          "stopLossPrice": 6.40232078,
+          "stopLossDistancePct": 13.386,
+          "takeProfitPrice": 10.36017788,
+          "takeProfitDistancePct": 40.158,
+          "riskRewardRatio": 3.0,
+          "atrValue": 0.39578571,
+          "atrPercentage": 5.3542,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 56% of base | SL: 13.39% away | TP: 3.0:1 R:R | Risk Mode: REDUCED",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054927270859",
+    "saved_at": "2025-11-18T05:49:27.270894",
+    "data": {
+      "symbol": "FIL",
+      "timestamp": "2025-11-18T05:49:25.821366",
+      "signal": "LONG",
+      "score": 61.0,
+      "confidence": "low",
+      "price": 2.0996424852153353,
+      "reasons": [
+        "Overcrowded longs (71.0%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 58/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": -0.028476,
+        "openInterest": 230113970.6559,
+        "socialScore": 57.7,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 85.7,
+        "quality_level": "excellent",
+        "services_total": 16,
+        "services_successful": 11,
+        "services_failed": [
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 3,
+          "total": 3,
+          "success_rate": 100.0
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 5,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 42.29,
+          "sellPressure": 57.71,
+          "avgTradeSize": 116.97
+        },
+        "volatility7d": 27.95
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "DOWNSIZE",
+        "riskMode": "NORMAL",
+        "riskMultiplier": 1.0,
+        "aiConfidence": null,
+        "aiSummary": "FIL LONG SIGNAL: Conservative entry suggested. Score acceptable (61.0/100) but monitor High funding rate (2.848%) - longs overleveraged.",
+        "layerChecks": {
+          "agreements": [],
+          "conflicts": [
+            "High funding rate (2.848%) - longs overleveraged",
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.5746,
+          "recommendedPositionSize": 0.5746,
+          "stopLossPrice": 1.88035677,
+          "stopLossDistancePct": 10.444,
+          "takeProfitPrice": 2.64785677,
+          "takeProfitDistancePct": 26.1099,
+          "riskRewardRatio": 2.5,
+          "atrValue": 0.10964286,
+          "atrPercentage": 5.2211,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 57% of base | SL: 10.44% away | TP: 2.5:1 R:R | Risk Mode: NORMAL",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054927816827",
+    "saved_at": "2025-11-18T05:49:27.816900",
+    "data": {
+      "symbol": "FIL",
+      "timestamp": "2025-11-18T05:49:25.821366",
+      "signal": "LONG",
+      "score": 61.0,
+      "confidence": "low",
+      "price": 2.0996424852153353,
+      "reasons": [
+        "Overcrowded longs (71.0%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 58/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": -0.028476,
+        "openInterest": 230113970.6559,
+        "socialScore": 57.7,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 85.7,
+        "quality_level": "excellent",
+        "services_total": 16,
+        "services_successful": 11,
+        "services_failed": [
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 3,
+          "total": 3,
+          "success_rate": 100.0
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 5,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 42.29,
+          "sellPressure": 57.71,
+          "avgTradeSize": 116.97
+        },
+        "volatility7d": 27.95
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "DOWNSIZE",
+        "riskMode": "NORMAL",
+        "riskMultiplier": 1.0,
+        "aiConfidence": null,
+        "aiSummary": "FIL LONG SIGNAL: Conservative entry suggested. Score acceptable (61.0/100) but monitor High funding rate (2.848%) - longs overleveraged.",
+        "layerChecks": {
+          "agreements": [],
+          "conflicts": [
+            "High funding rate (2.848%) - longs overleveraged",
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.5746,
+          "recommendedPositionSize": 0.5746,
+          "stopLossPrice": 1.88035677,
+          "stopLossDistancePct": 10.444,
+          "takeProfitPrice": 2.64785677,
+          "takeProfitDistancePct": 26.1099,
+          "riskRewardRatio": 2.5,
+          "atrValue": 0.10964286,
+          "atrPercentage": 5.2211,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 57% of base | SL: 10.44% away | TP: 2.5:1 R:R | Risk Mode: NORMAL",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054928463713",
+    "saved_at": "2025-11-18T05:49:28.463742",
+    "data": {
+      "symbol": "NEAR",
+      "timestamp": "2025-11-18T05:49:27.027359",
+      "signal": "SHORT",
+      "score": 40.6,
+      "confidence": "medium",
+      "price": 2.2791199409152085,
+      "reasons": [
+        "High funding rate (0.972%) - longs overleveraged",
+        "Price trend: neutral",
+        "Social sentiment: 61/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": 0.009722,
+        "openInterest": 281405653.2415,
+        "socialScore": 60.8,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 85.7,
+        "quality_level": "excellent",
+        "services_total": 16,
+        "services_successful": 10,
+        "services_failed": [
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "Failed to fetch current data"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 3,
+          "total": 3,
+          "success_rate": 100.0
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 4,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 57.13,
+          "sellPressure": 42.87,
+          "avgTradeSize": 88.38
+        },
+        "volatility7d": 22.48
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "short",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": null,
+        "aiSummary": "NEAR SHORT SIGNAL: Skipping - low conviction score (40.6/100). Key concerns: Low conviction score (40.6/100), Price trend: neutral (unclear direction).",
+        "layerChecks": {
+          "agreements": [
+            "High funding rate (0.972%) - longs overleveraged, favorable for shorts"
+          ],
+          "conflicts": [
+            "Low conviction score (40.6/100)",
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.7162,
+          "recommendedPositionSize": 0.7162,
+          "stopLossPrice": 2.56561994,
+          "stopLossDistancePct": 12.5706,
+          "takeProfitPrice": 1.84936994,
+          "takeProfitDistancePct": 18.856,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.0955,
+          "atrPercentage": 4.1886,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 72% of base | SL: 12.57% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054928767819",
+    "saved_at": "2025-11-18T05:49:28.767846",
+    "data": {
+      "symbol": "PEPE",
+      "timestamp": "2025-11-18T05:49:27.182242",
+      "signal": "SHORT",
+      "score": 44.2,
+      "confidence": "medium",
+      "price": 4.823242184538207e-06,
+      "reasons": [
+        "High funding rate (1.095%) - longs overleveraged",
+        "Price trend: neutral",
+        "Social sentiment: 59/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": 0.010954,
+        "openInterest": 176875196.4244,
+        "socialScore": 59.0,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": false,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 71.4,
+        "quality_level": "good",
+        "services_total": 16,
+        "services_successful": 8,
+        "services_failed": [
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "Failed to fetch current data"
+          },
+          {
+            "name": "long_short_ratio",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "top_trader_ratio",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 3,
+          "total": 3,
+          "success_rate": 100.0
+        },
+        "important_services": {
+          "successful": 2,
+          "total": 4,
+          "success_rate": 50.0
+        },
+        "optional_services": {
+          "successful": 3,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 13.13,
+          "sellPressure": 86.87,
+          "avgTradeSize": 6040269.1
+        },
+        "volatility7d": 32.32
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": null,
+        "aiSummary": "PEPE SHORT SIGNAL: Skipping - low conviction score (44.2/100). Key concerns: Low conviction score (44.2/100), Price trend: neutral (unclear direction).",
+        "layerChecks": {
+          "agreements": [
+            "High funding rate (1.095%) - longs overleveraged, favorable for shorts"
+          ],
+          "conflicts": [
+            "Low conviction score (44.2/100)",
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.8596,
+          "recommendedPositionSize": 0.8596,
+          "stopLossPrice": 5.33e-06,
+          "stopLossDistancePct": 10.5738,
+          "takeProfitPrice": 4.06e-06,
+          "takeProfitDistancePct": 15.7599,
+          "riskRewardRatio": 1.5,
+          "atrValue": 1.7e-07,
+          "atrPercentage": 3.4901,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 86% of base | SL: 10.57% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054929660465",
+    "saved_at": "2025-11-18T05:49:29.660517",
+    "data": {
+      "symbol": "DASH",
+      "timestamp": "2025-11-18T05:49:27.717085",
+      "signal": "LONG",
+      "score": 61.3,
+      "confidence": "low",
+      "price": 75.59920279066745,
+      "reasons": [
+        "Overcrowded longs (65.7%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 62/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": -0.044975,
+        "openInterest": 82432287.656,
+        "socialScore": 62.5,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 85.7,
+        "quality_level": "excellent",
+        "services_total": 16,
+        "services_successful": 10,
+        "services_failed": [
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "Failed to fetch current data"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 3,
+          "total": 3,
+          "success_rate": 100.0
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 4,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 62.23,
+          "sellPressure": 37.77,
+          "avgTradeSize": 0.75
+        },
+        "volatility7d": 69.57
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "DOWNSIZE",
+        "riskMode": "NORMAL",
+        "riskMultiplier": 1.0,
+        "aiConfidence": null,
+        "aiSummary": "DASH LONG SIGNAL: Conservative entry suggested. Score acceptable (61.3/100) but monitor High funding rate (4.498%) - longs overleveraged.",
+        "layerChecks": {
+          "agreements": [],
+          "conflicts": [
+            "High funding rate (4.498%) - longs overleveraged",
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.0,
+          "recommendedPositionSize": 1.0,
+          "stopLossPrice": 74.08721873,
+          "stopLossDistancePct": 2.0,
+          "takeProfitPrice": 79.37916294,
+          "takeProfitDistancePct": 5.0,
+          "riskRewardRatio": 2.5,
+          "atrValue": null,
+          "atrPercentage": null,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 100% of base | SL: 2.00% away | TP: 2.5:1 R:R | Risk Mode: NORMAL",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054930123275",
+    "saved_at": "2025-11-18T05:49:30.123303",
+    "data": {
+      "symbol": "DASH",
+      "timestamp": "2025-11-18T05:49:27.717085",
+      "signal": "LONG",
+      "score": 61.3,
+      "confidence": "low",
+      "price": 75.59920279066745,
+      "reasons": [
+        "Overcrowded longs (65.7%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 62/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": -0.044975,
+        "openInterest": 82432287.656,
+        "socialScore": 62.5,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 85.7,
+        "quality_level": "excellent",
+        "services_total": 16,
+        "services_successful": 10,
+        "services_failed": [
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "Failed to fetch current data"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 3,
+          "total": 3,
+          "success_rate": 100.0
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 4,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 62.23,
+          "sellPressure": 37.77,
+          "avgTradeSize": 0.75
+        },
+        "volatility7d": 69.57
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "DOWNSIZE",
+        "riskMode": "NORMAL",
+        "riskMultiplier": 1.0,
+        "aiConfidence": null,
+        "aiSummary": "DASH LONG SIGNAL: Conservative entry suggested. Score acceptable (61.3/100) but monitor High funding rate (4.498%) - longs overleveraged.",
+        "layerChecks": {
+          "agreements": [],
+          "conflicts": [
+            "High funding rate (4.498%) - longs overleveraged",
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.0,
+          "recommendedPositionSize": 1.0,
+          "stopLossPrice": 74.08721873,
+          "stopLossDistancePct": 2.0,
+          "takeProfitPrice": 79.37916294,
+          "takeProfitDistancePct": 5.0,
+          "riskRewardRatio": 2.5,
+          "atrValue": null,
+          "atrPercentage": null,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 100% of base | SL: 2.00% away | TP: 2.5:1 R:R | Risk Mode: NORMAL",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054932574858",
+    "saved_at": "2025-11-18T05:49:32.574890",
+    "data": {
+      "symbol": "UNI",
+      "timestamp": "2025-11-18T05:49:31.340457",
+      "signal": "LONG",
+      "score": 57.9,
+      "confidence": "low",
+      "price": 7.391911895559158,
+      "reasons": [
+        "Overcrowded longs (67.2%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 50/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": -0.00054,
+        "openInterest": 530901707.9223,
+        "socialScore": 50.0,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 71.4,
+        "quality_level": "good",
+        "services_total": 16,
+        "services_successful": 9,
+        "services_failed": [
+          {
+            "name": "social_basic",
+            "tier": "critical",
+            "error": "HTTP error: 429"
+          },
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "Failed to fetch current data"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 2,
+          "total": 3,
+          "success_rate": 66.7
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 4,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 92.96,
+          "sellPressure": 7.04,
+          "avgTradeSize": 20.38
+        },
+        "volatility7d": 27.95
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "WAIT",
+        "riskMode": "REDUCED",
+        "riskMultiplier": 0.5,
+        "aiConfidence": null,
+        "aiSummary": "UNI LONG SIGNAL: Watchlist only. Setup developing but timing unclear. Monitor: Price trend: neutral (unclear direction).",
+        "layerChecks": {
+          "agreements": [
+            "Low funding rate (0.054%) - favorable for longs"
+          ],
+          "conflicts": [
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.5605,
+          "recommendedPositionSize": 0.5605,
+          "stopLossPrice": 6.40244762,
+          "stopLossDistancePct": 13.3858,
+          "takeProfitPrice": 10.36030472,
+          "takeProfitDistancePct": 40.1573,
+          "riskRewardRatio": 3.0,
+          "atrValue": 0.39578571,
+          "atrPercentage": 5.3521,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 56% of base | SL: 13.39% away | TP: 3.0:1 R:R | Risk Mode: REDUCED",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054933058747",
+    "saved_at": "2025-11-18T05:49:33.058771",
+    "data": {
+      "symbol": "UNI",
+      "timestamp": "2025-11-18T05:49:31.340457",
+      "signal": "LONG",
+      "score": 57.9,
+      "confidence": "low",
+      "price": 7.391911895559158,
+      "reasons": [
+        "Overcrowded longs (67.2%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 50/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": -0.00054,
+        "openInterest": 530901707.9223,
+        "socialScore": 50.0,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 71.4,
+        "quality_level": "good",
+        "services_total": 16,
+        "services_successful": 9,
+        "services_failed": [
+          {
+            "name": "social_basic",
+            "tier": "critical",
+            "error": "HTTP error: 429"
+          },
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "Failed to fetch current data"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 2,
+          "total": 3,
+          "success_rate": 66.7
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 4,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 92.96,
+          "sellPressure": 7.04,
+          "avgTradeSize": 20.38
+        },
+        "volatility7d": 27.95
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "WAIT",
+        "riskMode": "REDUCED",
+        "riskMultiplier": 0.5,
+        "aiConfidence": null,
+        "aiSummary": "UNI LONG SIGNAL: Watchlist only. Setup developing but timing unclear. Monitor: Price trend: neutral (unclear direction).",
+        "layerChecks": {
+          "agreements": [
+            "Low funding rate (0.054%) - favorable for longs"
+          ],
+          "conflicts": [
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.5605,
+          "recommendedPositionSize": 0.5605,
+          "stopLossPrice": 6.40244762,
+          "stopLossDistancePct": 13.3858,
+          "takeProfitPrice": 10.36030472,
+          "takeProfitDistancePct": 40.1573,
+          "riskRewardRatio": 3.0,
+          "atrValue": 0.39578571,
+          "atrPercentage": 5.3521,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 56% of base | SL: 13.39% away | TP: 3.0:1 R:R | Risk Mode: REDUCED",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054935122353",
+    "saved_at": "2025-11-18T05:49:35.122372",
+    "data": {
+      "symbol": "USDC",
+      "timestamp": "2025-11-18T05:49:34.476448",
+      "signal": "SHORT",
+      "score": 43.2,
+      "confidence": "medium",
+      "price": 1.000882855593948,
+      "reasons": [
+        "Price trend: neutral",
+        "Social sentiment: 50/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": 0.0,
+        "openInterest": 134260.0,
+        "socialScore": 50.0,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 62.5,
+        "quality_level": "good",
+        "services_total": 17,
+        "services_successful": 9,
+        "services_failed": [
+          {
+            "name": "funding_oi_data",
+            "tier": "critical",
+            "error": "Symbol USDC not found in market data"
+          },
+          {
+            "name": "social_basic",
+            "tier": "critical",
+            "error": "HTTP error: 429"
+          },
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "Coins list API: HTTP 429"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "Failed to fetch current data"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 2,
+          "total": 4,
+          "success_rate": 50.0
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 4,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 93.4,
+          "sellPressure": 6.6,
+          "avgTradeSize": 4055.02
+        },
+        "volatility7d": 0.13
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "short",
+        "longShortSentiment": "bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "neutral",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": null,
+        "aiSummary": "USDC SHORT SIGNAL: Skipping - low conviction score (43.2/100). Key concerns: Low conviction score (43.2/100), Price trend: neutral (unclear direction).",
+        "layerChecks": {
+          "agreements": [],
+          "conflicts": [
+            "Low conviction score (43.2/100)",
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 2.0,
+          "recommendedPositionSize": 2.0,
+          "stopLossPrice": 1.00156857,
+          "stopLossDistancePct": 0.0685,
+          "takeProfitPrice": 0.99985428,
+          "takeProfitDistancePct": 0.1028,
+          "riskRewardRatio": 1.5,
+          "atrValue": 0.00022857,
+          "atrPercentage": 0.0228,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 200% of base | SL: 0.07% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054947718256",
+    "saved_at": "2025-11-18T05:49:47.718291",
+    "data": {
+      "symbol": "DASH",
+      "timestamp": "2025-11-18T05:49:46.347471",
+      "signal": "LONG",
+      "score": 60.6,
+      "confidence": "low",
+      "price": 75.66458375199024,
+      "reasons": [
+        "Overcrowded longs (65.7%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 50/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": -0.04499,
+        "openInterest": 82461137.1191,
+        "socialScore": 50.0,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 71.4,
+        "quality_level": "good",
+        "services_total": 16,
+        "services_successful": 9,
+        "services_failed": [
+          {
+            "name": "social_basic",
+            "tier": "critical",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 2,
+          "total": 3,
+          "success_rate": 66.7
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 4,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 47.98,
+          "sellPressure": 52.02,
+          "avgTradeSize": 0.79
+        },
+        "volatility7d": 69.57
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "DOWNSIZE",
+        "riskMode": "NORMAL",
+        "riskMultiplier": 1.0,
+        "aiConfidence": null,
+        "aiSummary": "DASH LONG SIGNAL: Conservative entry suggested. Score acceptable (60.6/100) but monitor High funding rate (4.499%) - longs overleveraged.",
+        "layerChecks": {
+          "agreements": [],
+          "conflicts": [
+            "High funding rate (4.499%) - longs overleveraged",
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.0,
+          "recommendedPositionSize": 1.0,
+          "stopLossPrice": 74.15129208,
+          "stopLossDistancePct": 2.0,
+          "takeProfitPrice": 79.44781293,
+          "takeProfitDistancePct": 5.0,
+          "riskRewardRatio": 2.5,
+          "atrValue": null,
+          "atrPercentage": null,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 100% of base | SL: 2.00% away | TP: 2.5:1 R:R | Risk Mode: NORMAL",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054948208716",
+    "saved_at": "2025-11-18T05:49:48.208746",
+    "data": {
+      "symbol": "DASH",
+      "timestamp": "2025-11-18T05:49:46.347471",
+      "signal": "LONG",
+      "score": 60.6,
+      "confidence": "low",
+      "price": 75.66458375199024,
+      "reasons": [
+        "Overcrowded longs (65.7%) - contrarian bearish",
+        "Price trend: neutral",
+        "Social sentiment: 50/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": -0.04499,
+        "openInterest": 82461137.1191,
+        "socialScore": 50.0,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": true,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 71.4,
+        "quality_level": "good",
+        "services_total": 16,
+        "services_successful": 9,
+        "services_failed": [
+          {
+            "name": "social_basic",
+            "tier": "critical",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 2,
+          "total": 3,
+          "success_rate": 66.7
+        },
+        "important_services": {
+          "successful": 3,
+          "total": 4,
+          "success_rate": 75.0
+        },
+        "optional_services": {
+          "successful": 4,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 47.98,
+          "sellPressure": 52.02,
+          "avgTradeSize": 0.79
+        },
+        "volatility7d": 69.57
+      },
+      "premiumMetrics": {
+        "liquidationImbalance": "long",
+        "longShortSentiment": "very_bullish",
+        "oiTrend": "unknown",
+        "smartMoneyBias": "long",
+        "fearGreedIndex": 50
+      },
+      "aiVerdictLayer": {
+        "verdict": "DOWNSIZE",
+        "riskMode": "NORMAL",
+        "riskMultiplier": 1.0,
+        "aiConfidence": null,
+        "aiSummary": "DASH LONG SIGNAL: Conservative entry suggested. Score acceptable (60.6/100) but monitor High funding rate (4.499%) - longs overleveraged.",
+        "layerChecks": {
+          "agreements": [],
+          "conflicts": [
+            "High funding rate (4.499%) - longs overleveraged",
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 1.0,
+          "recommendedPositionSize": 1.0,
+          "stopLossPrice": 74.15129208,
+          "stopLossDistancePct": 2.0,
+          "takeProfitPrice": 79.44781293,
+          "takeProfitDistancePct": 5.0,
+          "riskRewardRatio": 2.5,
+          "atrValue": null,
+          "atrPercentage": null,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 100% of base | SL: 2.00% away | TP: 2.5:1 R:R | Risk Mode: NORMAL",
+          "timeframe": "4h"
+        }
+      }
+    }
+  },
+  {
+    "id": "sig_20251118054950341796",
+    "saved_at": "2025-11-18T05:49:50.341823",
+    "data": {
+      "symbol": "PEPE",
+      "timestamp": "2025-11-18T05:49:49.750454",
+      "signal": "SHORT",
+      "score": 43.7,
+      "confidence": "medium",
+      "price": 4.8240399403989546e-06,
+      "reasons": [
+        "High funding rate (1.095%) - longs overleveraged",
+        "Price trend: neutral",
+        "Social sentiment: 50/100"
+      ],
+      "mode": "aggressive",
+      "mode_info": {
+        "name": "aggressive",
+        "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
+        "risk_level": "Medium",
+        "best_for": "Experienced traders, trending markets",
+        "thresholds": {
+          "short": "0-45",
+          "neutral": "45-55",
+          "long": "55-100"
+        }
+      },
+      "metrics": {
+        "fundingRate": 0.010949,
+        "openInterest": 176911833.3768,
+        "socialScore": 50.0,
+        "priceTrend": "neutral"
+      },
+      "premiumDataAvailable": false,
+      "comprehensiveDataAvailable": true,
+      "lunarcrushDataAvailable": false,
+      "coinapiDataAvailable": true,
+      "data_quality": {
+        "quality_score": 57.1,
+        "quality_level": "fair",
+        "services_total": 16,
+        "services_successful": 7,
+        "services_failed": [
+          {
+            "name": "social_basic",
+            "tier": "critical",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "lunarcrush_comprehensive",
+            "tier": "optional",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "social_change",
+            "tier": "optional",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "social_momentum",
+            "tier": "optional",
+            "error": "LunarCrush - circuit breaker open"
+          },
+          {
+            "name": "long_short_ratio",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "oi_trend",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "top_trader_ratio",
+            "tier": "optional",
+            "error": "Unknown error"
+          },
+          {
+            "name": "fear_greed",
+            "tier": "important",
+            "error": "Unknown error"
+          },
+          {
+            "name": "coinapi_orderbook",
+            "tier": "optional",
+            "error": "No order book data"
+          }
+        ],
+        "critical_services": {
+          "successful": 2,
+          "total": 3,
+          "success_rate": 66.7
+        },
+        "important_services": {
+          "successful": 2,
+          "total": 4,
+          "success_rate": 50.0
+        },
+        "optional_services": {
+          "successful": 3,
+          "total": 9
+        },
+        "threshold_enforced": true,
+        "min_quality_required": 50.0
+      },
+      "comprehensiveMetrics": {
+        "multiTimeframeTrend": "neutral",
+        "priceChanges": {
+          "5m": 0.0,
+          "15m": 0.0,
+          "1h": 0.0,
+          "4h": 0.0,
+          "24h": 0.0
+        },
+        "advancedRatios": {
+          "oiMarketCapRatio": 0.0,
+          "oiVolumeRatio": 0.0
+        },
+        "fundingRates": {
+          "oiWeighted": 0.0,
+          "volumeWeighted": 0.0
+        }
+      },
+      "coinAPIMetrics": {
+        "orderbook": {
+          "imbalance": 0.0,
+          "spreadPercent": 0.0,
+          "whaleBids": 0,
+          "whaleAsks": 0
+        },
+        "trades": {
+          "buyPressure": 14.56,
+          "sellPressure": 85.44,
+          "avgTradeSize": 25274417.71
+        },
+        "volatility7d": 32.32
+      },
+      "aiVerdictLayer": {
+        "verdict": "SKIP",
+        "riskMode": "AVOID",
+        "riskMultiplier": 0.0,
+        "aiConfidence": null,
+        "aiSummary": "PEPE SHORT SIGNAL: Skipping - low conviction score (43.7/100). Key concerns: Low conviction score (43.7/100), Price trend: neutral (unclear direction).",
+        "layerChecks": {
+          "agreements": [
+            "High funding rate (1.095%) - longs overleveraged, favorable for shorts"
+          ],
+          "conflicts": [
+            "Low conviction score (43.7/100)",
+            "Price trend: neutral (unclear direction)"
+          ]
+        },
+        "source": "rule_fallback",
+        "model": null,
+        "volatilityMetrics": {
+          "recommendedPositionMultiplier": 0.8592,
+          "recommendedPositionSize": 0.8592,
+          "stopLossPrice": 5.33e-06,
+          "stopLossDistancePct": 10.5721,
+          "takeProfitPrice": 4.07e-06,
+          "takeProfitDistancePct": 15.7325,
+          "riskRewardRatio": 1.5,
+          "atrValue": 1.7e-07,
+          "atrPercentage": 3.4915,
+          "volatilityClassification": "UNKNOWN",
+          "tradePlanSummary": "Position: 86% of base | SL: 10.57% away | TP: 1.5:1 R:R | Risk Mode: AVOID",
+          "timeframe": "4h"
+        }
+      }
     }
   }
 ]
