@@ -652,7 +652,8 @@ class ComprehensiveMonitor:
         """Load watchlist from database"""
         try:
             query = "SELECT * FROM coin_watchlist WHERE status = 'active' ORDER BY priority DESC"
-            rows = await db.fetch_all(query)
+            async with db.acquire() as conn:
+                rows = await conn.fetch(query)
 
             for row in rows:
                 coin = WatchlistCoin(
@@ -682,7 +683,8 @@ class ComprehensiveMonitor:
         """Load monitoring rules from database"""
         try:
             query = "SELECT * FROM monitoring_rules WHERE enabled = true ORDER BY priority DESC"
-            rows = await db.fetch_all(query)
+            async with db.acquire() as conn:
+                rows = await conn.fetch(query)
 
             for row in rows:
                 rule = MonitoringRule(
@@ -719,13 +721,14 @@ class ComprehensiveMonitor:
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
                 ON CONFLICT (symbol, timeframe, timestamp) DO NOTHING
             """
-            await db.execute(
-                query,
-                watchlist_id, metrics.symbol, metrics.timeframe, metrics.price,
-                metrics.volume, metrics.funding_rate, metrics.open_interest,
-                metrics.liquidations_long, metrics.liquidations_short,
-                metrics.social_volume, metrics.timestamp
-            )
+            async with db.acquire() as conn:
+                await conn.execute(
+                    query,
+                    watchlist_id, metrics.symbol, metrics.timeframe, metrics.price,
+                    metrics.volume, metrics.funding_rate, metrics.open_interest,
+                    metrics.liquidations_long, metrics.liquidations_short,
+                    metrics.social_volume, metrics.timestamp
+                )
         except Exception as e:
             logger.debug(f"Error saving metrics: {e}")
 
@@ -744,22 +747,23 @@ class ComprehensiveMonitor:
             telegram_sent = telegram_result is not None
             telegram_sent_at = datetime.now() if telegram_sent else None
 
-            await db.execute(
-                query,
-                watchlist_id, rule_id, context.symbol, context.alert_type.value,
-                context.severity.value, context.title, context.message,
-                context.metrics.price, context.metrics.timeframe,
-                json.dumps(context.metrics.__dict__, default=str),
-                json.dumps(context.analysis),
-                json.dumps(context.recommendations),
-                telegram_sent, telegram_sent_at
-            )
+            async with db.acquire() as conn:
+                await conn.execute(
+                    query,
+                    watchlist_id, rule_id, context.symbol, context.alert_type.value,
+                    context.severity.value, context.title, context.message,
+                    context.metrics.price, context.metrics.timeframe,
+                    json.dumps(context.metrics.__dict__, default=str),
+                    json.dumps(context.analysis),
+                    json.dumps(context.recommendations),
+                    telegram_sent, telegram_sent_at
+                )
 
-            # Update alert count
-            await db.execute(
-                "UPDATE coin_watchlist SET alert_count = alert_count + 1, last_alert_at = $1 WHERE id = $2",
-                datetime.now(), watchlist_id
-            )
+                # Update alert count
+                await conn.execute(
+                    "UPDATE coin_watchlist SET alert_count = alert_count + 1, last_alert_at = $1 WHERE id = $2",
+                    datetime.now(), watchlist_id
+                )
 
         except Exception as e:
             logger.error(f"Error saving alert: {e}", exc_info=True)
@@ -767,20 +771,22 @@ class ComprehensiveMonitor:
     async def _update_last_check(self, watchlist_id: int):
         """Update last check timestamp"""
         try:
-            await db.execute(
-                "UPDATE coin_watchlist SET last_check_at = $1 WHERE id = $2",
-                datetime.now(), watchlist_id
-            )
+            async with db.acquire() as conn:
+                await conn.execute(
+                    "UPDATE coin_watchlist SET last_check_at = $1 WHERE id = $2",
+                    datetime.now(), watchlist_id
+                )
         except Exception as e:
             logger.debug(f"Error updating last check: {e}")
 
     async def _update_rule_trigger(self, rule_id: int):
         """Update rule trigger stats"""
         try:
-            await db.execute(
-                "UPDATE monitoring_rules SET trigger_count = trigger_count + 1, last_triggered_at = $1 WHERE id = $2",
-                datetime.now(), rule_id
-            )
+            async with db.acquire() as conn:
+                await conn.execute(
+                    "UPDATE monitoring_rules SET trigger_count = trigger_count + 1, last_triggered_at = $1 WHERE id = $2",
+                    datetime.now(), rule_id
+                )
         except Exception as e:
             logger.debug(f"Error updating rule trigger: {e}")
 
@@ -789,10 +795,11 @@ class ComprehensiveMonitor:
         """Add a coin to watchlist"""
         async with self._lock:
             # Check if already exists
-            existing = await db.fetch_one(
-                "SELECT id FROM coin_watchlist WHERE symbol = $1",
-                symbol
-            )
+            async with db.acquire() as conn:
+                existing = await conn.fetchrow(
+                    "SELECT id FROM coin_watchlist WHERE symbol = $1",
+                    symbol
+                )
 
             if existing:
                 raise ValueError(f"Coin {symbol} already in watchlist")
@@ -805,16 +812,17 @@ class ComprehensiveMonitor:
                 RETURNING *
             """
 
-            row = await db.fetch_one(
-                query,
-                symbol,
-                kwargs.get('exchange', 'binance'),
-                'active',
-                kwargs.get('priority', 1),
-                kwargs.get('check_interval_seconds', 300),
-                kwargs.get('timeframes', ["5m", "15m", "1h", "4h"]),
-                kwargs.get('metrics_enabled', {"price": True, "volume": True, "funding": True, "open_interest": True, "liquidations": True})
-            )
+            async with db.acquire() as conn:
+                row = await conn.fetchrow(
+                    query,
+                    symbol,
+                    kwargs.get('exchange', 'binance'),
+                    'active',
+                    kwargs.get('priority', 1),
+                    kwargs.get('check_interval_seconds', 300),
+                    kwargs.get('timeframes', ["5m", "15m", "1h", "4h"]),
+                    kwargs.get('metrics_enabled', {"price": True, "volume": True, "funding": True, "open_interest": True, "liquidations": True})
+                )
 
             # Create coin object
             coin = WatchlistCoin(
@@ -844,10 +852,11 @@ class ComprehensiveMonitor:
                 raise ValueError(f"Coin {symbol} not in watchlist")
 
             # Delete from database (cascade will delete rules and alerts)
-            await db.execute(
-                "DELETE FROM coin_watchlist WHERE symbol = $1",
-                symbol
-            )
+            async with db.acquire() as conn:
+                await conn.execute(
+                    "DELETE FROM coin_watchlist WHERE symbol = $1",
+                    symbol
+                )
 
             # Remove from watchlist
             del self.watchlist[symbol]
