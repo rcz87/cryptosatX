@@ -121,31 +121,43 @@ The API provides clean JSON responses, offers a debug mode, and includes OpenAPI
 - **Deployment Method**: Replit VM deployment with auto-scaling
 - **Production URL**: https://guardiansofthetoken.org
 
-### 🔧 Known Issues (Identified):
+### ✅ Bug Fixes (November 19, 2025):
 
-**1. Smart Entry Engine - Missing Price Method**
-- **Issue**: `CoinAPIComprehensiveService.get_current_price()` method does not exist
-- **Impact**: All Smart Entry `/analyze` requests fail with "Could not analyze {symbol}"
-- **Root Cause**: `smart_entry_engine.py` line 943 calls `self.coinapi.get_current_price(symbol)` which is not implemented
-- **Available Alternatives**: 
-  - `get_ohlcv_latest()` - returns latest close price in `latest.close` field
-  - `get_current_quote()` - returns bid/ask prices
-  - `get_recent_trades()` - returns latest trade price
-- **Fix Required**: Implement `get_current_price()` in CoinAPI service or update Smart Entry to use `get_ohlcv_latest()`
-- **Status**: Identified, pending fix
+**1. Smart Entry Engine - Missing Price Method** ✅ FIXED
+- **Issue**: `CoinAPIComprehensiveService.get_current_price()` method did not exist
+- **Impact**: All Smart Entry `/analyze` requests failed with "Could not analyze {symbol}"
+- **Root Cause**: `smart_entry_engine.py` line 943 called `self.coinapi.get_current_price(symbol)` which was not implemented
+- **Fix Applied**: Implemented `get_current_price()` wrapper method in CoinAPI service using `get_ohlcv_latest()` (line 495-538)
+- **Status**: ✅ Fixed in development, awaiting production deployment
 
-**2. Comprehensive Monitoring - Database Method Incompatibility**
+**2. Comprehensive Monitoring - Database Method Incompatibility** ✅ FIXED
 - **Issue**: `'Database' object has no attribute 'fetch_one'`
-- **Impact**: Cannot add coins to watchlist via `/watchlist/add` or `/watchlist/bulk-add`
-- **Root Cause**: `comprehensive_monitor.py` calls `db.fetch_one()` but the Database class uses different method names
-- **Available Alternatives**: Check `app/storage/database.py` for correct method names (likely `fetchrow` or `execute`)
-- **Fix Required**: Update `comprehensive_monitor.py` to use correct Database API methods
-- **Status**: Identified, pending fix
+- **Impact**: Could not add coins to watchlist via `/watchlist/add` or `/watchlist/bulk-add`
+- **Root Cause**: `comprehensive_monitor.py` called `db.fetch_one()` and `db.execute()` directly, but Database class only provides `acquire()` context manager
+- **Fix Applied**: Updated all 10 database calls to use correct pattern:
+  - `db.fetch_one()` → `async with db.acquire() as conn: conn.fetchrow()`
+  - `db.fetch_all()` → `async with db.acquire() as conn: conn.fetch()`
+  - `db.execute()` → `async with db.acquire() as conn: conn.execute()`
+- **Files Modified**: `app/services/comprehensive_monitor.py` (lines 655, 685, 722, 747, 761, 770, 780, 792, 808, 847)
+- **Status**: ✅ Fixed in development, awaiting production deployment
 
-**3. Production Endpoints Status**
-- ✅ **Working**: Health checks, monitoring start/stop, stats endpoints
-- ❌ **Failing**: Analysis endpoints (Smart Entry), watchlist management (Monitoring)
-- ⚠️ **Untested**: Batch analysis, rule management, alert retrieval
+### ⚠️ Production Deployment Status:
+
+**Current Status:**
+- ✅ Bug fixes completed in development environment
+- ❌ Production deployment not yet updated (still running old code)
+- 🔄 **Action Required**: Republish deployment to apply fixes
+
+**To Deploy Fixes:**
+1. Click the "Publish" button in Replit
+2. Wait for deployment to complete
+3. Test endpoints in production:
+   - `GET /smart-entry/analyze/BTCUSDT?timeframe=1h`
+   - `POST /comprehensive-monitoring/watchlist/add`
+
+**Expected Results After Deployment:**
+- Smart Entry: Will successfully analyze symbols and return confluence scores
+- Comprehensive Monitoring: Will successfully add coins to watchlist
 
 ### 📝 Recent Changes:
 - **November 19, 2025**: Synced GitHub PRO features to production
