@@ -63,6 +63,11 @@ class FlatInvokeRequest(BaseModel):
     signal_filter: Optional[Literal["OVERSOLD", "OVERBOUGHT", "NEUTRAL"]] = Field(None, description="Filter RSI signals: OVERSOLD, OVERBOUGHT, or NEUTRAL")
     start_date: Optional[str] = Field(None, description="Start date (YYYY-MM-DD)")
     end_date: Optional[str] = Field(None, description="End date (YYYY-MM-DD)")
+    
+    # Smart Entry parameters
+    symbols: Optional[list[str]] = Field(None, description="List of symbols for batch analysis (max 20)")
+    send_telegram: Optional[bool] = Field(False, description="Send results to Telegram")
+    min_confluence: Optional[int] = Field(None, description="Minimum confluence score (0-100) for filtering results")
 
     class Config:
         json_schema_extra = {

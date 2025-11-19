@@ -45,6 +45,12 @@ class FlatRPCDispatcher:
         "smart_money.scan_auto": 60,
         "smart_money.discover": 60,
         
+        # Smart Entry operations (confluence analysis)
+        "smart_entry.analyze": 45,
+        "smart_entry.analyze_batch": 60,
+        "smart_entry.test": 30,
+        "smart_entry.health": 30,
+        
         # Coinglass aggregated endpoints (large datasets)
         "coinglass.liquidation.aggregated_history": 45,
         "coinglass.open_interest.aggregated_history": 45,
@@ -663,6 +669,199 @@ class FlatRPCDispatcher:
             from app.services.smart_money_service import smart_money_service
             symbol = args["symbol"]
             return await smart_money_service.analyze_any_coin(symbol)
+
+        # ===================================================================
+        # SMART ENTRY ENGINE
+        # ===================================================================
+        elif operation == "smart_entry.analyze":
+            from app.services.smart_entry_engine import get_smart_entry_engine
+            engine = get_smart_entry_engine()
+            symbol = args["symbol"]
+            timeframe = args.get("timeframe", "1h")
+            send_telegram = args.get("send_telegram", False)
+            
+            recommendation = await engine.analyze_entry(symbol.upper(), timeframe)
+            
+            if not recommendation:
+                return {"success": False, "error": f"Could not analyze {symbol}"}
+            
+            # Send Telegram alert if requested
+            if send_telegram:
+                try:
+                    from app.services.telegram_notifier import TelegramNotifier
+                    from app.services.pro_alert_formatter import get_pro_alert_formatter
+                    
+                    telegram = TelegramNotifier()
+                    formatter = get_pro_alert_formatter()
+                    alert_message = formatter.format_entry_alert(recommendation)
+                    
+                    await telegram.send_custom_alert(
+                        title=f"{symbol} Smart Entry Analysis",
+                        message=alert_message,
+                        emoji="🎯"
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to send Telegram alert: {e}")
+            
+            # Return formatted response
+            return {
+                "success": True,
+                "data": {
+                    "symbol": recommendation.symbol,
+                    "direction": recommendation.direction.value,
+                    "confluence": {
+                        "score": recommendation.confluence_score.total_score,
+                        "strength": recommendation.confluence_score.strength.value,
+                        "signals_analyzed": recommendation.confluence_score.signals_analyzed,
+                        "signals_bullish": recommendation.confluence_score.signals_bullish,
+                        "signals_bearish": recommendation.confluence_score.signals_bearish,
+                        "breakdown": recommendation.confluence_score.breakdown
+                    },
+                    "entry": {
+                        "entry_zone_low": recommendation.entry_zone_low,
+                        "entry_zone_high": recommendation.entry_zone_high,
+                        "stop_loss": recommendation.stop_loss,
+                        "take_profit_1": recommendation.take_profit_1,
+                        "take_profit_2": recommendation.take_profit_2,
+                        "take_profit_3": recommendation.take_profit_3
+                    },
+                    "risk_management": {
+                        "risk_reward_ratio": recommendation.risk_reward_ratio,
+                        "position_size_pct": recommendation.position_size_pct,
+                        "urgency": recommendation.urgency
+                    },
+                    "reasoning": recommendation.reasoning
+                }
+            }
+
+        elif operation == "smart_entry.analyze_batch":
+            from app.services.smart_entry_engine import get_smart_entry_engine
+            import asyncio
+            
+            engine = get_smart_entry_engine()
+            symbols = args.get("symbols", [])
+            timeframe = args.get("timeframe", "1h")
+            min_confluence = args.get("min_confluence", 60)
+            send_telegram = args.get("send_telegram", False)
+            
+            if not symbols or len(symbols) > 20:
+                return {"success": False, "error": "Provide 1-20 symbols in symbols parameter"}
+            
+            # Analyze all symbols in parallel
+            tasks = [engine.analyze_entry(symbol.upper(), timeframe) for symbol in symbols]
+            recommendations = await asyncio.gather(*tasks, return_exceptions=True)
+            
+            # Filter and sort results
+            results = []
+            for symbol, rec in zip(symbols, recommendations):
+                if isinstance(rec, Exception) or not rec:
+                    continue
+                
+                # Filter by min confluence
+                if rec.confluence_score.total_score >= min_confluence:
+                    results.append({
+                        "symbol": rec.symbol,
+                        "direction": rec.direction.value,
+                        "confluence_score": rec.confluence_score.total_score,
+                        "entry_zone_low": rec.entry_zone_low,
+                        "entry_zone_high": rec.entry_zone_high,
+                        "stop_loss": rec.stop_loss,
+                        "take_profit_1": rec.take_profit_1,
+                        "risk_reward_ratio": rec.risk_reward_ratio,
+                        "position_size_pct": rec.position_size_pct,
+                        "urgency": rec.urgency,
+                        "top_reasons": rec.reasoning[:3]
+                    })
+            
+            # Sort by confluence score
+            results.sort(key=lambda x: x['confluence_score'], reverse=True)
+            
+            # Send best opportunity to Telegram if requested
+            if send_telegram and results:
+                try:
+                    from app.services.telegram_notifier import TelegramNotifier
+                    from app.services.pro_alert_formatter import get_pro_alert_formatter
+                    
+                    best = results[0]
+                    best_rec = await engine.analyze_entry(best['symbol'], timeframe)
+                    
+                    if best_rec:
+                        telegram = TelegramNotifier()
+                        formatter = get_pro_alert_formatter()
+                        alert_message = formatter.format_entry_alert(best_rec)
+                        
+                        await telegram.send_custom_alert(
+                            title=f"🏆 Best Entry: {best['symbol']}",
+                            message=alert_message,
+                            emoji="🎯"
+                        )
+                except Exception as e:
+                    logger.warning(f"Failed to send batch alert: {e}")
+            
+            return {
+                "success": True,
+                "data": {
+                    "analyzed": len(symbols),
+                    "opportunities": len(results),
+                    "min_confluence": min_confluence,
+                    "results": results
+                }
+            }
+
+        elif operation == "smart_entry.test":
+            from app.services.smart_entry_engine import get_smart_entry_engine
+            from app.services.pro_alert_formatter import get_pro_alert_formatter
+            
+            engine = get_smart_entry_engine()
+            symbol = args["symbol"]
+            
+            recommendation = await engine.analyze_entry(symbol.upper(), "1h")
+            
+            if not recommendation:
+                return {"success": False, "error": f"Could not analyze {symbol}"}
+            
+            formatter = get_pro_alert_formatter()
+            long_alert = formatter.format_entry_alert(recommendation)
+            short_alert = formatter.format_short_alert(recommendation)
+            
+            return {
+                "success": True,
+                "data": {
+                    "symbol": recommendation.symbol,
+                    "direction": recommendation.direction.value,
+                    "confluence_score": recommendation.confluence_score.total_score,
+                    "telegram_preview": {
+                        "full": long_alert,
+                        "compact": short_alert
+                    }
+                }
+            }
+
+        elif operation == "smart_entry.health":
+            from app.services.smart_entry_engine import get_smart_entry_engine
+            
+            try:
+                engine = get_smart_entry_engine()
+                test_rec = await engine.analyze_entry("BTCUSDT", "1h")
+                
+                if test_rec:
+                    return {
+                        "success": True,
+                        "status": "healthy",
+                        "message": f"Smart Entry Engine operational (test: BTC confluence {test_rec.confluence_score.total_score}%)"
+                    }
+                else:
+                    return {
+                        "success": True,
+                        "status": "degraded",
+                        "message": "Engine running but test analysis failed"
+                    }
+            except Exception as e:
+                return {
+                    "success": False,
+                    "status": "unhealthy",
+                    "error": str(e)
+                }
 
         # ===================================================================
         # MSS

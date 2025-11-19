@@ -174,6 +174,11 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "smc.analyze": OperationMetadata("smc.analyze", "smc", "/analyze/{symbol}", "GET", "Analyze Smart Money Concept", requires_symbol=True),
     "smc.info": OperationMetadata("smc.info", "smc", "/info", "GET", "Get SMC info"),
     
+    "smart_entry.analyze": OperationMetadata("smart_entry.analyze", "smart_entry", "/smart-entry/analyze/{symbol}", "GET", "Analyze entry opportunity with 8-source confluence scoring - returns entry zones, SL/TP, R:R ratio", requires_symbol=True),
+    "smart_entry.analyze_batch": OperationMetadata("smart_entry.analyze_batch", "smart_entry", "/smart-entry/analyze-batch", "POST", "Batch analyze multiple symbols and return best entry opportunities sorted by confluence score"),
+    "smart_entry.test": OperationMetadata("smart_entry.test", "smart_entry", "/smart-entry/test/{symbol}", "GET", "Test Smart Entry Engine - get Telegram alert preview", requires_symbol=True),
+    "smart_entry.health": OperationMetadata("smart_entry.health", "smart_entry", "/smart-entry/health", "GET", "Health check for Smart Entry Engine"),
+    
     "health.check": OperationMetadata("health.check", "health", "/health", "GET", "Health check"),
     "health.root": OperationMetadata("health.root", "health", "/", "GET", "Root endpoint"),
     

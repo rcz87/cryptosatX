@@ -120,9 +120,46 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - **Production URL**: https://guardiansofthetoken.org
 - **Deployment Type**: Replit VM with auto-scaling
 - **Total Routes**: 17 new production endpoints (4 Smart Entry + 13 Monitoring)
+- **Total RPC Operations**: 196+ operations via `/invoke` endpoint
 - **Database**: PostgreSQL (Neon) with asyncpg
 - **Git Commit**: 052ef7f (all bug fixes committed)
 - **Status**: 🟢 **FULLY OPERATIONAL - 100% Success Rate**
+
+### 🎯 RPC Integration Status (November 19, 2025)
+All 17 routes terbaru sudah terintegrasi penuh dengan RPC system:
+- ✅ **Smart Entry Engine** - 4 operations (`smart_entry.analyze`, `smart_entry.analyze_batch`, `smart_entry.test`, `smart_entry.health`)
+- ✅ **Comprehensive Monitoring** - 14 operations (watchlist, rules, alerts, spike monitoring)
+
+**Smart Entry RPC Operations:**
+1. `smart_entry.analyze` - Analyze single symbol with confluence scoring
+   - Parameters: `symbol`, `timeframe` (default: "1h"), `send_telegram` (default: false)
+   - Timeout: 45s
+   - Returns: Full analysis with entry zones, SL/TP, R:R ratio, position sizing
+
+2. `smart_entry.analyze_batch` - Batch analyze multiple symbols (max 20)
+   - Parameters: `symbols` (array), `timeframe`, `min_confluence` (default: 60), `send_telegram`
+   - Timeout: 60s
+   - Returns: Sorted opportunities by confluence score
+
+3. `smart_entry.test` - Get Telegram alert preview
+   - Parameters: `symbol`
+   - Timeout: 30s
+   - Returns: Full and compact Telegram message previews
+
+4. `smart_entry.health` - Health check for Smart Entry Engine
+   - Parameters: none
+   - Timeout: 30s
+   - Returns: System status with BTC test analysis
+
+**Example RPC Call:**
+```json
+POST /invoke
+{
+  "operation": "smart_entry.analyze",
+  "symbol": "BTCUSDT",
+  "timeframe": "1h"
+}
+```
 
 ### 🔍 Post-Deployment Investigation (Nov 19, 2025)
 Initial reports of Smart Entry returning `None` values were investigated and found to be **false alarm**:
