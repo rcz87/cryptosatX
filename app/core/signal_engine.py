@@ -9,7 +9,7 @@ import asyncio
 import time
 import logging
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, asdict, field
 from enum import Enum
 
@@ -27,6 +27,7 @@ from app.services.position_sizer import position_sizer
 from app.utils import risk_rules
 from app.utils.logger import get_logger
 from app.utils.retry_helper import CircuitBreaker
+from app.utils.technical_indicators import TechnicalIndicators
 
 # Initialize module logger
 logger = get_logger(__name__)
@@ -232,6 +233,9 @@ class EnhancedSignalContext:
     open_interest: float
     social_score: float
     price_trend: str
+    
+    # Enhanced Technical Analysis (NEW: Nov 19, 2025)
+    enhanced_trend_data: Dict = field(default_factory=dict)  # Full TA indicators result
 
     # Comprehensive Coinglass metrics
     funding_rate_oi_weighted: float = 0.0
@@ -1241,11 +1245,22 @@ class SignalEngine:
         ca_trades = ca_trades if not isinstance(ca_trades, Exception) else {}
         ca_ohlcv = ca_ohlcv if not isinstance(ca_ohlcv, Exception) else {}
 
-        # Calculate price trend from OKX candles
-        price_trend = self._calculate_price_trend(candles_data.get("candles", []))
-
-        # Calculate multi-timeframe trend from comprehensive markets data
-        multi_tf_trend = self._calculate_multi_timeframe_trend(comp_markets)
+        # Calculate ENHANCED price trend from OKX candles with technical indicators
+        # This combines MA, RSI, MACD, volume analysis + multi-timeframe alignment
+        candles_list = candles_data.get("candles", [])
+        logger.debug(f"🔍 Candles available for {symbol}: {len(candles_list)}")
+        
+        enhanced_trend = self._calculate_enhanced_trend(
+            candles=candles_list,
+            volumes=None,  # Volumes are extracted from candles
+            comp_markets=comp_markets
+        )
+        
+        logger.info(f"📊 Enhanced Trend Result for {symbol}: {enhanced_trend.get('trend')} (score: {enhanced_trend.get('score')}, confidence: {enhanced_trend.get('confidence')})")
+        
+        # Extract basic trend for backward compatibility
+        price_trend = enhanced_trend.get("trend", "neutral")
+        multi_tf_trend = enhanced_trend.get("mtf_alignment", "neutral")
 
         # Build context - FIXED: More flexible premium data check
         # Accept premium data if at least 2 out of 4 endpoints succeed
@@ -1348,6 +1363,7 @@ class SignalEngine:
             open_interest=oi,
             social_score=social_data.get("socialScore", 50.0),
             price_trend=price_trend,
+            enhanced_trend_data=enhanced_trend,  # NEW: Full TA indicators result
             # Comprehensive Coinglass data
             funding_rate_oi_weighted=comp_markets.get("fundingRateByOI", 0.0),
             funding_rate_vol_weighted=comp_markets.get("fundingRateByVol", 0.0),
@@ -1542,6 +1558,119 @@ class SignalEngine:
         except Exception as e:
             logger.error(f"Error calculating multi-timeframe trend: {e}")
             return "neutral"
+    
+    def _calculate_enhanced_trend(
+        self,
+        candles: list,
+        volumes: Optional[list] = None,
+        comp_markets: Optional[dict] = None
+    ) -> Dict[str, Any]:
+        """
+        Calculate Enhanced Trend Analysis using Technical Indicators
+        
+        Combines multiple technical analysis methods:
+        - MA Crossover (Golden/Death Cross detection)
+        - RSI Momentum (overbought/oversold levels)
+        - MACD Trend (momentum and direction)
+        - Volume Confirmation (trend strength validation)
+        - Multi-timeframe alignment (existing method)
+        
+        Args:
+            candles: List of OHLCV candle data from OKX
+            volumes: Optional list of volume data
+            comp_markets: Optional comprehensive markets data
+            
+        Returns:
+            Dict with 'trend', 'score', 'confidence', 'indicators', 'momentum'
+        """
+        if not candles or len(candles) < 30:
+            logger.warning(f"⚠️  Enhanced trend skipped: insufficient candles ({len(candles) if candles else 0} < 30)")
+            return {
+                "trend": "neutral",
+                "score": 50,
+                "confidence": "low",
+                "indicators": {},
+                "momentum": "neutral"
+            }
+        
+        try:
+            # Extract close prices and volumes from candles
+            # OKX format: [{"time": ..., "open": ..., "close": ..., "volume": ...}, ...]
+            prices = [float(c.get("close", 0)) for c in candles if c.get("close")]
+            
+            # Extract volumes if not provided separately
+            if not volumes and candles:
+                volumes = [float(c.get("volume", 0)) for c in candles if c.get("volume")]
+            
+            # Reverse if needed (most recent last for TA)
+            if len(prices) > 1 and candles[0].get("time", 0) > candles[-1].get("time", 0):
+                prices = list(reversed(prices))
+                if volumes:
+                    volumes = list(reversed(volumes))
+            
+            # Use TechnicalIndicators comprehensive trend score
+            ta_result = TechnicalIndicators.calculate_trend_score(prices, volumes)
+            
+            # Combine with existing multi-timeframe trend if available
+            mtf_trend = "neutral"
+            if comp_markets:
+                mtf_trend = self._calculate_multi_timeframe_trend(comp_markets)
+            
+            # Blend scores: 70% TA indicators + 30% multi-timeframe
+            final_score = ta_result["score"]
+            
+            # Adjust score based on multi-timeframe alignment
+            if mtf_trend == "strongly_bullish":
+                final_score = min(100, final_score + 15)
+            elif mtf_trend == "bullish":
+                final_score = min(100, final_score + 10)
+            elif mtf_trend == "strongly_bearish":
+                final_score = max(0, final_score - 15)
+            elif mtf_trend == "bearish":
+                final_score = max(0, final_score - 10)
+            
+            # Determine final trend
+            if final_score >= 70:
+                trend = "strongly_bullish"
+                momentum = "strong_up"
+            elif final_score >= 60:
+                trend = "bullish"
+                momentum = "moderate_up"
+            elif final_score > 40:
+                trend = "neutral"
+                momentum = "sideways"
+            elif final_score > 30:
+                trend = "bearish"
+                momentum = "moderate_down"
+            else:
+                trend = "strongly_bearish"
+                momentum = "strong_down"
+            
+            logger.info(
+                f"📊 Enhanced Trend Analysis: {trend.upper()} (score: {final_score:.1f}, "
+                f"confidence: {ta_result['confidence']}, MTF: {mtf_trend})"
+            )
+            logger.debug(f"📈 Technical Indicators: {ta_result['signals']}")
+            
+            return {
+                "trend": trend,
+                "score": round(final_score, 1),
+                "confidence": ta_result["confidence"],
+                "indicators": ta_result["signals"],
+                "momentum": momentum,
+                "mtf_alignment": mtf_trend,
+                "ta_score": ta_result["score"]
+            }
+            
+        except Exception as e:
+            logger.error(f"❌ Enhanced trend calculation error: {e}", exc_info=True)
+            return {
+                "trend": "neutral",
+                "score": 50,
+                "confidence": "low",
+                "indicators": {"error": str(e)},
+                "momentum": "neutral"
+            }
 
     def _calculate_weighted_score(
         self, context: EnhancedSignalContext
@@ -1570,12 +1699,15 @@ class SignalEngine:
             "weighted": social_score * self.WEIGHTS["social_sentiment"] / 100,
         }
 
-        # 3. Price Momentum Score (15%)
-        momentum_score = self._score_price_momentum(context.price_trend)
+        # 3. Price Momentum Score (20%) - ENHANCED with Technical Indicators
+        # Use enhanced trend data if available, otherwise fall back to simple trend
+        trend_input = context.enhanced_trend_data if context.enhanced_trend_data else context.price_trend
+        momentum_score = self._score_price_momentum(trend_input)
         breakdown["price_momentum"] = {
             "score": momentum_score,
             "weight": self.WEIGHTS["price_momentum"],
             "weighted": momentum_score * self.WEIGHTS["price_momentum"] / 100,
+            "indicators": context.enhanced_trend_data.get("indicators", {}) if context.enhanced_trend_data else {}
         }
 
         # 4. Liquidation Score (20%)
@@ -1659,11 +1791,37 @@ class SignalEngine:
         else:
             return self.FUNDING_RATE_SCORES["very_bearish"]
 
-    def _score_price_momentum(self, trend: str) -> float:
-        """Score price momentum based on trend using configured scores"""
-        if trend == "bullish":
+    def _score_price_momentum(self, trend_data) -> float:
+        """
+        Score price momentum based on enhanced trend analysis
+        
+        Args:
+            trend_data: Can be string ('bullish', 'bearish', 'neutral') 
+                       or dict from _calculate_enhanced_trend()
+                       
+        Returns:
+            Score from 0-100 with momentum multiplier if applicable
+        """
+        # Handle enhanced trend dict
+        if isinstance(trend_data, dict):
+            trend = trend_data.get("trend", "neutral")
+            score = trend_data.get("score", 50)
+            confidence = trend_data.get("confidence", "low")
+            
+            # Direct use of enhanced score (already 0-100)
+            # Apply confidence multiplier
+            if confidence == "high":
+                return min(100, score * 1.1)  # 10% boost for high confidence
+            elif confidence == "medium":
+                return score
+            else:  # low confidence
+                return score * 0.9  # 10% reduction for low confidence
+        
+        # Handle string trend (backward compatible)
+        trend = str(trend_data)
+        if "bullish" in trend:
             return self.PRICE_MOMENTUM_SCORES["bullish"]
-        elif trend == "bearish":
+        elif "bearish" in trend:
             return self.PRICE_MOMENTUM_SCORES["bearish"]
         else:
             return self.PRICE_MOMENTUM_SCORES["neutral"]
