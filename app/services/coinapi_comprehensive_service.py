@@ -489,6 +489,51 @@ class CoinAPIComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
+    async def get_current_price(
+        self,
+        symbol: str,
+        exchange: str = "BINANCE"
+    ) -> Dict:
+        """
+        Get current price for a symbol (simple wrapper around get_ohlcv_latest)
+        
+        Args:
+            symbol: Coin symbol (e.g., 'BTC', 'ETH', 'BTCUSDT')
+            exchange: Exchange name (default: BINANCE)
+            
+        Returns:
+            Current price data with:
+            - price: Latest close price
+            - timestamp: Price timestamp
+            - source: Data source
+            
+        Use case: Quick price lookup for entry/exit calculations
+        """
+        try:
+            # Get latest 1-minute candle
+            ohlcv_data = await self.get_ohlcv_latest(
+                symbol=symbol,
+                period="1MIN",
+                exchange=exchange,
+                limit=1
+            )
+            
+            if ohlcv_data.get("success") and ohlcv_data.get("latest"):
+                latest = ohlcv_data["latest"]
+                return {
+                    "success": True,
+                    "symbol": symbol,
+                    "exchange": exchange,
+                    "price": latest.get("close", 0),
+                    "timestamp": latest.get("timeEnd"),
+                    "source": "coinapi_ohlcv"
+                }
+            
+            return {"success": False, "error": "No price data available"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
     # ==================== MULTI-EXCHANGE AGGREGATION ====================
     
     async def get_multi_exchange_prices(
