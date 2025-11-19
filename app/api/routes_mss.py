@@ -9,6 +9,7 @@ from typing import Optional
 import logging
 import os
 from datetime import datetime, timedelta
+from app.utils.logger import get_wib_time
 
 from app.services.mss_service import MSSService
 from app.services.telegram_mss_notifier import telegram_mss_notifier
@@ -89,7 +90,7 @@ async def discover_new_coins(
         
         return {
             "success": True,
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": get_wib_time(),
             "filters": {
                 "max_fdv_usd": max_fdv,
                 "max_age_hours": max_age_hours,
@@ -308,7 +309,7 @@ async def scan_market(
         
         response = {
             "success": True,
-            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "timestamp": get_wib_time(),
             "scan_parameters": {
                 "max_fdv_usd": max_fdv,
                 "max_age_hours": max_age_hours,

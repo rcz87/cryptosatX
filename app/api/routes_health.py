@@ -2,7 +2,7 @@
 Health check routes
 """
 from fastapi import APIRouter
-from datetime import datetime
+from app.utils.logger import get_wib_time
 
 router = APIRouter()
 
@@ -14,7 +14,7 @@ async def health_check():
     """
     return {
         "status": "healthy",
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": get_wib_time(),
         "service": "Crypto Futures Signal API"
     }
 

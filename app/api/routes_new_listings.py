@@ -7,6 +7,7 @@ from fastapi import APIRouter, Query
 from typing import Optional
 from datetime import datetime
 import logging
+from app.utils.logger import get_wib_time
 
 from app.services.binance_listings_monitor import BinanceListingsMonitor
 from app.services.multi_exchange_listings_monitor import multi_exchange_monitor
@@ -194,7 +195,7 @@ async def get_multi_exchange_listings(
                 "exchanges": requested_exchanges,
                 "min_volume_usd": min_volume_usd,
             },
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": get_wib_time(),
             "note": "Multi-exchange data overcomes regional restrictions",
         }
 
@@ -205,7 +206,7 @@ async def get_multi_exchange_listings(
             "error": f"Failed to fetch multi-exchange listings: {str(e)}",
             "listings": [],
             "count": 0,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": get_wib_time(),
         }
 
 
@@ -301,7 +302,7 @@ async def get_region_bypass_listings(
             "working_sources": working_sources,
             "failed_sources": failed_sources,
             "fallback_used": primary_source != "binance" if auto_fallback else False,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": get_wib_time(),
             "hours": hours,
         }
 
@@ -337,7 +338,7 @@ async def get_region_bypass_listings(
             "error": f"Region bypass failed: {str(e)}",
             "listings": [],
             "count": 0,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": get_wib_time(),
         }
 
 
@@ -437,7 +438,7 @@ async def analyze_new_listings_with_mss(
                 "analyzed": [],
                 "count": 0,
                 "message": f"No new listings with volume ≥ ${min_volume_usd:,.0f} in last {hours}h",
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": get_wib_time(),
             }
 
         # Analyze each with MSS
@@ -514,7 +515,7 @@ async def analyze_new_listings_with_mss(
             "lookback_hours": hours,
             "min_volume_filter_usd": min_volume_usd,
             "alerts_sent": alerts_sent if auto_alert else None,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": get_wib_time(),
         }
 
     finally:
@@ -613,7 +614,7 @@ async def watch_new_listings(
             "watch_list": watch_list,
             "count": len(watch_list),
             "filters": {"min_mss_score": min_mss_score, "max_age_hours": max_age_hours},
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": get_wib_time(),
         }
 
     finally:

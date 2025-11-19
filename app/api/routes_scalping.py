@@ -10,6 +10,7 @@ import asyncio
 from datetime import datetime
 import copy
 import logging
+from app.utils.logger import get_wib_time
 
 logger = logging.getLogger(__name__)
 
@@ -307,7 +308,7 @@ async def analyze_for_scalping(request: ScalpingAnalysisRequest):
     
     result = {
         "symbol": symbol,
-        "timestamp": datetime.utcnow().isoformat(),
+        "timestamp": get_wib_time(),
         "ready": False,
         "critical_data_available": 0,
         "recommended_data_available": 0,
