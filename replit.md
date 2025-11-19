@@ -122,6 +122,22 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - Fixed metrics_enabled dict to JSON string conversion with json.dumps()
 - Status: Deployed & Tested ✅
 
+**Bug #5 - Duration-Based Monitoring RuntimeError**
+- Fixed dict modification during iteration with `list(self.watchlist.items())`
+- Status: Deployed & Tested ✅
+
+**Bug #6 - Expired Coins Resurrection**
+- Added expiration filter in `_load_watchlist()` to prevent resurrection on restart
+- Status: Deployed & Tested ✅
+
+**Bug #7 - API JSON Serialization**
+- Fixed `/watchlist` endpoints to parse metrics_enabled JSON to dict
+- Status: Deployed & Tested ✅
+
+**Bug #8 - Missing Import**
+- Added `import json` to routes_comprehensive_monitoring.py
+- Status: Deployed & Tested ✅
+
 ### 📊 Production Verification Results (Nov 19, 2025)
 
 ```bash
@@ -140,12 +156,20 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 
 ### 🌐 Final Deployment Status
 - **Production URL**: https://guardiansofthetoken.org
-- **Deployment Type**: Replit VM with auto-scaling
-- **Total Routes**: 17 new production endpoints (4 Smart Entry + 13 Monitoring)
+- **Deployment Type**: Replit VM (stateful, always-on for continuous monitoring)
+- **Total Routes**: 17 production endpoints (4 Smart Entry + 13 Comprehensive Monitoring)
 - **Total RPC Operations**: 196+ operations via `/invoke` endpoint
-- **Database**: PostgreSQL (Neon) with asyncpg
-- **Git Commit**: 052ef7f (all bug fixes committed)
-- **Status**: 🟢 **FULLY OPERATIONAL - 100% Success Rate**
+- **Database**: PostgreSQL (Neon) with asyncpg, 3 monitoring tables
+- **Latest Features**: Duration-based auto-stop monitoring (Nov 19, 2025)
+- **Status**: 🟢 **FULLY OPERATIONAL - Production Ready for Republish**
+
+### 🔧 Deployment Configuration
+- **Target**: VM deployment (`.replit` configured)
+- **Port Mapping**: 8000 → 80 (external access)
+- **Auto-restart**: Enabled via Replit workflows
+- **Database**: Neon PostgreSQL (production), SQLite (fallback)
+- **Monitoring**: Comprehensive watchlist system with auto-expiration
+- **Files Excluded**: Test files, logs, temporary data (via `.gitignore`)
 
 ### 🎯 RPC Integration Status (November 19, 2025)
 All 17 routes terbaru sudah terintegrasi penuh dengan RPC system:
