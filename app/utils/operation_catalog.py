@@ -125,7 +125,6 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "smart_money.scan_distribution": OperationMetadata("smart_money.scan_distribution", "smart_money", "/scan/distribution", "GET", "Scan distribution patterns"),
     "smart_money.info": OperationMetadata("smart_money.info", "smart_money", "/info", "GET", "Get smart money scanner info"),
     "smart_money.analyze": OperationMetadata("smart_money.analyze", "smart_money", "/analyze/{symbol}", "GET", "Analyze smart money for symbol", requires_symbol=True),
-    "smart_money.get": OperationMetadata("smart_money.get", "smart_money", "/analyze/{symbol}", "GET", "Get smart money analysis for symbol (alias for smart_money.analyze)", requires_symbol=True),
     "smart_money.discover": OperationMetadata("smart_money.discover", "smart_money", "/discover", "GET", "Discover smart money opportunities"),
     "smart_money.futures_list": OperationMetadata("smart_money.futures_list", "smart_money", "/futures/list", "GET", "Get futures list"),
     "smart_money.scan_auto": OperationMetadata("smart_money.scan_auto", "smart_money", "/scan/auto", "GET", "Auto scan smart money"),

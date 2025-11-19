@@ -664,12 +664,6 @@ class FlatRPCDispatcher:
             symbol = args["symbol"]
             return await smart_money_service.analyze_any_coin(symbol)
 
-        elif operation == "smart_money.get":
-            # Alias for smart_money.analyze - backward compatibility
-            from app.services.smart_money_service import smart_money_service
-            symbol = args["symbol"]
-            return await smart_money_service.analyze_any_coin(symbol)
-
         # ===================================================================
         # MSS
         # ===================================================================
