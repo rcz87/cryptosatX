@@ -3,11 +3,19 @@ Rule-Based Risk Assessment System
 Fallback logic for when OpenAI V2 Signal Judge is unavailable
 """
 from typing import Dict, Any, Tuple
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 def rule_based_risk_mode(signal_data: Dict[str, Any]) -> str:
     """
     Determine risk mode based on signal metrics
+    
+    UPDATED (Nov 19, 2025): Relaxed thresholds to reduce false SKIPs
+    - Score threshold: 40 (was 50) - align with signal engine (scores 40-45 are valid)
+    - Long% threshold: 80% (was 70%) - 70-80% is normal in crypto
+    - Funding rate: 0.4% (was 0.25%) - more tolerant of moderate funding
     
     Returns:
         str: "AVOID" | "REDUCED" | "NORMAL" | "AGGRESSIVE"
@@ -34,18 +42,28 @@ def rule_based_risk_mode(signal_data: Dict[str, Any]) -> str:
         liquidations = {}
     long_liq_pct = liquidations.get("longLiqPct", 50)
     
-    if score < 50:
+    # FIXED: Relaxed thresholds to reduce false SKIPs
+    # Only AVOID if score is extremely low (<40) or conditions are truly extreme
+    # Changed from 45 to 40 - scores 40-45 are valid SHORT signals in aggressive mode
+    if score < 40:  # Changed from 45 - align with signal engine thresholds
+        logger.info(f"🔴 Risk Mode: AVOID (score {score} < 40 - extremely low)")
         return "AVOID"
     
     if score < 55:
-        if funding_rate > 0.25 or long_pct > 70:
+        # Changed: long_pct > 80 (was 70) - 70-80% longs is normal in crypto
+        # Changed: funding_rate > 0.4 (was 0.25) - allow moderate funding
+        if funding_rate > 0.4 or long_pct > 80:
+            logger.info(f"🔴 Risk Mode: AVOID (score {score}, funding {funding_rate:.2f}%, longs {long_pct:.1f}%)")
             return "AVOID"
+        logger.info(f"🟡 Risk Mode: REDUCED (score {score}, funding {funding_rate:.2f}%, longs {long_pct:.1f}%)")
         return "REDUCED"
     
     if score < 60:
-        if funding_rate > 0.3 and long_pct > 65:
+        # Changed: long_pct > 75 (was 65) - more tolerant
+        # Changed: long_pct > 75 (was 68) - consistent threshold
+        if funding_rate > 0.4 and long_pct > 75:
             return "AVOID"
-        elif funding_rate > 0.2 or long_pct > 68:
+        elif funding_rate > 0.3 or long_pct > 75:
             return "REDUCED"
         return "REDUCED"
     
@@ -96,16 +114,21 @@ def rule_based_verdict(signal_data: Dict[str, Any]) -> str:
         return "SKIP"
     
     if risk_mode == "AVOID":
+        logger.warning(f"⚠️  Verdict: SKIP (Risk mode AVOID - score {score}, signal {signal})")
         return "SKIP"
     
     if risk_mode == "REDUCED":
         if score < 58:
+            logger.info(f"⏸️  Verdict: WAIT (Reduced risk, score {score} < 58)")
             return "WAIT"
+        logger.info(f"📉 Verdict: DOWNSIZE (Reduced risk, score {score})")
         return "DOWNSIZE"
     
     if risk_mode == "NORMAL":
         if score >= 65:
+            logger.info(f"✅ Verdict: CONFIRM (Normal risk, score {score} >= 65)")
             return "CONFIRM"
+        logger.info(f"📉 Verdict: DOWNSIZE (Normal risk, score {score} < 65)")
         return "DOWNSIZE"
     
     if risk_mode == "AGGRESSIVE":

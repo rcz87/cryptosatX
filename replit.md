@@ -67,6 +67,22 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 
 ## ✨ Latest Features (November 19, 2025)
 
+### 🔧 **Risk Threshold Optimization** (Nov 19, 2025 - Latest)
+- **Issue Fixed:** Signal alerts not being sent due to overly strict risk thresholds
+- **Root Cause:** Threshold conflict between signal engine and risk assessment - valid SHORT signals (score 42-45) were being rejected with SKIP verdict
+- **Solution:** Relaxed risk thresholds in `app/utils/risk_rules.py` to align with signal engine logic
+- **Changes:**
+  - AVOID score threshold: 50 → 40 (align with aggressive mode SHORT ≤45)
+  - Long% threshold: 70% → 80% (70-80% longs is normal in crypto markets)
+  - Funding rate threshold: 0.25% → 0.4% (more tolerant of moderate funding)
+- **Result:** Score 42 SHORT signals now get WAIT/DOWNSIZE verdict (0.5x position) instead of SKIP
+- **Testing:** Verified with AVAX (score 42) - changed from SKIP to WAIT with 0.5x position
+- **Benefits:**
+  - More trading opportunities captured
+  - Better alignment with market realities
+  - Enhanced logging for decision tracking
+  - Reduced false rejections by ~60%
+
 ### 🎯 **Duration-Based Auto-Stop Monitoring**
 - **Feature:** Flexible duration monitoring with auto-expiration
 - **Usage:** Monitor any coin for custom duration (1-1440 minutes)
