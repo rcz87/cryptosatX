@@ -68,6 +68,11 @@ class FlatInvokeRequest(BaseModel):
     symbols: Optional[list[str]] = Field(None, description="List of symbols for batch analysis (max 20)")
     send_telegram: Optional[bool] = Field(False, description="Send results to Telegram")
     min_confluence: Optional[int] = Field(None, description="Minimum confluence score (0-100) for filtering results")
+    
+    # Monitoring parameters
+    duration_minutes: Optional[int] = Field(None, description="Auto-stop monitoring after X minutes (None = continuous)")
+    priority: Optional[int] = Field(None, description="Monitoring priority (1-10)")
+    check_interval_seconds: Optional[int] = Field(None, description="Check interval in seconds")
 
     class Config:
         json_schema_extra = {

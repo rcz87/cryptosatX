@@ -9,6 +9,7 @@ from typing import List, Dict, Any, Optional
 from datetime import datetime, timedelta
 from pydantic import BaseModel, Field
 import logging
+import json
 
 from app.services.comprehensive_monitor import get_comprehensive_monitor, AlertSeverity
 from app.storage.database import db
@@ -29,6 +30,7 @@ class AddCoinRequest(BaseModel):
         default={"price": True, "volume": True, "funding": True, "open_interest": True, "liquidations": True},
         description="Metrics to track"
     )
+    duration_minutes: Optional[int] = Field(default=None, ge=1, le=1440, description="Auto-stop monitoring after X minutes (None = continuous)")
 
 
 class BulkAddCoinsRequest(BaseModel):
@@ -151,12 +153,13 @@ async def add_coin(request: AddCoinRequest):
             priority=request.priority,
             check_interval_seconds=request.check_interval_seconds,
             timeframes=request.timeframes,
-            metrics_enabled=request.metrics_enabled
+            metrics_enabled=request.metrics_enabled,
+            duration_minutes=request.duration_minutes
         )
 
         return {
             "success": True,
-            "message": f"Added {request.symbol} to watchlist",
+            "message": f"Added {request.symbol} to watchlist" + (f" (auto-stop in {request.duration_minutes} min)" if request.duration_minutes else ""),
             "data": {
                 "id": coin.id,
                 "symbol": coin.symbol,
@@ -164,7 +167,9 @@ async def add_coin(request: AddCoinRequest):
                 "priority": coin.priority,
                 "check_interval_seconds": coin.check_interval_seconds,
                 "timeframes": coin.timeframes,
-                "metrics_enabled": coin.metrics_enabled
+                "metrics_enabled": coin.metrics_enabled,
+                "duration_minutes": coin.duration_minutes,
+                "started_at": coin.started_at.isoformat() if coin.started_at else None
             },
             "timestamp": datetime.now().isoformat()
         }
@@ -276,8 +281,14 @@ async def get_watchlist(
         async with db.acquire() as conn:
             rows = await conn.fetch(query, *params)
 
-        watchlist = [
-            {
+        watchlist = []
+        for row in rows:
+            # Parse JSON fields if they're strings
+            metrics = row['metrics_enabled']
+            if isinstance(metrics, str):
+                metrics = json.loads(metrics)
+            
+            watchlist.append({
                 "id": row['id'],
                 "symbol": row['symbol'],
                 "exchange": row['exchange'],
@@ -285,14 +296,12 @@ async def get_watchlist(
                 "priority": row['priority'],
                 "check_interval_seconds": row['check_interval_seconds'],
                 "timeframes": row['timeframes'],
-                "metrics_enabled": row['metrics_enabled'],
+                "metrics_enabled": metrics,
                 "last_check_at": row['last_check_at'].isoformat() if row['last_check_at'] else None,
                 "last_alert_at": row['last_alert_at'].isoformat() if row['last_alert_at'] else None,
                 "alert_count": row['alert_count'],
                 "created_at": row['created_at'].isoformat()
-            }
-            for row in rows
-        ]
+            })
 
         return {
             "success": True,
@@ -361,6 +370,11 @@ async def get_coin_details(symbol: str):
             }
             for a in alerts_rows
         ]
+        
+        # Parse JSON fields if they're strings
+        metrics = row['metrics_enabled']
+        if isinstance(metrics, str):
+            metrics = json.loads(metrics)
 
         return {
             "success": True,
@@ -373,7 +387,7 @@ async def get_coin_details(symbol: str):
                     "priority": row['priority'],
                     "check_interval_seconds": row['check_interval_seconds'],
                     "timeframes": row['timeframes'],
-                    "metrics_enabled": row['metrics_enabled'],
+                    "metrics_enabled": metrics,
                     "last_check_at": row['last_check_at'].isoformat() if row['last_check_at'] else None,
                     "last_alert_at": row['last_alert_at'].isoformat() if row['last_alert_at'] else None,
                     "alert_count": row['alert_count'],

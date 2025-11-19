@@ -80,6 +80,8 @@ class WatchlistCoin:
     last_check_at: Optional[datetime] = None
     last_alert_at: Optional[datetime] = None
     alert_count: int = 0
+    duration_minutes: Optional[int] = None  # Auto-stop after X minutes (None = continuous)
+    started_at: Optional[datetime] = None  # When monitoring started
     created_at: datetime = field(default_factory=datetime.now)
     updated_at: datetime = field(default_factory=datetime.now)
 
@@ -197,12 +199,9 @@ class ComprehensiveMonitor:
                 # Monitor all active coins
                 await self._monitor_all_coins()
 
-                # Wait before next check (use minimum interval from watchlist)
-                min_interval = min(
-                    (coin.check_interval_seconds for coin in self.watchlist.values()),
-                    default=60
-                )
-                await asyncio.sleep(min_interval)
+                # Wait 60 seconds before next check (fixed interval for expiration checking)
+                # This ensures duration-based monitoring expires on time
+                await asyncio.sleep(60)
 
             except asyncio.CancelledError:
                 break
@@ -212,6 +211,9 @@ class ComprehensiveMonitor:
 
     async def _monitor_all_coins(self):
         """Monitor all coins in watchlist"""
+        # First, check for and remove expired coins
+        await self._check_and_remove_expired_coins()
+        
         tasks = []
 
         for symbol, coin in self.watchlist.items():
@@ -222,6 +224,38 @@ class ComprehensiveMonitor:
         if tasks:
             # Monitor all coins concurrently
             await asyncio.gather(*tasks, return_exceptions=True)
+
+    async def _check_and_remove_expired_coins(self):
+        """Check for and remove coins that have exceeded their monitoring duration"""
+        # Collect expired symbols first (avoid modifying dict during iteration)
+        expired_symbols = []
+        
+        # Iterate over a COPY of items to avoid RuntimeError
+        for symbol, coin in list(self.watchlist.items()):
+            # Skip if no duration set (continuous monitoring)
+            if not coin.duration_minutes or not coin.started_at:
+                continue
+            
+            # Calculate elapsed time
+            elapsed_minutes = (datetime.now() - coin.started_at).total_seconds() / 60
+            
+            # Check if expired
+            if elapsed_minutes >= coin.duration_minutes:
+                expired_symbols.append(symbol)
+                logger.info(
+                    f"⏱️ Monitoring duration expired for {symbol} "
+                    f"({coin.duration_minutes} minutes, elapsed: {elapsed_minutes:.1f} min). Auto-stopping..."
+                )
+        
+        # Remove expired coins AFTER iteration completes
+        for symbol in expired_symbols:
+            try:
+                coin = self.watchlist.get(symbol)
+                duration = coin.duration_minutes if coin else 'N/A'
+                await self.remove_coin(symbol)
+                logger.info(f"✅ {symbol} removed from watchlist after {duration} minutes")
+            except Exception as e:
+                logger.error(f"Error removing expired coin {symbol}: {e}")
 
     def _should_check_coin(self, coin: WatchlistCoin) -> bool:
         """Check if coin should be monitored now"""
@@ -654,25 +688,56 @@ class ComprehensiveMonitor:
             query = "SELECT * FROM coin_watchlist WHERE status = 'active' ORDER BY priority DESC"
             async with db.acquire() as conn:
                 rows = await conn.fetch(query)
-
-            for row in rows:
-                coin = WatchlistCoin(
-                    id=row['id'],
-                    symbol=row['symbol'],
-                    exchange=row['exchange'] or 'binance',
-                    status=row['status'],
-                    priority=row['priority'] or 1,
-                    check_interval_seconds=row['check_interval_seconds'],
-                    timeframes=row['timeframes'] or ["1h"],
-                    metrics_enabled=row['metrics_enabled'] or {},
-                    metadata=row['metadata'] or {},
-                    last_check_at=row['last_check_at'],
-                    last_alert_at=row['last_alert_at'],
-                    alert_count=row['alert_count'] or 0,
-                    created_at=row['created_at'],
-                    updated_at=row['updated_at']
-                )
-                self.watchlist[coin.symbol] = coin
+                
+                expired_ids = []
+                for row in rows:
+                    # Check if coin has expired BEFORE loading into watchlist
+                    duration_mins = row.get('duration_minutes')
+                    started = row.get('started_at')
+                    
+                    if duration_mins and started:
+                        elapsed = (datetime.now() - started).total_seconds() / 60
+                        if elapsed >= duration_mins:
+                            # Mark for deletion - coin already expired
+                            expired_ids.append(row['id'])
+                            logger.info(
+                                f"🗑️ Skipping expired coin {row['symbol']} "
+                                f"(duration: {duration_mins} min, elapsed: {elapsed:.1f} min)"
+                            )
+                            continue
+                    
+                    # Parse metrics_enabled from JSON string if needed
+                    metrics = row['metrics_enabled']
+                    if isinstance(metrics, str):
+                        metrics = json.loads(metrics)
+                    
+                    coin = WatchlistCoin(
+                        id=row['id'],
+                        symbol=row['symbol'],
+                        exchange=row['exchange'] or 'binance',
+                        status=row['status'],
+                        priority=row['priority'] or 1,
+                        check_interval_seconds=row['check_interval_seconds'],
+                        timeframes=row['timeframes'] or ["1h"],
+                        metrics_enabled=metrics or {},
+                        metadata=row['metadata'] or {},
+                        last_check_at=row['last_check_at'],
+                        last_alert_at=row['last_alert_at'],
+                        alert_count=row['alert_count'] or 0,
+                        duration_minutes=duration_mins,
+                        started_at=started,
+                        created_at=row['created_at'],
+                        updated_at=row['updated_at']
+                    )
+                    self.watchlist[coin.symbol] = coin
+                
+                # Purge expired coins from database
+                if expired_ids:
+                    await conn.execute(
+                        "DELETE FROM coin_watchlist WHERE id = ANY($1)",
+                        expired_ids
+                    )
+                    logger.info(f"🗑️ Purged {len(expired_ids)} expired coins from database")
 
             logger.info(f"📋 Loaded {len(self.watchlist)} coins from watchlist")
 
@@ -807,12 +872,14 @@ class ComprehensiveMonitor:
             # Insert into database
             query = """
                 INSERT INTO coin_watchlist
-                (symbol, exchange, status, priority, check_interval_seconds, timeframes, metrics_enabled)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                (symbol, exchange, status, priority, check_interval_seconds, timeframes, metrics_enabled, duration_minutes, started_at)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 RETURNING *
             """
 
             metrics_enabled = kwargs.get('metrics_enabled', {"price": True, "volume": True, "funding": True, "open_interest": True, "liquidations": True})
+            duration_minutes = kwargs.get('duration_minutes')
+            started_at = datetime.now() if duration_minutes else None
             
             async with db.acquire() as conn:
                 row = await conn.fetchrow(
@@ -823,10 +890,17 @@ class ComprehensiveMonitor:
                     kwargs.get('priority', 1),
                     kwargs.get('check_interval_seconds', 300),
                     kwargs.get('timeframes', ["5m", "15m", "1h", "4h"]),
-                    json.dumps(metrics_enabled)
+                    json.dumps(metrics_enabled),
+                    duration_minutes,
+                    started_at
                 )
 
             # Create coin object
+            # Parse metrics_enabled from JSON string if needed
+            metrics = row['metrics_enabled']
+            if isinstance(metrics, str):
+                metrics = json.loads(metrics)
+            
             coin = WatchlistCoin(
                 id=row['id'],
                 symbol=row['symbol'],
@@ -835,7 +909,9 @@ class ComprehensiveMonitor:
                 priority=row['priority'],
                 check_interval_seconds=row['check_interval_seconds'],
                 timeframes=row['timeframes'],
-                metrics_enabled=row['metrics_enabled'] or {},
+                metrics_enabled=metrics or {},
+                duration_minutes=row['duration_minutes'],
+                started_at=row['started_at'],
                 created_at=row['created_at'],
                 updated_at=row['updated_at']
             )

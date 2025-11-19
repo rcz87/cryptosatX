@@ -65,6 +65,28 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - **Neon (PostgreSQL)**: Managed PostgreSQL database.
 ---
 
+## ✨ Latest Features (November 19, 2025)
+
+### 🎯 **Duration-Based Auto-Stop Monitoring**
+- **Feature:** Flexible duration monitoring with auto-expiration
+- **Usage:** Monitor any coin for custom duration (1-1440 minutes)
+- **Auto-Stop:** System automatically removes coin after duration expires
+- **API:** `POST /comprehensive-monitoring/watchlist/add` with `duration_minutes` parameter
+- **Example:** "Monitor BTC for 5 minutes" → auto-stops after 5 min
+- **Benefits:**
+  - No manual stop required
+  - Perfect for quick analysis sessions
+  - Prevents forgotten monitoring tasks
+  - GPT Actions compatible via RPC
+
+**Implementation Details:**
+- Database: Added `duration_minutes` + `started_at` columns to `coin_watchlist`
+- Monitoring Loop: Checks expiration every 60 seconds
+- RPC Support: `duration_minutes`, `priority`, `check_interval_seconds` parameters available
+- Flexible: Set `duration_minutes=null` for continuous monitoring
+
+---
+
 ## 🚀 Production Deployment Status (November 19, 2025)
 
 ### ✅ PRO Features - 100% OPERATIONAL
