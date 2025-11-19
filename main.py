@@ -26,7 +26,7 @@ if __name__ == "__main__":
 
     # Configure for Replit deployment
     uvicorn.run(
-        "app.main:app",
+        app,  # Use imported app object directly (not string reference)
         host="0.0.0.0",
         port=port,
         reload=False,  # Disable reload in production
