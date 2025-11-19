@@ -54,6 +54,7 @@ from app.api import (
     routes_performance,  # ADDED FOR PHASE 4 - PERFORMANCE TRACKING & ANALYTICS
     routes_spike_detection,  # ADDED FOR PHASE 5 - REAL-TIME SPIKE DETECTION
     routes_spike_gpt,  # ADDED FOR PHASE 5 - SPIKE DETECTION GPT ACTIONS
+    routes_comprehensive_monitoring,  # ADDED FOR COMPREHENSIVE COIN MONITORING SYSTEM
 )
 
 from app.middleware import (
@@ -231,6 +232,7 @@ app.include_router(routes_smc.router, tags=["Smart Money Concept (SMC)"])
 app.include_router(routes_history.router, tags=["Signal History"])
 app.include_router(routes_enhanced_gpt.router, tags=["Enhanced GPT Integration"])
 app.include_router(routes_monitoring.router, tags=["Automated Monitoring"])
+app.include_router(routes_comprehensive_monitoring.router, tags=["Comprehensive Coin Monitoring"])  # ADDED FOR MULTI-COIN MULTI-TIMEFRAME MONITORING
 app.include_router(routes_openai.router, tags=["OpenAI GPT-4 Integration"])
 app.include_router(routes_openai_v2.router, tags=["OpenAI V2 (Development)"])  # PHASE 1 DEVELOPMENT
 app.include_router(
