@@ -812,6 +812,8 @@ class ComprehensiveMonitor:
                 RETURNING *
             """
 
+            metrics_enabled = kwargs.get('metrics_enabled', {"price": True, "volume": True, "funding": True, "open_interest": True, "liquidations": True})
+            
             async with db.acquire() as conn:
                 row = await conn.fetchrow(
                     query,
@@ -821,7 +823,7 @@ class ComprehensiveMonitor:
                     kwargs.get('priority', 1),
                     kwargs.get('check_interval_seconds', 300),
                     kwargs.get('timeframes', ["5m", "15m", "1h", "4h"]),
-                    kwargs.get('metrics_enabled', {"price": True, "volume": True, "funding": True, "open_interest": True, "liquidations": True})
+                    json.dumps(metrics_enabled)
                 )
 
             # Create coin object
