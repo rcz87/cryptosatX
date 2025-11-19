@@ -273,7 +273,8 @@ async def get_watchlist(
         query += " ORDER BY priority DESC, created_at DESC LIMIT $" + str(len(params) + 1)
         params.append(limit)
 
-        rows = await db.fetch_all(query, *params)
+        async with db.acquire() as conn:
+            rows = await conn.fetch(query, *params)
 
         watchlist = [
             {
@@ -312,14 +313,16 @@ async def get_coin_details(symbol: str):
     """Get detailed information about a specific coin"""
     try:
         query = "SELECT * FROM coin_watchlist WHERE symbol = $1"
-        row = await db.fetch_one(query, symbol.upper())
+        async with db.acquire() as conn:
+            row = await conn.fetchrow(query, symbol.upper())
 
         if not row:
             raise HTTPException(status_code=404, detail=f"Coin {symbol} not in watchlist")
 
         # Get rules for this coin
         rules_query = "SELECT * FROM monitoring_rules WHERE watchlist_id = $1 ORDER BY priority DESC"
-        rules_rows = await db.fetch_all(rules_query, row['id'])
+        async with db.acquire() as conn:
+            rules_rows = await conn.fetch(rules_query, row['id'])
 
         rules = [
             {
@@ -342,7 +345,8 @@ async def get_coin_details(symbol: str):
             ORDER BY created_at DESC
             LIMIT 10
         """
-        alerts_rows = await db.fetch_all(alerts_query, row['id'])
+        async with db.acquire() as conn:
+            alerts_rows = await conn.fetch(alerts_query, row['id'])
 
         recent_alerts = [
             {
@@ -424,7 +428,8 @@ async def add_rule(request: AddRuleRequest):
     try:
         # Get watchlist coin
         coin_query = "SELECT id FROM coin_watchlist WHERE symbol = $1"
-        coin_row = await db.fetch_one(coin_query, request.symbol.upper())
+        async with db.acquire() as conn:
+            coin_row = await conn.fetchrow(coin_query, request.symbol.upper())
 
         if not coin_row:
             raise HTTPException(status_code=404, detail=f"Coin {request.symbol} not in watchlist. Add it first.")
@@ -440,17 +445,18 @@ async def add_rule(request: AddRuleRequest):
         """
 
         import json
-        rule_row = await db.fetch_one(
-            insert_query,
-            watchlist_id,
-            request.rule_type,
-            request.rule_name,
-            json.dumps(request.condition),
-            request.timeframe,
-            request.priority,
-            request.enabled,
-            request.cooldown_minutes
-        )
+        async with db.acquire() as conn:
+            rule_row = await conn.fetchrow(
+                insert_query,
+                watchlist_id,
+                request.rule_type,
+                request.rule_name,
+                json.dumps(request.condition),
+                request.timeframe,
+                request.priority,
+                request.enabled,
+                request.cooldown_minutes
+            )
 
         # Reload rules in monitor
         monitor = get_comprehensive_monitor()
@@ -481,12 +487,14 @@ async def delete_rule(rule_id: int):
     """Delete a monitoring rule"""
     try:
         # Check if rule exists
-        rule = await db.fetch_one("SELECT * FROM monitoring_rules WHERE id = $1", rule_id)
+        async with db.acquire() as conn:
+            rule = await conn.fetchrow("SELECT * FROM monitoring_rules WHERE id = $1", rule_id)
         if not rule:
             raise HTTPException(status_code=404, detail=f"Rule {rule_id} not found")
 
         # Delete rule
-        await db.execute("DELETE FROM monitoring_rules WHERE id = $1", rule_id)
+        async with db.acquire() as conn:
+            await conn.execute("DELETE FROM monitoring_rules WHERE id = $1", rule_id)
 
         # Reload rules in monitor
         monitor = get_comprehensive_monitor()
@@ -545,7 +553,8 @@ async def get_alerts(
         query += f" ORDER BY created_at DESC LIMIT ${param_count}"
         params.append(limit)
 
-        rows = await db.fetch_all(query, *params)
+        async with db.acquire() as conn:
+            rows = await conn.fetch(query, *params)
 
         alerts = [
             {
@@ -592,7 +601,8 @@ async def get_alert_details(alert_id: int):
     """Get detailed information about a specific alert"""
     try:
         query = "SELECT * FROM monitoring_alerts WHERE id = $1"
-        row = await db.fetch_one(query, alert_id)
+        async with db.acquire() as conn:
+            row = await conn.fetchrow(query, alert_id)
 
         if not row:
             raise HTTPException(status_code=404, detail=f"Alert {alert_id} not found")
@@ -638,55 +648,60 @@ async def get_monitoring_stats():
     """
     try:
         # Get watchlist stats
-        watchlist_stats = await db.fetch_one("""
-            SELECT
-                COUNT(*) as total_coins,
-                COUNT(*) FILTER (WHERE status = 'active') as active_coins,
-                SUM(alert_count) as total_alerts
-            FROM coin_watchlist
-        """)
+        async with db.acquire() as conn:
+            watchlist_stats = await conn.fetchrow("""
+                SELECT
+                    COUNT(*) as total_coins,
+                    COUNT(*) FILTER (WHERE status = 'active') as active_coins,
+                    SUM(alert_count) as total_alerts
+                FROM coin_watchlist
+            """)
 
         # Get alert stats by type
-        alert_type_stats = await db.fetch_all("""
-            SELECT alert_type, COUNT(*) as count
-            FROM monitoring_alerts
-            WHERE created_at >= NOW() - INTERVAL '24 hours'
-            GROUP BY alert_type
-            ORDER BY count DESC
-        """)
+        async with db.acquire() as conn:
+            alert_type_stats = await conn.fetch("""
+                SELECT alert_type, COUNT(*) as count
+                FROM monitoring_alerts
+                WHERE created_at >= NOW() - INTERVAL '24 hours'
+                GROUP BY alert_type
+                ORDER BY count DESC
+            """)
 
         # Get alert stats by severity
-        severity_stats = await db.fetch_all("""
-            SELECT severity, COUNT(*) as count
-            FROM monitoring_alerts
-            WHERE created_at >= NOW() - INTERVAL '24 hours'
-            GROUP BY severity
-            ORDER BY
-                CASE severity
-                    WHEN 'critical' THEN 1
-                    WHEN 'high' THEN 2
-                    WHEN 'medium' THEN 3
-                    WHEN 'low' THEN 4
-                END
-        """)
+        async with db.acquire() as conn:
+            severity_stats = await conn.fetch("""
+                SELECT severity, COUNT(*) as count
+                FROM monitoring_alerts
+                WHERE created_at >= NOW() - INTERVAL '24 hours'
+                GROUP BY severity
+                ORDER BY
+                    CASE severity
+                        WHEN 'critical' THEN 1
+                        WHEN 'high' THEN 2
+                        WHEN 'medium' THEN 3
+                        WHEN 'low' THEN 4
+                    END
+            """)
 
         # Get most active coins
-        most_active = await db.fetch_all("""
-            SELECT symbol, alert_count, last_alert_at
-            FROM coin_watchlist
-            WHERE status = 'active'
-            ORDER BY alert_count DESC
-            LIMIT 10
-        """)
+        async with db.acquire() as conn:
+            most_active = await conn.fetch("""
+                SELECT symbol, alert_count, last_alert_at
+                FROM coin_watchlist
+                WHERE status = 'active'
+                ORDER BY alert_count DESC
+                LIMIT 10
+            """)
 
         # Get rule stats
-        rule_stats = await db.fetch_all("""
-            SELECT rule_type, COUNT(*) as total_rules, SUM(trigger_count) as total_triggers
-            FROM monitoring_rules
-            WHERE enabled = true
-            GROUP BY rule_type
-            ORDER BY total_triggers DESC
-        """)
+        async with db.acquire() as conn:
+            rule_stats = await conn.fetch("""
+                SELECT rule_type, COUNT(*) as total_rules, SUM(trigger_count) as total_triggers
+                FROM monitoring_rules
+                WHERE enabled = true
+                GROUP BY rule_type
+                ORDER BY total_triggers DESC
+            """)
 
         return {
             "success": True,
