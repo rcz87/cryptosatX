@@ -4,7 +4,12 @@ Production-ready FastAPI application with enhanced features
 """
 
 import os
+import sys
 import asyncio
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+
 from app.main import app
 import uvicorn
 from app.utils.logger import default_logger
