@@ -1,0 +1,418 @@
+{
+  "_metadata": {
+    "version": "1.0.0",
+    "description": "Anti-Timeout Preset Parameters for all 187 operations",
+    "last_updated": "2025-11-20",
+    "usage": "Auto-applied by middleware if user doesn't specify parameters"
+  },
+  
+  "presets": {
+    "smart_money.scan": {
+      "safe": {
+        "limit": 10,
+        "min_accumulation_score": 7,
+        "timeframe": "24h"
+      },
+      "fast": {
+        "limit": 5,
+        "min_accumulation_score": 8,
+        "timeframe": "12h"
+      },
+      "timeout_risk": "HIGH",
+      "notes": "Full scan can take 20-40s. Safe mode limits to top 10 coins."
+    },
+    
+    "smart_money.scan_accumulation": {
+      "safe": {
+        "limit": 10,
+        "min_accumulation_score": 7
+      },
+      "fast": {
+        "limit": 5,
+        "min_accumulation_score": 8
+      },
+      "timeout_risk": "HIGH",
+      "notes": "Accumulation patterns can be data-heavy. Limit to top performers."
+    },
+    
+    "smart_money.scan_distribution": {
+      "safe": {
+        "limit": 10,
+        "min_distribution_score": 7
+      },
+      "fast": {
+        "limit": 5,
+        "min_distribution_score": 8
+      },
+      "timeout_risk": "HIGH",
+      "notes": "Distribution patterns analysis. Limit results for speed."
+    },
+    
+    "smart_money.scan_auto": {
+      "safe": {
+        "limit": 15,
+        "min_score": 7
+      },
+      "fast": {
+        "limit": 8,
+        "min_score": 8
+      },
+      "timeout_risk": "HIGH",
+      "notes": "Auto scan can be slow. Use conservative limits."
+    },
+    
+    "mss.discover": {
+      "safe": {
+        "max_results": 10,
+        "min_mss_score": 75,
+        "phase": "phase1"
+      },
+      "fast": {
+        "max_results": 5,
+        "min_mss_score": 80,
+        "phase": "phase1"
+      },
+      "timeout_risk": "HIGH",
+      "notes": "Phase 1 only (<1s). Full 3-phase scan takes 90s+."
+    },
+    
+    "mss.scan": {
+      "safe": {
+        "max_results": 10,
+        "min_mss_score": 75
+      },
+      "fast": {
+        "max_results": 5,
+        "min_mss_score": 80
+      },
+      "timeout_risk": "HIGH",
+      "notes": "Limit results to avoid timeout on comprehensive scan."
+    },
+    
+    "coinglass.funding_rate.exchange_list": {
+      "safe": {
+        "exchanges": ["Binance", "Bybit", "OKX", "Bitget", "Deribit"]
+      },
+      "fast": {
+        "exchanges": ["Binance", "Bybit", "OKX"]
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "All exchanges can return 50+ entries. Limit to major exchanges."
+    },
+    
+    "coinglass.open_interest.exchange_list": {
+      "safe": {
+        "exchanges": ["Binance", "Bybit", "OKX", "Bitget", "Deribit"]
+      },
+      "fast": {
+        "exchanges": ["Binance", "Bybit", "OKX"]
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Multiple exchanges can be slow. Focus on top 5."
+    },
+    
+    "coinglass.liquidation.history": {
+      "safe": {
+        "limit": 100,
+        "interval": "4h"
+      },
+      "fast": {
+        "limit": 50,
+        "interval": "12h"
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Historical data can be large. Limit timeframe and results."
+    },
+    
+    "coinglass.liquidation.aggregated_history": {
+      "safe": {
+        "limit": 100,
+        "interval": "4h"
+      },
+      "fast": {
+        "limit": 50,
+        "interval": "12h"
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Aggregated history across exchanges. Use short intervals."
+    },
+    
+    "coinglass.open_interest.history": {
+      "safe": {
+        "limit": 100,
+        "interval": "1d"
+      },
+      "fast": {
+        "limit": 50,
+        "interval": "1d"
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "OI history can be extensive. Limit data points."
+    },
+    
+    "coinglass.open_interest.aggregated_history": {
+      "safe": {
+        "limit": 100,
+        "interval": "1d"
+      },
+      "fast": {
+        "limit": 50,
+        "interval": "1d"
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Aggregated OI across all exchanges. Use daily interval."
+    },
+    
+    "coinglass.funding_rate.history": {
+      "safe": {
+        "limit": 100,
+        "interval": "8h"
+      },
+      "fast": {
+        "limit": 50,
+        "interval": "8h"
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Funding rate history. Limit to recent data."
+    },
+    
+    "coinglass.hyperliquid.whale_alerts": {
+      "safe": {
+        "limit": 50
+      },
+      "fast": {
+        "limit": 20
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Whale alerts can be numerous. Top 20-50 is sufficient."
+    },
+    
+    "coinglass.chain.whale_transfers": {
+      "safe": {
+        "limit": 20
+      },
+      "fast": {
+        "limit": 10
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "On-chain transfers. Recent 10-20 transfers are most relevant."
+    },
+    
+    "coinglass.indicators.rsi_list": {
+      "safe": {
+        "limit": 20
+      },
+      "fast": {
+        "limit": 10
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "RSI for all coins. Limit to top coins by volume."
+    },
+    
+    "coinglass.news.feed": {
+      "safe": {
+        "limit": 50
+      },
+      "fast": {
+        "limit": 20
+      },
+      "timeout_risk": "LOW",
+      "notes": "News feed. Recent 20-50 articles sufficient."
+    },
+    
+    "coinglass.calendar.economic": {
+      "safe": {
+        "limit": 50
+      },
+      "fast": {
+        "limit": 20
+      },
+      "timeout_risk": "LOW",
+      "notes": "Economic events. Upcoming 20-50 events."
+    },
+    
+    "lunarcrush.coins_discovery": {
+      "safe": {
+        "limit": 20,
+        "sort": "galaxy_score"
+      },
+      "fast": {
+        "limit": 10,
+        "sort": "galaxy_score"
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Real-time coin discovery. Top 10-20 by galaxy score."
+    },
+    
+    "lunarcrush.coins_realtime": {
+      "safe": {
+        "limit": 20
+      },
+      "fast": {
+        "limit": 10
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "NO CACHE real-time data. Limit for speed."
+    },
+    
+    "lunarcrush.coins_rankings": {
+      "safe": {
+        "limit": 20
+      },
+      "fast": {
+        "limit": 10
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Ranked coins. Top 10-20 most relevant."
+    },
+    
+    "lunarcrush.topics_list": {
+      "safe": {
+        "limit": 30
+      },
+      "fast": {
+        "limit": 15
+      },
+      "timeout_risk": "LOW",
+      "notes": "Trending topics. 15-30 topics sufficient."
+    },
+    
+    "market.get": {
+      "safe": {
+        "include_history": false,
+        "history_limit": 50
+      },
+      "fast": {
+        "include_history": false,
+        "history_limit": 20
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Market data with optional history. Disable history for speed."
+    },
+    
+    "market.summary": {
+      "safe": {
+        "symbols": ["BTC", "ETH", "SOL", "XRP", "BNB"]
+      },
+      "fast": {
+        "symbols": ["BTC", "ETH", "SOL"]
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Multi-coin summary. Limit to major coins."
+    },
+    
+    "signals.get": {
+      "safe": {
+        "include_debug": false
+      },
+      "fast": {
+        "include_debug": false
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Trading signals can take 10-20s. Disable debug for speed."
+    },
+    
+    "analytics.history.symbol": {
+      "safe": {
+        "limit": 100,
+        "days": 30
+      },
+      "fast": {
+        "limit": 50,
+        "days": 7
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Signal history. Limit to recent weeks."
+    },
+    
+    "analytics.history.date_range": {
+      "safe": {
+        "limit": 100,
+        "max_days": 30
+      },
+      "fast": {
+        "limit": 50,
+        "max_days": 7
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Date range queries. Short ranges recommended."
+    },
+    
+    "mss.history": {
+      "safe": {
+        "limit": 100,
+        "days": 30
+      },
+      "fast": {
+        "limit": 50,
+        "days": 7
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "MSS signal history. Recent data most relevant."
+    },
+    
+    "new_listings.multi_exchange": {
+      "safe": {
+        "exchanges": ["Binance", "Bybit", "OKX", "Bitget"],
+        "days": 7
+      },
+      "fast": {
+        "exchanges": ["Binance", "Bybit"],
+        "days": 3
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Multi-exchange listings. Recent week sufficient."
+    },
+    
+    "coinapi.ohlcv.historical": {
+      "safe": {
+        "limit": 100,
+        "period": "1DAY"
+      },
+      "fast": {
+        "limit": 50,
+        "period": "1DAY"
+      },
+      "timeout_risk": "MEDIUM",
+      "notes": "Historical OHLCV. Limit data points."
+    },
+    
+    "smart_entry.analyze_batch": {
+      "safe": {
+        "symbols": 10,
+        "min_confluence_score": 70
+      },
+      "fast": {
+        "symbols": 5,
+        "min_confluence_score": 75
+      },
+      "timeout_risk": "HIGH",
+      "notes": "Batch analysis. Limit to 5-10 symbols max."
+    }
+  },
+  
+  "default_limits": {
+    "light_operations": {
+      "timeout_ms": 5000,
+      "applies_to": ["health.*", "*.info", "*.status"]
+    },
+    "medium_operations": {
+      "timeout_ms": 15000,
+      "default_limit": 50,
+      "applies_to": ["*.get", "*.analyze", "*.coin"]
+    },
+    "heavy_operations": {
+      "timeout_ms": 30000,
+      "default_limit": 10,
+      "applies_to": ["*.scan", "*.discover", "*.history", "*_batch"]
+    }
+  },
+  
+  "gpt_actions_recommendations": {
+    "general": "Always use 'safe' or 'fast' presets for GPT Actions (60s timeout limit)",
+    "batch_operations": "For batch/scan operations, use limit ≤ 10 to avoid timeout",
+    "history_queries": "Use short timeframes (days ≤ 7) for historical data",
+    "multi_exchange": "Limit to top 5 exchanges: Binance, Bybit, OKX, Bitget, Deribit",
+    "whale_data": "Limit to 10-20 recent alerts/transfers for speed"
+  }
+}

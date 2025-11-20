@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from app.models.rpc_flat_models import FlatRPCResponse
 from app.utils.operation_catalog import get_operation_metadata, OPERATION_CATALOG
 from app.utils.logger import logger
+from app.middleware.auto_optimizer import optimize_request
 
 
 class FlatRPCDispatcher:
@@ -111,6 +112,20 @@ class FlatRPCDispatcher:
         # Convert flat request to args dict
         args = self._extract_args(request, metadata)
 
+        # ✅ NEW: Auto-optimize parameters to prevent timeout
+        optimized_args, optimization_meta = optimize_request(operation, args, mode="safe")
+        
+        # Log optimization if applied
+        if optimization_meta.get("optimized"):
+            logger.info(
+                f"🔧 Auto-optimized {operation}: "
+                f"risk={optimization_meta.get('timeout_risk')}, "
+                f"mode={optimization_meta.get('mode')}"
+            )
+        
+        # Use optimized args
+        args = optimized_args
+
         # Validate required arguments
         validation_error = self._validate_args(metadata, args)
         if validation_error:
@@ -133,17 +148,27 @@ class FlatRPCDispatcher:
 
             execution_time = time.time() - start_time
 
+            # Build response meta
+            response_meta = {
+                "execution_time_ms": round(execution_time * 1000, 2),
+                "namespace": metadata.namespace,
+                "method": metadata.method,
+                "path": metadata.path,
+                "timeout_limit_s": timeout
+            }
+            
+            # Add optimization info if parameters were optimized
+            if optimization_meta.get("optimized"):
+                response_meta["auto_optimized"] = True
+                response_meta["optimization_mode"] = optimization_meta.get("mode")
+                if optimization_meta.get("timeout_risk"):
+                    response_meta["timeout_risk"] = optimization_meta.get("timeout_risk")
+
             return FlatRPCResponse(
                 ok=True,
                 operation=operation,
                 data=result,
-                meta={
-                    "execution_time_ms": round(execution_time * 1000, 2),
-                    "namespace": metadata.namespace,
-                    "method": metadata.method,
-                    "path": metadata.path,
-                    "timeout_limit_s": timeout
-                }
+                meta=response_meta
             )
             
         except asyncio.TimeoutError:
