@@ -83,38 +83,70 @@ class MSSService:
         discovered_coins = []
 
         try:
-            # Strategy 1: CoinGecko trending & new listings
-            cg_tasks = [
-                self.coingecko.get_trending(),
-                self.coingecko.discover_new_listings(limit=limit)
-            ]
-            cg_results = await asyncio.gather(*cg_tasks, return_exceptions=True)
-
-            cg_trending_raw = cg_results[0] if not isinstance(cg_results[0], Exception) else {}
-            cg_new_raw = cg_results[1] if not isinstance(cg_results[1], Exception) else {}
-
-            # Extract coins from responses
-            cg_trending = cg_trending_raw.get("data", {}).get("coins", []) if isinstance(cg_trending_raw, dict) else []
-            cg_new = cg_new_raw.get("coins", []) if isinstance(cg_new_raw, dict) else []
-
-            # Combine and deduplicate
+            # ✅ PRIMARY STRATEGY: CoinGecko Markets API (has complete data: FDV, volume, etc)
+            # Get coins sorted by volume (most active first)
             all_cg_coins = {}
-            for coin_wrapper in cg_trending:
-                coin = coin_wrapper.get("item", {}) if "item" in coin_wrapper else coin_wrapper
-                symbol = coin.get("symbol", "").upper()
-                if symbol and symbol not in all_cg_coins:
-                    all_cg_coins[symbol] = coin
-
-            for coin in cg_new:
-                symbol = coin.get("symbol", "").upper()
-                if symbol and symbol not in all_cg_coins:
-                    all_cg_coins[symbol] = coin
-
-            # Strategy 2: Binance futures coins
-            binance_symbols = await self.binance.filter_coins_by_criteria(
-                min_volume_usdt=min_volume_24h,
-                limit=limit
+            
+            logger.info("Fetching coins from CoinGecko markets (volume sorted)...")
+            markets = await self.coingecko.get_coins_markets(
+                vs_currency="usd",
+                order="volume_desc",
+                per_page=min(limit * 3, 100),  # Get more candidates to filter
+                category=None
             )
+            
+            if markets.get("success"):
+                for coin in markets.get("data", []):
+                    symbol = coin.get("symbol", "").upper()
+                    if symbol:
+                        all_cg_coins[symbol] = coin
+                logger.info(f"✅ CoinGecko markets: {len(all_cg_coins)} coins fetched")
+            else:
+                logger.error(f"❌ CoinGecko markets failed: {markets.get('error')}")
+                
+            # SECONDARY: Try to add trending coins (but they may lack FDV/volume data)
+            try:
+                trending = await self.coingecko.get_trending()
+                if isinstance(trending, dict):
+                    trending_coins = trending.get("data", {}).get("coins", [])
+                    logger.info(f"Fetching {len(trending_coins)} trending coins for supplemental data...")
+                    # Fetch full data for trending coins individually
+                    for coin_wrapper in trending_coins[:10]:  # Limit to avoid too many API calls
+                        item = coin_wrapper.get("item", {})
+                        coin_id = item.get("id")
+                        symbol = item.get("symbol", "").upper()
+                        
+                        if coin_id and symbol and symbol not in all_cg_coins:
+                            # Fetch full coin data including FDV, volume
+                            detail = await self.coingecko.get_coin_by_id(coin_id)
+                            if detail.get("success"):
+                                coin_data = detail.get("data", {})
+                                # Extract market data
+                                market_data = coin_data.get("market_data", {})
+                                if market_data:
+                                    all_cg_coins[symbol] = {
+                                        "symbol": symbol,
+                                        "name": coin_data.get("name"),
+                                        "market_cap": market_data.get("market_cap", {}).get("usd", 0),
+                                        "fully_diluted_valuation": market_data.get("fully_diluted_valuation", {}).get("usd"),
+                                        "total_volume": market_data.get("total_volume", {}).get("usd", 0),
+                                        "circulating_supply": market_data.get("circulating_supply", 0),
+                                        "total_supply": market_data.get("total_supply", 0)
+                                    }
+                    logger.info(f"✅ Added {len([s for s in all_cg_coins if s not in markets.get('data', [])])} trending coins")
+            except Exception as e:
+                logger.warning(f"Trending coins fetch failed (non-critical): {e}")
+            
+            # FALLBACK: Try Binance (but likely geo-blocked)
+            try:
+                binance_symbols = await self.binance.filter_coins_by_criteria(
+                    min_volume_usdt=min_volume_24h,
+                    limit=limit
+                )
+                if binance_symbols:
+                    logger.info(f"✅ Binance: {len(binance_symbols)} symbols")
+            except Exception as e:
+                logger.warning(f"Binance unavailable (HTTP 451 geo-block expected): {str(e)[:50]}")
 
             # Merge data sources and apply strict filters
             for symbol, cg_data in all_cg_coins.items():
