@@ -36,6 +36,7 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - **Signal Engine**: 8-factor weighted scoring system with a 3-Mode Threshold System for risk profiles, including error handling and data quality tracking.
 - **Hybrid AI Signal Judge (GPT-5.1)**: Integrates OpenAI GPT-5.1 (upgraded November 2025) with rule-based fallback for signal validation, providing `Verdict`, `Risk Mode`, `Position Multiplier`, `AI Summary`, and `Volatility Metrics`. Features 45% fewer hallucinations and improved accuracy vs GPT-4.
 - **GPT-5.1 Self-Evaluation System**: AI Judge now includes historical performance context for self-learning. Analyzes past signal outcomes (win rate, ROI, verdict effectiveness) to improve future decisions and reduce false positives.
+- **GPT-5.1 Enhanced Reasoning Mode**: Implements multi-layer analysis via advanced prompt engineering. Features explicit layer-by-layer validation (Technical → On-Chain → Sentiment → Whale Activity → Coherence Check) with evidence tracking for complete transparency in AI verdict decisions.
 - **Multi-Modal Signal Score (MSS)**: 3-phase framework for discovering emerging cryptocurrencies (tokenomics, community momentum, institutional validation).
 - **Smart Money Concept (SMC) Analyzer**: Detects institutional trading patterns across multiple timeframes with dynamic coin discovery. Features intelligent caching and rate limit safety.
 - **Dynamic Coin Discovery**: Integrates CoinGecko API for geo-friendly coin fetching.

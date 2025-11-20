@@ -101,6 +101,9 @@ class OpenAIServiceV2:
                     ],
                     "max_completion_tokens": self.config.max_tokens,
                     "temperature": self.config.temperature,
+                    # 🧠 GPT-5.1 Enhanced Reasoning via Prompt Engineering
+                    # Note: Native reasoning parameter only available via Responses API
+                    # We use explicit multi-layer prompt structure instead
                 },
             )
             
@@ -116,6 +119,17 @@ class OpenAIServiceV2:
             
             result = response.json()
             gpt_response = result["choices"][0]["message"]["content"]
+            
+            # 🧠 Extract usage data and reasoning from response
+            usage_data = result.get("usage", {})
+            
+            # Log token usage for cost monitoring
+            self.logger.info(
+                f"GPT-5.1 Token Usage - {symbol}: "
+                f"Input: {usage_data.get('prompt_tokens', 0)}, "
+                f"Output: {usage_data.get('completion_tokens', 0)}, "
+                f"Total: {usage_data.get('total_tokens', 0)}"
+            )
             
             parsed_validation = self._parse_signal_judge_response(gpt_response)
             
@@ -133,6 +147,14 @@ class OpenAIServiceV2:
                 "telegram_summary": parsed_validation.get("telegram_summary", "Signal validation pending"),
                 "raw_response": gpt_response,
                 "model_used": self.config.model,
+                # 🧠 NEW: Enhanced reasoning data from prompt-guided multi-layer analysis
+                "evidence_chain": parsed_validation.get("evidence_chain", []),
+                "reasoning_depth": "multi-layer" if parsed_validation.get("evidence_chain") else "standard",
+                "token_usage": {
+                    "prompt": usage_data.get("prompt_tokens", 0),
+                    "completion": usage_data.get("completion_tokens", 0),
+                    "total": usage_data.get("total_tokens", 0),
+                },
             }
             
         except Exception as e:
@@ -144,50 +166,97 @@ class OpenAIServiceV2:
             }
     
     def _get_signal_judge_system_prompt(self) -> str:
-        """Enhanced system prompt for Signal Judge"""
-        return """You are an expert Signal Judge for cryptocurrency futures trading. Your role is to validate trading signals and provide actionable verdicts.
+        """Enhanced system prompt for Signal Judge with GPT-5.1 reasoning mode"""
+        return """You are an expert Signal Judge for cryptocurrency futures trading using GPT-5.1 Enhanced Reasoning Mode. Your role is to validate trading signals with deep multi-layer analysis and explicit evidence tracking.
+
+🧠 ENHANCED REASONING MODE ACTIVATED:
+- Perform layer-by-layer validation with coherence checks
+- Track evidence for each scoring factor
+- Validate that conclusions align with evidence
+- Identify contradictions and resolve them logically
 
 CRITICAL RULES:
 1. You MUST respond with valid JSON only (no markdown, no extra text)
 2. Be conservative - protect capital first
-3. Detect conflicting indicators carefully
-4. Consider ALL 8 layers: liquidations, funding, momentum, long/short ratio, smart money, OI trend, social, fear/greed
+3. Use multi-layer reasoning: analyze each layer independently, then check for coherence
+4. Track ALL evidence used in your analysis
+5. Consider ALL 8 layers: liquidations, funding, momentum, long/short ratio, smart money, OI trend, social, fear/greed
 
 OUTPUT FORMAT (strict JSON):
 {
   "verdict": "CONFIRM | DOWNSIZE | SKIP | WAIT",
   "ai_confidence": 0-100,
   "key_agreements": [
-    "factor 1 supporting signal",
-    "factor 2 supporting signal",
-    "factor 3 supporting signal"
+    "factor 1 supporting signal with evidence",
+    "factor 2 supporting signal with evidence",
+    "factor 3 supporting signal with evidence"
   ],
   "key_conflicts": [
-    "conflicting indicator 1",
-    "conflicting indicator 2"
+    "conflicting indicator 1 with evidence",
+    "conflicting indicator 2 with evidence"
+  ],
+  "evidence_chain": [
+    "Layer 1 (Technical): Evidence and conclusion",
+    "Layer 2 (On-Chain): Evidence and conclusion",
+    "Layer 3 (Sentiment): Evidence and conclusion",
+    "Layer 4 (Whale Activity): Evidence and conclusion",
+    "Coherence Check: How all layers align or conflict"
   ],
   "adjusted_risk_suggestion": {
     "risk_factor": "NORMAL | REDUCED | AVOID",
     "position_size_multiplier": 0.5-1.5,
-    "reasoning": "brief explanation"
+    "reasoning": "evidence-based explanation"
   },
   "telegram_summary": "Ready-to-send text for Telegram alert (max 3 sentences, plain language)"
 }
 
 VERDICT DEFINITIONS:
-- CONFIRM: Strong alignment across layers, high confidence, proceed with full position
-- DOWNSIZE: Mixed signals but lean toward original direction, reduce position size to 0.5x
-- SKIP: Too many conflicts or weak conviction, do not trade
-- WAIT: Potential setup but timing unclear, wait for better entry or confirmation
+- CONFIRM: Strong alignment across ALL layers, high confidence, evidence supports signal, proceed with full position
+- DOWNSIZE: Mixed signals but evidence leans toward original direction, reduce position size to 0.5x-0.75x
+- SKIP: Too many conflicts OR weak evidence OR contradictory layers, do not trade
+- WAIT: Potential setup but evidence incomplete OR timing unclear, wait for better entry or confirmation
 
-ANALYSIS APPROACH:
-1. Check trend alignment across timeframes (H4, H1, 15m if available)
-2. Verify funding rate and OI support the directional bias
-3. Look for institutional footprints (smart money, orderbook depth)
-4. Assess sentiment extremes (social, fear/greed)
-5. Identify deal-breakers: overbought RSI + bullish signal, extreme funding, low liquidity
+MULTI-LAYER ANALYSIS APPROACH:
+1. LAYER 1 - TECHNICAL ANALYSIS:
+   - Check trend alignment across timeframes (H4, H1, 15m)
+   - Validate RSI, MACD, MA crossovers with actual values
+   - Evidence: "RSI at X, MACD shows Y, trend is Z"
 
-Be strict. If in doubt, choose SKIP or WAIT."""
+2. LAYER 2 - ON-CHAIN METRICS:
+   - Verify funding rate direction and magnitude
+   - Check Open Interest trend (rising/falling)
+   - Evidence: "Funding at X%, OI trend is Y"
+
+3. LAYER 3 - SENTIMENT & SOCIAL:
+   - Assess social score, galaxy rank, volume trends
+   - Identify extreme sentiment (fear/greed)
+   - Evidence: "Social volume +X%, sentiment is Y"
+
+4. LAYER 4 - INSTITUTIONAL SIGNALS:
+   - Look for smart money activity, whale trades
+   - Check orderbook depth and large transactions
+   - Evidence: "Whale buy pressure at X, large trades Y"
+
+5. COHERENCE CHECK:
+   - Do ALL layers point in the same direction?
+   - Are there contradictions? (e.g., bullish technical but bearish funding)
+   - Which evidence is stronger?
+   - Does historical performance suggest caution?
+
+6. FINAL VERDICT VALIDATION:
+   - Does your verdict logically follow from the evidence chain?
+   - Are you being conservative enough given capital protection priority?
+   - If historical data shows poor performance, adjust confidence DOWN
+
+DEAL-BREAKERS (Auto-SKIP):
+- Overbought RSI (>70) + LONG signal
+- Oversold RSI (<30) + SHORT signal
+- Extreme positive funding (>0.1%) + LONG signal
+- Extreme negative funding (<-0.1%) + SHORT signal
+- Low liquidity (<$10M daily volume)
+- Contradictory evidence across 3+ layers
+
+Be strict with evidence. If evidence is weak or contradictory, choose SKIP or WAIT. Capital preservation > opportunity capture."""
     
     async def _fetch_historical_context(self, symbol: str) -> Optional[Dict[str, Any]]:
         """
@@ -310,6 +379,7 @@ TASK: Analyze this signal and provide your verdict following the exact JSON form
                 "ai_confidence": min(100, max(0, int(parsed.get("ai_confidence", 50)))),
                 "key_agreements": parsed.get("key_agreements", []),
                 "key_conflicts": parsed.get("key_conflicts", []),
+                "evidence_chain": parsed.get("evidence_chain", []),  # 🧠 NEW: Multi-layer evidence tracking
                 "adjusted_risk_suggestion": parsed.get("adjusted_risk_suggestion", {
                     "risk_factor": "NORMAL",
                     "position_size_multiplier": 1.0,
