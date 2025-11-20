@@ -48,6 +48,8 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "coinapi.quote": OperationMetadata("coinapi.quote", "coinapi", "/quote/{symbol}", "GET", "Get current quote", requires_symbol=True),
     "coinapi.multi_exchange": OperationMetadata("coinapi.multi_exchange", "coinapi", "/multi-exchange/{symbol}", "GET", "Get multi-exchange aggregated data", requires_symbol=True),
     "coinapi.dashboard": OperationMetadata("coinapi.dashboard", "coinapi", "/dashboard/{symbol}", "GET", "Get CoinAPI dashboard", requires_symbol=True),
+    "coinapi.symbols": OperationMetadata("coinapi.symbols", "coinapi", "/symbols", "GET", "Get list of available trading symbols"),
+    "coinapi.metrics": OperationMetadata("coinapi.metrics", "coinapi", "/metrics/{symbol}", "GET", "Get derivatives metrics (funding rate, open interest)", requires_symbol=True),
     
     "coinglass.markets": OperationMetadata("coinglass.markets", "coinglass", "/markets", "GET", "Get all markets"),
     "coinglass.markets.symbol": OperationMetadata("coinglass.markets.symbol", "coinglass", "/markets/{symbol}", "GET", "Get market data for symbol", requires_symbol=True),
