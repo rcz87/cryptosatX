@@ -1010,6 +1010,20 @@ class FlatRPCDispatcher:
             if not topic:
                 raise ValueError("Parameter 'topic' is required for lunarcrush.topic")
             return await lunarcrush_service.get_topic_details(topic)
+        
+        elif operation == "lunarcrush.coins_realtime":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            limit = args.get("limit", 100)
+            sort = args.get("sort", "social_volume")
+            min_galaxy_score = args.get("min_galaxy_score")
+            return await lunarcrush_comprehensive.get_coins_realtime(limit=limit, sort=sort, min_galaxy_score=min_galaxy_score)
+        
+        elif operation == "lunarcrush.coin_comprehensive":
+            from app.services.lunarcrush_comprehensive_service import lunarcrush_comprehensive
+            symbol = args.get("symbol")
+            if not symbol:
+                raise ValueError("Parameter 'symbol' is required for lunarcrush.coin_comprehensive")
+            return await lunarcrush_comprehensive.get_coin_comprehensive(symbol)
 
         # ===================================================================
         # COINAPI
