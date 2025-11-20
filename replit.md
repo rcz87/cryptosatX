@@ -73,6 +73,12 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - ✅ **Timeout Optimization:** Increased from 60s→120s→180s to support up to 40-50 coins scan
 - ✅ **Premium API Integration:** Switched primary data source from CoinGecko (free) to Coinglass (premium paid)
 
+### Coinglass Indicators Fix (Critical)
+- ✅ **RSI Duplicate Function Fixed:** Removed duplicate function that was overwriting complete version
+- ✅ **Parameter Filtering:** Fixed global parameter leak (mode, send_telegram, etc) being sent to all operations
+- ✅ **All 12 Indicators Working:** RSI, MA, EMA, MACD, Bollinger, Basis, Whale Index, CGDI, CDRI, Golden Ratio, Fear & Greed
+- ✅ **RPC Dispatcher Updated:** Added namespace-based parameter filtering for Coinglass/LunarCrush operations
+
 ### GPT Actions Compatibility
 - ✅ **Documentation Updated:** Added clear timeout warnings in GPT_ACTIONS_INSTRUCTIONS.txt
 - ✅ **Performance Guidance:** Documented safe operation limits for GPT Actions (60s timeout)

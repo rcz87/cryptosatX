@@ -219,6 +219,15 @@ class FlatRPCDispatcher:
 
         # System parameters that should only be included if explicitly set to non-default values
         system_params = {'debug', 'include_raw'}
+        
+        # Parameters only needed for specific operations (not Coinglass/LunarCrush indicators)
+        signal_specific_params = {
+            'mode',           # Only for signals.get
+            'send_telegram',  # Only for smart entry/monitoring operations
+            'min_confluence', # Only for smart entry operations
+            'symbols',        # Only for batch operations
+            'duration_minutes', 'priority', 'check_interval_seconds'  # Only for monitoring
+        }
 
         # Extract all non-None fields except 'operation'
         for field_name in request.model_fields:
@@ -230,6 +239,19 @@ class FlatRPCDispatcher:
             # Skip system parameters if they are default values (False/None)
             if field_name in system_params:
                 if value in (None, False):
+                    continue
+            
+            # Skip signal-specific params for Coinglass/LunarCrush indicator operations
+            if field_name in signal_specific_params:
+                # Skip for Coinglass and LunarCrush operations (unless they explicitly need them)
+                if metadata.namespace in ['coinglass', 'lunarcrush']:
+                    # Skip all signal-specific params for these namespaces
+                    continue
+                    
+                # For other operations, only skip if it's a default value
+                if field_name == 'mode' and value == "aggressive":
+                    continue
+                if field_name == 'send_telegram' and value is False:
                     continue
             
             # Skip None values
