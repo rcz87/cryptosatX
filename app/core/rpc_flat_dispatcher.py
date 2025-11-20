@@ -873,12 +873,14 @@ class FlatRPCDispatcher:
             from app.services.mss_service import MSSService
             mss = MSSService()
             # Map GPT Action params to actual service params
-            # ✅ OPTIMIZED: Reduced default to 5 for faster response (batched processing)
-            limit = args.get("max_results", 5)  # Changed from 10 to 5
+            # ✅ CRITICAL FIX: Use phase1_discovery (fast) not scan_and_rank (slow)
+            limit = args.get("max_results", 10)  # Increased back to 10 (Phase 1 is fast!)
             max_fdv = args.get("max_fdv_usd", 50000000)
             max_age = args.get("max_age_hours", 72)
             min_vol = args.get("min_volume_24h", 100000.0)
-            # phase1_discovery returns List[Dict], wrap it
+            
+            # ✅ Phase 1 Discovery only (quick coin discovery from CoinGecko/Binance)
+            # Does NOT do full MSS analysis - just discovery filters
             results = await mss.phase1_discovery(
                 limit=limit,
                 max_fdv_usd=max_fdv,

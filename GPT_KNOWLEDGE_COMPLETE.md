@@ -403,11 +403,24 @@ And more... (see COINGLASS_OPERATIONS_GUIDE.md for complete list)
 
 ### ADDITIONAL OPERATIONS
 
-**mss.discover (min_mss_score)**
-- Multi-Modal Signal Score
-- Discover emerging cryptocurrencies
-- Based on tokenomics, community momentum, institutional validation
-- Example: `{"operation": "mss.discover", "min_mss_score": 75}`
+**mss.discover (max_results)** ⚡ SUPER FAST (~0.5s)
+- Phase 1 Discovery only (quick coin list from CoinGecko/Binance)
+- Filters: FDV<$50M, Volume>$100K, Age<72h
+- NO full MSS score - just filtered coin list
+- Example: `{"operation": "mss.discover", "max_results": 10}`
+- Use case: Quick scan untuk dapat list potential coins
+
+**mss.scan (max_results, min_mss_score)** 🔬 FULL ANALYSIS (~60-90s)
+- Complete 3-phase MSS analysis with score + tier
+- Phase 1: Tokenomics discovery
+- Phase 2: Social confirmation (LunarCrush)
+- Phase 3: Institutional validation (OI, whale)
+- Example: `{"operation": "mss.scan", "max_results": 5, "min_mss_score": 65}`
+- Use case: Deep dive untuk dapat gems dengan score tinggi
+
+**mss.analyze (symbol)** 🎯 SINGLE COIN (~15-20s)
+- Full 3-phase MSS breakdown for specific coin
+- Example: `{"operation": "mss.analyze", "symbol": "PEPE"}`
 
 **analytics.verdict_performance**
 - AI verdict win rate statistics
