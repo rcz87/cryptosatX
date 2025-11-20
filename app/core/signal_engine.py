@@ -771,27 +771,27 @@ class SignalEngine:
         if enable_ai_judge:
             response = await self._apply_ai_verdict(response)
 
-        # Auto-send Telegram alert for actionable signals (LONG/SHORT only)
-        # Respect AI verdict: skip sending if verdict is SKIP and auto_skip is enabled
-        auto_skip_avoid = os.getenv("AUTO_SKIP_AVOID_SIGNALS", "true").lower() == "true"
-        ai_verdict = response.get("aiVerdictLayer", {}).get("verdict", "CONFIRM")
-        
-        should_send_telegram = (
-            signal in ["LONG", "SHORT"] 
-            and telegram_notifier.enabled
-            and not (auto_skip_avoid and ai_verdict == "SKIP")
-        )
-        
-        logger.info(f"🟢 Signal={signal}, Verdict={ai_verdict}, Telegram enabled={telegram_notifier.enabled}, Should send={should_send_telegram}")
-        
-        if should_send_telegram:
-            logger.info(f"🟡 Attempting to send Telegram alert for {symbol} {signal}")
-            try:
-                result = await telegram_notifier.send_signal_alert(response)
-                logger.info(f"✅ Telegram alert sent successfully: {result}")
-            except Exception as e:
-                # Don't fail signal generation if Telegram fails
-                logger.error(f"⚠️ Telegram notification failed: {e}")
+        # Auto-send Telegram alert - DISABLED to prevent auto-alerts
+        # Use manual endpoint POST /gpt/alerts/send/{symbol} if you want to send Telegram alerts
+        # auto_skip_avoid = os.getenv("AUTO_SKIP_AVOID_SIGNALS", "true").lower() == "true"
+        # ai_verdict = response.get("aiVerdictLayer", {}).get("verdict", "CONFIRM")
+        # 
+        # should_send_telegram = (
+        #     signal in ["LONG", "SHORT"] 
+        #     and telegram_notifier.enabled
+        #     and not (auto_skip_avoid and ai_verdict == "SKIP")
+        # )
+        # 
+        # logger.info(f"🟢 Signal={signal}, Verdict={ai_verdict}, Telegram enabled={telegram_notifier.enabled}, Should send={should_send_telegram}")
+        # 
+        # if should_send_telegram:
+        #     logger.info(f"🟡 Attempting to send Telegram alert for {symbol} {signal}")
+        #     try:
+        #         result = await telegram_notifier.send_signal_alert(response)
+        #         logger.info(f"✅ Telegram alert sent successfully: {result}")
+        #     except Exception as e:
+        #         # Don't fail signal generation if Telegram fails
+        #         logger.error(f"⚠️ Telegram notification failed: {e}")
 
         return response
 

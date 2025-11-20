@@ -9,7 +9,9 @@ This project provides a FastAPI-based backend for generating real-time cryptocur
 - Production-ready code (no mock data)
 - Full async/await for performance
 - Extensive comments for maintainability
-- API Quota Optimization: Background tasks disabled to save 99% API quota while maintaining full GPT Actions functionality
+- API Quota Optimization: Background tasks & auto Telegram alerts disabled to save 99% API quota while maintaining full GPT Actions functionality
+- All 202+ endpoints available for on-demand manual calls via GPT Actions
+- No auto-alerts to Telegram (manual alert endpoint available if needed)
 - Communication: Bahasa Indonesia with natural, conversational language (not overly technical)
 - Documentation: Simplified, practical, and action-oriented
 
