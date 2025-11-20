@@ -2531,6 +2531,11 @@ class CoinglassComprehensiveService:
         Endpoint: /api/futures/liquidation/coin-list
         
         Returns 24h, 12h, 4h, 1h liquidation breakdowns
+        
+        IMPORTANT: Do NOT use _normalize_symbol() for this endpoint!
+        - API returns symbols as "SOL", "BTC", "ETH" (base symbols)
+        - NOT "SOLUSDT", "BTCUSDT", etc.
+        - Use raw symbol.upper() for matching
         """
         try:
             client = await self._get_client()
@@ -2547,7 +2552,8 @@ class CoinglassComprehensiveService:
             if str(data.get("code")) == "0" and data.get("data"):
                 coin_list = data["data"]
                 
-                symbol_upper = self._normalize_symbol(symbol)
+                # Use raw symbol uppercase (API returns "SOL" not "SOLUSDT")
+                symbol_upper = symbol.upper()
                 symbol_data = next((c for c in coin_list if c.get("symbol") == symbol_upper), None)
                 
                 if symbol_data:
