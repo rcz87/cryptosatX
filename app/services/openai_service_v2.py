@@ -20,7 +20,7 @@ from app.utils.logger import default_logger
 class OpenAIConfigV2:
     """OpenAI service configuration V2"""
     api_key: str
-    model: str = "gpt-5.1"
+    model: str = "gpt-4-turbo"
     max_tokens: int = 1500
     temperature: float = 0.1
     timeout: int = 30
@@ -444,7 +444,7 @@ async def get_openai_service_v2() -> OpenAIServiceV2:
         
         config = OpenAIConfigV2(
             api_key=api_key,
-            model=os.getenv("OPENAI_MODEL", "gpt-5.1"),
+            model=os.getenv("OPENAI_MODEL", "gpt-4-turbo"),
             max_tokens=int(os.getenv("OPENAI_MAX_TOKENS_V2", "1500")),
             temperature=float(os.getenv("OPENAI_TEMPERATURE", "0.1")),
             timeout=int(os.getenv("OPENAI_TIMEOUT", "30")),

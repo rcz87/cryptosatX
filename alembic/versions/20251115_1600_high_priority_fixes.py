@@ -178,13 +178,17 @@ def upgrade() -> None:
     # Add comments explaining the performance benefits
     op.execute("""
         COMMENT ON INDEX idx_prompt_versions_active_ab_test_composite IS
-        'Optimizes queries filtering by is_active and ab_test_active (common in production routing logic)';
+        'Optimizes queries filtering by is_active and ab_test_active (common in production routing logic)'
+    """)
 
+    op.execute("""
         COMMENT ON INDEX idx_verdict_perf_period_end_desc IS
-        'Optimizes ORDER BY period_end DESC queries for fetching latest performance metrics';
+        'Optimizes ORDER BY period_end DESC queries for fetching latest performance metrics'
+    """)
 
+    op.execute("""
         COMMENT ON INDEX idx_verdict_perf_prompt_period_composite IS
-        'Optimizes queries getting latest performance for specific prompt versions';
+        'Optimizes queries getting latest performance for specific prompt versions'
     """)
 
 
