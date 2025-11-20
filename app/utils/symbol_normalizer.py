@@ -393,3 +393,30 @@ def get_base_symbol(symbol: str) -> str:
     
     # Already base symbol
     return symbol
+
+
+def get_coingecko_id(symbol: str) -> Optional[str]:
+    """
+    Convert symbol to CoinGecko ID
+    
+    Args:
+        symbol: Symbol in any format (BTC, BTCUSDT, bitcoin, etc.)
+        
+    Returns:
+        CoinGecko ID (e.g., 'bitcoin') or None if not found
+        
+    Examples:
+        BTC -> bitcoin
+        BTCUSDT -> bitcoin
+        bitcoin -> bitcoin
+        ETH -> ethereum
+    """
+    # If already a CoinGecko ID (lowercase), return as-is
+    if symbol.islower() and symbol in COINGECKO_ID_TO_SYMBOL:
+        return symbol
+    
+    # Get base symbol first (handles BTCUSDT, BTC-USDT-SWAP, etc.)
+    base = get_base_symbol(symbol)
+    
+    # Look up in mapping
+    return SYMBOL_TO_COINGECKO_ID.get(base, None)
