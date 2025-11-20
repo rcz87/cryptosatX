@@ -1,0 +1,75 @@
+{
+  "summary": {
+    "total": 7,
+    "passed": 0,
+    "failed": 7,
+    "success_rate": "0.0%"
+  },
+  "results": [
+    {
+      "test": "Health Check",
+      "url": "https://guardiansofthetoken.org/health",
+      "method": "GET",
+      "status_code": 403,
+      "success": false,
+      "response": "Access denied",
+      "timestamp": "2025-11-20T15:37:55.227800"
+    },
+    {
+      "test": "List RPC Operations",
+      "url": "https://guardiansofthetoken.org/invoke/operations",
+      "method": "GET",
+      "status_code": 403,
+      "success": false,
+      "response": "Access denied",
+      "timestamp": "2025-11-20T15:37:55.325608"
+    },
+    {
+      "test": "RPC Invoke: health.check",
+      "url": "https://guardiansofthetoken.org/invoke",
+      "method": "POST",
+      "status_code": 403,
+      "success": false,
+      "response": "Access denied",
+      "timestamp": "2025-11-20T15:37:55.406948"
+    },
+    {
+      "test": "RPC Invoke: signals.get (BTC)",
+      "url": "https://guardiansofthetoken.org/invoke",
+      "method": "POST",
+      "status_code": 403,
+      "success": false,
+      "response": "Access denied",
+      "timestamp": "2025-11-20T15:37:55.573999"
+    },
+    {
+      "test": "RPC Invoke: coinglass.markets",
+      "url": "https://guardiansofthetoken.org/invoke",
+      "method": "POST",
+      "status_code": 403,
+      "success": false,
+      "response": "Access denied",
+      "timestamp": "2025-11-20T15:37:56.533345"
+    },
+    {
+      "test": "GPT Actions Schema",
+      "url": "https://guardiansofthetoken.org/invoke/schema",
+      "method": "GET",
+      "status_code": 403,
+      "success": false,
+      "response": "Access denied",
+      "timestamp": "2025-11-20T15:37:56.616380"
+    },
+    {
+      "test": "RPC Invoke: Legacy Nested Args (ETH)",
+      "url": "https://guardiansofthetoken.org/invoke",
+      "method": "POST",
+      "status_code": 403,
+      "success": false,
+      "response": "Access denied",
+      "timestamp": "2025-11-20T15:37:56.696939"
+    }
+  ],
+  "timestamp": "2025-11-20T15:37:56.699191",
+  "base_url": "https://guardiansofthetoken.org"
+}
