@@ -34,7 +34,8 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - **Market Summary Service**: Provides aggregate market conditions and bilingual explanations.
 - **Natural Language Processing (NLP) Router**: Supports bilingual natural language queries, routing to relevant data layers and detecting risk modes.
 - **Signal Engine**: 8-factor weighted scoring system with a 3-Mode Threshold System for risk profiles, including error handling and data quality tracking.
-- **Hybrid AI Signal Judge**: Integrates GPT-4 and a rule-based fallback for signal validation, providing `Verdict`, `Risk Mode`, `Position Multiplier`, `AI Summary`, and `Volatility Metrics`.
+- **Hybrid AI Signal Judge (GPT-5.1)**: Integrates OpenAI GPT-5.1 (upgraded November 2025) with rule-based fallback for signal validation, providing `Verdict`, `Risk Mode`, `Position Multiplier`, `AI Summary`, and `Volatility Metrics`. Features 45% fewer hallucinations and improved accuracy vs GPT-4.
+- **GPT-5.1 Self-Evaluation System**: AI Judge now includes historical performance context for self-learning. Analyzes past signal outcomes (win rate, ROI, verdict effectiveness) to improve future decisions and reduce false positives.
 - **Multi-Modal Signal Score (MSS)**: 3-phase framework for discovering emerging cryptocurrencies (tokenomics, community momentum, institutional validation).
 - **Smart Money Concept (SMC) Analyzer**: Detects institutional trading patterns across multiple timeframes with dynamic coin discovery. Features intelligent caching and rate limit safety.
 - **Dynamic Coin Discovery**: Integrates CoinGecko API for geo-friendly coin fetching.
@@ -56,6 +57,7 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - **Enhanced Technical Analysis Engine**: Integrates professional-grade technical indicators like MA, EMA, RSI, MACD, MA Crossover Detection, and Volume Confirmation Analysis into the signal engine.
 - **Risk Threshold Optimization**: Adjusted risk thresholds to align with signal engine logic, improving signal capture.
 - **Duration-Based Auto-Stop Monitoring**: Enables flexible duration monitoring with automatic expiration for watchlist items.
+- **Analytics API for Performance Tracking**: Comprehensive analytics service with REST and RPC endpoints for querying signal performance data. Supports GPT-5.1 self-evaluation by providing historical context (win rates, ROI, verdict effectiveness) to improve AI decision-making over time.
 
 ## Background Task Configuration (API Quota Optimization)
 
@@ -121,7 +123,7 @@ Then restart the workflow to apply changes.
 
 ## External Dependencies
 - **CoinAPI**: Market data, OHLCV, order book, quotes, price aggregation, whale detection.
-- **OpenAI GPT-4**: AI signal judge, market sentiment analysis, signal validation.
+- **OpenAI GPT-5.1**: AI signal judge with self-evaluation capabilities, market sentiment analysis, signal validation. Upgraded from GPT-4 in November 2025 for improved accuracy (45% fewer hallucinations).
 - **Coinglass v4 Standard**: Liquidations, funding rates, open interest, trader positioning, whale intelligence, technical analysis, macro calendar, news feed.
 - **Coinglass WebSocket**: Real-time liquidation streaming.
 - **LunarCrush Builder**: Social sentiment, community engagement, social momentum, real-time coin discovery.
