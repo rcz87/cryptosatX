@@ -403,24 +403,38 @@ And more... (see COINGLASS_OPERATIONS_GUIDE.md for complete list)
 
 ### ADDITIONAL OPERATIONS
 
-**mss.discover (max_results)** ⚡ SUPER FAST (~0.5s)
-- Phase 1 Discovery only (quick coin list from CoinGecko/Binance)
+**mss.discover** ⚡ SUPER FAST (~0.5s) - Quick coin discovery only
+```json
+{"operation": "mss.discover", "max_results": 10}
+```
+- **Parameters:** max_results (optional, default: 10), max_fdv_usd, max_age_hours, min_volume_24h
+- **NO min_mss_score** - this operation does NOT calculate MSS score
+- Phase 1 Discovery only (quick filtered list from CoinGecko/Binance)
 - Filters: FDV<$50M, Volume>$100K, Age<72h
-- NO full MSS score - just filtered coin list
-- Example: `{"operation": "mss.discover", "max_results": 10}`
-- Use case: Quick scan untuk dapat list potential coins
+- Returns: List of coin symbols only (no scores)
+- **Use when:** Need quick list of new/trending coins
 
-**mss.scan (max_results, min_mss_score)** 🔬 FULL ANALYSIS (~60-90s)
-- Complete 3-phase MSS analysis with score + tier
+**mss.scan** 🔬 FULL ANALYSIS (~60-90s) - Complete MSS scoring
+```json
+{"operation": "mss.scan", "max_results": 5, "min_mss_score": 65}
+```
+- **Parameters:** max_results (optional, default: 5), min_mss_score (optional, default: 65), max_fdv_usd, max_age_hours
+- **This is the operation that uses min_mss_score**
+- Complete 3-phase MSS analysis with full scoring
 - Phase 1: Tokenomics discovery
 - Phase 2: Social confirmation (LunarCrush)
 - Phase 3: Institutional validation (OI, whale)
-- Example: `{"operation": "mss.scan", "max_results": 5, "min_mss_score": 65}`
-- Use case: Deep dive untuk dapat gems dengan score tinggi
+- Returns: Coins with MSS scores (0-100) + tier ranking
+- **Use when:** Need deep analysis with quality scores
 
-**mss.analyze (symbol)** 🎯 SINGLE COIN (~15-20s)
-- Full 3-phase MSS breakdown for specific coin
-- Example: `{"operation": "mss.analyze", "symbol": "PEPE"}`
+**mss.analyze** 🎯 SINGLE COIN (~15-20s) - Specific coin breakdown
+```json
+{"operation": "mss.analyze", "symbol": "PEPE"}
+```
+- **Parameters:** symbol (required)
+- Full 3-phase MSS breakdown for one specific coin
+- Returns: Complete MSS score + breakdown per phase
+- **Use when:** Analyzing a specific coin user mentioned
 
 **analytics.verdict_performance**
 - AI verdict win rate statistics
