@@ -305,14 +305,11 @@ class FlatRPCDispatcher:
             from app.services.coinglass_comprehensive_service import coinglass_comprehensive
             exchange = args.get("exchange", "Binance")
             symbol = args.get("symbol", "BTC")
-            interval = args.get("interval", "h1")
-            # ✅ OPTIMIZATION: Reduce default limit from 100 to 20 to prevent ResponseTooLargeError
-            limit = args.get("limit", 20)
-            return await coinglass_comprehensive.get_liquidation_history(
+            # Fixed: Call get_liquidation_coin_list (same as REST endpoint)
+            # This function was already fixed to use symbol.upper() instead of _normalize_symbol()
+            return await coinglass_comprehensive.get_liquidation_coin_list(
                 exchange=exchange,
-                symbol=symbol,
-                interval=interval,
-                limit=limit
+                symbol=symbol
             )
 
         elif operation == "coinglass.liquidations.heatmap":
