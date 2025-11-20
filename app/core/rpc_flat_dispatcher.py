@@ -1140,6 +1140,36 @@ class FlatRPCDispatcher:
                 },
                 "source": "coinapi_dashboard"
             }
+        
+        elif operation == "coinapi.symbols":
+            from app.services.coinapi_comprehensive_service import coinapi_comprehensive
+            exchange_id = args.get("exchange_id")
+            asset_id = args.get("asset_id")
+            symbol_type = args.get("symbol_type")
+            return await coinapi_comprehensive.get_symbols(
+                exchange_id=exchange_id,
+                asset_id=asset_id,
+                symbol_type=symbol_type
+            )
+        
+        elif operation == "coinapi.metrics":
+            from app.services.coinapi_comprehensive_service import coinapi_comprehensive
+            symbol = args["symbol"]
+            metric_id = args.get("metric_id", "DERIVATIVES_FUNDING_RATE_CURRENT")
+            exchange = args.get("exchange", "BINANCEFTSC")
+            historical = args.get("historical", False)
+            time_start = args.get("time_start")
+            time_end = args.get("time_end")
+            limit = args.get("limit", 100)
+            return await coinapi_comprehensive.get_metrics(
+                metric_id=metric_id,
+                symbol=symbol,
+                exchange=exchange,
+                historical=historical,
+                time_start=time_start,
+                time_end=time_end,
+                limit=limit
+            )
 
         # ===================================================================
         # NEW LISTINGS MONITOR
