@@ -807,7 +807,7 @@ class SignalEngine:
         Falls back to rule-based assessment if OpenAI fails/times out
         """
         symbol = signal_data.get("symbol", "UNKNOWN")
-        ai_timeout = int(os.getenv("AI_JUDGE_TIMEOUT", "15"))
+        ai_timeout = int(os.getenv("AI_JUDGE_TIMEOUT", "25"))
         
         try:
             logger.info(f"🤖 Calling OpenAI V2 Signal Judge for {symbol}...")
@@ -1077,6 +1077,106 @@ class SignalEngine:
             "oiSource": oi_source
         }
     
+    async def _get_price_with_fallback(self, symbol: str, coinapi_service) -> dict:
+        """
+        Get price with automatic fallback to Binance if CoinAPI fails.
+        
+        FIX #1: Enable Binance price fallback to prevent price=$0.00 errors
+        CRITICAL FIX: Use finally block to ensure HTTP client cleanup
+        
+        Fallback order:
+        1. CoinAPI (primary)
+        2. Binance Futures (fallback)
+        
+        Args:
+            symbol: Cryptocurrency symbol
+            coinapi_service: CoinAPI service instance
+            
+        Returns:
+            Price data dict with success flag (matches CoinAPI schema)
+        """
+        from app.services.binance_futures_service import BinanceFuturesService
+        
+        # Try CoinAPI first
+        price_data = await coinapi_service.get_spot_price(symbol)
+        
+        if price_data.get("success") and price_data.get("price", 0) > 0:
+            logger.info(f"✅ Price from CoinAPI for {symbol}: ${price_data.get('price'):,.2f}")
+            return price_data
+        
+        # CoinAPI failed, try Binance fallback
+        logger.warning(f"⚠️  CoinAPI price failed for {symbol}, trying Binance fallback...")
+        
+        binance_service = None
+        try:
+            binance_service = BinanceFuturesService()
+            binance_symbol = f"{symbol}USDT"  # Binance uses BTCUSDT format
+            
+            binance_result = await binance_service.get_ticker_price(binance_symbol)
+            
+            if binance_result.get("success"):
+                data = binance_result.get("data", {})
+                
+                # Binance returns {"symbol": "BTCUSDT", "price": "96842.30", ...}
+                if isinstance(data, dict):
+                    price = float(data.get("price", 0))
+                elif isinstance(data, list) and len(data) > 0:
+                    price = float(data[0].get("price", 0))
+                else:
+                    price = 0
+                
+                if price > 0:
+                    logger.info(f"✅ Price from Binance fallback for {symbol}: ${price:,.2f}")
+                    
+                    # CRITICAL: Match CoinAPI schema for downstream compatibility
+                    # Convert Binance timestamp to TRUE UTC ISO-8601 with MILLISECOND precision
+                    from datetime import datetime, timezone
+                    timestamp_ms = binance_result.get("timestamp", 0)
+                    if isinstance(timestamp_ms, int) and timestamp_ms > 0:
+                        # Use utcfromtimestamp for TRUE UTC time (not local time)
+                        utc_dt = datetime.utcfromtimestamp(timestamp_ms / 1000).replace(tzinfo=timezone.utc)
+                        # Use millisecond precision to match CoinAPI format
+                        iso_timestamp = utc_dt.isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+                    else:
+                        # Fallback to current UTC time with millisecond precision
+                        iso_timestamp = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+                    
+                    # Return complete CoinAPI-compatible schema
+                    return {
+                        "success": True,
+                        "price": price,
+                        "symbol": symbol,
+                        "exchange": "BINANCE",
+                        "timestamp": iso_timestamp,
+                        "source": "binance_fallback",
+                        # Add rawData field for downstream consumers expecting CoinAPI structure
+                        "rawData": {
+                            "symbol": binance_symbol,
+                            "price": str(price),
+                            "time": iso_timestamp
+                        }
+                    }
+            
+        except Exception as e:
+            logger.error(f"❌ Binance fallback failed for {symbol}: {e}")
+        
+        finally:
+            # CRITICAL: Always close HTTP client to prevent connection leaks
+            if binance_service:
+                try:
+                    await binance_service.close()
+                except Exception as cleanup_error:
+                    logger.error(f"⚠️  Error closing Binance service: {cleanup_error}")
+        
+        # All sources failed
+        logger.error(f"❌ CRITICAL: All price sources failed for {symbol}")
+        return {
+            "success": False,
+            "error": "Service temporarily unavailable.",
+            "price": 0,
+            "symbol": symbol
+        }
+    
     async def _skipped_call(self, reason: str) -> dict:
         """
         Helper coroutine for skipped API calls (e.g., when circuit breaker is open).
@@ -1130,10 +1230,10 @@ class SignalEngine:
                 f"🔴 LunarCrush circuit breaker is OPEN for {symbol} - skipping all LunarCrush calls to prevent rate limiting"
             )
         
-        # Fetch all data sources in parallel
+        # Fetch all data sources in parallel with Binance price fallback
         # Skip LunarCrush calls if circuit breaker is open
         results = await asyncio.gather(
-            coinapi_service.get_spot_price(symbol),
+            self._get_price_with_fallback(symbol, coinapi_service),
             coinglass_service.get_funding_and_oi(symbol),
             coinglass_comprehensive.get_coins_markets(
                 symbol=symbol

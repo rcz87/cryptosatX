@@ -649,12 +649,15 @@ class FlatRPCDispatcher:
             from app.services.smart_money_service import smart_money_service
             min_acc = args.get("min_accumulation_score", 5)
             min_dist = args.get("min_distribution_score", 5)
+            # FIX #3: Reduce default limit from 50 to 20 for faster response
+            limit = args.get("limit", 20)  # Default 20 coins (was 50)
             coins_str = args.get("coins")
             coin_list = coins_str.split(",") if coins_str else None
             return await smart_money_service.scan_smart_money(
                 min_accumulation_score=min_acc,
                 min_distribution_score=min_dist,
-                coins=coins_str
+                coins=coins_str,
+                limit=limit
             )
 
         elif operation == "smart_money.scan_accumulation":

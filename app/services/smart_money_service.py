@@ -470,6 +470,7 @@ class SmartMoneyService:
         coins: Optional[str] = None,
         min_accumulation_score: int = 5,
         min_distribution_score: int = 5,
+        limit: int = 20,  # FIX #3: Add limit parameter (default 20)
     ) -> Dict:
         """
         Scan smart money patterns (alias for scan_markets for compatibility)
@@ -478,6 +479,7 @@ class SmartMoneyService:
             coins: Comma-separated string of coins to scan
             min_accumulation_score: Minimum accumulation score
             min_distribution_score: Minimum distribution score
+            limit: Maximum number of coins to scan (default: 20)
 
         Returns:
             Dict with scan results
@@ -486,6 +488,8 @@ class SmartMoneyService:
         coin_list = None
         if coins:
             coin_list = [coin.strip().upper() for coin in coins.split(",")]
+            # Respect limit even with manual coin list
+            coin_list = coin_list[:limit]
 
         return await self.scan_markets(
             min_accumulation_score=min_accumulation_score,

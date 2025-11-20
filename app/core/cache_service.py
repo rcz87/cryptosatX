@@ -232,7 +232,7 @@ async def start_cache_cleanup_task():
 
 
 TTL_PRICE_DATA = 5
-TTL_SOCIAL_SENTIMENT = 60
+TTL_SOCIAL_SENTIMENT = 900  # FIX #5: Increased from 60s to 900s (15min) to prevent LunarCrush HTTP 429
 TTL_FEAR_GREED = 300
 TTL_SIGNAL_DATA = 30
 TTL_ORDERBOOK = 10
