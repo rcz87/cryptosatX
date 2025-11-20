@@ -1,0 +1,90 @@
+Penjelasan yang sangat bagus — kamu benar bahwa beberapa endpoint seperti `smart_money.scan_accumulation`, `coinglass.funding_rate.exchange_list`, dan `market.get` bisa gagal karena **data terlalu besar (ResponseTooLargeError / Timeout)**.
+
+Berikut solusi **teknis + prompt template universal** supaya aku bisa mengambil **data lengkap tapi efisien**, tanpa kena limit dari API `guardiansofthetoken.org`.
+
+---
+
+## ⚙️ **STRATEGI UMUM ANTI-TIMEOUT**
+
+Setiap kali endpoint besar dipanggil:
+
+1. **Gunakan parameter pembatas:**
+
+   * `max_results`: 5–10
+   * `time_type`: `h1` / `h4` / `h24` (bukan `all`)
+   * `symbol`: spesifik (jangan kosong)
+2. **Gunakan query bertahap (batch):**
+
+   * Ambil data 5–10 coin per call.
+   * Jika perlu semua coin → jalankan multi-call (chunked query).
+3. **Gunakan filter berbasis skor/minimum relevance:**
+
+   * Contoh: `min_accumulation_score: 7`, `min_mss_score: 80`
+4. **Pisahkan endpoint besar menjadi subset khusus:**
+
+   * `smart_money.scan_accumulation` → cukup 5 coin teratas.
+   * `coinglass.funding_rate.exchange_list` → cukup `["Binance", "Bybit", "OKX", "Bitget", "Deribit"]`.
+
+---
+
+## 🧠 **MASTER PROMPT UNTUK SEMUA ENDPOINT**
+
+Gunakan ini setiap kali ingin memastikan data besar tetap bisa diambil penuh:
+
+```
+Gunakan endpoint [NAMA_ENDPOINT] dengan parameter optimal agar tidak timeout.
+Jika data terlalu besar, ambil secara bertahap:
+1. Batasi max_results = 5–10.
+2. Tambahkan min_score (jika ada) agar hasil hanya top coin.
+3. Gunakan timeframe h1/h4/h24, bukan all.
+4. Jika tetap besar, pecah query per batch (misal per kategori: L1, DeFi, AI).
+Tampilkan hasil dalam tabel ringkas.
+```
+
+---
+
+## 💡 **Contoh Prompt Spesifik**
+
+### 🐋 Whale Accumulation (Aman)
+
+```
+Ambil 5 coin teratas dari smart_money.scan_accumulation 
+dengan min_accumulation_score: 7 dan max_results: 5
+```
+
+### 📊 Funding Rate Semua Exchange (Aman)
+
+```
+Ambil funding rate XRP dari coinglass.funding_rate.exchange_list
+hanya untuk 5 exchange utama: Binance, Bybit, OKX, Bitget, Deribit
+```
+
+### 🚀 Emerging Coins
+
+```
+Gunakan mss.discover dengan min_mss_score: 80 dan max_results: 5
+```
+
+### 💰 Open Interest Trend
+
+```
+Ambil coinglass.open_interest.aggregated_history untuk BTC, ETH, SOL 
+dengan time_type: h4 dan limit: 10
+```
+
+---
+
+## ✅ **CONTOH FORM PROMPT SIAP PAKAI (UNIVERSAL)**
+
+> “Ambil data dari `[endpoint_name]` untuk `[symbol/asset/topic]`
+> dengan `max_results=5`, `time_type=h4`, dan filter `min_score >= 7`.
+> Jika terlalu besar, bagi per batch 5 data dan tampilkan tabel ringkas hasil akumulasi.”
+
+---
+
+Kalau kamu mau, aku bisa buatkan **preset JSON auto-optimized** untuk semua endpoint utama (`signals`, `smart_money`, `coinglass`, `mss`, `analytics`) — jadi nanti kamu tinggal panggil seperti:
+
+> “Gunakan preset cepat untuk whale accumulation”
+> dan aku otomatis gunakan parameter anti-timeout.
+
+Apakah mau saya buatkan **preset JSON anti-timeout** itu sekarang?
