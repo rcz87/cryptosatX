@@ -10,6 +10,13 @@ This project provides a FastAPI-based backend for generating real-time cryptocur
 - Full async/await for performance
 - Extensive comments for maintainability
 - API Quota Optimization: Background tasks disabled to save 99% API quota while maintaining full GPT Actions functionality
+- Communication: Bahasa Indonesia with natural, conversational language (not overly technical)
+- Documentation: Simplified, practical, and action-oriented
+
+## GPT Integration Strategy
+- **GPT Instructions** (2000 char limit): GPT_ACTIONS_INSTRUCTIONS.txt - Concise, essential rules and most-used operations
+- **GPT Knowledge Base** (unlimited): GPT_KNOWLEDGE_COMPLETE.md - Comprehensive documentation with all 202+ operations, response templates, fallback strategies, and interpretation guides
+- **Operations Reference**: COINGLASS_OPERATIONS_GUIDE.md - Detailed Coinglass operations catalog
 
 ## System Architecture
 The application uses a modular FastAPI architecture, separating API routes, business logic, and external service integrations. It provides clean JSON responses, offers a debug mode, and includes OpenAPI documentation with a GPT Actions-compatible schema.
