@@ -337,10 +337,10 @@ class SignalEngine:
             "best_for": "Beginners, risk-averse traders"
         },
         "aggressive": {
-            "short_max": 45,      # Score <= 45 = SHORT
-            "neutral_min": 45,    # Score > 45 and < 55 = NEUTRAL
-            "neutral_max": 55,
-            "long_min": 55,       # Score >= 55 = LONG
+            "short_max": 42,      # Score <= 42 = SHORT
+            "neutral_min": 42,    # Score > 42 and < 52 = NEUTRAL
+            "neutral_max": 52,
+            "long_min": 52,       # Score >= 52 = LONG (LOWERED from 55 for better bull market detection)
             "description": "Aggressive Mode - Balanced risk/reward, catch trends earlier",
             "risk_level": "Medium",
             "best_for": "Experienced traders, trending markets"
@@ -378,17 +378,19 @@ class SignalEngine:
         "very_negative": -0.2,   # < -0.2% = Extreme short pressure cleared = Very Bullish (Score: 85)
         "negative": -0.05,       # < -0.05% = Moderate short pressure = Bullish (Score: 70)
         "slightly_negative": 0,  # < 0% = Slight bearish sentiment clearing = Slightly Bullish (Score: 60)
-        "slightly_positive": 0.05,  # < 0.05% = Slight bullish pressure = Slightly Bearish (Score: 45)
-        "positive": 0.2,         # < 0.2% = Moderate long pressure = Bearish (Score: 30)
-        # > 0.2% = Extreme long pressure = Very Bearish (Score: 15)
+        "slightly_positive": 0.05,  # < 0.05% = Normal bullish market = Neutral (Score: 50)
+        "moderate_positive": 0.3,   # < 0.3% = Moderate crowding = Slightly Bearish (Score: 42)
+        "high_positive": 0.5,       # < 0.5% = High crowding = Bearish (Score: 32)
+        # > 0.5% = Extreme overcrowding = Very Bearish (Score: 20)
     }
     FUNDING_RATE_SCORES = {
         "very_bullish": 85,
         "bullish": 70,
         "slightly_bullish": 60,
-        "neutral_bearish": 45,
-        "bearish": 30,
-        "very_bearish": 15
+        "neutral": 50,           # SOFTENED: was 45, now neutral for funding 0-0.05%
+        "slightly_bearish": 42,  # NEW: softer penalty for moderate funding 0.05-0.3%
+        "bearish": 32,           # SOFTENED: was 30, now for higher threshold 0.3-0.5%
+        "very_bearish": 20       # SOFTENED: was 15, only for extreme >0.5%
     }
     
     # Price Momentum Scores
@@ -1222,7 +1224,7 @@ class SignalEngine:
             lunarcrush_comprehensive.analyze_social_momentum(
                 symbol
             ) if lunarcrush_enabled else self._skipped_call("LunarCrush - circuit breaker open"),
-            okx_service.get_candles(symbol, "15m", 20),
+            okx_service.get_candles(symbol, "15m", 120),  # CRITICAL: 15m/120 for TA calibration + fallback
             # Premium endpoints
             coinglass_premium.get_liquidation_data(symbol),
             coinglass_premium.get_long_short_ratio(symbol),
@@ -1564,12 +1566,13 @@ class SignalEngine:
             logger.error(f"Error calculating price trend: {e}")
             return "neutral"
 
-    def _calculate_multi_timeframe_trend(self, comp_markets: dict) -> str:
+    def _calculate_multi_timeframe_trend(self, comp_markets: dict, candles: Optional[list] = None) -> str:
         """
         Calculate overall trend from 7 timeframes (5m to 24h)
 
         Args:
             comp_markets: Comprehensive markets data with price changes
+            candles: Optional OKX candles for fallback when Coinglass returns zeros
 
         Returns:
             'strongly_bullish', 'bullish', 'neutral', 'bearish', or 'strongly_bearish'
@@ -1588,6 +1591,32 @@ class SignalEngine:
                 "12h": comp_markets.get("priceChange12h", 0.0),
                 "24h": comp_markets.get("priceChange24h", 0.0),
             }
+            
+            # FALLBACK: If Coinglass returns all zeros, calculate from candles
+            all_zeros = all(change == 0.0 for change in changes.values())
+            if all_zeros and candles and len(candles) >= 100:
+                logger.warning("⚠️  Coinglass price changes all zeros - using OKX candle fallback")
+                try:
+                    # Extract close prices (OKX format: most recent first)
+                    prices = [float(c.get("close", 0)) for c in candles if c.get("close")]
+                    if len(prices) >= 100:
+                        current = prices[0]
+                        
+                        # Calculate price changes from candles
+                        # 5m = 1 candle ago, 15m = 3 candles, 30m = 6 candles, etc.
+                        changes = {
+                            "5m": ((current - prices[1]) / prices[1] * 100) if len(prices) > 1 else 0.0,
+                            "15m": ((current - prices[3]) / prices[3] * 100) if len(prices) > 3 else 0.0,
+                            "30m": ((current - prices[6]) / prices[6] * 100) if len(prices) > 6 else 0.0,
+                            "1h": ((current - prices[12]) / prices[12] * 100) if len(prices) > 12 else 0.0,
+                            "4h": ((current - prices[48]) / prices[48] * 100) if len(prices) > 48 else 0.0,
+                            "12h": ((current - prices[72]) / prices[72] * 100) if len(prices) > 72 else 0.0,
+                            "24h": ((current - prices[96]) / prices[96] * 100) if len(prices) > 96 else 0.0,
+                        }
+                        logger.info(f"✅ Calculated price changes from candles: 24h={changes['24h']:.2f}%, 4h={changes['4h']:.2f}%, 1h={changes['1h']:.2f}%")
+                except Exception as e:
+                    logger.error(f"❌ Candle fallback failed: {e}")
+                    # Keep zeros if fallback fails
 
             # Count how many timeframes are bullish (positive) vs bearish (negative)
             # This gives us directional agreement across timeframes
@@ -1688,7 +1717,7 @@ class SignalEngine:
             # Combine with existing multi-timeframe trend if available
             mtf_trend = "neutral"
             if comp_markets:
-                mtf_trend = self._calculate_multi_timeframe_trend(comp_markets)
+                mtf_trend = self._calculate_multi_timeframe_trend(comp_markets, candles)
             
             # Blend scores: 70% TA indicators + 30% multi-timeframe
             final_score = ta_result["score"]
@@ -1841,11 +1870,11 @@ class SignalEngine:
         # Convert decimal to percentage (e.g., 0.0001 → 0.01%)
         rate_pct = rate * 100
 
-        # Extreme negative (<-0.05%) = Strong short pressure = Very Bullish (Score: 85)
+        # Extreme negative (<-0.2%) = Strong short pressure = Very Bullish (Score: 85)
         if rate_pct < self.FUNDING_RATE_THRESHOLDS["very_negative"]:
             return self.FUNDING_RATE_SCORES["very_bullish"]
         
-        # Moderate negative (<-0.01%) = Short pressure clearing = Bullish (Score: 70)
+        # Moderate negative (<-0.05%) = Short pressure clearing = Bullish (Score: 70)
         elif rate_pct < self.FUNDING_RATE_THRESHOLDS["negative"]:
             return self.FUNDING_RATE_SCORES["bullish"]
         
@@ -1853,15 +1882,19 @@ class SignalEngine:
         elif rate_pct < self.FUNDING_RATE_THRESHOLDS["slightly_negative"]:
             return self.FUNDING_RATE_SCORES["slightly_bullish"]
         
-        # Slightly positive (<0.05%) = Slight bullish pressure = Slightly Bearish (Score: 45)
+        # Slightly positive (<0.05%) = Normal bullish market = Neutral (Score: 50) [SOFTENED]
         elif rate_pct < self.FUNDING_RATE_THRESHOLDS["slightly_positive"]:
-            return self.FUNDING_RATE_SCORES["neutral_bearish"]
+            return self.FUNDING_RATE_SCORES["neutral"]
         
-        # Moderate positive (<0.2%) = Moderate long pressure = Bearish (Score: 30)
-        elif rate_pct < self.FUNDING_RATE_THRESHOLDS["positive"]:
+        # Moderate positive (<0.3%) = Moderate crowding = Slightly Bearish (Score: 42) [SOFTENED]
+        elif rate_pct < self.FUNDING_RATE_THRESHOLDS["moderate_positive"]:
+            return self.FUNDING_RATE_SCORES["slightly_bearish"]
+        
+        # High positive (<0.5%) = High crowding = Bearish (Score: 32) [SOFTENED]
+        elif rate_pct < self.FUNDING_RATE_THRESHOLDS["high_positive"]:
             return self.FUNDING_RATE_SCORES["bearish"]
         
-        # Extreme positive (>0.2%) = Extreme long pressure = Very Bearish (Score: 15)
+        # Extreme positive (>0.5%) = Extreme overcrowding = Very Bearish (Score: 20) [SOFTENED]
         else:
             return self.FUNDING_RATE_SCORES["very_bearish"]
 
