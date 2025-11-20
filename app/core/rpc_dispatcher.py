@@ -90,6 +90,11 @@ class RPCDispatcher:
         self.handlers["spike.liquidation_detector_status"] = self._spike_liquidation_detector_status
         self.handlers["spike.social_monitor_status"] = self._spike_social_monitor_status
         self.handlers["spike.coordinator_status"] = self._spike_coordinator_status
+        
+        # Analytics (GPT-5.1 Self-Evaluation)
+        self.handlers["analytics.history.latest"] = self._analytics_history_latest
+        self.handlers["analytics.performance.symbol"] = self._analytics_performance_symbol
+        self.handlers["analytics.performance.summary"] = self._analytics_performance_summary
     
     async def dispatch(self, operation: str, args: Dict[str, Any]) -> RPCResponse:
         """
@@ -564,6 +569,102 @@ class RPCDispatcher:
         """Get spike coordinator detailed status"""
         from app.services.spike_coordinator import spike_coordinator
         return await spike_coordinator.get_status()
+    
+    # ========================================================================
+    # ANALYTICS HANDLERS - GPT-5.1 Self-Evaluation Support
+    # ========================================================================
+    
+    async def _analytics_history_latest(self, args: Dict) -> Dict:
+        """
+        Get latest signal history for a symbol (GPT-5.1 optimized)
+        
+        Returns recent signal outcomes with quick performance metrics,
+        ideal for GPT-5.1 historical context during signal generation.
+        """
+        from app.services.analytics_service import analytics_service
+        
+        symbol = args.get("symbol", "BTC").upper()
+        limit = args.get("limit", 5)
+        
+        result = await analytics_service.get_latest_history(
+            symbol=symbol,
+            limit=limit
+        )
+        
+        if "error" in result:
+            return {
+                "success": False,
+                "error": result["error"],
+                "symbol": symbol
+            }
+        
+        return {
+            "success": True,
+            **result
+        }
+    
+    async def _analytics_performance_symbol(self, args: Dict) -> Dict:
+        """
+        Get comprehensive performance metrics for a specific symbol
+        
+        Returns:
+        - Overall win rate and ROI
+        - Recent signal outcomes
+        - Verdict effectiveness (CONFIRM/DOWNSIZE/SKIP)
+        - Risk mode performance (REDUCED/NORMAL/AGGRESSIVE)
+        - Interval performance breakdown (1h, 4h, 24h, 7d, 30d)
+        """
+        from app.services.analytics_service import analytics_service
+        
+        symbol = args.get("symbol", "BTC").upper()
+        days = args.get("days", 30)
+        limit = args.get("limit", 50)
+        
+        result = await analytics_service.get_symbol_performance(
+            symbol=symbol,
+            days_back=days,
+            limit=limit
+        )
+        
+        if "error" in result:
+            return {
+                "success": False,
+                "error": result["error"],
+                "symbol": symbol
+            }
+        
+        return {
+            "success": True,
+            **result
+        }
+    
+    async def _analytics_performance_summary(self, args: Dict) -> Dict:
+        """
+        Get overall performance summary across all symbols
+        
+        Returns:
+        - Total signals and symbols tracked
+        - Overall win rate and average ROI
+        - Top performing symbols
+        - Verdict effectiveness stats across all symbols
+        - Risk mode effectiveness stats across all symbols
+        """
+        from app.services.analytics_service import analytics_service
+        
+        days = args.get("days", 30)
+        
+        result = await analytics_service.get_overall_summary(days_back=days)
+        
+        if "error" in result:
+            return {
+                "success": False,
+                "error": result["error"]
+            }
+        
+        return {
+            "success": True,
+            **result
+        }
 
 
 # Global dispatcher instance

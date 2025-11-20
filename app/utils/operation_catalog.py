@@ -34,10 +34,11 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "admin.system.health": OperationMetadata("admin.system.health", "admin", "/system/health", "GET", "Get system health metrics"),
     
     "analytics.summary": OperationMetadata("analytics.summary", "analytics", "/summary", "GET", "Get analytics summary"),
-    "analytics.history.latest": OperationMetadata("analytics.history.latest", "analytics", "/history/latest", "GET", "Get latest signal history"),
+    "analytics.history.latest": OperationMetadata("analytics.history.latest", "analytics", "/history/latest/{symbol}", "GET", "Get latest signal history for symbol (GPT-5.1 optimized)", requires_symbol=True),
     "analytics.history.symbol": OperationMetadata("analytics.history.symbol", "analytics", "/history/{symbol}", "GET", "Get signal history for symbol", requires_symbol=True),
     "analytics.history.date_range": OperationMetadata("analytics.history.date_range", "analytics", "/history/date-range", "GET", "Get history by date range"),
-    "analytics.performance.symbol": OperationMetadata("analytics.performance.symbol", "analytics", "/performance/{symbol}", "GET", "Get performance metrics for symbol", requires_symbol=True),
+    "analytics.performance.symbol": OperationMetadata("analytics.performance.symbol", "analytics", "/performance/{symbol}", "GET", "Get comprehensive performance metrics for symbol (GPT-5.1 enhanced)", requires_symbol=True),
+    "analytics.performance.summary": OperationMetadata("analytics.performance.summary", "analytics", "/performance/summary", "GET", "Get overall performance summary across all symbols"),
     "analytics.stats.overview": OperationMetadata("analytics.stats.overview", "analytics", "/stats/overview", "GET", "Get statistics overview"),
     
     "coinapi.ohlcv.latest": OperationMetadata("coinapi.ohlcv.latest", "coinapi", "/ohlcv/{symbol}/latest", "GET", "Get latest OHLCV data", requires_symbol=True),
