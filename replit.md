@@ -9,6 +9,7 @@ This project is a FastAPI-based backend for generating real-time cryptocurrency 
 - Production-ready code (no mock data)
 - Full async/await for performance
 - Extensive comments for maintainability
+- **API Quota Optimization**: Background tasks disabled to save 99% API quota while maintaining full GPT Actions functionality
 
 ## System Architecture
 The application uses a modular FastAPI architecture, separating API routes, business logic, and external service integrations. It provides clean JSON responses, offers a debug mode, and includes OpenAPI documentation with a GPT Actions-compatible schema.
@@ -55,6 +56,68 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - **Enhanced Technical Analysis Engine**: Integrates professional-grade technical indicators like MA, EMA, RSI, MACD, MA Crossover Detection, and Volume Confirmation Analysis into the signal engine.
 - **Risk Threshold Optimization**: Adjusted risk thresholds to align with signal engine logic, improving signal capture.
 - **Duration-Based Auto-Stop Monitoring**: Enables flexible duration monitoring with automatic expiration for watchlist items.
+
+## Background Task Configuration (API Quota Optimization)
+
+**Current Status: DISABLED (saves ~12,780 API calls/hour)**
+
+To optimize API quota usage and prevent rapid consumption of external API limits, the following background monitoring systems are **currently disabled** in `app/main.py`:
+
+### Disabled Systems:
+1. **Auto Scanner** (~200-300 calls/hour)
+   - Smart Money Scan (whale activity detection)
+   - MSS Discovery (new listing gems)
+   - RSI Screener (technical screening)
+   - LunarCrush Trending (social momentum tracking)
+   
+2. **Real-Time Spike Detectors** (~12,780 calls/hour)
+   - Price Spike Detector: ~12,000 calls/hour (100 coins × 30s interval)
+   - Social Spike Monitor: ~600 calls/hour (50 coins × 5min interval)
+   - Liquidation Detector: ~180 calls/hour (60s interval)
+
+### What Still Works (100% Functional):
+- ✅ **Manual Signal Endpoints**: `GET /signals/{symbol}`, `POST /invoke`, all GPT Actions endpoints
+- ✅ **On-Demand Signals**: Called only when user/GPT requests
+- ✅ **Performance Tracker**: Tracks signal outcomes at 1h, 4h, 24h, 7d, 30d intervals
+- ✅ **Cache Cleanup**: 5-minute interval (uses no external APIs)
+- ✅ **Telegram Alerts**: Sent for manual LONG/SHORT signals
+- ✅ **All API Endpoints**: 268 routes fully operational
+
+### Expected API Usage:
+- **With Background Tasks Disabled**: ~50-100 calls/hour (depends on manual requests)
+- **With Background Tasks Enabled**: ~12,780+ calls/hour (automated scanning)
+- **Savings**: 99% reduction in API quota consumption
+
+### How to Re-enable Background Tasks:
+If you need 24/7 automated monitoring and have sufficient API quota, uncomment the following sections in `app/main.py`:
+
+1. **Auto Scanner** (lines ~106-112):
+   ```python
+   from app.services.auto_scanner import auto_scanner
+   await auto_scanner.start()
+   ```
+
+2. **Spike Detectors** (lines ~133-150):
+   ```python
+   from app.services.realtime_spike_detector import realtime_spike_detector
+   asyncio.create_task(realtime_spike_detector.start())
+   
+   from app.services.liquidation_spike_detector import liquidation_spike_detector
+   asyncio.create_task(liquidation_spike_detector.start())
+   
+   from app.services.social_spike_monitor import social_spike_monitor
+   asyncio.create_task(social_spike_monitor.start())
+   ```
+
+3. **Shutdown Handlers** (lines ~169-181):
+   ```python
+   await auto_scanner.stop()
+   realtime_spike_detector.stop()
+   liquidation_spike_detector.stop()
+   social_spike_monitor.stop()
+   ```
+
+Then restart the workflow to apply changes.
 
 ## External Dependencies
 - **CoinAPI**: Market data, OHLCV, order book, quotes, price aggregation, whale detection.
