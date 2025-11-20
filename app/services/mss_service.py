@@ -512,12 +512,22 @@ class MSSService:
         logger.info(f"Phase 1: {len(discovered)} coins discovered")
 
         # Phase 2 & 3: Analyze each discovered coin
-        analysis_tasks = []
-        for coin in discovered[:limit * 2]:  # Analyze subset
-            symbol = coin["symbol"]
-            analysis_tasks.append(self.calculate_mss_score(symbol))
-
-        results = await asyncio.gather(*analysis_tasks, return_exceptions=True)
+        # ✅ OPTIMIZED: Process in batches to avoid timeout (MSS analysis = 15-20s per coin)
+        coins_to_analyze = discovered[:limit * 2]  # Analyze subset
+        batch_size = 5  # Process 5 coins at a time (balance speed vs timeout)
+        results = []
+        
+        for i in range(0, len(coins_to_analyze), batch_size):
+            batch = coins_to_analyze[i:i + batch_size]
+            logger.info(f"📊 MSS Batch {i//batch_size + 1}/{(len(coins_to_analyze)-1)//batch_size + 1}: Analyzing {[c['symbol'] for c in batch]}")
+            
+            tasks = [self.calculate_mss_score(coin["symbol"]) for coin in batch]
+            batch_results = await asyncio.gather(*tasks, return_exceptions=True)
+            results.extend(batch_results)
+            
+            # Small delay between batches (avoid rate limits)
+            if i + batch_size < len(coins_to_analyze):
+                await asyncio.sleep(1)  # 1s delay between batches
 
         # Filter and rank
         high_potential = []

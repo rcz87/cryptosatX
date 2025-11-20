@@ -35,9 +35,9 @@ class FlatRPCDispatcher:
         "signals.get": 45,
         "signals.debug": 45,
         
-        # MSS operations (multi-coin scans)
-        "mss.discover": 60,
-        "mss.scan": 60,
+        # MSS operations (multi-coin scans with batching optimization)
+        "mss.discover": 120,  # Increased: batched processing may take longer but won't timeout
+        "mss.scan": 90,
         "mss.analyze": 45,
         
         # Smart Money operations
@@ -873,7 +873,8 @@ class FlatRPCDispatcher:
             from app.services.mss_service import MSSService
             mss = MSSService()
             # Map GPT Action params to actual service params
-            limit = args.get("max_results", 10)
+            # ✅ OPTIMIZED: Reduced default to 5 for faster response (batched processing)
+            limit = args.get("max_results", 5)  # Changed from 10 to 5
             max_fdv = args.get("max_fdv_usd", 50000000)
             max_age = args.get("max_age_hours", 72)
             min_vol = args.get("min_volume_24h", 100000.0)
@@ -897,7 +898,8 @@ class FlatRPCDispatcher:
             from app.services.mss_service import MSSService
             mss = MSSService()
             # Map GPT Action params to actual service params
-            limit = args.get("max_results", 10)
+            # ✅ OPTIMIZED: Reduced default to 5 for faster response (batched processing)
+            limit = args.get("max_results", 5)  # Changed from 10 to 5
             max_fdv = args.get("max_fdv_usd", 50000000)
             max_age = args.get("max_age_hours", 72)
             min_score = args.get("min_mss_score", 65.0)
