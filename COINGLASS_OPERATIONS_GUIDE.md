@@ -417,26 +417,38 @@ Get on-chain reserves for symbol.
 ### Technical Indicators
 
 #### `coinglass.indicators.rsi`
-Get RSI (Relative Strength Index) indicator.
+Get RSI (Relative Strength Index) indicator with historical data.
 
 **Parameters:**
-- `symbol` (required): Trading symbol
-- `interval` (optional): Timeframe (default: "1h")
-- `exchange` (optional): Exchange filter
+- `symbol` (required): Trading symbol (e.g., "BTCUSDT")
+- `exchange` (optional): Exchange name (default: "Binance")
+- `interval` (optional): Timeframe - 1m, 3m, 5m, 15m, 30m, 1h, 4h, 6h, 8h, 12h, 1d, 1w (default: "1h")
+- `limit` (optional): Number of historical data points, max 4500 (default: 100)
+- `window` (optional): RSI calculation period (default: 14)
 
 **Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.indicators.rsi",
-  "symbol": "BTC",
-  "interval": "4h"
+  "symbol": "BTCUSDT",
+  "exchange": "Binance",
+  "interval": "4h",
+  "limit": 100,
+  "window": 14
 }
 ```
 
+**Response Includes:**
+- Latest RSI value with signal (OVERBOUGHT/OVERSOLD/NEUTRAL/BULLISH/BEARISH)
+- Historical RSI time series data
+- Statistics: max, min, average RSI
+- Overbought/oversold occurrence counts
+
 **Use Cases:**
-- Identify overbought/oversold conditions
+- Identify overbought/oversold conditions (>70 / <30)
 - RSI divergence analysis
 - Mean reversion signals
+- Multi-timeframe RSI comparison
 
 ---
 

@@ -4057,37 +4057,6 @@ class CoinglassComprehensiveService:
         except Exception as e:
             return {"success": False, "error": str(e)}
     
-    async def get_rsi_indicator(self, exchange: str = "Binance", symbol: str = "BTCUSDT", interval: str = "1h") -> Dict:
-        """
-        Get RSI INDICATOR - Historical RSI values! (46TH ENDPOINT!)
-        """
-        try:
-            client = await self._get_client()
-            url = f"{self.base_url_v4}/api/futures/indicators/rsi"
-            params = {"exchange": exchange, "symbol": symbol, "interval": interval}
-            
-            response = await client.get(url, headers=self.headers, params=params)
-            data = response.json()
-            
-            if str(data.get("code")) == "0" and data.get("data"):
-                history = data["data"]
-                latest = history[-1] if history else {}
-                latest_rsi = float(latest.get("rsi_value", 50))
-                
-                return {
-                    "success": True,
-                    "exchange": exchange,
-                    "symbol": symbol,
-                    "interval": interval,
-                    "currentRsi": latest_rsi,
-                    "signal": "OVERSOLD" if latest_rsi < 30 else "OVERBOUGHT" if latest_rsi > 70 else "NEUTRAL",
-                    "history": [{"timestamp": h.get("time"), "rsi": float(h.get("rsi_value", 0))} for h in history],
-                    "source": "rsi_indicator"
-                }
-            return {"success": False, "error": "No data"}
-        except Exception as e:
-            return {"success": False, "error": str(e)}
-    
     async def get_ma_indicator(self, exchange: str = "Binance", symbol: str = "BTCUSDT", interval: str = "1h") -> Dict:
         """Get MA (Moving Average) indicator (47TH ENDPOINT!)"""
         try:
