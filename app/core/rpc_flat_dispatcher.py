@@ -14,6 +14,7 @@ from app.models.rpc_flat_models import FlatRPCResponse
 from app.utils.operation_catalog import get_operation_metadata, OPERATION_CATALOG
 from app.utils.logger import logger
 from app.middleware.auto_optimizer import optimize_request
+from app.utils.telegram_report_sender import telegram_report_sender
 
 
 class FlatRPCDispatcher:
@@ -111,7 +112,10 @@ class FlatRPCDispatcher:
 
         # Convert flat request to args dict
         args = self._extract_args(request, metadata)
-
+        
+        # Extract send_telegram parameter before optimization
+        send_telegram = args.pop("send_telegram", False)
+        
         # ✅ NEW: Auto-optimize parameters to prevent timeout
         optimized_args, optimization_meta = optimize_request(operation, args, mode="safe")
         
@@ -163,6 +167,40 @@ class FlatRPCDispatcher:
                 response_meta["optimization_mode"] = optimization_meta.get("mode")
                 if optimization_meta.get("timeout_risk"):
                     response_meta["timeout_risk"] = optimization_meta.get("timeout_risk")
+            
+            # ✅ NEW: Send full report to Telegram if requested (GPT→Telegram Hybrid)
+            if send_telegram and result:
+                try:
+                    symbol = args.get("symbol", "UNKNOWN")
+                    
+                    # Send full analysis report to Telegram (background, non-blocking)
+                    if operation == "signals.get":
+                        asyncio.create_task(
+                            telegram_report_sender.send_full_analysis_report(symbol, result)
+                        )
+                        response_meta["telegram_sent"] = True
+                        response_meta["telegram_report_type"] = "full_analysis"
+                        logger.info(f"📱 Sending full analysis report for {symbol} to Telegram")
+                    
+                    # Send funding rate report to Telegram
+                    elif "funding_rate" in operation and "exchange_list" in operation:
+                        asyncio.create_task(
+                            telegram_report_sender.send_funding_rate_report(symbol, result)
+                        )
+                        response_meta["telegram_sent"] = True
+                        response_meta["telegram_report_type"] = "funding_rate"
+                        logger.info(f"📱 Sending funding rate report for {symbol} to Telegram")
+                    
+                    else:
+                        # Generic Telegram send for other operations (future support)
+                        response_meta["telegram_sent"] = False
+                        response_meta["telegram_note"] = "Operation not yet supported for Telegram reporting"
+                        
+                except Exception as telegram_error:
+                    # Don't fail the whole request if Telegram fails
+                    logger.warning(f"Failed to send Telegram report: {telegram_error}")
+                    response_meta["telegram_sent"] = False
+                    response_meta["telegram_error"] = str(telegram_error)
 
             return FlatRPCResponse(
                 ok=True,
