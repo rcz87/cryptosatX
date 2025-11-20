@@ -169,13 +169,9 @@ class FlatRPCDispatcher:
                     response_meta["timeout_risk"] = optimization_meta.get("timeout_risk")
             
             # ✅ NEW: Send full report to Telegram if requested (GPT→Telegram Hybrid)
-            if send_telegram:
-                logger.info(f"🔍 Telegram send requested: operation={operation}, has_result={bool(result)}")
-                
             if send_telegram and result:
                 try:
                     symbol = args.get("symbol", "UNKNOWN")
-                    logger.info(f"🔍 Symbol extracted: {symbol}, operation type check...")
                     
                     # Send full analysis report to Telegram (background, non-blocking)
                     if operation == "signals.get":
@@ -188,7 +184,6 @@ class FlatRPCDispatcher:
                     
                     # Send funding rate report to Telegram
                     elif "funding_rate" in operation and "exchange_list" in operation:
-                        logger.info(f"🔍 Funding rate condition matched for {operation}")
                         asyncio.create_task(
                             telegram_report_sender.send_funding_rate_report(symbol, result)
                         )
@@ -198,7 +193,6 @@ class FlatRPCDispatcher:
                     
                     else:
                         # Generic Telegram send for other operations (future support)
-                        logger.info(f"🔍 Operation {operation} not supported for Telegram yet")
                         response_meta["telegram_sent"] = False
                         response_meta["telegram_note"] = "Operation not yet supported for Telegram reporting"
                         
@@ -312,15 +306,18 @@ class FlatRPCDispatcher:
             
             # Skip signal-specific params for Coinglass/LunarCrush indicator operations
             if field_name in signal_specific_params:
+                # ✅ EXCEPTION: Always allow send_telegram if True (GPT→Telegram Hybrid)
+                if field_name == 'send_telegram' and value is True:
+                    pass  # Don't skip, allow it through
                 # Skip for Coinglass and LunarCrush operations (unless they explicitly need them)
-                if metadata.namespace in ['coinglass', 'lunarcrush']:
-                    # Skip all signal-specific params for these namespaces
+                elif metadata.namespace in ['coinglass', 'lunarcrush']:
+                    # Skip all signal-specific params for these namespaces (except send_telegram)
                     continue
                     
                 # For other operations, only skip if it's a default value
-                if field_name == 'mode' and value == "aggressive":
+                elif field_name == 'mode' and value == "aggressive":
                     continue
-                if field_name == 'send_telegram' and value is False:
+                elif field_name == 'send_telegram' and value is False:
                     continue
             
             # Skip None values

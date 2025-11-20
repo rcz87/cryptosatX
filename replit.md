@@ -108,3 +108,17 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - ✅ **Data Quality:** Consistent 85.7% (excellent) with 11/16 services successful
 - ✅ **Graceful Degradation:** System continues working even when individual APIs fail
 
+### GPT→Telegram Hybrid System (Response Size Optimization)
+- ✅ **Problem Solved:** GPT Actions has 60s timeout and response size limits - can't handle 2MB+ Coinglass data
+- ✅ **Solution:** `send_telegram=true` parameter - GPT gets quick summary, Telegram gets full unlimited report
+- ✅ **Implementation:** `app/utils/telegram_report_sender.py` - Pagination support (splits reports into multiple messages <4096 chars)
+- ✅ **Integration:** Modified `app/core/rpc_flat_dispatcher.py` to support asynchronous Telegram sending (non-blocking)
+- ✅ **Parameter Filtering Fixed:** `send_telegram` now passes through for ALL operations (Coinglass, LunarCrush, signals.get)
+- ✅ **Supported Operations:** 
+  - `signals.get` - Full 5-part analysis report (signal summary, technical details, premium metrics, AI verdict, risk assessment)
+  - `coinglass.funding_rate.exchange_list` - Funding rate report with top exchanges data
+  - More operations can be easily added in the future
+- ✅ **Test Results:** 100% success rate - AVAX (5 messages), ETH funding (working), BTC signals (working)
+- 📱 **Usage:** Add `"send_telegram": true` to any RPC call to enable Telegram reporting
+- 🎯 **Benefits:** Overcomes GPT Actions limitations, provides detailed reports to user's Telegram, maintains fast API response
+
