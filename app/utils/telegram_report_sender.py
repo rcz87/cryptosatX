@@ -64,6 +64,148 @@ class TelegramReportSender:
             logger.error(f"Error sending Telegram report: {e}")
             return {"success": False, "message": str(e)}
     
+    async def send_liquidation_report(self, symbol: str, liquidation_data: Dict) -> Dict:
+        """
+        Send detailed liquidation report to Telegram
+        Handles liquidation data with time series analysis
+        
+        Args:
+            symbol: Trading symbol
+            liquidation_data: Full liquidation response from Coinglass
+            
+        Returns:
+            Dict with success status
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+        
+        try:
+            messages = self._format_liquidation_report(symbol, liquidation_data)
+            sent_messages = []
+            
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+            
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+            
+        except Exception as e:
+            logger.error(f"Error sending liquidation report: {e}")
+            return {"success": False, "message": str(e)}
+    
+    async def send_social_analytics_report(self, symbol: str, social_data: Dict) -> Dict:
+        """
+        Send social analytics report to Telegram
+        Handles LunarCrush social metrics
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+        
+        try:
+            messages = self._format_social_analytics_report(symbol, social_data)
+            sent_messages = []
+            
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+            
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+            
+        except Exception as e:
+            logger.error(f"Error sending social report: {e}")
+            return {"success": False, "message": str(e)}
+    
+    async def send_whale_activity_report(self, symbol: str, whale_data: Dict) -> Dict:
+        """
+        Send whale activity report to Telegram
+        Handles long/short whale positioning
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+        
+        try:
+            messages = self._format_whale_activity_report(symbol, whale_data)
+            sent_messages = []
+            
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+            
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+            
+        except Exception as e:
+            logger.error(f"Error sending whale report: {e}")
+            return {"success": False, "message": str(e)}
+    
+    async def send_smart_money_report(self, smart_money_data: Dict) -> Dict:
+        """
+        Send Smart Money Concept analysis report to Telegram
+        Handles multiple coins from smart money scan
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+        
+        try:
+            messages = self._format_smart_money_report(smart_money_data)
+            sent_messages = []
+            
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+            
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+            
+        except Exception as e:
+            logger.error(f"Error sending smart money report: {e}")
+            return {"success": False, "message": str(e)}
+    
+    async def send_mss_discovery_report(self, mss_data: Dict) -> Dict:
+        """
+        Send MSS (Multi-Modal Signal Score) discovery report to Telegram
+        Handles emerging cryptocurrency discoveries
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+        
+        try:
+            messages = self._format_mss_discovery_report(mss_data)
+            sent_messages = []
+            
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+            
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+            
+        except Exception as e:
+            logger.error(f"Error sending MSS report: {e}")
+            return {"success": False, "message": str(e)}
+    
     async def send_funding_rate_report(self, symbol: str, funding_data: Dict) -> Dict:
         """
         Send detailed funding rate report to Telegram
@@ -462,6 +604,363 @@ Use exchanges with most positive rates (you get paid most!)
         msg_final += "⚡ End of Funding Rate Report"
         
         messages.append(msg_final)
+        
+        return messages
+    
+    def _format_liquidation_report(self, symbol: str, data: Dict) -> List[str]:
+        """Format liquidation data into Telegram messages"""
+        messages = []
+        
+        # Extract data
+        liquidations = data.get("liquidations", [])
+        total_long = data.get("totalLongLiquidations", 0)
+        total_short = data.get("totalShortLiquidations", 0)
+        total_volume = total_long + total_short
+        
+        # Part 1: Summary
+        msg = f"""💥 <b>LIQUIDATION REPORT: {symbol}</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+<b>📊 Total Liquidations:</b>
+• Total Volume: <b>${total_volume:,.0f}</b>
+• Long Liquidations: ${total_long:,.0f} ({total_long/total_volume*100 if total_volume else 0:.1f}%)
+• Short Liquidations: ${total_short:,.0f} ({total_short/total_volume*100 if total_volume else 0:.1f}%)
+
+"""
+        
+        # Interpretation
+        if total_long > total_short * 1.5:
+            msg += """🔴 <b>BEARISH SIGNAL</b>
+• Longs getting rekt heavily
+• Price likely moving down
+• Consider SHORT positions
+
+"""
+        elif total_short > total_long * 1.5:
+            msg += """🟢 <b>BULLISH SIGNAL</b>
+• Shorts getting squeezed
+• Price likely moving up
+• Consider LONG positions
+
+"""
+        else:
+            msg += """⚪ <b>NEUTRAL</b>
+• Balanced liquidations
+• No clear directional bias
+
+"""
+        
+        # Top liquidation events
+        if liquidations:
+            msg += "<b>📈 Recent Liquidation Events:</b>\n\n"
+            for i, liq in enumerate(liquidations[:10], 1):
+                side = liq.get("side", "UNKNOWN")
+                amount = liq.get("amount", 0)
+                price = liq.get("price", 0)
+                emoji = "🔴" if side == "LONG" else "🟢"
+                msg += f"{i}. {emoji} {side}: ${amount:,.0f} @ ${price:,.2f}\n"
+        
+        msg += "\n━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "⚡ Liquidation Analysis Complete"
+        
+        messages.append(msg)
+        return messages
+    
+    def _format_social_analytics_report(self, symbol: str, data: Dict) -> List[str]:
+        """Format LunarCrush social data into Telegram messages"""
+        messages = []
+        
+        # Extract metrics
+        social_score = data.get("social_score", 0)
+        galaxy_score = data.get("galaxy_score", 0)
+        alt_rank = data.get("alt_rank", 999)
+        social_volume = data.get("social_volume", 0)
+        social_dominance = data.get("social_dominance", 0)
+        
+        # Sentiment
+        sentiment = data.get("sentiment", 0)
+        sentiment_text = "BULLISH 🟢" if sentiment > 3 else "BEARISH 🔴" if sentiment < 3 else "NEUTRAL ⚪"
+        
+        msg = f"""📱 <b>SOCIAL ANALYTICS: {symbol}</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+<b>🌟 Key Scores:</b>
+• Social Score: <b>{social_score:.1f}/100</b>
+• Galaxy Score: <b>{galaxy_score:.1f}/100</b>
+• Alt Rank: <b>#{alt_rank}</b>
+• Sentiment: {sentiment_text} ({sentiment:.1f}/5)
+
+<b>📊 Engagement Metrics:</b>
+• Social Volume: {social_volume:,} mentions
+• Social Dominance: {social_dominance:.3f}%
+• Social Contributors: {data.get('social_contributors', 0):,}
+
+"""
+        
+        # Trending analysis
+        trends = data.get("trends", {})
+        if trends:
+            msg += "<b>📈 Trending Status:</b>\n"
+            msg += f"• 24h Change: {trends.get('social_volume_24h_change', 0):+.1f}%\n"
+            msg += f"• Trending Score: {trends.get('trending_score', 0):.1f}/100\n\n"
+        
+        # Platform breakdown
+        platforms = data.get("platform_breakdown", {})
+        if platforms:
+            msg += "<b>🌐 Platform Breakdown:</b>\n"
+            for platform, count in list(platforms.items())[:5]:
+                msg += f"• {platform.title()}: {count:,} posts\n"
+            msg += "\n"
+        
+        # Hype analysis
+        hype_metrics = data.get("hype_metrics", {})
+        if hype_metrics:
+            hype_level = hype_metrics.get("hype_level", "NORMAL")
+            pump_risk = hype_metrics.get("pump_risk_score", 0)
+            
+            msg += f"<b>⚠️ Hype Analysis:</b>\n"
+            msg += f"• Hype Level: <b>{hype_level}</b>\n"
+            msg += f"• Pump Risk: {pump_risk:.1f}/100\n\n"
+            
+            if pump_risk > 70:
+                msg += "🚨 <b>HIGH PUMP RISK!</b> Exercise extreme caution.\n\n"
+        
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "📱 Social Analytics powered by LunarCrush"
+        
+        messages.append(msg)
+        return messages
+    
+    def _format_whale_activity_report(self, symbol: str, data: Dict) -> List[str]:
+        """Format whale long/short positioning into Telegram messages"""
+        messages = []
+        
+        # Extract data
+        long_positions = data.get("longPositions", [])
+        short_positions = data.get("shortPositions", [])
+        long_ratio = data.get("longRatio", 50)
+        short_ratio = data.get("shortRatio", 50)
+        
+        msg = f"""🐋 <b>WHALE ACTIVITY: {symbol}</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+<b>📊 Whale Positioning:</b>
+• Long Ratio: <b>{long_ratio:.1f}%</b>
+• Short Ratio: <b>{short_ratio:.1f}%</b>
+
+"""
+        
+        # Interpretation
+        if long_ratio > 60:
+            msg += """🟢 <b>WHALES ARE BULLISH</b>
+• Heavy long positioning
+• Smart money expects upside
+• Follow the whales → Consider LONG
+
+"""
+        elif short_ratio > 60:
+            msg += """🔴 <b>WHALES ARE BEARISH</b>
+• Heavy short positioning
+• Smart money expects downside
+• Follow the whales → Consider SHORT
+
+"""
+        else:
+            msg += """⚪ <b>WHALES ARE NEUTRAL</b>
+• Balanced positioning
+• No clear directional bias
+• Wait for better setup
+
+"""
+        
+        # Top long whales
+        if long_positions:
+            msg += "<b>🐳 Top Long Whales:</b>\n\n"
+            for i, whale in enumerate(long_positions[:5], 1):
+                exchange = whale.get("exchange", "Unknown")
+                ratio = whale.get("ratio", 0)
+                msg += f"{i}. {exchange}: {ratio:.1f}% long\n"
+            msg += "\n"
+        
+        # Top short whales
+        if short_positions:
+            msg += "<b>🐋 Top Short Whales:</b>\n\n"
+            for i, whale in enumerate(short_positions[:5], 1):
+                exchange = whale.get("exchange", "Unknown")
+                ratio = whale.get("ratio", 0)
+                msg += f"{i}. {exchange}: {ratio:.1f}% short\n"
+        
+        msg += "\n━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "🐋 Whale intelligence by Coinglass"
+        
+        messages.append(msg)
+        return messages
+    
+    def _format_smart_money_report(self, data: Dict) -> List[str]:
+        """Format Smart Money Concept scan results into Telegram messages"""
+        messages = []
+        
+        # Extract coins
+        coins = data.get("coins", [])
+        total_scanned = data.get("totalScanned", 0)
+        filters_applied = data.get("filtersApplied", {})
+        
+        # Part 1: Summary
+        msg = f"""💰 <b>SMART MONEY CONCEPT SCAN</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+<b>📊 Scan Summary:</b>
+• Total Coins Scanned: {total_scanned}
+• Coins Meeting Criteria: <b>{len(coins)}</b>
+
+<b>🎯 Filters Applied:</b>
+• Min Accumulation: {filters_applied.get('min_accumulation', 0)}/10
+• Min Distribution: {filters_applied.get('min_distribution', 0)}/10
+• Timeframe: {filters_applied.get('timeframe', 'ALL')}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+"""
+        
+        if not coins:
+            msg += "\n❌ No coins found matching criteria.\n"
+            msg += "Try lowering filter thresholds."
+        else:
+            msg += f"\n<b>🔥 TOP {min(len(coins), 10)} SMART MONEY OPPORTUNITIES:</b>\n\n"
+            
+            for i, coin in enumerate(coins[:10], 1):
+                symbol = coin.get("symbol", "UNKNOWN")
+                acc_score = coin.get("accumulationScore", 0)
+                dist_score = coin.get("distributionScore", 0)
+                pattern = coin.get("pattern", "UNKNOWN")
+                
+                # Signal interpretation
+                if acc_score > 7 and dist_score < 3:
+                    signal_emoji = "🟢"
+                    signal = "STRONG BUY"
+                elif dist_score > 7 and acc_score < 3:
+                    signal_emoji = "🔴"
+                    signal = "STRONG SELL"
+                else:
+                    signal_emoji = "⚪"
+                    signal = "NEUTRAL"
+                
+                msg += f"""{i}. {signal_emoji} <b>{symbol}</b>
+   • Accumulation: {acc_score}/10
+   • Distribution: {dist_score}/10
+   • Pattern: {pattern}
+   • Signal: <b>{signal}</b>
+
+"""
+        
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "💰 Smart Money Concept Analysis"
+        
+        messages.append(msg)
+        
+        # Part 2: Detailed analysis for top 3 coins
+        if len(coins) > 0:
+            msg2 = "<b>📈 DETAILED ANALYSIS - TOP 3:</b>\n"
+            msg2 += "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            
+            for i, coin in enumerate(coins[:3], 1):
+                symbol = coin.get("symbol", "UNKNOWN")
+                timeframe_analysis = coin.get("timeframeAnalysis", {})
+                
+                msg2 += f"<b>{i}. {symbol}</b>\n"
+                msg2 += "Multi-Timeframe View:\n"
+                
+                for tf, analysis in timeframe_analysis.items():
+                    msg2 += f"  • {tf}: {analysis.get('bias', 'N/A')}\n"
+                
+                msg2 += "\n"
+            
+            msg2 += "━━━━━━━━━━━━━━━━━━━━━━━"
+            messages.append(msg2)
+        
+        return messages
+    
+    def _format_mss_discovery_report(self, data: Dict) -> List[str]:
+        """Format MSS (Multi-Modal Signal Score) discovery into Telegram messages"""
+        messages = []
+        
+        # Extract data
+        discovered = data.get("discovered", [])
+        phase = data.get("phase", "UNKNOWN")
+        total_scanned = data.get("totalScanned", 0)
+        filters = data.get("filters", {})
+        
+        msg = f"""🚀 <b>MSS DISCOVERY REPORT</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+<b>🔍 Discovery Phase: {phase}</b>
+• Total Scanned: {total_scanned} coins
+• Discoveries: <b>{len(discovered)}</b>
+
+<b>🎯 Discovery Criteria:</b>
+• Min MSS Score: {filters.get('min_mss_score', 0)}/100
+• Max Results: {filters.get('max_results', 'unlimited')}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+"""
+        
+        if not discovered:
+            msg += "\n❌ No emerging coins discovered.\n"
+            msg += "Market conditions may not be favorable for new discoveries."
+        else:
+            msg += f"\n<b>💎 TOP {min(len(discovered), 10)} EMERGING OPPORTUNITIES:</b>\n\n"
+            
+            for i, coin in enumerate(discovered[:10], 1):
+                symbol = coin.get("symbol", "UNKNOWN")
+                mss_score = coin.get("mssScore", 0)
+                market_cap = coin.get("marketCap", 0)
+                social_score = coin.get("socialScore", 0)
+                momentum = coin.get("momentum", "UNKNOWN")
+                
+                # Score interpretation
+                if mss_score >= 80:
+                    grade = "🔥 EXCELLENT"
+                elif mss_score >= 60:
+                    grade = "✅ GOOD"
+                elif mss_score >= 40:
+                    grade = "⚠️ MODERATE"
+                else:
+                    grade = "❌ WEAK"
+                
+                msg += f"""{i}. <b>{symbol}</b> - {grade}
+   • MSS Score: <b>{mss_score:.1f}/100</b>
+   • Market Cap: ${market_cap:,.0f}
+   • Social Score: {social_score:.1f}/100
+   • Momentum: {momentum}
+
+"""
+        
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "🚀 Multi-Modal Signal Score Discovery"
+        
+        messages.append(msg)
+        
+        # Part 2: Detailed breakdown for top 3
+        if len(discovered) >= 3:
+            msg2 = "<b>📊 DETAILED METRICS - TOP 3:</b>\n"
+            msg2 += "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
+            
+            for i, coin in enumerate(discovered[:3], 1):
+                symbol = coin.get("symbol", "UNKNOWN")
+                breakdown = coin.get("breakdown", {})
+                
+                msg2 += f"<b>{i}. {symbol}</b>\n"
+                msg2 += f"Phase 1 - Tokenomics: {breakdown.get('phase1Score', 0)}/100\n"
+                msg2 += f"Phase 2 - Community: {breakdown.get('phase2Score', 0)}/100\n"
+                msg2 += f"Phase 3 - Institutional: {breakdown.get('phase3Score', 0)}/100\n"
+                
+                risks = coin.get("risks", [])
+                if risks:
+                    msg2 += f"⚠️ Risks: {', '.join(risks[:3])}\n"
+                
+                msg2 += "\n"
+            
+            msg2 += "━━━━━━━━━━━━━━━━━━━━━━━"
+            messages.append(msg2)
         
         return messages
     
