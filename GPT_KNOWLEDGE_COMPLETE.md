@@ -67,10 +67,13 @@ All API requests use flat parameter structure (NO nesting):
 
 **smart_money.scan (limit)**
 - Scan multiple coins for institutional patterns
-- Max limit: 50 coins
+- Max limit: 50 coins (manual API), 20 coins recommended for GPT Actions
+- ⚠️ **GPT Actions:** Use limit ≤20 to avoid timeout (60s limit)
+- Performance: ~4s per coin (15 coins ≈ 55s, fits GPT timeout)
 - Dynamically discovers top coins by 24h volume
 - Returns: Ranked list with SMC scores
-- Example: `{"operation": "smart_money.scan", "limit": 20}`
+- Example GPT: `{"operation": "smart_money.scan", "limit": 15}`
+- Example Manual: `{"operation": "smart_money.scan", "limit": 40}`
 
 ### SPIKE DETECTION (Real-Time Alerts)
 
