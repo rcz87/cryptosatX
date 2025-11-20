@@ -160,6 +160,8 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "lunarcrush.topic_trends": OperationMetadata("lunarcrush.topic_trends", "lunarcrush", "/topics/trends", "GET", "Get trending topics"),
     "lunarcrush.coins_rankings": OperationMetadata("lunarcrush.coins_rankings", "lunarcrush", "/coins/rankings", "GET", "Get coins rankings"),
     "lunarcrush.system_status": OperationMetadata("lunarcrush.system_status", "lunarcrush", "/system/status", "GET", "Get API system status"),
+    "lunarcrush.coins_realtime": OperationMetadata("lunarcrush.coins_realtime", "lunarcrush", "/coins/realtime", "GET", "Get real-time coin list (NO CACHE) - instant live data for MSS scanning"),
+    "lunarcrush.coin_comprehensive": OperationMetadata("lunarcrush.coin_comprehensive", "lunarcrush", "/coin/{symbol}/comprehensive", "GET", "Get comprehensive 60+ metrics (market + social + platform-specific)", requires_symbol=True),
     
     "narratives.discover_realtime": OperationMetadata("narratives.discover_realtime", "narratives", "/discover/realtime", "GET", "Discover realtime narratives"),
     "narratives.momentum": OperationMetadata("narratives.momentum", "narratives", "/momentum/{symbol}", "GET", "Get narrative momentum", requires_symbol=True),
