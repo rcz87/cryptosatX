@@ -74,33 +74,51 @@ class SMCAnalyzer:
             }
     
     async def _fetch_candles(self, symbol: str, period: str, limit: int = 50) -> List[Dict]:
-        """Fetch OHLCV candles from CoinAPI"""
-        try:
-            symbol_id = f"BINANCE_SPOT_{symbol}_USDT"
-            url = f"{self.base_url}/ohlcv/{symbol_id}/latest"
-            
-            # Fix header typing - ensure API key is string
-            headers = {"X-CoinAPI-Key": self.coinapi_key or ""}
-            params = {"period_id": period, "limit": limit}
-            
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.get(url, headers=headers, params=params)
-                
-                if response.status_code == 200:
-                    data = response.json()
-                    return [{
-                        "time": candle["time_period_start"],
-                        "open": candle["price_open"],
-                        "high": candle["price_high"],
-                        "low": candle["price_low"],
-                        "close": candle["price_close"],
-                        "volume": candle["volume_traded"]
-                    } for candle in data]
-                
-                return []
+        """Fetch OHLCV candles from CoinAPI with fallback exchanges"""
+        from app.utils.logger import logger
         
-        except Exception:
-            return []
+        # Try multiple exchanges in order (most liquid first)
+        exchanges_to_try = [
+            f"BINANCE_PERP_{symbol}_USDT",  # Binance Futures (most liquid)
+            f"BINANCE_SPOT_{symbol}_USDT",  # Binance Spot
+            f"OKX_PERP_{symbol}_USDT",      # OKX Perpetual
+            f"OKX_SPOT_{symbol}_USDT",      # OKX Spot
+            f"BINANCE_PERP_{symbol}_USD"    # Binance coin-margined
+        ]
+        
+        headers = {"X-CoinAPI-Key": self.coinapi_key or ""}
+        params = {"period_id": period, "limit": limit}
+        
+        for symbol_id in exchanges_to_try:
+            try:
+                url = f"{self.base_url}/ohlcv/{symbol_id}/latest"
+                
+                async with httpx.AsyncClient(timeout=10.0) as client:
+                    response = await client.get(url, headers=headers, params=params)
+                    
+                    if response.status_code == 200:
+                        data = response.json()
+                        if data:  # Make sure we have data
+                            exchange = symbol_id.split('_')[0]
+                            logger.info(f"✅ Fetched {len(data)} candles for {symbol} from {exchange}")
+                            return [{
+                                "time": candle["time_period_start"],
+                                "open": candle["price_open"],
+                                "high": candle["price_high"],
+                                "low": candle["price_low"],
+                                "close": candle["price_close"],
+                                "volume": candle["volume_traded"]
+                            } for candle in data]
+                    elif response.status_code != 404:  # Log non-404 errors
+                        logger.warning(f"⚠️ CoinAPI error for {symbol_id}: {response.status_code}")
+            
+            except Exception as e:
+                logger.debug(f"Failed {symbol_id}: {str(e)[:80]}")
+                continue
+        
+        # If all attempts failed
+        logger.error(f"❌ Failed to fetch candles for {symbol} from all exchanges")
+        return []
     
     def _find_swing_points(self, candles: List[Dict]) -> Dict[str, List[Dict]]:
         """
