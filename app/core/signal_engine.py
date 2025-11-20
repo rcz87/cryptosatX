@@ -1079,14 +1079,15 @@ class SignalEngine:
     
     async def _get_price_with_fallback(self, symbol: str, coinapi_service) -> dict:
         """
-        Get price with automatic fallback to Binance if CoinAPI fails.
+        Get price with multi-tier fallback system.
         
-        FIX #1: Enable Binance price fallback to prevent price=$0.00 errors
-        CRITICAL FIX: Use finally block to ensure HTTP client cleanup
+        FIX #1: Multi-tier price fallback (CoinGecko + OKX)
+        CRITICAL: Replaced Binance (geo-blocked) with CoinGecko and OKX
         
         Fallback order:
-        1. CoinAPI (primary)
-        2. Binance Futures (fallback)
+        1. CoinAPI (primary - paid subscription)
+        2. CoinGecko (fallback tier-1 - free, reliable, no geo-blocking)
+        3. OKX (fallback tier-2 - free public API)
         
         Args:
             symbol: Cryptocurrency symbol
@@ -1095,81 +1096,54 @@ class SignalEngine:
         Returns:
             Price data dict with success flag (matches CoinAPI schema)
         """
-        from app.services.binance_futures_service import BinanceFuturesService
-        
-        # Try CoinAPI first
+        # Try CoinAPI first (primary source)
         price_data = await coinapi_service.get_spot_price(symbol)
         
         if price_data.get("success") and price_data.get("price", 0) > 0:
             logger.info(f"✅ Price from CoinAPI for {symbol}: ${price_data.get('price'):,.2f}")
             return price_data
         
-        # CoinAPI failed, try Binance fallback
-        logger.warning(f"⚠️  CoinAPI price failed for {symbol}, trying Binance fallback...")
+        # CoinAPI failed, try CoinGecko fallback (tier-1)
+        logger.warning(f"⚠️  CoinAPI price failed for {symbol}, trying CoinGecko fallback...")
         
-        binance_service = None
         try:
-            binance_service = BinanceFuturesService()
-            binance_symbol = f"{symbol}USDT"  # Binance uses BTCUSDT format
+            from app.services.coingecko_service import CoinGeckoService
+            coingecko_service = CoinGeckoService()
             
-            binance_result = await binance_service.get_ticker_price(binance_symbol)
+            coingecko_result = await coingecko_service.get_simple_price(symbol)
             
-            if binance_result.get("success"):
-                data = binance_result.get("data", {})
-                
-                # Binance returns {"symbol": "BTCUSDT", "price": "96842.30", ...}
-                if isinstance(data, dict):
-                    price = float(data.get("price", 0))
-                elif isinstance(data, list) and len(data) > 0:
-                    price = float(data[0].get("price", 0))
-                else:
-                    price = 0
-                
-                if price > 0:
-                    logger.info(f"✅ Price from Binance fallback for {symbol}: ${price:,.2f}")
-                    
-                    # CRITICAL: Match CoinAPI schema for downstream compatibility
-                    # Convert Binance timestamp to TRUE UTC ISO-8601 with MILLISECOND precision
-                    from datetime import datetime, timezone
-                    timestamp_ms = binance_result.get("timestamp", 0)
-                    if isinstance(timestamp_ms, int) and timestamp_ms > 0:
-                        # Use utcfromtimestamp for TRUE UTC time (not local time)
-                        utc_dt = datetime.utcfromtimestamp(timestamp_ms / 1000).replace(tzinfo=timezone.utc)
-                        # Use millisecond precision to match CoinAPI format
-                        iso_timestamp = utc_dt.isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-                    else:
-                        # Fallback to current UTC time with millisecond precision
-                        iso_timestamp = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
-                    
-                    # Return complete CoinAPI-compatible schema
-                    return {
-                        "success": True,
-                        "price": price,
-                        "symbol": symbol,
-                        "exchange": "BINANCE",
-                        "timestamp": iso_timestamp,
-                        "source": "binance_fallback",
-                        # Add rawData field for downstream consumers expecting CoinAPI structure
-                        "rawData": {
-                            "symbol": binance_symbol,
-                            "price": str(price),
-                            "time": iso_timestamp
-                        }
-                    }
+            if coingecko_result.get("success") and coingecko_result.get("price", 0) > 0:
+                price = coingecko_result.get("price", 0)
+                logger.info(f"✅ Price from CoinGecko fallback for {symbol}: ${price:,.2f}")
+                # CoinGecko already returns CoinAPI-compatible schema
+                return coingecko_result
+            
+            # Close CoinGecko client
+            await coingecko_service.close()
             
         except Exception as e:
-            logger.error(f"❌ Binance fallback failed for {symbol}: {e}")
+            logger.error(f"❌ CoinGecko fallback failed for {symbol}: {e}")
         
-        finally:
-            # CRITICAL: Always close HTTP client to prevent connection leaks
-            if binance_service:
-                try:
-                    await binance_service.close()
-                except Exception as cleanup_error:
-                    logger.error(f"⚠️  Error closing Binance service: {cleanup_error}")
+        # CoinGecko failed, try OKX fallback (tier-2)
+        logger.warning(f"⚠️  CoinGecko failed for {symbol}, trying OKX fallback...")
+        
+        try:
+            from app.services.okx_service import OKXService
+            okx_service = OKXService()
+            
+            okx_result = await okx_service.get_ticker_price(symbol)
+            
+            if okx_result.get("success") and okx_result.get("price", 0) > 0:
+                price = okx_result.get("price", 0)
+                logger.info(f"✅ Price from OKX fallback for {symbol}: ${price:,.2f}")
+                # OKX already returns CoinAPI-compatible schema
+                return okx_result
+            
+        except Exception as e:
+            logger.error(f"❌ OKX fallback failed for {symbol}: {e}")
         
         # All sources failed
-        logger.error(f"❌ CRITICAL: All price sources failed for {symbol}")
+        logger.error(f"❌ CRITICAL: All price sources failed for {symbol} (CoinAPI, CoinGecko, OKX)")
         return {
             "success": False,
             "error": "Service temporarily unavailable.",

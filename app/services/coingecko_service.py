@@ -35,6 +35,89 @@ class CoinGeckoService:
         if self._client and not self._client.is_closed:
             await self._client.aclose()
     
+    # ==================== PRICE DATA ====================
+    
+    async def get_simple_price(self, symbol: str) -> Dict:
+        """
+        Get simple spot price for a cryptocurrency
+        Uses /simple/price endpoint (free, no rate limiting issues)
+        
+        Args:
+            symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH')
+            
+        Returns:
+            Dict with price data matching CoinAPI schema
+        """
+        try:
+            from app.utils.symbol_normalizer import get_coingecko_id
+            from datetime import datetime, timezone
+            
+            # Convert symbol to CoinGecko ID (BTC → bitcoin)
+            coin_id = get_coingecko_id(symbol)
+            if not coin_id:
+                # Fallback: try lowercase symbol
+                coin_id = symbol.lower()
+            
+            client = await self._get_client()
+            url = f"{self.base_url}/simple/price"
+            
+            params = {
+                "ids": coin_id,
+                "vs_currencies": "usd",
+                "include_24hr_change": "false"
+            }
+            
+            response = await client.get(url, params=params)
+            
+            if response.status_code != 200:
+                logger.warning(f"CoinGecko price API error: HTTP {response.status_code}")
+                return {
+                    "success": False,
+                    "price": 0,
+                    "symbol": symbol,
+                    "error": f"HTTP {response.status_code}"
+                }
+            
+            data = response.json()
+            
+            # CoinGecko returns: {"bitcoin": {"usd": 96842.30}}
+            if coin_id not in data or "usd" not in data[coin_id]:
+                logger.warning(f"CoinGecko: No price data for {symbol} (ID: {coin_id})")
+                return {
+                    "success": False,
+                    "price": 0,
+                    "symbol": symbol,
+                    "error": "Symbol not found"
+                }
+            
+            price = float(data[coin_id]["usd"])
+            
+            # Return CoinAPI-compatible schema
+            iso_timestamp = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+            
+            return {
+                "success": True,
+                "price": price,
+                "symbol": symbol,
+                "exchange": "COINGECKO",
+                "timestamp": iso_timestamp,
+                "source": "coingecko",
+                "rawData": {
+                    "symbol": coin_id,
+                    "price": str(price),
+                    "time": iso_timestamp
+                }
+            }
+            
+        except Exception as e:
+            logger.error(f"CoinGecko price error for {symbol}: {e}")
+            return {
+                "success": False,
+                "price": 0,
+                "symbol": symbol,
+                "error": str(e)
+            }
+    
     # ==================== COIN DISCOVERY ====================
     
     @retry_with_backoff(

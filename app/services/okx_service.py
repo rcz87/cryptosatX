@@ -26,6 +26,95 @@ class OKXService:
         """
         return normalize_symbol(symbol, Provider.OKX)
     
+    async def get_ticker_price(self, symbol: str) -> Dict:
+        """
+        Get current ticker price for a cryptocurrency
+        Uses OKX spot market ticker endpoint (public, no auth required)
+        
+        Args:
+            symbol: Cryptocurrency symbol (e.g., 'BTC', 'ETH')
+            
+        Returns:
+            Dict with price data matching CoinAPI schema
+        """
+        try:
+            from app.utils.symbol_normalizer import get_base_symbol
+            from datetime import datetime, timezone
+            
+            # Format for OKX spot market: BTC-USDT
+            base_sym = get_base_symbol(symbol)
+            inst_id = f"{base_sym}-USDT"
+            
+            url = f"{self.base_url}/market/ticker"
+            params = {"instId": inst_id}
+            
+            async with httpx.AsyncClient(timeout=10.0) as client:
+                response = await client.get(url, params=params)
+                
+                if response.status_code != 200:
+                    logger.warning(f"OKX ticker API error: HTTP {response.status_code}")
+                    return {
+                        "success": False,
+                        "price": 0,
+                        "symbol": symbol,
+                        "error": f"HTTP {response.status_code}"
+                    }
+                
+                data = response.json()
+                
+                # OKX returns: {"code": "0", "data": [{"instId": "BTC-USDT", "last": "96842.3", "ts": "1234567890"}]}
+                if data.get("code") != "0" or not data.get("data"):
+                    logger.warning(f"OKX: No price data for {symbol}")
+                    return {
+                        "success": False,
+                        "price": 0,
+                        "symbol": symbol,
+                        "error": "Symbol not found"
+                    }
+                
+                ticker_data = data["data"][0]
+                price = float(ticker_data.get("last", 0))
+                
+                if price <= 0:
+                    return {
+                        "success": False,
+                        "price": 0,
+                        "symbol": symbol,
+                        "error": "Invalid price"
+                    }
+                
+                # Convert OKX timestamp (ms) to ISO-8601
+                timestamp_ms = int(ticker_data.get("ts", 0))
+                if timestamp_ms > 0:
+                    utc_dt = datetime.utcfromtimestamp(timestamp_ms / 1000).replace(tzinfo=timezone.utc)
+                    iso_timestamp = utc_dt.isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+                else:
+                    iso_timestamp = datetime.now(timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+                
+                # Return CoinAPI-compatible schema
+                return {
+                    "success": True,
+                    "price": price,
+                    "symbol": symbol,
+                    "exchange": "OKX",
+                    "timestamp": iso_timestamp,
+                    "source": "okx",
+                    "rawData": {
+                        "symbol": inst_id,
+                        "price": str(price),
+                        "time": iso_timestamp
+                    }
+                }
+                
+        except Exception as e:
+            logger.error(f"OKX ticker price error for {symbol}: {e}")
+            return {
+                "success": False,
+                "price": 0,
+                "symbol": symbol,
+                "error": str(e)
+            }
+    
     async def get_candles(self, symbol: str, timeframe: str = "15m", limit: int = 100) -> Dict:
         """
         Get candlestick data for a cryptocurrency pair
