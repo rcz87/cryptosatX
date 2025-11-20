@@ -74,22 +74,34 @@ All API requests use flat parameter structure (NO nesting):
 
 ### SPIKE DETECTION (Real-Time Alerts)
 
-**spike_detection.monitor (symbol)**
-- Multi-signal spike detection combining price, liquidation, and social
-- Real-time early warning system
-- Returns: Spike alerts with severity and context
+⚠️ **IMPORTANT:** Background auto-monitoring is DISABLED to save API quota (~12,780 calls/hour). However, all spike detection endpoints are still available for **on-demand manual calls** via GPT Actions.
 
-**spike_detection.price_spike (symbol)**
-- Price movement spike detector
-- Detects unusual price volatility
+**spike.monitor_coin (symbol)**
+- Multi-signal spike detection for specific coin
+- Combines price, liquidation, and social spike detection
+- On-demand analysis (not continuous monitoring)
+- Returns: Current spike status with severity and context
+- Example: `{"operation": "spike.monitor_coin", "symbol": "SOL"}`
 
-**spike_detection.liquidation_spike (symbol)**
-- Liquidation volume spike alerts
-- Detects cascade liquidation events
+**spike.check_system**
+- Check overall spike detection system status
+- Returns: System health, detectors status, configuration
 
-**spike_detection.social_spike (symbol)**
-- Social momentum spike monitor
-- Detects viral trends and pump signals
+**spike.status**
+- Get status of all spike detectors
+- Shows if price/liquidation/social monitors are active
+
+**spike.recent_activity**
+- Get recent spike activity across all coins
+- Historical spike alerts from the system
+
+**spike.configuration**
+- Get current spike detection configuration
+- Shows thresholds, intervals, monitoring settings
+
+**spike.health**
+- Detailed health check for all spike detectors
+- Returns: Individual detector status and metrics
 
 ### COINGLASS OPERATIONS (64 Total)
 
