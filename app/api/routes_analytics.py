@@ -1,6 +1,8 @@
 """
 Analytics API Routes
 Advanced signal history analytics and insights using PostgreSQL
+
+Updated with GPT-5.1 self-evaluation support via analytics_service
 """
 from fastapi import APIRouter, HTTPException, Query
 from typing import Optional
@@ -13,6 +15,9 @@ from app.storage.signal_db import signal_db
 # ADDED FOR PHASE 2 - Verdict performance analytics
 from app.services.verdict_analyzer import verdict_analyzer
 from app.services.outcome_tracker import outcome_tracker
+
+# ADDED FOR GPT-5.1 SELF-EVALUATION - Performance analytics service
+from app.services.analytics_service import analytics_service
 
 router = APIRouter(prefix="/analytics", tags=["Analytics & Insights"])
 
@@ -197,48 +202,46 @@ async def get_signals_by_date_range(
 @router.get("/performance/{symbol}")
 async def get_signal_performance(
     symbol: str,
-    days: int = Query(default=30, ge=1, le=365)
+    days: int = Query(default=30, ge=1, le=365),
+    limit: int = Query(default=50, ge=1, le=200)
 ):
     """
-    Analyze signal performance for specific symbol
+    **Comprehensive Signal Performance Analysis (Enhanced for GPT-5.1)**
+    
+    Analyzes signal performance with:
+    - Overall win rate and ROI metrics
+    - Recent signal outcomes with verdict tracking
+    - Verdict effectiveness breakdown (CONFIRM/DOWNSIZE/SKIP)
+    - Risk mode performance (REDUCED/NORMAL/AGGRESSIVE)
+    - Interval performance (1h, 4h, 24h, 7d, 30d)
     
     Path Parameters:
-    - symbol: Cryptocurrency symbol
+    - symbol: Cryptocurrency symbol (e.g., BTC, ETH)
     
     Query Parameters:
     - days: Number of days to analyze (1-365, default: 30)
+    - limit: Maximum recent signals to return (1-200, default: 50)
     
-    Returns performance metrics, trends, and insights
+    **Use Cases:**
+    - GPT-5.1 self-evaluation with historical context
+    - Performance tracking and win rate calculation
+    - Verdict optimization analysis
+    - Risk mode effectiveness comparison
     """
     try:
-        # Get analytics summary
-        summary = await signal_db.get_analytics_summary(symbol=symbol, days=days)
+        # Use new analytics_service for comprehensive performance data
+        result = await analytics_service.get_symbol_performance(
+            symbol=symbol.upper(),
+            days_back=days,
+            limit=limit
+        )
         
-        # Get recent signals for trend analysis
-        recent_signals = await signal_db.get_signals_by_symbol(symbol, limit=100)
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
         
-        # Calculate additional metrics
-        if recent_signals:
-            # Score trend (last 10 vs previous 10)
-            last_10_scores = [s["score"] for s in recent_signals[:10]]
-            prev_10_scores = [s["score"] for s in recent_signals[10:20]] if len(recent_signals) >= 20 else []
-            
-            last_avg = sum(last_10_scores) / len(last_10_scores) if last_10_scores else 0
-            prev_avg = sum(prev_10_scores) / len(prev_10_scores) if prev_10_scores else last_avg
-            
-            score_trend = "improving" if last_avg > prev_avg else "declining" if last_avg < prev_avg else "stable"
-        else:
-            score_trend = "unknown"
-            last_avg = 0
-        
-        return {
-            **summary,
-            "recent_performance": {
-                "last_10_avg_score": round(last_avg, 2),
-                "trend": score_trend,
-                "total_recent_signals": len(recent_signals)
-            }
-        }
+        return result
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to analyze performance: {str(e)}")
 
@@ -284,6 +287,112 @@ async def get_overall_stats():
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to get overview: {str(e)}")
+
+
+# ============================================================================
+# GPT-5.1 SELF-EVALUATION ENDPOINTS
+# Optimized for AI historical context and performance tracking
+# ============================================================================
+
+@router.get("/performance/summary")
+async def get_performance_summary(
+    days: int = Query(default=30, ge=1, le=365)
+):
+    """
+    **Overall Performance Summary Across All Symbols (GPT-5.1 Optimized)**
+    
+    Provides system-wide performance metrics:
+    - Total signals and symbols tracked
+    - Overall win rate and average ROI
+    - Top performing symbols (ranked by win rate)
+    - Verdict effectiveness stats (CONFIRM/DOWNSIZE/SKIP)
+    - Risk mode effectiveness stats (REDUCED/NORMAL/AGGRESSIVE)
+    
+    Query Parameters:
+    - days: Number of days to analyze (1-365, default: 30)
+    
+    **Use Cases:**
+    - System-wide performance overview
+    - Identify best performing symbols
+    - Compare verdict types globally
+    - Track overall AI Judge effectiveness
+    - GPT-5.1 macro-level context
+    
+    **Example:**
+    ```
+    GET /analytics/performance/summary?days=30
+    ```
+    """
+    try:
+        result = await analytics_service.get_overall_summary(days_back=days)
+        
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get summary: {str(e)}")
+
+
+@router.get("/history/latest/{symbol}")
+async def get_latest_signal_history(
+    symbol: str,
+    limit: int = Query(default=5, ge=1, le=20)
+):
+    """
+    **Latest Signal History for Symbol (GPT Actions Optimized)**
+    
+    Optimized for GPT-5.1 self-evaluation during signal generation.
+    Returns recent signal outcomes with quick performance metrics.
+    
+    Path Parameters:
+    - symbol: Cryptocurrency symbol (e.g., BTC, ETH)
+    
+    Query Parameters:
+    - limit: Number of recent signals (1-20, default: 5)
+    
+    Returns:
+    - Recent signal count and win rate
+    - Average ROI from recent signals
+    - Last N signals with outcomes and verdicts
+    
+    **Use Cases:**
+    - GPT-5.1 historical context injection before verdict
+    - Quick recent performance check
+    - Self-evaluation for AI decision making
+    - Learning from past verdict outcomes
+    
+    **Example:**
+    ```
+    GET /analytics/history/latest/BTC?limit=5
+    ```
+    
+    **RPC Alternative:**
+    ```json
+    POST /invoke
+    {
+      "operation": "analytics.history.latest",
+      "symbol": "BTC",
+      "limit": 5
+    }
+    ```
+    """
+    try:
+        result = await analytics_service.get_latest_history(
+            symbol=symbol.upper(),
+            limit=limit
+        )
+        
+        if "error" in result:
+            raise HTTPException(status_code=500, detail=result["error"])
+        
+        return result
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to get history: {str(e)}")
 
 
 # ============================================================================
