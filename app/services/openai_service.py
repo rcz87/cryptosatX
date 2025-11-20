@@ -19,7 +19,7 @@ class OpenAIConfig:
     """OpenAI service configuration"""
 
     api_key: str
-    model: str = "gpt-4-turbo-preview"
+    model: str = "gpt-5.1"
     max_tokens: int = 1000
     temperature: float = 0.1  # Low temperature for consistent analysis
     timeout: int = 30
@@ -616,7 +616,7 @@ async def get_openai_service() -> OpenAIService:
 
         config = OpenAIConfig(
             api_key=api_key,
-            model=os.getenv("OPENAI_MODEL", "gpt-4-turbo-preview"),
+            model=os.getenv("OPENAI_MODEL", "gpt-5.1"),
             max_tokens=int(os.getenv("OPENAI_MAX_TOKENS", "1000")),
             temperature=float(os.getenv("OPENAI_TEMPERATURE", "0.1")),
             timeout=int(os.getenv("OPENAI_TIMEOUT", "30")),
