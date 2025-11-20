@@ -1,5 +1,29 @@
 # Coinglass Operations Guide for GPT Actions
 
+## ⚠️ CRITICAL: Flat Parameter Format Required
+
+**All Coinglass operations use FLAT parameter structure** - do NOT nest parameters under `args`:
+
+✅ **CORRECT:**
+```json
+{
+  "operation": "coinglass.markets.symbol",
+  "symbol": "BTC"
+}
+```
+
+❌ **WRONG:**
+```json
+{
+  "operation": "coinglass.markets.symbol",
+  "args": {"symbol": "BTC"}
+}
+```
+
+This matches the flat parameter contract documented in GPT_ACTIONS_INSTRUCTIONS.txt.
+
+---
+
 ## Overview
 CryptoSatX provides access to **64 premium Coinglass API endpoints** via GPT Actions. All operations use the `/invoke` RPC endpoint with operation names in `coinglass.category.operation` format.
 
@@ -49,6 +73,7 @@ CryptoSatX provides access to **64 premium Coinglass API endpoints** via GPT Act
 - `coinglass.indicators.cgdi` - Get Coinglass Directional Index
 - `coinglass.indicators.cdri` - Get Coinglass Directional Relative Index
 - `coinglass.indicators.golden_ratio` - Get Golden Ratio indicator
+- `coinglass.indicators.fear_greed` - Get Fear & Greed Index
 
 ### 📅 Calendar & News (2 operations)
 - `coinglass.calendar.economic` - Get economic calendar events
@@ -92,7 +117,6 @@ CryptoSatX provides access to **64 premium Coinglass API endpoints** via GPT Act
 - `coinglass.index.bull_market_peak` - Get bull market peak indicator
 - `coinglass.index.rainbow_chart` - Get Bitcoin rainbow chart data
 - `coinglass.index.stock_to_flow` - Get stock-to-flow model data
-- `coinglass.indicators.fear_greed` - Get Fear & Greed Index
 
 ### 💳 Borrowing (1 operation)
 - `coinglass.borrow.interest_rate` - Get borrow interest rates
@@ -117,11 +141,10 @@ Get overview of all markets.
 
 **Parameters:** None
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
-  "operation": "coinglass.markets",
-  "args": {}
+  "operation": "coinglass.markets"
 }
 ```
 
@@ -138,11 +161,11 @@ Get detailed market data for specific symbol.
 **Parameters:**
 - `symbol` (required): Trading symbol (e.g., "BTC", "ETH")
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.markets.symbol",
-  "args": {"symbol": "BTC"}
+  "symbol": "BTC"
 }
 ```
 
@@ -159,11 +182,11 @@ Get price changes across multiple timeframes.
 - `symbol` (optional): Filter by symbol
 - `interval` (optional): Time interval (e.g., "1h", "24h", "7d")
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.price_change",
-  "args": {"interval": "24h"}
+  "interval": "24h"
 }
 ```
 
@@ -182,11 +205,11 @@ Get real-time liquidation orders (live feed).
 - `symbol` (optional): Filter by symbol
 - `exchange` (optional): Filter by exchange
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.liquidation.order",
-  "args": {"symbol": "BTC"}
+  "symbol": "BTC"
 }
 ```
 
@@ -203,11 +226,11 @@ Get liquidation data for specific symbol.
 **Parameters:**
 - `symbol` (required): Trading symbol
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.liquidations.symbol",
-  "args": {"symbol": "ETH"}
+  "symbol": "ETH"
 }
 ```
 
@@ -223,11 +246,11 @@ Get liquidation heatmap showing price clusters where liquidations will occur.
 **Parameters:**
 - `symbol` (required): Trading symbol
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.liquidations.heatmap",
-  "args": {"symbol": "BTC"}
+  "symbol": "BTC"
 }
 ```
 
@@ -247,11 +270,11 @@ Get whale walls (large buy/sell orders that create price barriers).
 - `symbol` (optional): Trading symbol
 - `exchange` (optional): Exchange filter
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.orderbook.whale_walls",
-  "args": {"symbol": "BTC"}
+  "symbol": "BTC"
 }
 ```
 
@@ -269,17 +292,58 @@ Get historical whale orderbook activity.
 - `symbol` (optional): Symbol filter
 - `days_back` (optional): Days of history
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.orderbook.whale_history",
-  "args": {"symbol": "BTC", "days_back": 7}
+  "symbol": "BTC",
+  "days_back": 7
 }
 ```
 
 **Use Cases:**
 - Analyze whale accumulation/distribution patterns
 - Track large position changes
+
+---
+
+### Hyperliquid
+
+#### `coinglass.hyperliquid.whale_alerts`
+Get real-time whale alerts on Hyperliquid DEX.
+
+**Parameters:** None (or optional filters)
+
+**Example Request (FLAT format):**
+```json
+{
+  "operation": "coinglass.hyperliquid.whale_alerts"
+}
+```
+
+**Use Cases:**
+- Track large Hyperliquid trades
+- DEX whale activity monitoring
+
+---
+
+#### `coinglass.hyperliquid.positions.symbol`
+Get Hyperliquid positions for specific symbol.
+
+**Parameters:**
+- `symbol` (required): Trading symbol
+
+**Example Request (FLAT format):**
+```json
+{
+  "operation": "coinglass.hyperliquid.positions.symbol",
+  "symbol": "ETH"
+}
+```
+
+**Use Cases:**
+- Track ETH positions on Hyperliquid
+- DEX positioning analysis
 
 ---
 
@@ -292,11 +356,12 @@ Get on-chain whale transfers (large wallet movements).
 - `symbol` (optional): Coin filter
 - `min_value_usd` (optional): Minimum transfer value
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.chain.whale_transfers",
-  "args": {"symbol": "BTC", "min_value_usd": 1000000}
+  "symbol": "BTC",
+  "min_value_usd": 1000000
 }
 ```
 
@@ -314,11 +379,11 @@ Get exchange inflows and outflows.
 - `symbol` (optional): Coin filter
 - `interval` (optional): Time interval
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.chain.exchange_flows",
-  "args": {"symbol": "ETH"}
+  "symbol": "ETH"
 }
 ```
 
@@ -326,6 +391,26 @@ Get exchange inflows and outflows.
 - Detect sell pressure (inflows)
 - Accumulation signal (outflows)
 - Exchange balance changes
+
+---
+
+#### `coinglass.onchain.reserves`
+Get on-chain reserves for symbol.
+
+**Parameters:**
+- `symbol` (required): Trading symbol
+
+**Example Request (FLAT format):**
+```json
+{
+  "operation": "coinglass.onchain.reserves",
+  "symbol": "BTC"
+}
+```
+
+**Use Cases:**
+- Track exchange reserve changes
+- Supply on exchanges vs cold storage
 
 ---
 
@@ -339,11 +424,12 @@ Get RSI (Relative Strength Index) indicator.
 - `interval` (optional): Timeframe (default: "1h")
 - `exchange` (optional): Exchange filter
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.indicators.rsi",
-  "args": {"symbol": "BTC", "interval": "4h"}
+  "symbol": "BTC",
+  "interval": "4h"
 }
 ```
 
@@ -360,11 +446,11 @@ Get RSI values for all supported coins at once.
 **Parameters:**
 - `interval` (optional): Timeframe
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.indicators.rsi_list",
-  "args": {"interval": "1h"}
+  "interval": "1h"
 }
 ```
 
@@ -380,11 +466,10 @@ Get Crypto Fear & Greed Index.
 
 **Parameters:** None
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
-  "operation": "coinglass.indicators.fear_greed",
-  "args": {}
+  "operation": "coinglass.indicators.fear_greed"
 }
 ```
 
@@ -401,11 +486,11 @@ Get Whale Index (measures whale activity intensity).
 **Parameters:**
 - `symbol` (optional): Symbol filter
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.indicators.whale_index",
-  "args": {"symbol": "BTC"}
+  "symbol": "BTC"
 }
 ```
 
@@ -425,11 +510,12 @@ Get open interest history for symbol.
 - `interval` (optional): Time interval
 - `exchange` (optional): Exchange filter
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.open_interest.history",
-  "args": {"symbol": "BTC", "interval": "1h"}
+  "symbol": "BTC",
+  "interval": "1h"
 }
 ```
 
@@ -446,11 +532,11 @@ Get aggregated OI across all exchanges.
 **Parameters:**
 - `symbol` (required): Trading symbol
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.open_interest.aggregated_history",
-  "args": {"symbol": "ETH"}
+  "symbol": "ETH"
 }
 ```
 
@@ -469,11 +555,11 @@ Get funding rate history.
 - `symbol` (required): Trading symbol
 - `exchange` (optional): Exchange filter
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.funding_rate.history",
-  "args": {"symbol": "BTC"}
+  "symbol": "BTC"
 }
 ```
 
@@ -490,11 +576,11 @@ Get OI-weighted funding rate (weighted by open interest across exchanges).
 **Parameters:**
 - `symbol` (required): Trading symbol
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.funding_rate.oi_weight_history",
-  "args": {"symbol": "BTC"}
+  "symbol": "BTC"
 }
 ```
 
@@ -513,11 +599,11 @@ Get long/short ratio by account count.
 - `symbol` (required): Trading symbol
 - `exchange` (optional): Exchange filter
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.long_short_ratio.account_history",
-  "args": {"symbol": "BTC"}
+  "symbol": "BTC"
 }
 ```
 
@@ -533,11 +619,11 @@ Get long/short ratio by position size.
 **Parameters:**
 - `symbol` (required): Trading symbol
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.long_short_ratio.position_history",
-  "args": {"symbol": "ETH"}
+  "symbol": "ETH"
 }
 ```
 
@@ -555,11 +641,11 @@ Get Bitcoin/Ethereum ETF flows.
 **Parameters:**
 - `asset` (required): "BTC" or "ETH"
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.etf.flows",
-  "args": {"asset": "BTC"}
+  "asset": "BTC"
 }
 ```
 
@@ -577,11 +663,10 @@ Get bull market peak indicator (detects cycle tops).
 
 **Parameters:** None
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
-  "operation": "coinglass.index.bull_market_peak",
-  "args": {}
+  "operation": "coinglass.index.bull_market_peak"
 }
 ```
 
@@ -596,11 +681,10 @@ Get Bitcoin rainbow chart data (long-term valuation bands).
 
 **Parameters:** None
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
-  "operation": "coinglass.index.rainbow_chart",
-  "args": {}
+  "operation": "coinglass.index.rainbow_chart"
 }
 ```
 
@@ -616,11 +700,10 @@ Get stock-to-flow model data.
 
 **Parameters:** None
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
-  "operation": "coinglass.index.stock_to_flow",
-  "args": {}
+  "operation": "coinglass.index.stock_to_flow"
 }
 ```
 
@@ -639,11 +722,11 @@ Get comprehensive dashboard with multiple data points.
 **Parameters:**
 - `symbol` (required): Trading symbol
 
-**Example Request:**
+**Example Request (FLAT format):**
 ```json
 {
   "operation": "coinglass.dashboard.symbol",
-  "args": {"symbol": "BTC"}
+  "symbol": "BTC"
 }
 ```
 
@@ -658,69 +741,84 @@ Get comprehensive dashboard with multiple data points.
 ### Pattern 1: Quick Market Check
 **User asks:** "What's happening with BTC right now?"
 
-**GPT should call:**
+**GPT should call (FLAT format):**
 ```json
 {
   "operation": "coinglass.markets.symbol",
-  "args": {"symbol": "BTC"}
+  "symbol": "BTC"
 }
 ```
 
 ### Pattern 2: Liquidation Analysis
 **User asks:** "Show me BTC liquidation heatmap"
 
-**GPT should call:**
+**GPT should call (FLAT format):**
 ```json
 {
   "operation": "coinglass.liquidations.heatmap",
-  "args": {"symbol": "BTC"}
+  "symbol": "BTC"
 }
 ```
 
 ### Pattern 3: Whale Tracking
 **User asks:** "Are whales buying ETH?"
 
-**GPT should call:**
+**GPT should call (FLAT format):**
 ```json
 {
   "operation": "coinglass.chain.whale_transfers",
-  "args": {"symbol": "ETH"}
+  "symbol": "ETH"
 }
 ```
 
 ### Pattern 4: Sentiment Analysis
 **User asks:** "What's the market sentiment?"
 
-**GPT should call:**
+**GPT should call (FLAT format):**
 ```json
 {
-  "operation": "coinglass.indicators.fear_greed",
-  "args": {}
+  "operation": "coinglass.indicators.fear_greed"
 }
 ```
 
 ### Pattern 5: Multi-Indicator Analysis
 **User asks:** "Give me full analysis for SOL"
 
-**GPT should call multiple operations:**
+**GPT should call multiple operations (all FLAT format):**
 ```json
-[
-  {"operation": "coinglass.markets.symbol", "args": {"symbol": "SOL"}},
-  {"operation": "coinglass.indicators.rsi", "args": {"symbol": "SOL"}},
-  {"operation": "coinglass.funding_rate.history", "args": {"symbol": "SOL"}},
-  {"operation": "coinglass.liquidations.heatmap", "args": {"symbol": "SOL"}}
-]
+{
+  "operation": "coinglass.markets.symbol",
+  "symbol": "SOL"
+}
+```
+```json
+{
+  "operation": "coinglass.indicators.rsi",
+  "symbol": "SOL"
+}
+```
+```json
+{
+  "operation": "coinglass.funding_rate.history",
+  "symbol": "SOL"
+}
+```
+```json
+{
+  "operation": "coinglass.liquidations.heatmap",
+  "symbol": "SOL"
+}
 ```
 
 ---
 
 ## Important Notes
 
-1. **All operations use `/invoke` endpoint** with RPC format
+1. **All operations use FLAT parameters** - Never nest under `args`
 2. **Symbol format**: Use base asset only (e.g., "BTC", not "BTCUSDT")
 3. **Optional parameters**: Most operations have sensible defaults
 4. **Rate limits**: Premium tier allows high request volume
-5. **Error handling**: Operations return `success: true/false` with error details
+5. **Error handling**: Operations return `ok: true/false` with error details
 
 ## API Endpoint
 All operations are called via:
@@ -728,17 +826,16 @@ All operations are called via:
 POST https://cryptosatx.replit.app/invoke
 ```
 
-Request body format:
+Request body format (FLAT parameters):
 ```json
 {
   "operation": "coinglass.category.operation_name",
-  "args": {
-    "symbol": "BTC",
-    "other_param": "value"
-  }
+  "symbol": "BTC",
+  "other_param": "value"
 }
 ```
 
 ---
 
 **Total Coinglass Operations Available:** 64 endpoints across 14 categories
+**Parameter Format:** FLAT (never nested under `args`)
