@@ -187,7 +187,7 @@ class CoinglassPremiumService:
     async def get_oi_trend(self, symbol: str, limit: int = 24) -> Dict:
         """
         Get Open Interest trend (24h change)
-        Endpoint: /api/futures/ohlc-aggregated-history
+        Endpoint: /api/futures/open-interest/aggregated-history
         
         Args:
             symbol: Cryptocurrency symbol
@@ -200,7 +200,7 @@ class CoinglassPremiumService:
             symbol = symbol.upper()
             client = await self._get_client()
             
-            url = f"{self.base_url}/api/futures/open-interest/ohlc-aggregated-history"
+            url = f"{self.base_url}/api/futures/open-interest/aggregated-history"
             params = {
                 "symbol": symbol,
                 "interval": "h1",
@@ -336,7 +336,7 @@ class CoinglassPremiumService:
     async def get_fear_greed_index(self) -> Dict:
         """
         Get Crypto Fear & Greed Index
-        Endpoint: /api/index/fear-greed
+        Endpoint: /api/index/fear-greed-history
         
         Returns:
             Dict with fear & greed index value
@@ -362,35 +362,77 @@ class CoinglassPremiumService:
             # Coinglass returns integer 0 for success
             if str(code) == "0" and data.get("data"):
                 fg_data = data["data"]
-                logger.info(f"[FearGreed] DEBUG - Data type: {type(fg_data)}, Length: {len(fg_data) if isinstance(fg_data, list) else 'N/A'}, First entry: {fg_data[0] if isinstance(fg_data, list) and len(fg_data) > 0 else fg_data}")
                 
-                if isinstance(fg_data, list) and len(fg_data) > 0:
-                    latest = fg_data[0]
-                    logger.info(f"[FearGreed] DEBUG - Latest entry fields: {latest.keys() if isinstance(latest, dict) else 'not a dict'}")
+                logger.info(f"[FearGreed] DEBUG - Data structure: type={type(fg_data)}, is_list={isinstance(fg_data, list)}, is_dict={isinstance(fg_data, dict)}")
+                
+                # Handle DICT format (direct object with data_list)
+                if isinstance(fg_data, dict):
+                    logger.info(f"[FearGreed] DEBUG - Dict keys: {list(fg_data.keys())}")
                     
-                    value = int(latest.get("value", 50))
+                    if "data_list" in fg_data:
+                        data_list = fg_data.get("data_list", [])
+                        logger.info(f"[FearGreed] DEBUG - data_list length: {len(data_list) if isinstance(data_list, list) else 'not a list'}")
+                        
+                        if isinstance(data_list, list) and len(data_list) > 0:
+                            # Get the latest value (last in array)
+                            value = int(data_list[-1])
+                            
+                            # Classify sentiment
+                            if value >= 75:
+                                sentiment = "extreme_greed"
+                            elif value >= 60:
+                                sentiment = "greed"
+                            elif value >= 40:
+                                sentiment = "neutral"
+                            elif value >= 25:
+                                sentiment = "fear"
+                            else:
+                                sentiment = "extreme_fear"
+                            
+                            logger.info(f"[FearGreed] ✅ Latest value: {value}, Sentiment: {sentiment}")
+                            
+                            return {
+                                "value": value,
+                                "sentiment": sentiment,
+                                "classification": sentiment.replace("_", " ").title(),
+                                "contrarian_signal": "buy" if value < 25 else "sell" if value > 75 else "hold",
+                                "source": "coinglass_fear_greed",
+                                "success": True
+                            }
+                
+                # Handle LIST format (legacy/alternative format)
+                elif isinstance(fg_data, list) and len(fg_data) > 0:
+                    fg_obj = fg_data[0]
                     
-                    # Classify sentiment
-                    if value >= 75:
-                        sentiment = "extreme_greed"
-                    elif value >= 60:
-                        sentiment = "greed"
-                    elif value >= 40:
-                        sentiment = "neutral"
-                    elif value >= 25:
-                        sentiment = "fear"
-                    else:
-                        sentiment = "extreme_fear"
-                    
-                    return {
-                        "value": value,
-                        "sentiment": sentiment,
-                        "classification": latest.get("valueClassification", ""),
-                        "contrarian_signal": "buy" if value < 25 else "sell" if value > 75 else "hold",
-                        "source": "coinglass_fear_greed",
-                        "success": True
-                    }
+                    if isinstance(fg_obj, dict) and "data_list" in fg_obj:
+                        data_list = fg_obj.get("data_list", [])
+                        
+                        if isinstance(data_list, list) and len(data_list) > 0:
+                            value = int(data_list[-1])
+                            
+                            if value >= 75:
+                                sentiment = "extreme_greed"
+                            elif value >= 60:
+                                sentiment = "greed"
+                            elif value >= 40:
+                                sentiment = "neutral"
+                            elif value >= 25:
+                                sentiment = "fear"
+                            else:
+                                sentiment = "extreme_fear"
+                            
+                            logger.info(f"[FearGreed] ✅ Latest value: {value}, Sentiment: {sentiment}")
+                            
+                            return {
+                                "value": value,
+                                "sentiment": sentiment,
+                                "classification": sentiment.replace("_", " ").title(),
+                                "contrarian_signal": "buy" if value < 25 else "sell" if value > 75 else "hold",
+                                "source": "coinglass_fear_greed",
+                                "success": True
+                            }
             
+            logger.warning(f"[FearGreed] Failed to parse data - returning default")
             return self._default_fear_greed_response()
             
         except Exception as e:
