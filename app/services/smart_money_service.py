@@ -187,7 +187,15 @@ class SmartMoneyService:
 
     async def _fetch_signal_data(self, symbol: str) -> Optional[Dict]:
         """
-        Fetch signal data for a single coin
+        Fetch signal data for a single coin using full signal endpoint
+        
+        ✅ USES COINGLASS, COINAPI, LUNARCRUSH via signal engine
+        
+        Note: This calls full signal generation which includes:
+        - Coinglass: Funding rates, liquidations, long/short ratios, OI trend
+        - CoinAPI: Price data, order book, whale trades  
+        - LunarCrush: Social sentiment, momentum
+        - OpenAI GPT-4: AI signal validation
 
         Args:
             symbol: Coin symbol (e.g., "BTC", "ETH")
@@ -394,9 +402,22 @@ class SmartMoneyService:
         # ✅ NEW: Use smart coin discovery with fallback
         target_coins = await self._get_coins_to_scan(coins)
 
-        # Fetch all signal data concurrently
-        tasks = [self._fetch_signal_data(symbol) for symbol in target_coins]
-        results = await asyncio.gather(*tasks)
+        # ✅ OPTIMIZED: Process in batches to avoid overload
+        # Batch size: 5 coins at a time (balance between speed and API limits)
+        batch_size = 5
+        results = []
+        
+        for i in range(0, len(target_coins), batch_size):
+            batch = target_coins[i:i + batch_size]
+            logger.info(f"📊 Processing batch {i//batch_size + 1}/{(len(target_coins)-1)//batch_size + 1}: {batch}")
+            
+            tasks = [self._fetch_signal_data(symbol) for symbol in batch]
+            batch_results = await asyncio.gather(*tasks)
+            results.extend(batch_results)
+            
+            # Small delay between batches (avoid rate limits)
+            if i + batch_size < len(target_coins):
+                await asyncio.sleep(0.5)  # 500ms delay
 
         accumulation_signals = []
         distribution_signals = []
