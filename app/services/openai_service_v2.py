@@ -67,7 +67,7 @@ class OpenAIServiceV2:
         comprehensive_metrics: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
-        Phase 1: Enhanced signal validation with verdict system
+        Phase 1: Enhanced signal validation with verdict system (GPT-5.1 Self-Evaluation)
         
         Returns structured JSON with:
         - verdict: CONFIRM/DOWNSIZE/SKIP/WAIT
@@ -75,12 +75,17 @@ class OpenAIServiceV2:
         - key_conflicts: conflicting indicators
         - adjusted_risk_suggestion: position sizing recommendation
         - telegram_summary: ready-to-send alert text
+        
+        ✅ NEW: Includes historical performance context for GPT-5.1 self-evaluation
         """
         try:
             client = await self._get_client()
             
+            # ✅ NEW: Fetch historical performance data for self-evaluation
+            historical_data = await self._fetch_historical_context(symbol)
+            
             prompt = self._build_signal_judge_prompt(
-                symbol, signal_data, comprehensive_metrics
+                symbol, signal_data, comprehensive_metrics, historical_data
             )
             
             response = await client.post(
@@ -184,13 +189,39 @@ ANALYSIS APPROACH:
 
 Be strict. If in doubt, choose SKIP or WAIT."""
     
+    async def _fetch_historical_context(self, symbol: str) -> Optional[Dict[str, Any]]:
+        """
+        Fetch historical performance data for GPT-5.1 self-evaluation
+        
+        Returns recent signal outcomes and win rate to help AI judge
+        learn from past verdicts and improve decision making.
+        """
+        try:
+            from app.services.analytics_service import analytics_service
+            
+            # Get last 5 signals for this symbol
+            historical = await analytics_service.get_latest_history(
+                symbol=symbol,
+                limit=5
+            )
+            
+            if historical and "error" not in historical:
+                return historical
+            else:
+                return None
+                
+        except Exception as e:
+            self.logger.warning(f"Failed to fetch historical context for {symbol}: {e}")
+            return None
+    
     def _build_signal_judge_prompt(
         self,
         symbol: str,
         signal_data: Dict[str, Any],
         comprehensive_metrics: Optional[Dict[str, Any]] = None,
+        historical_data: Optional[Dict[str, Any]] = None,
     ) -> str:
-        """Build comprehensive prompt for Signal Judge"""
+        """Build comprehensive prompt for Signal Judge with historical context"""
         
         prompt = f"""Validate this trading signal for {symbol}:
 
@@ -213,6 +244,22 @@ CORE METRICS:
 - Social Score: {metrics.get('socialScore', 'N/A')}
 - Price Trend: {metrics.get('priceTrend', 'N/A')}
 """
+        
+        # ✅ NEW: Include historical performance context
+        if historical_data and historical_data.get('recent_count', 0) > 0:
+            prompt += f"""
+HISTORICAL PERFORMANCE (Self-Evaluation Context):
+- Recent Win Rate: {historical_data.get('recent_win_rate', 0)}% (last {historical_data.get('recent_count', 0)} signals)
+- Recent Avg ROI: {historical_data.get('recent_avg_roi', 0)}%
+"""
+            recent_signals = historical_data.get('recent_signals', [])
+            if recent_signals:
+                prompt += "\nRecent Signal Outcomes:\n"
+                for sig in recent_signals[:3]:  # Show last 3 only
+                    outcome_emoji = "✅" if sig.get('outcome') == "WIN" else "❌" if sig.get('outcome') == "LOSS" else "➖"
+                    prompt += f"  {outcome_emoji} {sig.get('signal', 'N/A')} ({sig.get('verdict', 'N/A')}): {sig.get('roi_24h', 0):+.1f}% ROI\n"
+                
+                prompt += "\n⚠️ LEARNING POINT: Consider these past outcomes when making your verdict. If recent CONFIRM verdicts led to losses, be more conservative.\n"
         
         if comprehensive_metrics:
             prompt += f"""
@@ -238,7 +285,7 @@ COINAPI WHALE DATA:
 """
         
         prompt += """
-TASK: Analyze this signal and provide your verdict following the exact JSON format specified in the system prompt. Consider all 8 layers and identify agreements vs conflicts."""
+TASK: Analyze this signal and provide your verdict following the exact JSON format specified in the system prompt. Consider all 8 layers, identify agreements vs conflicts, AND learn from the historical performance data above."""
         
         return prompt
     

@@ -1301,6 +1301,36 @@ class FlatRPCDispatcher:
             return await spike_coordinator.get_status()
 
         # ===================================================================
+        # ANALYTICS (GPT-5.1 Self-Evaluation)
+        # ===================================================================
+        elif operation == "analytics.history.latest":
+            from app.services.analytics_service import analytics_service
+            symbol = args.get("symbol", "BTC").upper()
+            limit = args.get("limit", 5)
+            result = await analytics_service.get_latest_history(symbol=symbol, limit=limit)
+            if "error" in result:
+                return {"success": False, "error": result["error"], "symbol": symbol}
+            return {"success": True, **result}
+        
+        elif operation == "analytics.performance.symbol":
+            from app.services.analytics_service import analytics_service
+            symbol = args.get("symbol", "BTC").upper()
+            days = args.get("days", 30)
+            limit = args.get("limit", 50)
+            result = await analytics_service.get_symbol_performance(symbol=symbol, days_back=days, limit=limit)
+            if "error" in result:
+                return {"success": False, "error": result["error"], "symbol": symbol}
+            return {"success": True, **result}
+        
+        elif operation == "analytics.performance.summary":
+            from app.services.analytics_service import analytics_service
+            days = args.get("days", 30)
+            result = await analytics_service.get_overall_summary(days_back=days)
+            if "error" in result:
+                return {"success": False, "error": result["error"]}
+            return {"success": True, **result}
+
+        # ===================================================================
         # FALLBACK - Operation not implemented yet
         # ===================================================================
         else:
