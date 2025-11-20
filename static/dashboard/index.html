@@ -11,6 +11,9 @@
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 
+    <!-- TradingView -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
+
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
@@ -202,6 +205,52 @@
             </div>
         </div>
 
+        <!-- Scan & Monitor Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+            <!-- Bulk Scanner -->
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    <i class="fas fa-search mr-2 text-primary"></i>Bulk Scanner
+                </h2>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Enter symbols (comma-separated)
+                        </label>
+                        <textarea id="bulkSymbols" rows="3" placeholder="BTC, ETH, SOL, AVAX, MATIC..."
+                            class="w-full px-4 py-3 bg-gray-100 dark:bg-dark-200 border-0 rounded-lg text-gray-900 dark:text-white placeholder-gray-500 focus:ring-2 focus:ring-primary"></textarea>
+                    </div>
+                    <button id="scanBtn" class="w-full py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-semibold hover:shadow-lg transition">
+                        <i class="fas fa-radar mr-2"></i>Scan All Symbols
+                    </button>
+                    <div id="scanResults" class="hidden">
+                        <div class="mt-4 p-4 bg-gray-50 dark:bg-dark-200 rounded-lg max-h-64 overflow-y-auto scrollbar-hide">
+                            <div id="scanResultsList" class="space-y-2"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Monitor List -->
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between mb-6">
+                    <h2 class="text-xl font-bold text-gray-900 dark:text-white">
+                        <i class="fas fa-eye mr-2 text-primary"></i>Monitor List
+                    </h2>
+                    <button id="clearMonitorBtn" class="px-3 py-1 text-sm bg-red-500 text-white rounded-lg hover:bg-red-600 transition">
+                        <i class="fas fa-trash mr-1"></i>Clear
+                    </button>
+                </div>
+                <div id="monitorList" class="space-y-2 max-h-80 overflow-y-auto scrollbar-hide">
+                    <div class="text-center py-8">
+                        <i class="fas fa-eye-slash text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-sm text-gray-500 dark:text-gray-400">No symbols being monitored</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Add symbols from the scanner</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Main Grid -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
 
@@ -292,6 +341,76 @@
                 <i class="fas fa-clock mr-2 text-primary"></i>Performance Timeline
             </h2>
             <canvas id="timelineChart" height="100"></canvas>
+        </div>
+
+        <!-- TradingView Market Overview -->
+        <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 mt-6">
+            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                <i class="fas fa-chart-area mr-2 text-primary"></i>Market Overview
+            </h2>
+            <div class="tradingview-widget-container">
+                <div class="tradingview-widget-container__widget"></div>
+                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
+                {
+                  "symbols": [
+                    {
+                      "proName": "BINANCE:BTCUSDT",
+                      "title": "BTC/USDT"
+                    },
+                    {
+                      "proName": "BINANCE:ETHUSDT",
+                      "title": "ETH/USDT"
+                    },
+                    {
+                      "proName": "BINANCE:SOLUSDT",
+                      "title": "SOL/USDT"
+                    },
+                    {
+                      "proName": "BINANCE:BNBUSDT",
+                      "title": "BNB/USDT"
+                    },
+                    {
+                      "proName": "BINANCE:AVAXUSDT",
+                      "title": "AVAX/USDT"
+                    },
+                    {
+                      "proName": "BINANCE:MATICUSDT",
+                      "title": "MATIC/USDT"
+                    },
+                    {
+                      "proName": "BINANCE:LINKUSDT",
+                      "title": "LINK/USDT"
+                    }
+                  ],
+                  "showSymbolLogo": true,
+                  "isTransparent": false,
+                  "displayMode": "adaptive",
+                  "colorTheme": "dark",
+                  "locale": "en"
+                }
+                </script>
+            </div>
+        </div>
+
+        <!-- TradingView Advanced Chart -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    <i class="fas fa-chart-line mr-2 text-primary"></i>BTC/USDT Chart
+                </h2>
+                <div class="tradingview-widget-container" style="height: 500px;">
+                    <div id="tradingview_btc" style="height: 100%;"></div>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+                    <i class="fas fa-chart-line mr-2 text-primary"></i>ETH/USDT Chart
+                </h2>
+                <div class="tradingview-widget-container" style="height: 500px;">
+                    <div id="tradingview_eth" style="height: 100%;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
