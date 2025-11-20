@@ -8,6 +8,9 @@ const API_BASE_URL = window.location.origin;
 const REFRESH_INTERVAL = 30000; // 30 seconds
 let refreshTimer = null;
 let charts = {};
+let allSignals = []; // Store all signals for filtering
+let monitoredSymbols = new Set(); // Store symbols being monitored
+let monitorTimer = null;
 
 // Dark Mode
 function initDarkMode() {
@@ -86,7 +89,7 @@ async function updateStats() {
 }
 
 // Load Latest Signals
-async function loadLatestSignals() {
+async function loadLatestSignals(filterAsset = 'all') {
     const container = document.getElementById('latestSignals');
 
     try {
@@ -99,10 +102,30 @@ async function loadLatestSignals() {
                     <p class="text-gray-500 dark:text-gray-400">No signals yet</p>
                 </div>
             `;
+            allSignals = [];
             return;
         }
 
-        const signalsHTML = history.outcomes.slice(0, 10).map(signal => {
+        // Store all signals for filtering
+        allSignals = history.outcomes;
+
+        // Filter signals based on selected asset
+        let filteredSignals = allSignals;
+        if (filterAsset !== 'all') {
+            filteredSignals = allSignals.filter(s => s.symbol.startsWith(filterAsset));
+        }
+
+        if (filteredSignals.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-12">
+                    <i class="fas fa-filter text-4xl text-gray-400 mb-4"></i>
+                    <p class="text-gray-500 dark:text-gray-400">No signals found for ${filterAsset}</p>
+                </div>
+            `;
+            return;
+        }
+
+        const signalsHTML = filteredSignals.slice(0, 10).map(signal => {
             const signalClass = signal.signal_type === 'LONG' ? 'signal-long' :
                                signal.signal_type === 'SHORT' ? 'signal-short' : 'signal-neutral';
 
@@ -165,6 +188,48 @@ async function loadLatestSignals() {
             </div>
         `;
     }
+}
+
+// Initialize TradingView Charts
+function initTradingViewCharts() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const theme = isDark ? 'dark' : 'light';
+
+    // BTC Chart
+    new TradingView.widget({
+        "width": "100%",
+        "height": "100%",
+        "symbol": "BINANCE:BTCUSDT",
+        "interval": "60",
+        "timezone": "Etc/UTC",
+        "theme": theme,
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": isDark ? "#0f172a" : "#ffffff",
+        "enable_publishing": false,
+        "hide_side_toolbar": false,
+        "allow_symbol_change": true,
+        "save_image": false,
+        "container_id": "tradingview_btc"
+    });
+
+    // ETH Chart
+    new TradingView.widget({
+        "width": "100%",
+        "height": "100%",
+        "symbol": "BINANCE:ETHUSDT",
+        "interval": "60",
+        "timezone": "Etc/UTC",
+        "theme": theme,
+        "style": "1",
+        "locale": "en",
+        "toolbar_bg": isDark ? "#0f172a" : "#ffffff",
+        "enable_publishing": false,
+        "hide_side_toolbar": false,
+        "allow_symbol_change": true,
+        "save_image": false,
+        "container_id": "tradingview_eth"
+    });
 }
 
 // Initialize Charts
@@ -325,6 +390,16 @@ function initCharts() {
     });
 }
 
+// Destroy all charts (for cleanup)
+function destroyCharts() {
+    Object.keys(charts).forEach(key => {
+        if (charts[key]) {
+            charts[key].destroy();
+        }
+    });
+    charts = {};
+}
+
 // Update Charts with Real Data
 async function updateCharts() {
     try {
@@ -338,7 +413,7 @@ async function updateCharts() {
             });
 
             charts.verdict.data.datasets[0].data = winRates;
-            charts.verdict.update();
+            charts.verdict.update('none'); // Skip animation for better performance
         }
 
         // Update Signal Distribution Chart
@@ -349,7 +424,7 @@ async function updateCharts() {
             const neutralCount = history.outcomes.filter(s => s.signal_type === 'NEUTRAL').length;
 
             charts.distribution.data.datasets[0].data = [longCount, shortCount, neutralCount];
-            charts.distribution.update();
+            charts.distribution.update('none'); // Skip animation for better performance
         }
 
         // Update Performance Timeline
@@ -374,11 +449,216 @@ async function updateCharts() {
 
             charts.timeline.data.labels = recentData.map(d => d.x);
             charts.timeline.data.datasets[0].data = recentData.map(d => d.y);
-            charts.timeline.update();
+            charts.timeline.update('none'); // Skip animation for better performance
         }
 
     } catch (error) {
         console.error('Error updating charts:', error);
+    }
+}
+
+// Bulk Scanner Handler
+async function handleBulkScan() {
+    const textarea = document.getElementById('bulkSymbols');
+    const scanBtn = document.getElementById('scanBtn');
+    const resultsContainer = document.getElementById('scanResults');
+    const resultsList = document.getElementById('scanResultsList');
+
+    const symbols = textarea.value
+        .split(',')
+        .map(s => s.trim().toUpperCase())
+        .filter(s => s.length > 0);
+
+    if (symbols.length === 0) {
+        alert('Please enter at least one symbol');
+        return;
+    }
+
+    // Show loading state
+    scanBtn.disabled = true;
+    scanBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Scanning...';
+    resultsList.innerHTML = '<div class="text-center py-4"><i class="fas fa-spinner fa-spin text-2xl text-primary"></i></div>';
+    resultsContainer.classList.remove('hidden');
+
+    try {
+        const results = [];
+
+        // Scan symbols in batches of 3 to avoid overwhelming the API
+        for (let i = 0; i < symbols.length; i += 3) {
+            const batch = symbols.slice(i, i + 3);
+            const batchResults = await Promise.all(
+                batch.map(symbol =>
+                    generateSignal(symbol)
+                        .then(result => ({ symbol, result, success: true }))
+                        .catch(error => ({ symbol, error: error.message, success: false }))
+                )
+            );
+            results.push(...batchResults);
+
+            // Small delay between batches
+            if (i + 3 < symbols.length) {
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+        }
+
+        // Display results
+        const resultsHTML = results.map(item => {
+            if (!item.success) {
+                return `
+                    <div class="p-3 bg-red-50 dark:bg-red-900 dark:bg-opacity-20 rounded-lg border border-red-200 dark:border-red-800">
+                        <div class="flex items-center justify-between">
+                            <span class="font-semibold text-red-700 dark:text-red-300">${item.symbol}</span>
+                            <span class="text-xs text-red-600 dark:text-red-400">Failed</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            const signal = item.result;
+            const signalColor = signal.signal === 'LONG' ? 'green' :
+                               signal.signal === 'SHORT' ? 'red' : 'gray';
+
+            const verdict = signal.aiVerdictLayer?.verdict || 'N/A';
+            const verdictColor = verdict === 'CONFIRM' ? 'green' :
+                                verdict === 'SKIP' ? 'red' :
+                                verdict === 'DOWNSIZE' ? 'yellow' : 'gray';
+
+            return `
+                <div class="p-3 bg-${signalColor}-50 dark:bg-${signalColor}-900 dark:bg-opacity-20 rounded-lg border border-${signalColor}-200 dark:border-${signalColor}-800">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-bold text-${signalColor}-700 dark:text-${signalColor}-300">${signal.symbol}</span>
+                            <span class="px-2 py-0.5 bg-${signalColor}-500 text-white text-xs rounded-full font-semibold">${signal.signal}</span>
+                        </div>
+                        <button onclick="addToMonitor('${signal.symbol}')" class="px-2 py-1 bg-primary text-white text-xs rounded hover:bg-blue-600 transition">
+                            <i class="fas fa-eye mr-1"></i>Monitor
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-xs">
+                        <div>
+                            <span class="text-gray-600 dark:text-gray-400">Score:</span>
+                            <span class="font-semibold text-gray-900 dark:text-white ml-1">${signal.score}/100</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600 dark:text-gray-400">Verdict:</span>
+                            <span class="font-semibold text-${verdictColor}-600 dark:text-${verdictColor}-400 ml-1">${verdict}</span>
+                        </div>
+                        <div>
+                            <span class="text-gray-600 dark:text-gray-400">Price:</span>
+                            <span class="font-semibold text-gray-900 dark:text-white ml-1">$${signal.price.toLocaleString()}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        resultsList.innerHTML = resultsHTML;
+
+    } catch (error) {
+        console.error('Error in bulk scan:', error);
+        resultsList.innerHTML = `
+            <div class="text-center py-4 text-red-500">
+                <i class="fas fa-exclamation-triangle mb-2"></i>
+                <p class="text-sm">Error during scan</p>
+            </div>
+        `;
+    } finally {
+        scanBtn.disabled = false;
+        scanBtn.innerHTML = '<i class="fas fa-radar mr-2"></i>Scan All Symbols';
+    }
+}
+
+// Add symbol to monitor list
+function addToMonitor(symbol) {
+    if (monitoredSymbols.has(symbol)) {
+        alert(`${symbol} is already being monitored`);
+        return;
+    }
+
+    monitoredSymbols.add(symbol);
+    updateMonitorList();
+
+    // Start monitoring if not already running
+    if (!monitorTimer) {
+        startMonitoring();
+    }
+}
+
+// Remove symbol from monitor list
+function removeFromMonitor(symbol) {
+    monitoredSymbols.delete(symbol);
+    updateMonitorList();
+
+    // Stop monitoring if list is empty
+    if (monitoredSymbols.size === 0 && monitorTimer) {
+        clearInterval(monitorTimer);
+        monitorTimer = null;
+    }
+}
+
+// Update monitor list display
+function updateMonitorList() {
+    const container = document.getElementById('monitorList');
+
+    if (monitoredSymbols.size === 0) {
+        container.innerHTML = `
+            <div class="text-center py-8">
+                <i class="fas fa-eye-slash text-4xl text-gray-400 mb-2"></i>
+                <p class="text-sm text-gray-500 dark:text-gray-400">No symbols being monitored</p>
+                <p class="text-xs text-gray-400 dark:text-gray-500 mt-1">Add symbols from the scanner</p>
+            </div>
+        `;
+        return;
+    }
+
+    const itemsHTML = Array.from(monitoredSymbols).map(symbol => `
+        <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-dark-200 rounded-lg" data-symbol="${symbol}">
+            <div class="flex items-center space-x-3">
+                <div class="w-2 h-2 bg-green-500 rounded-full pulse-dot"></div>
+                <span class="font-semibold text-gray-900 dark:text-white">${symbol}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400" id="monitor-status-${symbol}">Monitoring...</span>
+            </div>
+            <button onclick="removeFromMonitor('${symbol}')" class="px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    `).join('');
+
+    container.innerHTML = itemsHTML;
+}
+
+// Start monitoring symbols
+function startMonitoring() {
+    // Initial check
+    checkMonitoredSymbols();
+
+    // Check every minute
+    monitorTimer = setInterval(() => {
+        checkMonitoredSymbols();
+    }, 60000);
+}
+
+// Check monitored symbols for updates
+async function checkMonitoredSymbols() {
+    for (const symbol of monitoredSymbols) {
+        try {
+            const signal = await generateSignal(symbol);
+            const statusElement = document.getElementById(`monitor-status-${symbol}`);
+
+            if (statusElement) {
+                const verdict = signal.aiVerdictLayer?.verdict || 'N/A';
+                const verdictColor = verdict === 'CONFIRM' ? 'text-green-500' :
+                                    verdict === 'SKIP' ? 'text-red-500' :
+                                    verdict === 'DOWNSIZE' ? 'text-yellow-500' : 'text-gray-500';
+
+                statusElement.innerHTML = `${signal.signal} | <span class="${verdictColor}">${verdict}</span> | $${signal.price.toLocaleString()}`;
+            }
+        } catch (error) {
+            console.error(`Error monitoring ${symbol}:`, error);
+        }
+
+        // Small delay between checks
+        await new Promise(resolve => setTimeout(resolve, 500));
     }
 }
 
@@ -486,6 +766,11 @@ document.addEventListener('DOMContentLoaded', function() {
     initDarkMode();
     initCharts();
 
+    // Initialize TradingView Charts after a short delay to ensure DOM is ready
+    setTimeout(() => {
+        initTradingViewCharts();
+    }, 500);
+
     // Load initial data
     updateStats();
     loadLatestSignals();
@@ -530,14 +815,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Asset filter
     document.getElementById('assetFilter').addEventListener('change', (e) => {
-        // Future: filter signals by asset
-        loadLatestSignals();
+        const selectedAsset = e.target.value;
+        loadLatestSignals(selectedAsset);
+    });
+
+    // Bulk scan button
+    document.getElementById('scanBtn').addEventListener('click', handleBulkScan);
+
+    // Clear monitor list button
+    document.getElementById('clearMonitorBtn').addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear all monitored symbols?')) {
+            monitoredSymbols.clear();
+            updateMonitorList();
+            if (monitorTimer) {
+                clearInterval(monitorTimer);
+                monitorTimer = null;
+            }
+        }
     });
 });
+
+// Make functions globally accessible for onclick handlers
+window.addToMonitor = addToMonitor;
+window.removeFromMonitor = removeFromMonitor;
 
 // Cleanup on page unload
 window.addEventListener('beforeunload', () => {
     if (refreshTimer) {
         clearInterval(refreshTimer);
     }
+    if (monitorTimer) {
+        clearInterval(monitorTimer);
+    }
+    destroyCharts();
 });
