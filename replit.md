@@ -44,6 +44,30 @@ Implemented multi-tier price fallback system and performance optimizations to ac
 
 **Documentation**: See `PERFORMANCE_FIXES_SUMMARY.md` for complete technical details.
 
+### November 20, 2025 - CoinAPI Expansion (v2.3.0)
+**Status**: 🟢 PRODUCTION READY
+
+Extended CoinAPI integration from 7 to 9 endpoints with symbol discovery and derivatives metrics:
+
+1. **Symbol Discovery Endpoint** ✅
+   - Operation: `coinapi.symbols`
+   - Discover 98,677+ trading pairs across 350+ exchanges
+   - Filter by exchange, asset, or symbol type
+   - Returns volume data, price, and historical coverage
+   - Use case: Find best exchange liquidity for specific pairs
+
+2. **Derivatives Metrics Endpoint** ✅
+   - Operation: `coinapi.metrics`
+   - Real-time funding rates for perpetual futures
+   - Open interest tracking
+   - Liquidation monitoring
+   - Multi-exchange support
+   - Use case: Assess derivatives market sentiment
+
+**Files Modified**: `app/services/coinapi_comprehensive_service.py`, `app/utils/operation_catalog.py`, `app/core/rpc_flat_dispatcher.py`, `GPT_ACTIONS_INSTRUCTIONS.txt`
+
+**Test Results**: Both endpoints validated via /invoke, architect reviewed and passed.
+
 ## User Preferences
 - Clean, modular code structure
 - Comprehensive error handling with safe defaults
@@ -164,7 +188,7 @@ If you need 24/7 automated monitoring and have sufficient API quota, uncomment t
 Then restart the workflow to apply changes.
 
 ## External Dependencies
-- **CoinAPI**: Market data, OHLCV, order book, quotes, price aggregation, whale detection.
+- **CoinAPI**: Market data, OHLCV, order book, quotes, price aggregation, whale detection, symbol discovery (98,677+ pairs), derivatives metrics (funding rates, open interest).
 - **OpenAI GPT-5.1**: AI signal judge with self-evaluation capabilities, market sentiment analysis, signal validation. Upgraded from GPT-4 in November 2025 for improved accuracy (45% fewer hallucinations).
 - **Coinglass v4 Standard**: Liquidations, funding rates, open interest, trader positioning, whale intelligence, technical analysis, macro calendar, news feed.
 - **Coinglass WebSocket**: Real-time liquidation streaming.
