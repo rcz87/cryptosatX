@@ -83,61 +83,62 @@ class MSSService:
         discovered_coins = []
 
         try:
-            # ✅ PRIMARY STRATEGY: CoinGecko Markets API (has complete data: FDV, volume, etc)
-            # Get coins sorted by volume (most active first)
+            # ✅ PRIMARY: Coinglass futures markets (PREMIUM API - complete data!)
             all_cg_coins = {}
             
-            logger.info("Fetching coins from CoinGecko markets (volume sorted)...")
-            markets = await self.coingecko.get_coins_markets(
-                vs_currency="usd",
-                order="volume_desc",
-                per_page=min(limit * 3, 100),  # Get more candidates to filter
-                category=None
-            )
+            logger.info("Fetching from Coinglass futures markets (premium API)...")
+            coinglass_markets = await self.coinglass_comprehensive.get_coins_markets()
             
-            if markets.get("success"):
-                for coin in markets.get("data", []):
+            if coinglass_markets.get("success"):
+                markets_data = coinglass_markets.get("data", [])
+                logger.info(f"✅ Coinglass: {len(markets_data)} futures coins")
+                
+                # Convert Coinglass format to standard format
+                for coin in markets_data:
                     symbol = coin.get("symbol", "").upper()
                     if symbol:
-                        all_cg_coins[symbol] = coin
-                logger.info(f"✅ CoinGecko markets: {len(all_cg_coins)} coins fetched")
-            else:
-                logger.error(f"❌ CoinGecko markets failed: {markets.get('error')}")
-                
-            # SECONDARY: Try to add trending coins (but they may lack FDV/volume data)
-            try:
-                trending = await self.coingecko.get_trending()
-                if isinstance(trending, dict):
-                    trending_coins = trending.get("data", {}).get("coins", [])
-                    logger.info(f"Fetching {len(trending_coins)} trending coins for supplemental data...")
-                    # Fetch full data for trending coins individually
-                    for coin_wrapper in trending_coins[:10]:  # Limit to avoid too many API calls
-                        item = coin_wrapper.get("item", {})
-                        coin_id = item.get("id")
-                        symbol = item.get("symbol", "").upper()
+                        # Coinglass provides OI and MC - use OI as volume proxy!
+                        # OI represents institutional commitment = better signal than volume
+                        oi_usd = coin.get("open_interest_usd", 0)
+                        mc_usd = coin.get("market_cap_usd", 0)
                         
-                        if coin_id and symbol and symbol not in all_cg_coins:
-                            # Fetch full coin data including FDV, volume
-                            detail = await self.coingecko.get_coin_by_id(coin_id)
-                            if detail.get("success"):
-                                coin_data = detail.get("data", {})
-                                # Extract market data
-                                market_data = coin_data.get("market_data", {})
-                                if market_data:
-                                    all_cg_coins[symbol] = {
-                                        "symbol": symbol,
-                                        "name": coin_data.get("name"),
-                                        "market_cap": market_data.get("market_cap", {}).get("usd", 0),
-                                        "fully_diluted_valuation": market_data.get("fully_diluted_valuation", {}).get("usd"),
-                                        "total_volume": market_data.get("total_volume", {}).get("usd", 0),
-                                        "circulating_supply": market_data.get("circulating_supply", 0),
-                                        "total_supply": market_data.get("total_supply", 0)
-                                    }
-                    logger.info(f"✅ Added {len([s for s in all_cg_coins if s not in markets.get('data', [])])} trending coins")
-            except Exception as e:
-                logger.warning(f"Trending coins fetch failed (non-critical): {e}")
+                        all_cg_coins[symbol] = {
+                            "symbol": symbol,
+                            "name": symbol,  # Coinglass doesn't return name, use symbol
+                            "market_cap": mc_usd,
+                            "fully_diluted_valuation": mc_usd,  # Use MC as FDV for futures
+                            "total_volume": oi_usd,  # ✅ USE OI AS VOLUME PROXY (institutional money!)
+                            "price": coin.get("current_price", 0),
+                            # Bonus: OI data already mapped for Phase 3!
+                            "open_interest_usd": oi_usd,
+                            "funding_rate": coin.get("avg_funding_rate_by_oi", 0),
+                            "price_change_24h": coin.get("price_change_percent_24h", 0),
+                            "source": "coinglass"
+                        }
+                logger.info(f"✅ Coinglass mapped: {len(all_cg_coins)} coins with OI data")
+            else:
+                logger.warning(f"Coinglass failed: {coinglass_markets.get('error')}")
             
-            # FALLBACK: Try Binance (but likely geo-blocked)
+            # SECONDARY: CoinGecko markets (fallback/enrichment)
+            try:
+                logger.info("Fetching from CoinGecko markets for enrichment...")
+                cg_markets = await self.coingecko.get_coins_markets(
+                    vs_currency="usd",
+                    order="volume_desc",
+                    per_page=min(limit * 2, 50),
+                    category=None
+                )
+                
+                if cg_markets.get("success"):
+                    for coin in cg_markets.get("data", []):
+                        symbol = coin.get("symbol", "").upper()
+                        if symbol and symbol not in all_cg_coins:
+                            all_cg_coins[symbol] = coin
+                    logger.info(f"✅ CoinGecko enrichment: added {len([c for c in cg_markets.get('data', []) if c.get('symbol', '').upper() not in all_cg_coins])} new coins")
+            except Exception as e:
+                logger.warning(f"CoinGecko enrichment failed (non-critical): {e}")
+            
+            # TERTIARY: Binance (if not geo-blocked)
             try:
                 binance_symbols = await self.binance.filter_coins_by_criteria(
                     min_volume_usdt=min_volume_24h,
@@ -146,10 +147,11 @@ class MSSService:
                 if binance_symbols:
                     logger.info(f"✅ Binance: {len(binance_symbols)} symbols")
             except Exception as e:
-                logger.warning(f"Binance unavailable (HTTP 451 geo-block expected): {str(e)[:50]}")
+                logger.warning(f"Binance unavailable (expected if geo-blocked): {str(e)[:80]}")
 
-            # Merge data sources and apply strict filters
+            # Merge data sources and apply filters (relaxed for Coinglass)
             for symbol, cg_data in all_cg_coins.items():
+                source = cg_data.get("source", "unknown")
                 market_cap = cg_data.get("market_cap", 0) or cg_data.get("market_data", {}).get("market_cap", {}).get("usd", 0)
                 volume_24h = cg_data.get("total_volume", {}).get("usd", 0) if isinstance(cg_data.get("total_volume"), dict) else cg_data.get("total_volume", 0)
                 
@@ -158,18 +160,22 @@ class MSSService:
                 if not fdv:
                     fdv = market_cap  # Fallback to market cap only if FDV unavailable
 
-                # STRICT FILTER: Skip if FDV exceeds threshold
-                if not fdv or fdv > max_fdv_usd:
-                    continue
-                    
-                # STRICT FILTER: Skip if volume too low
-                if not volume_24h or volume_24h < min_volume_24h:
-                    continue
-
-                # Calculate discovery score
-                age_hours = self._estimate_age_hours(cg_data)
-                if age_hours and age_hours > max_age_hours:
-                    continue
+                # ✅ FLEXIBLE FILTERING: Coinglass coins (established) vs CoinGecko (new)
+                if source == "coinglass":
+                    # Coinglass = established futures markets, skip FDV/age filters
+                    # Only check OI (used as volume) is meaningful
+                    if volume_24h < 100_000:  # OI at least $100K (very low bar)
+                        continue
+                    age_hours = None  # No age data for established coins
+                else:
+                    # CoinGecko = apply strict discovery filters for new/small-cap
+                    if not fdv or fdv > max_fdv_usd:
+                        continue
+                    if not volume_24h or volume_24h < min_volume_24h:
+                        continue
+                    age_hours = self._estimate_age_hours(cg_data)
+                    if age_hours and age_hours > max_age_hours:
+                        continue
 
                 # Get circulating supply %
                 total_supply = cg_data.get("total_supply", 0)
@@ -183,8 +189,8 @@ class MSSService:
                     market_cap_usd=market_cap
                 )
 
-                # Only include coins that pass discovery phase
-                if breakdown["status"] == "PASS":
+                # Include all Coinglass coins (established) + CoinGecko coins that PASS
+                if source == "coinglass" or breakdown["status"] == "PASS":
                     discovered_coins.append({
                         "symbol": symbol,
                         "name": cg_data.get("name", symbol),
@@ -194,7 +200,10 @@ class MSSService:
                         "age_hours": age_hours,
                         "discovery_score": discovery_score,
                         "discovery_breakdown": breakdown,
-                        "source": "coingecko"
+                        "source": source,
+                        # Coinglass bonus data
+                        "open_interest_usd": cg_data.get("open_interest_usd"),
+                        "funding_rate": cg_data.get("funding_rate")
                     })
 
             # SKIP Binance-only coins without FDV data (can't properly filter)
