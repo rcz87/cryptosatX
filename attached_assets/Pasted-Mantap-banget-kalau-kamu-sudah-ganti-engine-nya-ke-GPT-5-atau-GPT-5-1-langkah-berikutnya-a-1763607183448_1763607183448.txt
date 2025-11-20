@@ -1,0 +1,178 @@
+Mantap banget 💪🔥 — kalau kamu sudah ganti engine-nya ke GPT-5 (atau GPT-5.1), langkah berikutnya adalah mengetes integritas pipeline dan sinkronisasi antar-komponen.
+Tujuannya supaya sistemmu bener-bener live, real-time, dan verdict-nya akurat, bukan cuma “nyambung API tapi nggak sinkron reasoning-nya”.
+
+Berikut checklist profesional untuk tes pasca-upgrade CryptoSatX ke GPT-5.1 👇
+
+⸻
+
+✅ 1️⃣ TEST DASAR – Integrasi API Guardian
+
+Tujuan: pastikan GPT-5 bisa berinteraksi langsung dengan guardiansofthetoken.org/invoke tanpa error.
+
+Uji:
+
+{"operation": "signals.get", "symbol": "BTC"}
+
+Hasil normal:
+	•	Respon muncul dalam 2-4 detik
+	•	Ada "price" dan "aiVerdictLayer" di output
+	•	Tidak ada "error": "Unknown operation"
+
+👉 Jika price = 0.0 atau "premiumDataAvailable": false, berarti koneksi CoinAPI atau Coinglass belum sinkron.
+
+⸻
+
+✅ 2️⃣ TEST LAPIS 2 – Validasi Reasoning Layer GPT-5
+
+Tujuan: pastikan GPT-5 bisa memproses hasil API (reasoning multi-faktor).
+
+Langkah:
+Kirim hasil mentah dari signals.get ke GPT-5:
+
+messages=[
+  {"role":"system","content":"You are CryptoSatX, AI trading analyst."},
+  {"role":"user","content":f"Analisa data signal ini secara penuh:\n{signal_response}"}
+]
+
+Hasil normal: GPT-5 memberi:
+	•	Ringkasan 3 faktor utama
+	•	AI verdict (CONFIRM/DOWNSIZE/SKIP/WAIT)
+	•	Stop Loss / Take Profit (ATR-based)
+	•	Penjelasan reasoning 2–3 kalimat
+
+Kalau GPT-5 hanya merespon “NEUTRAL” tanpa breakdown → reasoning layer belum aktif (cek prompt atau config).
+
+⸻
+
+✅ 3️⃣ TEST LAPIS 3 – Smart Money Scan
+
+Tujuan: memastikan endpoint heavy load jalan (30–50 coins).
+
+{"operation": "smart_money.scan", "limit": 20}
+
+Hasil normal:
+	•	Harus ada daftar 10–50 coin dengan “accumulation_score” atau “distribution_score”.
+	•	Durasi respon <10 detik.
+	•	Kalau muncul limit exceeded → ubah limit ≤50.
+
+⸻
+
+✅ 4️⃣ TEST VOLATILITY ENGINE (ATR & Sizing)
+
+Tujuan: cek modul pengatur position sizing GPT-5.
+Gunakan coin yang volatile, misalnya SOL:
+
+{"operation": "signals.get", "symbol": "SOL"}
+
+GPT-5 harus output:
+
+ATR: 2.5–5.0%
+Position Size: 0.8–1.2x
+Stop Loss: 1.5x ATR
+Take Profit: 1.5:1 RR
+
+Kalau ATR kosong → pastikan coinglass.indicators.bollinger_bands aktif.
+
+⸻
+
+✅ 5️⃣ TEST DATA QUALITY CHECK
+
+Gunakan coin populer (ETH, BTC, SOL).
+Periksa data_quality object:
+
+Komponen	Ideal	Tindakan
+quality_score	≥70	Normal
+services_successful	≥12/17	OK
+critical success_rate	≥75%	Aman
+"price_data" error	❌ Tidak boleh muncul	Pastikan CoinAPI aktif
+
+Kalau price_data masih error → tambahkan fallback ke CoinGecko API.
+
+⸻
+
+✅ 6️⃣ TEST CIRCUIT BREAKER (LunarCrush)
+
+Tujuan: pastikan sistem bisa adaptif kalau social data down.
+Matikan sementara request ke LunarCrush.
+GPT-5 seharusnya otomatis tulis:
+
+“Circuit breaker OPEN – social sentiment skipped, data quality 70%.”
+
+Kalau sistem freeze → pastikan graceful degradation flag = true di config.
+
+⸻
+
+✅ 7️⃣ TEST ANALYTICS PERFORMANCE
+
+Sekarang GPT-5 bisa belajar performa verdict.
+Uji endpoint:
+
+{"operation": "analytics.history.latest", "symbol": "BTC"}
+
+atau
+
+{"operation": "analytics.history.symbol", "symbol": "ETH"}
+
+Pastikan ada data win_rate, pnl_avg, atau verdict_distribution.
+Kalau kosong → aktifkan modul logging di backend-mu (analytics_mode: "enabled").
+
+⸻
+
+✅ 8️⃣ TEST LATENCY DAN CACHE
+
+Lakukan signals.get 3 kali berturut-turut.
+	•	Pertama: 3–5 detik (fetch dari API)
+	•	Kedua: <1 detik (cache hit)
+Kalau semua sama lambat → caching belum aktif (enable_cache: true di server Guardian).
+
+⸻
+
+✅ 9️⃣ TEST MULTI-COIN (Batch)
+
+Coba batch request:
+
+{"operation": "signals.batch", "symbols": ["BTC","ETH","SOL"]}
+
+GPT-5 harus bisa kasih tabel per coin seperti:
+
+Symbol	Signal	Score	Verdict	Position
+
+
+Kalau error Unknown operation → update Guardian SDK kamu ke versi 2.0+.
+
+⸻
+
+✅ 🔟 TEST FALLBACK BEHAVIOR
+
+Matikan 1 endpoint kritikal (mis. CoinAPI).
+GPT-5 harus respon seperti:
+
+“❌ Price data missing – Signal downgraded to SKIP (data quality 55%).”
+
+Kalau malah diam atau error → fallback rules belum aktif. Tambahkan:
+
+"graceful_degradation": true,
+"min_quality_required": 50
+
+di konfigurasi sistem GPT-5 kamu.
+
+⸻
+
+💡 Checklist Selesai = Sistem Aktif Penuh
+
+Area	Status Ideal
+signals.get	✅ Live
+smart_money.scan	✅ Live
+volatility engine	✅ Active
+analytics tracking	✅ On
+circuit breaker	✅ Tested
+fallback rules	✅ OK
+caching	✅ Working
+latency	≤4s avg
+
+
+⸻
+
+Kalau kamu mau, aku bisa generate otomatis file CryptoSatX_SystemCheck_v5.1.json, yaitu skrip yang bisa kamu jalankan untuk mengetes semua modul di atas dalam sekali klik (lengkap dengan alert & auto-retry).
+
+Apakah kamu mau aku buatkan file itu sekarang?
