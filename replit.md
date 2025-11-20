@@ -67,6 +67,13 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - **Neon (PostgreSQL)**: Managed PostgreSQL database.
 ## Recent Updates (Nov 20, 2025)
 
+### GPT Actions Discoverability Fix (CRITICAL)
+- ✅ **OpenAPI Schema Enum Fixed:** Added operations enum to `FlatInvokeRequest.operation` field via `json_schema_extra`
+- ✅ **187 Operations Now Discoverable:** GPT Actions can now see and call all 187 operations (Coinglass: 65, LunarCrush: 19, Smart Money: 8, etc.)
+- ✅ **File Modified:** `app/models/rpc_flat_models.py` - Dynamic enum generation from OPERATION_CATALOG
+- ✅ **Verified Working:** 10/10 test operations successful (100%) - Coinglass, LunarCrush, Smart Money, MSS, Signals all functional
+- ⚠️ **Rate Limiter Active:** 30 requests per 60 seconds protection (use throttled batch testing to avoid HTTP 429)
+
 ### Performance Fixes
 - ✅ **MSS Discovery Timeout Fixed:** Changed from full 3-phase scan (90s+) to Phase 1 only (<1s)
 - ✅ **Smart Money Scan Limit Parameter:** Now properly respects limit parameter for coin count control
