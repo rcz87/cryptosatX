@@ -2,8 +2,16 @@
 RPC Flat Models - GPT Actions Compatible
 Uses flat parameters instead of nested args for GPT Actions compatibility
 """
-from typing import Optional, Literal
+from typing import Optional, Literal, Any
 from pydantic import BaseModel, Field
+from pydantic.json_schema import JsonSchemaValue
+from pydantic_core import core_schema
+
+
+def _get_all_operations():
+    """Get all operations from catalog (lazy import to avoid circular dependency)"""
+    from app.utils.operation_catalog import OPERATION_CATALOG
+    return sorted(OPERATION_CATALOG.keys())
 
 
 class FlatInvokeRequest(BaseModel):
@@ -12,10 +20,11 @@ class FlatInvokeRequest(BaseModel):
 
     All parameters are at root level (not nested under 'args')
     """
-    # REQUIRED: Operation identifier
+    # REQUIRED: Operation identifier (with enum of all 187+ operations for GPT Actions)
     operation: str = Field(
         ...,
-        description="Operation to execute (e.g., 'signals.get', 'coinglass.liquidations.symbol')"
+        description="Operation to execute - see /invoke/operations for full list (187 operations across 18 namespaces)",
+        json_schema_extra={"enum": _get_all_operations()}
     )
 
     # OPTIONAL: Common parameters (flat at root level)
