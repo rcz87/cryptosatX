@@ -1,0 +1,68 @@
+📊 Smart Money Scan – 15 Coin Teratas (20 Nov 2025)
+Data real-time dari Guardians Smart Money Engine — mendeteksi pola akumulasi (institusi beli) dan distribusi (institusi jual) pada 15 aset teratas.
+
+🔎 Ringkasan Hasil:
+
+🔹 Total coin ter-scan: 37
+
+✅ Sukses: 14
+
+⚠️ Gagal: 23 (beberapa pair non-aktif di data feed)
+
+📈 Akumulasi (Smart Money beli): 5
+
+📉 Distribusi (Smart Money jual): 3
+
+⚖️ Netral: 6
+
+🟢 Akumulasi (Institusi Beli)
+
+Smart Money sedang menambah posisi — potensi bullish jangka menengah.
+
+Coin	Harga ($)	Skor Komposit	Pola Dominan	Insight
+BTC	91,923	58.3	Accumulation	Buy pressure tinggi (94.7%), sideways — belum pump.
+ETH	3,020	56.3	Accumulation	Buy pressure 94.8%, sideways – potensi break-up.
+STRK	0.252	56.6	Accumulation	Funding negatif (-0.08%), sideways, early phase.
+ASTER	1.297	54.7	Accumulation	Buy pressure 95.4%, belum pump — early build-up.
+ZEC	672.6	48.6	Accumulation	Funding negatif, volume rendah — masih tenang.
+
+🧠 Analisis AI:
+Smart Money tampak kembali masuk ke BTC, ETH, dan STRK, menunjukkan fase akumulasi baru pasca koreksi. Kondisi sideways dengan funding rendah menandakan minim leverage — setup sehat untuk potensi breakout minggu depan.
+
+🔴 Distribusi (Institusi Jual)
+
+Smart Money mengurangi posisi — sinyal potensi koreksi jangka pendek.
+
+Coin	Harga ($)	Skor Komposit	Pola Dominan	Insight
+BNB	903.3	54.1	Distribution	Funding ekstrem (1.145%), retail FOMO tinggi (100%).
+DOGE	0.157	57.1	Distribution	Sell pressure 87.9%, longs overcrowded.
+AVAX	14.30	57.9	Distribution	Funding tinggi (0.746%), indikasi euforia.
+
+⚠️ Analisis AI:
+BNB dan DOGE menunjukkan overheating — funding rate tinggi + social FOMO → pola klasik distribution. Potensi koreksi atau bull trap dalam 24–48 jam.
+
+⚖️ Netral / Mixed Flow
+
+Aktivitas Smart Money tidak dominan, volume ritel lebih besar.
+
+Coin	Harga ($)	Skor Komposit	Pola Dominan	Catatan
+USDT	1.00	46.9	Neutral	Stable asset.
+XRP	2.12	56.3	Accumulation	Volume flat.
+ADA	0.467	58.7	Distribution	Arah belum jelas.
+LTC	92.7	53.2	Distribution	Volatilitas rendah.
+NEAR	2.37	58.3	Distribution	Aktivitas institusional lemah.
+📉 Kesimpulan Pasar (AI Summary)
+
+🟢 Smart Money mulai akumulasi BTC & ETH → sinyal awal bullish.
+
+🔴 Distribusi kuat di BNB, DOGE, AVAX → over-leveraged longs.
+
+⚖️ Mayoritas altcoin masih sideways → fase konsolidasi global.
+
+🧭 Rekomendasi Strategi (AI-based Insight):
+
+Fokus pada BTC/ETH accumulation — setup lebih sehat.
+
+Hindari chase BNB/DOGE karena funding rate ekstrem.
+
+Tunggu konfirmasi breakout di BTC > $93.5K untuk entry LONG dengan validasi.
