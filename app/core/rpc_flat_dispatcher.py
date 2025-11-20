@@ -200,8 +200,8 @@ class FlatRPCDispatcher:
                         response_meta["telegram_report_type"] = "liquidations"
                         logger.info(f"📱 Sending liquidation report for {symbol} to Telegram")
                     
-                    # 4. Send social analytics report to Telegram
-                    elif operation == "lunarcrush.coin.social":
+                    # 4. Send social analytics report to Telegram (LunarCrush)
+                    elif operation in ["lunarcrush.coin", "lunarcrush.coin_comprehensive"]:
                         asyncio.create_task(
                             telegram_report_sender.send_social_analytics_report(symbol, result)
                         )
@@ -209,8 +209,8 @@ class FlatRPCDispatcher:
                         response_meta["telegram_report_type"] = "social_analytics"
                         logger.info(f"📱 Sending social analytics report for {symbol} to Telegram")
                     
-                    # 5. Send whale activity report to Telegram
-                    elif "whale" in operation and "longshort" in operation:
+                    # 5. Send whale activity report to Telegram (Long/Short Ratio)
+                    elif "long_short_ratio" in operation:
                         asyncio.create_task(
                             telegram_report_sender.send_whale_activity_report(symbol, result)
                         )
