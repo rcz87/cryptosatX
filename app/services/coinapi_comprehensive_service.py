@@ -615,6 +615,212 @@ class CoinAPIComprehensiveService:
             
         except Exception as e:
             return {"success": False, "error": str(e)}
+    
+    # ==================== METADATA / SYMBOLS ====================
+    
+    async def get_symbols(
+        self,
+        exchange_id: Optional[str] = None,
+        asset_id: Optional[str] = None,
+        symbol_type: Optional[str] = None
+    ) -> Dict:
+        """
+        Get list of available trading symbols
+        Endpoint: /v1/symbols
+        
+        Args:
+            exchange_id: Filter by exchange (e.g., 'BINANCE', 'COINBASE')
+            asset_id: Filter by asset (e.g., 'BTC', 'ETH')
+            symbol_type: Filter by type (e.g., 'SPOT', 'PERPETUAL', 'FUTURES')
+            
+        Returns:
+            List of symbols with:
+            - symbol_id, exchange_id, symbol_type
+            - asset_id_base, asset_id_quote
+            - volume_1hrs, volume_1day, price
+            - data_start, data_end
+            
+        Use case: Symbol discovery, validate symbol availability, find active markets
+        """
+        try:
+            client = await self._get_client()
+            
+            url = f"{self.base_url}/symbols"
+            params = {}
+            
+            if exchange_id:
+                params["filter_exchange_id"] = exchange_id.upper()
+            if asset_id:
+                params["filter_asset_id"] = asset_id.upper()
+            if symbol_type:
+                params["filter_symbol_id"] = f"_{symbol_type}_"
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if data and len(data) > 0:
+                # Extract key info from symbols
+                symbols_summary = []
+                for symbol in data[:100]:  # Limit to first 100 for performance
+                    symbols_summary.append({
+                        "symbolId": symbol.get("symbol_id"),
+                        "exchange": symbol.get("exchange_id"),
+                        "type": symbol.get("symbol_type"),
+                        "base": symbol.get("asset_id_base"),
+                        "quote": symbol.get("asset_id_quote"),
+                        "volume24h": symbol.get("volume_1day"),
+                        "volume24hUsd": symbol.get("volume_1day_usd"),
+                        "price": symbol.get("price"),
+                        "dataStart": symbol.get("data_start"),
+                        "dataEnd": symbol.get("data_end")
+                    })
+                
+                return {
+                    "success": True,
+                    "totalSymbols": len(data),
+                    "displayedSymbols": len(symbols_summary),
+                    "filters": {
+                        "exchange": exchange_id,
+                        "asset": asset_id,
+                        "type": symbol_type
+                    },
+                    "symbols": symbols_summary,
+                    "source": "coinapi_symbols"
+                }
+            
+            return {"success": False, "error": "No symbols found"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
+    
+    # ==================== METRICS (FUNDING RATE, OPEN INTEREST) ====================
+    
+    async def get_metrics(
+        self,
+        metric_id: str,
+        symbol: str,
+        exchange: str = "BINANCEFTSC",
+        historical: bool = False,
+        time_start: Optional[str] = None,
+        time_end: Optional[str] = None,
+        limit: int = 100
+    ) -> Dict:
+        """
+        Get derivatives metrics (funding rate, open interest, liquidations)
+        Endpoint: /v1/metrics/symbol/current or /v1/metrics/symbol/history
+        
+        Args:
+            metric_id: Metric type:
+                - 'DERIVATIVES_FUNDING_RATE_CURRENT' - Current funding rate
+                - 'DERIVATIVES_FUNDING_RATE_PREDICTED' - Predicted funding
+                - 'DERIVATIVES_OPEN_INTEREST' - Open interest
+                - 'LIQUIDATION_AVERAGE_PRICE' - Liquidation price
+            symbol: Coin symbol (e.g., 'BTC', 'ETH')
+            exchange: Exchange (default: 'BINANCEFTSC' for Binance Futures)
+            historical: Get historical data instead of current
+            time_start: Start time for historical (ISO 8601 format)
+            time_end: End time for historical
+            limit: Max data points for historical (default: 100)
+            
+        Returns:
+            Current or historical metric data with:
+            - value_decimal: Metric value
+            - entry_time: Timestamp
+            - exchange_id, symbol_id
+            
+        Use case: Funding arbitrage, OI tracking, liquidation analysis
+        """
+        try:
+            client = await self._get_client()
+            
+            # Build symbol_id for perpetual futures
+            base_symbol = symbol.upper()
+            symbol_id = f"{exchange}_PERP_{base_symbol}_USD"
+            
+            # Choose endpoint based on historical flag
+            if historical:
+                url = f"{self.base_url}/metrics/symbol/history"
+                params = {
+                    "metric_id": metric_id,
+                    "symbol_id": symbol_id,
+                    "limit": limit
+                }
+                if time_start:
+                    params["time_start"] = time_start
+                if time_end:
+                    params["time_end"] = time_end
+            else:
+                url = f"{self.base_url}/metrics/symbol/current"
+                params = {
+                    "metric_id": metric_id,
+                    "symbol_id": symbol_id
+                }
+            
+            response = await client.get(url, headers=self.headers, params=params)
+            
+            if response.status_code != 200:
+                return {"success": False, "error": f"HTTP {response.status_code}"}
+            
+            data = response.json()
+            
+            if data and len(data) > 0:
+                if historical:
+                    # Historical data - return time series
+                    metrics_data = []
+                    for entry in data:
+                        metrics_data.append({
+                            "timestamp": entry.get("entry_time"),
+                            "value": float(entry.get("value_decimal", 0)),
+                            "recvTime": entry.get("recv_time")
+                        })
+                    
+                    return {
+                        "success": True,
+                        "symbol": symbol,
+                        "exchange": exchange,
+                        "metricId": metric_id,
+                        "dataPoints": len(metrics_data),
+                        "timeRange": {
+                            "start": time_start,
+                            "end": time_end
+                        },
+                        "data": metrics_data,
+                        "source": "coinapi_metrics_history"
+                    }
+                else:
+                    # Current data - single value
+                    latest = data[0]
+                    value = float(latest.get("value_decimal", 0))
+                    
+                    # Interpret funding rate
+                    interpretation = "N/A"
+                    if "FUNDING_RATE" in metric_id:
+                        if value > 0.0001:
+                            interpretation = "Longs pay shorts (bullish sentiment)"
+                        elif value < -0.0001:
+                            interpretation = "Shorts pay longs (bearish sentiment)"
+                        else:
+                            interpretation = "Neutral funding"
+                    
+                    return {
+                        "success": True,
+                        "symbol": symbol,
+                        "exchange": exchange,
+                        "metricId": metric_id,
+                        "timestamp": latest.get("entry_time"),
+                        "value": value,
+                        "interpretation": interpretation,
+                        "source": "coinapi_metrics_current"
+                    }
+            
+            return {"success": False, "error": "No metric data available"}
+            
+        except Exception as e:
+            return {"success": False, "error": str(e)}
 
 
 # Singleton instance
