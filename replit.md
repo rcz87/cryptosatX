@@ -114,11 +114,15 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - ✅ **Implementation:** `app/utils/telegram_report_sender.py` - Pagination support (splits reports into multiple messages <4096 chars)
 - ✅ **Integration:** Modified `app/core/rpc_flat_dispatcher.py` to support asynchronous Telegram sending (non-blocking)
 - ✅ **Parameter Filtering Fixed:** `send_telegram` now passes through for ALL operations (Coinglass, LunarCrush, signals.get)
-- ✅ **Supported Operations:** 
-  - `signals.get` - Full 5-part analysis report (signal summary, technical details, premium metrics, AI verdict, risk assessment)
-  - `coinglass.funding_rate.exchange_list` - Funding rate report with top exchanges data
-  - More operations can be easily added in the future
-- ✅ **Test Results:** 100% success rate - AVAX (5 messages), ETH funding (working), BTC signals (working)
+- ✅ **Supported Operations (7 Total):** 
+  1. `signals.get` - Full 5-part analysis report (signal summary, technical details, premium metrics, AI verdict, risk assessment)
+  2. `coinglass.funding_rate.exchange_list` - Funding rate report with top exchanges data
+  3. `coinglass.liquidations.symbol` - Liquidation report with historical data and heatmap analysis
+  4. `lunarcrush.coin` / `lunarcrush.coin_comprehensive` - Social analytics report with community metrics, sentiment scores, and viral trend detection
+  5. `coinglass.long_short_ratio.position_history` / `coinglass.long_short_ratio.account_history` - Whale activity report with long/short positioning data
+  6. `smart_money.scan` - Smart Money Concept scan report with institutional trading patterns and accumulation/distribution zones
+  7. `mss.discover` - Multi-Modal Signal Score discovery report with emerging cryptocurrencies and tokenomics analysis
+- ✅ **Test Results:** 100% success rate - All 7 operations tested and working (BTC, ETH, SOL, AVAX signals + funding + liquidations + social + whale + smart money + MSS)
 - 📱 **Usage:** Add `"send_telegram": true` to any RPC call to enable Telegram reporting
 - 🎯 **Benefits:** Overcomes GPT Actions limitations, provides detailed reports to user's Telegram, maintains fast API response
 
