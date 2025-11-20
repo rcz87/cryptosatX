@@ -40,10 +40,10 @@ class FlatRPCDispatcher:
         "mss.scan": 90,
         "mss.analyze": 45,
         
-        # Smart Money operations
-        "smart_money.scan": 60,
-        "smart_money.scan_auto": 60,
-        "smart_money.discover": 60,
+        # Smart Money operations (dynamic discovery + multi-timeframe analysis)
+        "smart_money.scan": 120,  # Increased: dynamic coin discovery + OHLCV fetching + pattern detection
+        "smart_money.scan_auto": 120,
+        "smart_money.discover": 90,
         
         # Smart Entry operations (confluence analysis)
         "smart_entry.analyze": 45,

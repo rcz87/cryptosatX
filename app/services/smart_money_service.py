@@ -385,6 +385,7 @@ class SmartMoneyService:
         min_accumulation_score: int = 5,
         min_distribution_score: int = 5,
         coins: Optional[List[str]] = None,
+        limit: int = 20,  # ✅ FIX: Add limit parameter
     ) -> Dict:
         """
         Scan multiple markets for smart money patterns
@@ -395,12 +396,16 @@ class SmartMoneyService:
             min_accumulation_score: Minimum score to flag accumulation (default 5)
             min_distribution_score: Minimum score to flag distribution (default 5)
             coins: Optional list of coins to scan (uses dynamic discovery or SCAN_LIST)
+            limit: Maximum number of coins to scan (default 20)
 
         Returns:
             Dict with accumulation and distribution signals
         """
         # ✅ NEW: Use smart coin discovery with fallback
         target_coins = await self._get_coins_to_scan(coins)
+        
+        # ✅ FIX: Apply limit to discovered coins
+        target_coins = target_coins[:limit]
 
         # ✅ OPTIMIZED: Process in batches to avoid overload
         # Batch size: 5 coins at a time (balance between speed and API limits)
@@ -516,6 +521,7 @@ class SmartMoneyService:
             min_accumulation_score=min_accumulation_score,
             min_distribution_score=min_distribution_score,
             coins=coin_list,
+            limit=limit,  # ✅ FIX: Pass limit parameter
         )
 
     async def find_accumulation_coins(
