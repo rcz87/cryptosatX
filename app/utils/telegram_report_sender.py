@@ -1192,40 +1192,77 @@ Use exchanges with most positive rates (you get paid most!)
         """Format market summary into Telegram messages"""
         messages = []
 
-        coins = data.get("coins", [])
-        total_market_cap = data.get("totalMarketCap", 0)
-        btc_dominance = data.get("btcDominance", 0)
+        # Extract actual fields from market_summary_service
+        market_sentiment = data.get("market_sentiment", "UNKNOWN")
+        major_coins = data.get("major_coins", {})  # Dict, not list
+        aggregate_metrics = data.get("aggregate_metrics", {})
+        explanation = data.get("explanation", "No explanation available")
+        recommendations = data.get("recommendations", [])
+        data_quality = data.get("data_quality", {})
+
+        # Sentiment emoji
+        sentiment_emoji = {
+            "BULLISH": "🟢",
+            "BEARISH": "🔴",
+            "NEUTRAL": "⚪",
+            "MIXED": "🟡"
+        }.get(market_sentiment, "❓")
 
         msg = f"""📊 <b>MARKET SUMMARY</b>
 ━━━━━━━━━━━━━━━━━━━━━━━
 
-<b>💰 Global Metrics:</b>
-• Total Market Cap: ${total_market_cap:,.0f}
-• BTC Dominance: {btc_dominance:.1f}%
-• Coins Tracked: {len(coins)}
+{sentiment_emoji} <b>Market Sentiment: {market_sentiment}</b>
+
+<b>📈 Aggregate Metrics:</b>
+• Average Score: {aggregate_metrics.get('avg_score', 0):.1f}/100
+• Avg Funding Rate: {aggregate_metrics.get('avg_funding_rate', 0):.3f}%
+• Market Bias: {aggregate_metrics.get('market_bias', 'N/A')}
+
+<b>📊 Signal Distribution:</b>
+• LONG: {aggregate_metrics.get('total_signals', {}).get('LONG', 0)}
+• SHORT: {aggregate_metrics.get('total_signals', {}).get('SHORT', 0)}
+• NEUTRAL: {aggregate_metrics.get('total_signals', {}).get('NEUTRAL', 0)}
 
 ━━━━━━━━━━━━━━━━━━━━━━━
-<b>🔥 TOP COINS:</b>
+<b>🔥 MAJOR COINS:</b>
 
 """
 
-        for i, coin in enumerate(coins[:10], 1):
-            symbol = coin.get("symbol", "UNKNOWN")
-            price = coin.get("price", 0)
-            change_24h = coin.get("change24h", 0)
-            volume = coin.get("volume24h", 0)
+        # Iterate through major coins dict
+        for i, (symbol, coin_data) in enumerate(major_coins.items(), 1):
+            if isinstance(coin_data, dict):
+                signal = coin_data.get("signal", "UNKNOWN")
+                score = coin_data.get("score", 0)
+                price = coin_data.get("price", 0)
+                confidence = coin_data.get("confidence", "unknown")
 
-            change_emoji = "🟢" if change_24h >= 0 else "🔴"
+                signal_emoji = "🟢" if signal == "LONG" else "🔴" if signal == "SHORT" else "⚪"
 
-            msg += f"""{i}. <b>{symbol}</b> {change_emoji}
-   • Price: ${price:,.4f}
-   • 24h Change: {change_24h:+.2f}%
-   • Volume: ${volume:,.0f}
+                msg += f"""{i}. <b>{symbol}</b> {signal_emoji} {signal}
+   • Score: {score:.1f}/100
+   • Price: ${price:,.2f}
+   • Confidence: {confidence}
 
 """
 
-        msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
-        msg += "📊 Market data powered by CryptoSatX"
+        msg += f"""━━━━━━━━━━━━━━━━━━━━━━━
+<b>💡 EXPLANATION:</b>
+{explanation}
+
+"""
+
+        if recommendations:
+            msg += "<b>🎯 RECOMMENDATIONS:</b>\n"
+            for rec in recommendations[:5]:
+                msg += f"• {rec}\n"
+            msg += "\n"
+
+        msg += f"""━━━━━━━━━━━━━━━━━━━━━━━
+<b>📊 Data Quality:</b>
+• Coverage: {data_quality.get('coverage_percent', 0):.1f}%
+• Successful: {data_quality.get('successful_fetches', 0)}/{data_quality.get('coins_analyzed', 0)}
+
+📊 Market analysis by CryptoSatX"""
 
         messages.append(msg)
         return messages
@@ -1370,8 +1407,10 @@ Use exchanges with most positive rates (you get paid most!)
         """Format whale accumulation activity into Telegram messages"""
         messages = []
 
-        accumulating_coins = data.get("accumulatingCoins", [])
-        total_scanned = data.get("totalScanned", 0)
+        # Extract actual fields from smart_money_service
+        accumulating_coins = data.get("accumulation_coins", data.get("accumulation", []))
+        total_scanned = data.get("totalCoins", data.get("coinsScanned", 0))
+        summary = data.get("summary", {})
 
         msg = f"""🐋 <b>WHALE ACCUMULATION REPORT</b>
 ━━━━━━━━━━━━━━━━━━━━━━━
@@ -1379,6 +1418,8 @@ Use exchanges with most positive rates (you get paid most!)
 <b>📊 Scan Summary:</b>
 • Coins Scanned: {total_scanned}
 • Accumulation Detected: <b>{len(accumulating_coins)}</b>
+• High Confidence: {summary.get('high_confidence', 0)}
+• Medium Confidence: {summary.get('medium_confidence', 0)}
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 """
@@ -1392,8 +1433,10 @@ Use exchanges with most positive rates (you get paid most!)
             for i, coin in enumerate(accumulating_coins[:10], 1):
                 symbol = coin.get("symbol", "UNKNOWN")
                 acc_score = coin.get("accumulationScore", 0)
-                whale_activity = coin.get("whaleActivity", 0)
-                buy_pressure = coin.get("buyPressure", 0)
+                price = coin.get("price", 0)
+                signal_type = coin.get("signalType", "NEUTRAL")
+                composite_score = coin.get("compositeScore", 0)
+                reasons = coin.get("reasons", [])
 
                 # Strength indicator
                 if acc_score >= 8:
@@ -1407,10 +1450,13 @@ Use exchanges with most positive rates (you get paid most!)
 
                 msg += f"""{i}. <b>{symbol}</b> - {strength}
    • Accumulation Score: <b>{acc_score}/10</b>
-   • Whale Activity: {whale_activity:.1f}
-   • Buy Pressure: {buy_pressure:.1f}%
-
+   • Price: ${price:,.4f}
+   • Signal: {signal_type}
+   • Composite Score: {composite_score:.1f}/100
 """
+                if reasons:
+                    msg += f"   • Key Reasons: {', '.join(reasons[:2])}\n"
+                msg += "\n"
 
         msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
         msg += "🐋 Smart Money tracking by CryptoSatX"
@@ -1422,9 +1468,18 @@ Use exchanges with most positive rates (you get paid most!)
         """Format MSS analysis for single coin into Telegram messages"""
         messages = []
 
-        mss_score = data.get("mssScore", 0)
-        tier = data.get("tier", "Unknown")
+        # Extract actual fields from mss_service
+        mss_score = data.get("mss_score", data.get("mssScore", 0))
+        signal = data.get("signal", "UNKNOWN")
+        confidence = data.get("confidence", "unknown")
+        phases = data.get("phases", {})
         breakdown = data.get("breakdown", {})
+        warnings = data.get("warnings", [])
+
+        # Extract phase scores
+        phase1_score = phases.get("phase1_discovery", {}).get("score", 0)
+        phase2_score = phases.get("phase2_confirmation", {}).get("score", 0)
+        phase3_score = phases.get("phase3_validation", {}).get("score", 0)
 
         # Score emoji
         if mss_score >= 80:
@@ -1440,62 +1495,65 @@ Use exchanges with most positive rates (you get paid most!)
             grade_emoji = "❌"
             grade_text = "WEAK"
 
+        signal_emoji = "🟢" if signal == "BUY" else "🔴" if signal == "SELL" else "⚪"
+
         msg = f"""💎 <b>MSS ANALYSIS: {symbol}</b>
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 {grade_emoji} <b>MSS Score: {mss_score:.1f}/100</b>
 <b>Grade: {grade_text}</b>
-<b>Tier: {tier}</b>
+{signal_emoji} <b>Signal: {signal}</b>
+<b>Confidence: {confidence}</b>
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 <b>📊 Phase Breakdown:</b>
 
-<b>Phase 1 - Tokenomics:</b> {breakdown.get('phase1Score', 0)}/100
-• Market Cap: {breakdown.get('marketCap', 'N/A')}
-• Volume: {breakdown.get('volume', 'N/A')}
-• Liquidity: {breakdown.get('liquidity', 'N/A')}
+<b>Phase 1 - Discovery:</b> {phase1_score:.1f}/100
+{phases.get('phase1_discovery', {}).get('breakdown', {}).get('status', 'Analysis complete')}
 
-<b>Phase 2 - Community Momentum:</b> {breakdown.get('phase2Score', 0)}/100
-• Social Volume: {breakdown.get('socialVolume', 'N/A')}
-• Community Growth: {breakdown.get('communityGrowth', 'N/A')}
-• Engagement: {breakdown.get('engagement', 'N/A')}
+<b>Phase 2 - Social Confirmation:</b> {phase2_score:.1f}/100
+• Social Score: {phases.get('phase2_confirmation', {}).get('breakdown', {}).get('social_score', 'N/A')}
+• Volume Momentum: {phases.get('phase2_confirmation', {}).get('breakdown', {}).get('volume_score', 'N/A')}
 
-<b>Phase 3 - Institutional Validation:</b> {breakdown.get('phase3Score', 0)}/100
-• Exchange Listings: {breakdown.get('exchangeListings', 'N/A')}
-• Institutional Interest: {breakdown.get('institutionalInterest', 'N/A')}
-• Partnerships: {breakdown.get('partnerships', 'N/A')}
+<b>Phase 3 - Institutional Validation:</b> {phase3_score:.1f}/100
+• OI Score: {phases.get('phase3_validation', {}).get('breakdown', {}).get('oi_score', 'N/A')}
+• Whale Score: {phases.get('phase3_validation', {}).get('breakdown', {}).get('whale_score', 'N/A')}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+<b>📈 Overall Assessment:</b>
+• Category: {breakdown.get('category', 'MIXED')}
+• Risk Level: {breakdown.get('risk_level', 'MEDIUM')}
 
 """
 
-        # Recommendation
-        if mss_score >= 70:
+        # Recommendation based on signal
+        if signal == "BUY" and mss_score >= 70:
             msg += """<b>✅ RECOMMENDATION:</b>
-• Strong opportunity
+• Strong BUY opportunity
 • Consider position entry
-• Monitor for dips to accumulate
+• Monitor for optimal entry points
 
 """
-        elif mss_score >= 50:
+        elif signal == "BUY" and mss_score >= 50:
             msg += """<b>⚠️ RECOMMENDATION:</b>
-• Moderate opportunity
+• Moderate BUY opportunity
 • Wait for confirmation
 • Small position acceptable
 
 """
         else:
             msg += """<b>❌ RECOMMENDATION:</b>
-• Weak opportunity
-• Avoid for now
-• Look for better setups
+• Not a BUY signal currently
+• Wait for better setup
+• Monitor for improvements
 
 """
 
-        # Risks
-        risks = data.get("risks", [])
-        if risks:
-            msg += "<b>⚠️ Risk Factors:</b>\n"
-            for risk in risks[:5]:
-                msg += f"• {risk}\n"
+        # Warnings
+        if warnings:
+            msg += "<b>⚠️ Risk Warnings:</b>\n"
+            for warning in warnings[:5]:
+                msg += f"• {warning}\n"
             msg += "\n"
 
         msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
