@@ -56,6 +56,7 @@ from app.api import (
     routes_spike_gpt,  # ADDED FOR PHASE 5 - SPIKE DETECTION GPT ACTIONS
     routes_comprehensive_monitoring,  # ADDED FOR COMPREHENSIVE COIN MONITORING SYSTEM
     routes_smart_entry,  # ADDED FOR PRO SMART ENTRY ENGINE
+    routes_gpt_minimal,  # ADDED FOR GPT ACTIONS MINIMAL SCHEMA (30 operation limit fix)
 )
 
 from app.middleware import (
@@ -269,6 +270,9 @@ app.include_router(
     routes_rpc.router, tags=["Unified RPC - GPT Actions"]
 )  # ADDED FOR UNIFIED RPC ENDPOINT - GPT ACTIONS
 app.include_router(
+    routes_gpt_minimal.router, tags=["GPT Minimal Schema"]
+)  # ADDED FOR GPT ACTIONS MINIMAL SCHEMA - 30 OPERATION LIMIT FIX
+app.include_router(
     routes_gpt_actions.router, tags=["GPT Actions (Flat Params)"]
 )  # ADDED FOR GPT ACTIONS COMPATIBILITY
 app.include_router(
@@ -301,9 +305,6 @@ app.include_router(
 app.include_router(
     routes_spike_gpt.router, tags=["GPT Actions"]
 )  # ADDED FOR PHASE 5 - SPIKE DETECTION GPT ACTIONS (user-friendly endpoints)
-app.include_router(
-    routes_gpt_schema.router, tags=["GPT Schema - Limited Operations"]
-)  # ADDED FOR GPT ACTIONS TOP 30 SCHEMA
 
 # Dashboard router LAST as catch-all fallback (handles root "/" and SPA routes)
 # MUST be after all API routers to prevent route interception
