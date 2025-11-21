@@ -17,6 +17,8 @@ def _get_all_operations():
 class FlatInvokeRequest(BaseModel):
     """
     Flat parameter request model for GPT Actions compatibility
+    
+    ✅ Supports send_telegram parameter for GPT→Telegram Hybrid System
 
     All parameters are at root level (not nested under 'args')
     """
