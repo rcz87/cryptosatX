@@ -157,7 +157,7 @@ async def list_operations() -> Dict[str, Any]:
 
 
 @router.get("/invoke/schema", summary="Get GPT Actions OpenAPI Schema (Flat Parameters)")
-async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
+async def get_gpt_actions_schema(request: Request):
     """
     📄 **GPT Actions Compatible OpenAPI Schema - FLAT PARAMETERS**
 
@@ -171,6 +171,8 @@ async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
     2. Import into GPT Actions
     3. GPT can now call any of 192 operations via single /invoke endpoint
     4. All parameters are FLAT (not nested under 'args')
+    
+    **Cache Control:** This endpoint serves fresh schema on every request to prevent CDN caching issues.
     """
     import os
     from app.utils.operation_catalog import OPERATION_CATALOG
@@ -438,4 +440,14 @@ async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
         }
     }
     
-    return schema
+    # Return with Cache-Control headers to prevent CDN/proxy caching
+    from fastapi.responses import JSONResponse
+    
+    return JSONResponse(
+        content=schema,
+        headers={
+            "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+    )
