@@ -195,7 +195,7 @@ async def lifespan(app: FastAPI):
 app = FastAPI(
     title="CryptoSatX - Enhanced Crypto Signal API",  # UPDATED
     description="AI-powered crypto trading signals with Smart Money Concept, signal history, and Telegram alerts",  # UPDATED
-    version="2.0.0",  # UPDATED VERSION
+    version="3.0.0",  # UPDATED VERSION - Bumped to force OpenAPI schema cache refresh (anyOf fix)
     docs_url="/docs",
     redoc_url="/redoc",
     lifespan=lifespan,
