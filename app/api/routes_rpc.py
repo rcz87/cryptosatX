@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/", summary="API Health & Info")
+@router.get("/rpc/info", summary="API Health & Info")
 async def root():
     """Get API information and health status"""
     return {
