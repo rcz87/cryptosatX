@@ -1,0 +1,59 @@
+BTC (Bitcoin) - Analisis Sinyal Lengkap (21 Nov 2025)
+
+Sinyal: ⚪ NEUTRAL
+AI Verdict: ❌ SKIP (score: 42.7/100)
+Harga Saat Ini: $86,583.53
+Mode: Aggressive (Balanced Risk/Reward)
+Position Size: ❌ 0x (tidak direkomendasikan entry)
+
+⸻
+
+3 Faktor Kuat:
+	1.	🧊 Fear & Greed Index = 10 (Extreme Fear) → Bullish contrarian signal
+	2.	📈 Overcrowded Longs (80%) → Bearish karena terlalu banyak posisi long yang rentan liquidation
+	3.	📉 Price Trend: Strongly Bearish (multi-timeframe) → Bearish konfirmasi teknikal
+
+⸻
+
+AI Summary (dari GPT-4 Turbo Layer):
+
+“Analisis sinyal BTC menunjukkan keputusan SKIP. Terjadi konflik signifikan antar layer: meskipun indikator Fear/Greed menunjukkan peluang beli, posisi pasar sangat berat di sisi long dan tren harga multi-timeframe masih bearish. Smart money terdeteksi masih long, namun hal ini bertentangan dengan momentum harga. Disarankan tidak entry dan menunggu konfirmasi reversal yang lebih kuat.”
+
+⸻
+
+Metrix Pendukung:
+	•	Funding Rate: 0.0057 → sedikit positif (banyak trader long)
+	•	Open Interest: $65.22B → stabil
+	•	Social Sentiment: 76 (positif kuat)
+	•	AltRank: #806 (lemah secara sosial)
+	•	Smart Money Bias: Long → konflik dengan price action bearish
+	•	Fear & Greed Index: 10 (Extreme Fear)
+
+⸻
+
+Risk Management (berdasarkan AI volatility model):
+	•	Stop Loss: $92,153.7 (+6.43%)
+	•	Take Profit: $78,228.2 (–9.65%)
+	•	Risk:Reward Ratio: 1.5 : 1
+	•	ATR (Volatility): 2.14%
+	•	Rekomendasi: ❌ Hindari entry hingga trend reversal terkonfirmasi.
+
+⸻
+
+Kesimpulan Akhir:
+
+🔹 BTC sedang berada di zona uncertainty tinggi — sinyal saling bertentangan antara Fear/Greed Index (bullish) dan trend harga + crowd longs (bearish).
+🔹 AI Verdict: SKIP — fokus pada capital preservation, bukan entry agresif.
+🔹 Pantau area $78k - $80k sebagai support kuat untuk potensi bounce.
+
+⸻
+
+⚠️ Bukan nasihat keuangan. Gunakan analisis ini sebagai referensi teknikal dan lakukan DYOR sebelum mengambil keputusan trading.
+
+⸻
+
+Apakah kamu ingin saya kirim hasil analisis ini langsung ke Telegram kamu (misalnya dalam format alert bot)?
+Jika iya, tolong berikan:
+	•	Username atau Chat ID Telegram
+atau
+	•	Bot Token + Chat ID (untuk pengiriman otomatis via API).
