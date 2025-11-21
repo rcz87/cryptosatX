@@ -156,24 +156,9 @@ async def list_operations() -> Dict[str, Any]:
     }
 
 
-@router.get("/invoke/schema", summary="Get GPT Actions OpenAPI Schema (Flat Parameters)")
+@router.get("/invoke/schema", include_in_schema=False, summary="DEPRECATED - Use /openapi.json instead")
 async def get_gpt_actions_schema(request: Request):
-    """
-    📄 **GPT Actions Compatible OpenAPI Schema - FLAT PARAMETERS**
-
-    Returns OpenAPI 3.1 schema optimized for GPT Actions with FLAT parameters.
-    Single /invoke operation with 192+ operations accessible via operation enum.
-
-    **✅ USES FLAT PARAMETERS (GPT Actions Compatible!)**
-
-    **For GPT Actions:**
-    1. Copy this URL: `https://guardiansofthetoken.org/invoke/schema`
-    2. Import into GPT Actions
-    3. GPT can now call any of 192 operations via single /invoke endpoint
-    4. All parameters are FLAT (not nested under 'args')
-    
-    **Cache Control:** This endpoint serves fresh schema on every request to prevent CDN caching issues.
-    """
+    """DEPRECATED: Use /openapi.json instead for GPT Actions"""
     import os
     from app.utils.operation_catalog import OPERATION_CATALOG
 
