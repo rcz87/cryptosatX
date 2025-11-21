@@ -56,7 +56,6 @@ from app.api import (
     routes_spike_gpt,  # ADDED FOR PHASE 5 - SPIKE DETECTION GPT ACTIONS
     routes_comprehensive_monitoring,  # ADDED FOR COMPREHENSIVE COIN MONITORING SYSTEM
     routes_smart_entry,  # ADDED FOR PRO SMART ENTRY ENGINE
-    routes_gpt_schema,  # ADDED FOR GPT ACTIONS TOP 30 SCHEMA
 )
 
 from app.middleware import (
