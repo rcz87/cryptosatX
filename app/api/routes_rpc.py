@@ -108,9 +108,9 @@ async def invoke_operation(request: Union[FlatInvokeRequest, RPCRequest]) -> Uni
     ```
     """
     # Auto-detect request type and dispatch accordingly
-
-    # Check if request has 'args' field (legacy nested format)
-    if hasattr(request, 'args') and request.args:
+    
+    # Check if request is legacy nested format (RPCRequest) vs flat (FlatInvokeRequest)
+    if isinstance(request, RPCRequest) and request.args:
         # Legacy nested args format - use old dispatcher
         response = await rpc_dispatcher.dispatch(
             operation=request.operation,
