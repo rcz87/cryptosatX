@@ -1,0 +1,89 @@
+🎯 CARA PAKAI SUPER SIMPLE
+Tinggal tambah 1 parameter aja:
+
+// NORMAL (bisa timeout):
+{"operation": "smart_money.scan", "limit": 50}
+
+// KE TELEGRAM (tidak timeout):
+{"operation": "smart_money.scan", "limit": 50, "send_telegram": true}
+                                                ↑ TAMBAH INI!
+📱 PERBEDAAN
+❌ TANPA send_telegram (NORMAL)
+User → GPT → API (proses 45 detik) → Return 150 KB data → GPT
+                     ↑
+                  TIMEOUT!
+                  ❌ Error
+✅ DENGAN send_telegram: true
+User → GPT → API (proses 45 detik)
+                     ↓
+               Return ke GPT: "Sent to Telegram" (< 1 KB, 1 detik)
+                     ↓
+               Telegram: Report LENGKAP 150 KB!
+               
+✅ GPT tidak timeout
+✅ User dapat full data di Telegram
+🎁 KEUNTUNGAN
+Keuntungan	Penjelasan
+⚡ Tidak Timeout	GPT dapat response cepat (< 1 detik)
+📊 Data Lengkap	Report full di Telegram (unlimited size)
+📈 Professional	Format lebih bagus dengan chart & visualization
+✅ Always Success	Tidak ada limit GPT 60 detik
+🚀 KAPAN PAKAI?
+✅ PAKAI send_telegram UNTUK:
+// Heavy scan (banyak coins):
+{"operation": "smart_money.scan", "limit": 50, "send_telegram": true}
+
+// MSS discovery:
+{"operation": "mss.discover", "limit": 20, "send_telegram": true}
+
+// Full analysis:
+{"operation": "signals.get", "symbol": "BTC", "send_telegram": true}
+❌ TIDAK PERLU UNTUK:
+// Simple & fast:
+{"operation": "health.check"}
+{"operation": "market.summary"}
+{"operation": "signals.get", "symbol": "BTC"}  // Kalo mau di GPT
+💡 TIP PRO
+Kalo GPT bilang error:
+
+"Request timeout"
+"Response too large"
+"Data error"
+SOLUSI: Tambah send_telegram: true → Report ke Telegram aja!
+
+📋 CONTOH REAL
+User bilang ke GPT:
+
+"Scan 50 coins untuk smart money accumulation, 
+ kirim report lengkap ke Telegram"
+GPT akan call:
+
+{
+  "operation": "smart_money.scan_accumulation",
+  "limit": 50,
+  "send_telegram": true
+}
+Hasilnya:
+
+✅ GPT dapat response cepat: "Analysis sent to Telegram"
+✅ Telegram dapat report 50 coins (lengkap!)
+✅ Tidak timeout!
+🎯 KESIMPULAN
+Pertanyaan kamu:
+
+"Apakah bisa data langsung dikirim ke Telegram saja?"
+
+Jawaban:
+
+✅ IYA BISA! Pakai parameter send_telegram: true
+
+Cara pakai:
+
+Tinggal tambah "send_telegram": true di request
+
+Keuntungan:
+
+Tidak timeout
+Data lengkap
+Format professional
+Always success!
