@@ -7,7 +7,7 @@ from fastapi import APIRouter, HTTPException, Request
 from typing import Optional, Any, Dict
 from pydantic import BaseModel
 from app.models.rpc_flat_models import FlatInvokeRequest, FlatRPCResponse
-from app.core.rpc_flat_dispatcher import RPC_FLAT_DISPATCHER
+from app.core.rpc_flat_dispatcher import flat_rpc_dispatcher
 import logging
 
 logger = logging.getLogger(__name__)
@@ -102,7 +102,7 @@ async def invoke_rpc(request: FlatInvokeRequest) -> FlatRPCResponse:
     
     try:
         # Dispatch to RPC handler
-        response = await RPC_FLAT_DISPATCHER.dispatch(request)
+        response = await flat_rpc_dispatcher.dispatch(request)
         return response
     except Exception as e:
         logger.error(f"RPC Error: {str(e)}", exc_info=True)
