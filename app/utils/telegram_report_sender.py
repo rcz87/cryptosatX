@@ -1407,19 +1407,25 @@ Use exchanges with most positive rates (you get paid most!)
         """Format whale accumulation activity into Telegram messages"""
         messages = []
 
-        # Extract actual fields from smart_money_service
-        accumulating_coins = data.get("accumulation_coins", data.get("accumulation", []))
-        total_scanned = data.get("totalCoins", data.get("coinsScanned", 0))
+        # Extract actual fields from smart_money_service.scan_markets
+        accumulating_coins = data.get("accumulation", data.get("accumulation_coins", []))
+        total_scanned = data.get("coinsScanned", data.get("totalCoins", 0))
         summary = data.get("summary", {})
+
+        # Calculate high/medium confidence from actual accumulation scores
+        high_confidence = len([c for c in accumulating_coins if c.get("accumulationScore", 0) >= 8])
+        medium_confidence = len([c for c in accumulating_coins if 6 <= c.get("accumulationScore", 0) < 8])
 
         msg = f"""🐋 <b>WHALE ACCUMULATION REPORT</b>
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 <b>📊 Scan Summary:</b>
 • Coins Scanned: {total_scanned}
+• Total Signals: {summary.get('accumulationSignals', len(accumulating_coins))}
 • Accumulation Detected: <b>{len(accumulating_coins)}</b>
-• High Confidence: {summary.get('high_confidence', 0)}
-• Medium Confidence: {summary.get('medium_confidence', 0)}
+• High Confidence (≥8): {high_confidence}
+• Medium Confidence (6-7): {medium_confidence}
+• Distribution Signals: {summary.get('distributionSignals', 0)}
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 """
