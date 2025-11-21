@@ -2,7 +2,7 @@
 RPC Flat Models - GPT Actions Compatible
 Uses flat parameters instead of nested args for GPT Actions compatibility
 """
-from typing import Optional, Literal, Any, Union
+from typing import Optional, Literal, Any
 from pydantic import BaseModel, Field
 from pydantic.json_schema import JsonSchemaValue
 from pydantic_core import core_schema
@@ -14,30 +14,19 @@ def _get_all_operations():
     return sorted(OPERATION_CATALOG.keys())
 
 
-def _get_operation_literal():
-    """Create Literal type with all operations for proper OpenAPI enum"""
-    ops = _get_all_operations()
-    return Union[Literal[tuple(ops)]] if ops else str
-
-
 class FlatInvokeRequest(BaseModel):
     """
     Flat parameter request model for GPT Actions compatibility
     
     ✅ Supports send_telegram parameter for GPT→Telegram Hybrid System
-    ✅ Operation field has FULL enum of 187+ operations in OpenAPI
 
     All parameters are at root level (not nested under 'args')
     """
     # REQUIRED: Operation identifier (with enum of all 187+ operations for GPT Actions)
-    # Using json_schema_extra for proper enum exposure in OpenAPI
     operation: str = Field(
         ...,
-        description="Operation to execute (187+ operations available)",
-        json_schema_extra={
-            "enum": _get_all_operations(),
-            "type": "string"
-        }
+        description="Operation to execute - see /invoke/operations for full list (187 operations across 18 namespaces)",
+        json_schema_extra={"enum": _get_all_operations()}
     )
 
     # OPTIONAL: Common parameters (flat at root level)
