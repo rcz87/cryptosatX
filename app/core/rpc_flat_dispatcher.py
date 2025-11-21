@@ -1587,6 +1587,24 @@ class FlatRPCDispatcher:
                 return {"success": False, "error": result["error"]}
             return {"success": True, **result}
 
+        elif operation == "analytics.summary":
+            # Alias for analytics.performance.summary
+            from app.services.analytics_service import analytics_service
+            days = args.get("days", 30)
+            result = await analytics_service.get_overall_summary(days_back=days)
+            if "error" in result:
+                return {"success": False, "error": result["error"]}
+            return {"success": True, **result}
+
+        # ===================================================================
+        # MONITORING (Auto-monitoring system)
+        # ===================================================================
+        elif operation == "monitoring.status":
+            from app.services.monitoring_service import get_monitoring_service
+            monitoring_service = await get_monitoring_service()
+            result = await monitoring_service.get_monitoring_status()
+            return {"success": True, **result}
+
         # ===================================================================
         # FALLBACK - Operation not implemented yet
         # ===================================================================
