@@ -279,6 +279,11 @@ async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
                                             "description": "Operation to execute (select from enum)",
                                             "enum": operation_names
                                         },
+                                        "send_telegram": {
+                                            "type": "boolean",
+                                            "description": "Send results to Telegram",
+                                            "default": False
+                                        },
                                         "symbol": {
                                             "type": "string",
                                             "description": "Cryptocurrency symbol (BTC, ETH, SOL, etc.)",
@@ -342,11 +347,6 @@ async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
                                         "topic": {
                                             "type": "string",
                                             "description": "Topic name",
-                                            "nullable": True
-                                        },
-                                        "send_telegram": {
-                                            "type": "boolean",
-                                            "description": "Send detailed results to Telegram (GPT→Telegram Hybrid System) - supported for 7 operations: signals.get, funding_rate, liquidations, lunarcrush.coin, long_short_ratio, smart_money.scan, mss.discover",
                                             "nullable": True
                                         }
                                     }
