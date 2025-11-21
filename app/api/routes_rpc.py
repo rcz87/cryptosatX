@@ -15,22 +15,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
-@router.get("/", summary="API Health & Info")
-async def root():
-    """Get API information and health status"""
-    return {
-        "name": "Crypto Futures Signal API",
-        "version": "1.0.0",
-        "description": "Production-ready crypto futures signal API with multi-provider integration",
-        "endpoints": {
-            "health": "/health",
-            "signals": "/signals/{symbol}",
-            "market": "/market/{symbol}",
-            "gpt_schema": "/gpt/action-schema"
-        }
-    }
-
-
 @router.get("/invoke/operations", summary="List all available operations")
 async def list_operations():
     """List all 187+ operations available"""
