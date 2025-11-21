@@ -1,0 +1,289 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CryptoSatX RPC API",
+    "version": "3.0.0",
+    "description": "\ud83d\ude80 Single RPC endpoint with 187 crypto operations. Use 'operation' parameter to call any function.\n\n**Examples:**\n- signals.get - Get trading signal\n- coinglass.liquidations.symbol - Get liquidation data\n- smart_money.scan - Scan smart money activity\n- mss.discover - Discover high-potential coins\n\n**Total Operations:** 187"
+  },
+  "servers": [
+    {
+      "url": "https://guardiansofthetoken.org"
+    }
+  ],
+  "paths": {
+    "/invoke": {
+      "post": {
+        "operationId": "invoke",
+        "summary": "Unified RPC endpoint - 187 operations",
+        "description": "Call any of 187 crypto operations via single endpoint. Specify operation name + parameters.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "operation"
+                ],
+                "properties": {
+                  "operation": {
+                    "type": "string",
+                    "enum": [
+                      "admin.weights.current",
+                      "admin.weights.update",
+                      "admin.weights.reset",
+                      "admin.weights.history",
+                      "admin.weights.performance",
+                      "admin.weights.importance",
+                      "admin.ab_test.create",
+                      "admin.ab_test.list",
+                      "admin.auto_optimization.configure",
+                      "admin.auto_optimization.run",
+                      "admin.dashboard",
+                      "admin.system.health",
+                      "analytics.summary",
+                      "analytics.history.latest",
+                      "analytics.history.symbol",
+                      "analytics.history.date_range",
+                      "analytics.performance.symbol",
+                      "analytics.performance.summary",
+                      "analytics.stats.overview",
+                      "coinapi.ohlcv.latest",
+                      "coinapi.ohlcv.historical",
+                      "coinapi.orderbook",
+                      "coinapi.trades",
+                      "coinapi.quote",
+                      "coinapi.multi_exchange",
+                      "coinapi.dashboard",
+                      "coinapi.symbols",
+                      "coinapi.metrics",
+                      "coinglass.markets",
+                      "coinglass.markets.symbol",
+                      "coinglass.liquidation.order",
+                      "coinglass.liquidation.exchange_list",
+                      "coinglass.liquidation.aggregated_history",
+                      "coinglass.liquidation.history",
+                      "coinglass.orderbook.ask_bids_history",
+                      "coinglass.orderbook.aggregated_history",
+                      "coinglass.orderbook.whale_walls",
+                      "coinglass.orderbook.whale_history",
+                      "coinglass.orderbook.detailed_history",
+                      "coinglass.hyperliquid.whale_alerts",
+                      "coinglass.hyperliquid.whale_positions",
+                      "coinglass.hyperliquid.positions.symbol",
+                      "coinglass.chain.whale_transfers",
+                      "coinglass.chain.exchange_flows",
+                      "coinglass.indicators.rsi_list",
+                      "coinglass.indicators.rsi",
+                      "coinglass.indicators.ma",
+                      "coinglass.indicators.ema",
+                      "coinglass.indicators.bollinger",
+                      "coinglass.indicators.macd",
+                      "coinglass.indicators.basis",
+                      "coinglass.indicators.whale_index",
+                      "coinglass.indicators.cgdi",
+                      "coinglass.indicators.cdri",
+                      "coinglass.indicators.golden_ratio",
+                      "coinglass.indicators.fear_greed",
+                      "coinglass.calendar.economic",
+                      "coinglass.news.feed",
+                      "coinglass.volume.taker_buy_sell",
+                      "coinglass.liquidations.symbol",
+                      "coinglass.liquidations.heatmap",
+                      "coinglass.price_change",
+                      "coinglass.price_history",
+                      "coinglass.delisted_pairs",
+                      "coinglass.open_interest.history",
+                      "coinglass.open_interest.aggregated_history",
+                      "coinglass.open_interest.aggregated_stablecoin_history",
+                      "coinglass.open_interest.aggregated_coin_margin_history",
+                      "coinglass.open_interest.exchange_list",
+                      "coinglass.open_interest.exchange_history_chart",
+                      "coinglass.funding_rate.history",
+                      "coinglass.funding_rate.oi_weight_history",
+                      "coinglass.funding_rate.vol_weight_history",
+                      "coinglass.funding_rate.exchange_list",
+                      "coinglass.funding_rate.accumulated_exchange_list",
+                      "coinglass.long_short_ratio.account_history",
+                      "coinglass.long_short_ratio.position_history",
+                      "coinglass.taker_buy_sell.exchange_list",
+                      "coinglass.net_position.history",
+                      "coinglass.pairs_markets.symbol",
+                      "coinglass.supported_coins",
+                      "coinglass.supported_exchanges",
+                      "coinglass.exchanges",
+                      "coinglass.options.open_interest",
+                      "coinglass.options.volume",
+                      "coinglass.etf.flows",
+                      "coinglass.onchain.reserves",
+                      "coinglass.index.bull_market_peak",
+                      "coinglass.index.rainbow_chart",
+                      "coinglass.index.stock_to_flow",
+                      "coinglass.borrow.interest_rate",
+                      "coinglass.exchange.assets",
+                      "coinglass.dashboard.symbol",
+                      "signals.get",
+                      "signals.debug",
+                      "market.get",
+                      "market.summary",
+                      "smart_money.scan",
+                      "smart_money.scan_accumulation",
+                      "smart_money.scan_distribution",
+                      "smart_money.info",
+                      "smart_money.analyze",
+                      "smart_money.discover",
+                      "smart_money.futures_list",
+                      "smart_money.scan_auto",
+                      "mss.discover",
+                      "mss.analyze",
+                      "mss.scan",
+                      "mss.watch",
+                      "mss.info",
+                      "mss.telegram_test",
+                      "mss.history",
+                      "mss.history_symbol",
+                      "mss.top_scores",
+                      "mss.analytics",
+                      "lunarcrush.coin",
+                      "lunarcrush.coin_time_series",
+                      "lunarcrush.coin_change",
+                      "lunarcrush.coin_momentum",
+                      "lunarcrush.coins_discovery",
+                      "lunarcrush.topics_list",
+                      "lunarcrush.topic",
+                      "lunarcrush.coin_themes",
+                      "lunarcrush.news_feed",
+                      "lunarcrush.community_activity",
+                      "lunarcrush.influencer_activity",
+                      "lunarcrush.coin_correlation",
+                      "lunarcrush.market_pair",
+                      "lunarcrush.aggregates",
+                      "lunarcrush.topic_trends",
+                      "lunarcrush.coins_rankings",
+                      "lunarcrush.system_status",
+                      "lunarcrush.coins_realtime",
+                      "lunarcrush.coin_comprehensive",
+                      "narratives.discover_realtime",
+                      "narratives.momentum",
+                      "narratives.timeseries",
+                      "narratives.change",
+                      "narratives.coin",
+                      "narratives.info",
+                      "new_listings.binance",
+                      "new_listings.multi_exchange",
+                      "new_listings.region_bypass",
+                      "new_listings.analyze",
+                      "new_listings.watch",
+                      "smc.analyze",
+                      "smc.info",
+                      "smart_entry.analyze",
+                      "smart_entry.analyze_batch",
+                      "smart_entry.test",
+                      "smart_entry.health",
+                      "health.check",
+                      "health.root",
+                      "history.signals",
+                      "history.statistics",
+                      "history.clear",
+                      "history.info",
+                      "monitoring.start",
+                      "monitoring.stop",
+                      "monitoring.status",
+                      "monitoring.alerts",
+                      "monitoring.symbols_add",
+                      "monitoring.symbols_remove",
+                      "monitoring.config_update",
+                      "monitoring.check",
+                      "monitoring.test_alert",
+                      "monitoring.health",
+                      "monitoring.stats",
+                      "monitoring.spike_monitor_status",
+                      "monitoring.spike_monitor_start",
+                      "monitoring.spike_monitor_stop",
+                      "spike.check_system",
+                      "spike.recent_activity",
+                      "spike.configuration",
+                      "spike.explain",
+                      "spike.monitor_coin",
+                      "spike.status",
+                      "spike.health",
+                      "spike.price_detector_status",
+                      "spike.liquidation_detector_status",
+                      "spike.social_monitor_status",
+                      "spike.coordinator_status",
+                      "openai.analyze",
+                      "openai.sentiment_market",
+                      "openai.validate",
+                      "openai.config",
+                      "openai.health"
+                    ],
+                    "description": "Operation name - 187 operations available"
+                  },
+                  "symbol": {
+                    "type": "string",
+                    "description": "Crypto symbol (BTC, ETH, SOL, etc)",
+                    "example": "BTC"
+                  },
+                  "interval": {
+                    "type": "string",
+                    "description": "Time interval (1m, 5m, 15m, 1h, 4h, 1d)",
+                    "example": "1h"
+                  },
+                  "limit": {
+                    "type": "integer",
+                    "description": "Result limit (default varies by operation)",
+                    "example": 10
+                  },
+                  "exchange": {
+                    "type": "string",
+                    "description": "Exchange name (Binance, OKX, Bybit)",
+                    "example": "Binance"
+                  },
+                  "send_telegram": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Send full report to Telegram (overcomes GPT timeout)"
+                  },
+                  "debug": {
+                    "type": "boolean",
+                    "default": false,
+                    "description": "Enable debug output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "operation": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object"
+                    },
+                    "error": {
+                      "type": "string"
+                    },
+                    "meta": {
+                      "type": "object"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
