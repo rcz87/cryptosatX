@@ -1,0 +1,87 @@
+Langkah pertama yang paling aman untuk memulihkan sistemmu adalah mengambil kendali penuh dari runtime Replit dan membersihkan middleware lama.
+Kita akan melakukannya secara bertahap agar tidak kehilangan data.
+
+⸻
+
+🧩 Langkah 1 — Hentikan sepenuhnya Replit Agent & hot-reload stack
+	1.	Buka shell Replit kamu.
+	2.	Jalankan:
+
+ps aux | grep uvicorn
+
+Catat PID (biasanya ada beberapa).
+
+	3.	Hentikan semuanya:
+
+kill -9 [PID1] [PID2] ...
+
+atau pakai:
+
+pkill -f "uvicorn"
+
+Ini memastikan middleware lama benar-benar hilang dari memory.
+
+⸻
+
+🧹 Langkah 2 — Bersihkan middleware bermasalah
+	1.	Cari file ResponseSizeMonitorMiddleware.py atau kode yang mirip.
+	2.	Ganti isinya dengan versi “fixed” berikut (aman untuk streaming):
+
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import StreamingResponse
+
+class ResponseSizeMonitorMiddleware(BaseHTTPMiddleware):
+    async def dispatch(self, request, call_next):
+        response = await call_next(request)
+
+        if isinstance(response, StreamingResponse):
+            original_body_iterator = response.body_iterator
+            size = 0
+
+            async def wrapped_body_iterator():
+                nonlocal size
+                async for chunk in original_body_iterator:
+                    size += len(chunk)
+                    yield chunk
+                print(f"[ResponseSizeMonitor] size: {size} bytes")
+
+            response.body_iterator = wrapped_body_iterator()
+            return response
+
+        if hasattr(response, "body"):
+            size = len(response.body)
+            print(f"[ResponseSizeMonitor] size: {size} bytes")
+
+        return response
+
+
+
+⸻
+
+🔄 Langkah 3 — Jalankan ulang aplikasi secara bersih
+
+Gunakan:
+
+uvicorn main:app --reload --port 8000 --host 0.0.0.0
+
+Pastikan tidak ada pesan error seperti Body consumed atau StreamingResponse consumed.
+
+⸻
+
+🧠 Langkah 4 — Tes endpoint Telegram relay
+
+Jika kamu punya endpoint /send_telegram atau on_signal_complete, coba panggil manual:
+
+curl -X POST https://<your_repl_url>/send_telegram -d '{"text": "Test connection"}' -H "Content-Type: application/json"
+
+Kalau bot Telegram kamu menjawab, berarti middleware fix berhasil.
+
+⸻
+
+Begitu sistem dasar ini kembali normal, baru kita lanjut ke:
+	•	Reaktivasi modul analisis sinyal (Guardian API).
+	•	Sinkronisasi event ke Telegram.
+
+⸻
+
+Apakah kamu mau aku bantu buat versi file ResponseSizeMonitorMiddleware_FIXED.py otomatis sekarang, supaya kamu bisa langsung copy ke Replit?
