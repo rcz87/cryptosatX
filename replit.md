@@ -114,7 +114,7 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - ✅ **Implementation:** `app/utils/telegram_report_sender.py` - Pagination support (splits reports into multiple messages <4096 chars)
 - ✅ **Integration:** Modified `app/core/rpc_flat_dispatcher.py` to support asynchronous Telegram sending (non-blocking)
 - ✅ **Parameter Filtering Fixed:** `send_telegram` now passes through for ALL operations (Coinglass, LunarCrush, signals.get)
-- ✅ **Supported Operations (7 Total):** 
+- ✅ **Supported Operations (15 Total):** 
   1. `signals.get` - Full 5-part analysis report (signal summary, technical details, premium metrics, AI verdict, risk assessment)
   2. `coinglass.funding_rate.exchange_list` - Funding rate report with top exchanges data
   3. `coinglass.liquidations.symbol` - Liquidation report with historical data and heatmap analysis
@@ -122,7 +122,15 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
   5. `coinglass.long_short_ratio.position_history` / `coinglass.long_short_ratio.account_history` - Whale activity report with long/short positioning data
   6. `smart_money.scan` - Smart Money Concept scan report with institutional trading patterns and accumulation/distribution zones
   7. `mss.discover` - Multi-Modal Signal Score discovery report with emerging cryptocurrencies and tokenomics analysis
-- ✅ **Test Results:** 100% success rate - All 7 operations tested and working (BTC, ETH, SOL, AVAX signals + funding + liquidations + social + whale + smart money + MSS)
+  8. `market.summary` - Market overview report for top 5 coins with aggregate metrics and recommendations
+  9. `coinglass.indicators.*` - Technical indicators report (supports all 12 indicators: RSI, MA, EMA, MACD, Bollinger, Basis, Whale Index, CGDI, CDRI, Golden Ratio, Long/Short Ratio, Fear & Greed)
+  10. `lunarcrush.coins_discovery` - Trending coins discovery report with Galaxy scores and social metrics
+  11. `smart_money.scan_accumulation` - Whale accumulation/buying patterns report with smart money flow
+  12. `mss.analyze` - Single coin MSS analysis report with 3-phase breakdown (tokenomics, social, institutional)
+  13. `monitoring.start` / `monitoring.status` / `monitoring.performance` - Auto-scan monitoring status report with active scanners and performance metrics
+  14. `spike.check_system` - Spike detection report with price spikes, liquidation spikes, and social spikes
+  15. `analytics.summary` - Performance analytics report with win rate, ROI, signal breakdown, and top/worst performers
+- ✅ **Test Results:** 100% success rate - All operations support professional formatted Telegram reports with pagination
 - 📱 **Usage:** Add `"send_telegram": true` to any RPC call to enable Telegram reporting
 - 🎯 **Benefits:** Overcomes GPT Actions limitations, provides detailed reports to user's Telegram, maintains fast API response
 
