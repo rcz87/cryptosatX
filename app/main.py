@@ -219,8 +219,8 @@ app.add_middleware(DetailedRequestLoggerMiddleware)
 
 # Add GPT Actions middleware (MUST be after CORS, before SlowAPI)
 app.add_middleware(GPTRateLimiterMiddleware, limiter=gpt_rate_limiter)
-# TEMPORARILY DISABLED FOR DEBUGGING
-# app.add_middleware(ResponseSizeMonitorMiddleware)
+# Re-enabled with streaming-safe implementation
+app.add_middleware(ResponseSizeMonitorMiddleware)
 
 # Add SlowAPI rate limiting middleware (MUST be after CORS)
 from slowapi.middleware import SlowAPIMiddleware
