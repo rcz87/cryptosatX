@@ -302,6 +302,9 @@ app.include_router(
 app.include_router(
     routes_spike_gpt.router, tags=["GPT Actions"]
 )  # ADDED FOR PHASE 5 - SPIKE DETECTION GPT ACTIONS (user-friendly endpoints)
+app.include_router(
+    routes_gpt_schema.router, tags=["GPT Schema - Limited Operations"]
+)  # ADDED FOR GPT ACTIONS TOP 30 SCHEMA
 
 # Dashboard router LAST as catch-all fallback (handles root "/" and SPA routes)
 # MUST be after all API routers to prevent route interception
