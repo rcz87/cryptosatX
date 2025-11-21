@@ -343,6 +343,11 @@ async def get_gpt_actions_schema(request: Request) -> Dict[str, Any]:
                                             "type": "string",
                                             "description": "Topic name",
                                             "nullable": True
+                                        },
+                                        "send_telegram": {
+                                            "type": "boolean",
+                                            "description": "Send detailed results to Telegram (GPT→Telegram Hybrid System) - supported for 7 operations: signals.get, funding_rate, liquidations, lunarcrush.coin, long_short_ratio, smart_money.scan, mss.discover",
+                                            "nullable": True
                                         }
                                     }
                                 },
