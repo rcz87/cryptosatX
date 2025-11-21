@@ -1384,52 +1384,61 @@ Use exchanges with most positive rates (you get paid most!)
         """Format whale accumulation patterns into Telegram messages"""
         messages = []
         
-        coins = data.get("accumulation_coins", [])
-        scan_type = data.get("scan_type", "accumulation")
-        total_scanned = data.get("total_scanned", 0)
+        # Extract actual structure from smart_money.scan_accumulation response
+        accumulation_signals = data.get("accumulation", [])
+        distribution_signals = data.get("distribution", [])
+        summary = data.get("summary", {})
+        total_scanned = summary.get("coinsScanned", 0)
         
-        scan_emoji = "🟢" if scan_type == "accumulation" else "🔴"
-        scan_title = "WHALE ACCUMULATION (BUYING)" if scan_type == "accumulation" else "WHALE DISTRIBUTION (SELLING)"
+        # Use accumulation signals by default (smart_money.scan_accumulation)
+        coins = accumulation_signals
+        scan_type = "accumulation"
+        scan_emoji = "🟢"
+        scan_title = "WHALE ACCUMULATION (BUYING)"
         
         msg = f"""{scan_emoji} <b>{scan_title}</b>
 ━━━━━━━━━━━━━━━━━━━━━━━
 
 <b>📊 Scan Results:</b>
 • Total Scanned: {total_scanned}
-• Coins with Signal: <b>{len(coins)}</b>
+• Accumulation Signals: <b>{len(accumulation_signals)}</b>
+• Distribution Signals: {len(distribution_signals)}
 
-<b>🐋 TOP {min(len(coins), 15)} OPPORTUNITIES:</b>
+<b>🐋 TOP {min(len(coins), 15)} ACCUMULATION OPPORTUNITIES:</b>
 
 """
         
-        for i, coin in enumerate(coins[:15], 1):
-            symbol = coin.get("symbol", "UNKNOWN")
-            pattern = coin.get("pattern", "UNKNOWN")
-            strength = coin.get("strength", 0)
-            price = coin.get("price", 0)
-            volume_24h = coin.get("volume_24h", 0)
-            
-            strength_emoji = "🔥" if strength > 8 else "✅" if strength > 6 else "⚠️"
-            
-            msg += f"""{i}. {strength_emoji} <b>{symbol}</b>
+        if not coins:
+            msg += "⚠️ No strong accumulation signals found in current scan.\n"
+            msg += "Market may be in consolidation or distribution phase.\n\n"
+        else:
+            for i, coin in enumerate(coins[:15], 1):
+                symbol = coin.get("symbol", "UNKNOWN")
+                signal_type = coin.get("signal", "ACCUMULATION")
+                score = coin.get("compositeScore", 0)
+                price = coin.get("currentPrice", 0)
+                pattern = coin.get("dominantPattern", "UNKNOWN")
+                reasons = coin.get("reasons", [])
+                
+                strength_emoji = "🔥" if score > 8 else "✅" if score > 6 else "⚠️"
+                
+                msg += f"""{i}. {strength_emoji} <b>{symbol}</b>
    • Pattern: {pattern}
-   • Strength: {strength}/10
+   • Score: {score}/10
    • Price: ${price:,.4f}
-   • 24h Volume: ${volume_24h:,.0f}
+   • Reasons: {', '.join(reasons[:2]) if reasons else 'Multiple factors'}
 
 """
         
         msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
         msg += "<b>💡 Trading Strategy:</b>\n"
+        msg += "• Whales are BUYING (accumulating)\n"
+        msg += "• Consider LONG positions on dips\n"
+        msg += "• Follow smart money flow\n"
+        msg += "• Wait for price confirmation\n"
         
-        if scan_type == "accumulation":
-            msg += "• Whales are BUYING (accumulating)\n"
-            msg += "• Consider LONG positions\n"
-            msg += "• Follow smart money flow\n"
-        else:
-            msg += "• Whales are SELLING (distributing)\n"
-            msg += "• Consider SHORT positions or exit longs\n"
-            msg += "• Smart money taking profits\n"
+        if distribution_signals:
+            msg += f"\n⚠️ Warning: {len(distribution_signals)} distribution signals detected\n"
         
         msg += "\n━━━━━━━━━━━━━━━━━━━━━━━\n"
         msg += "🐋 Smart Money Concept Analysis"
