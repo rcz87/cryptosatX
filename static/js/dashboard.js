@@ -190,46 +190,11 @@ async function loadLatestSignals(filterAsset = 'all') {
     }
 }
 
-// Initialize TradingView Charts
+// Initialize TradingView Charts - DISABLED FOR PERFORMANCE
+// TradingView charts removed to improve load time and reduce scroll length
 function initTradingViewCharts() {
-    const isDark = document.documentElement.classList.contains('dark');
-    const theme = isDark ? 'dark' : 'light';
-
-    // BTC Chart
-    new TradingView.widget({
-        "width": "100%",
-        "height": "100%",
-        "symbol": "BINANCE:BTCUSDT",
-        "interval": "60",
-        "timezone": "Etc/UTC",
-        "theme": theme,
-        "style": "1",
-        "locale": "en",
-        "toolbar_bg": isDark ? "#0f172a" : "#ffffff",
-        "enable_publishing": false,
-        "hide_side_toolbar": false,
-        "allow_symbol_change": true,
-        "save_image": false,
-        "container_id": "tradingview_btc"
-    });
-
-    // ETH Chart
-    new TradingView.widget({
-        "width": "100%",
-        "height": "100%",
-        "symbol": "BINANCE:ETHUSDT",
-        "interval": "60",
-        "timezone": "Etc/UTC",
-        "theme": theme,
-        "style": "1",
-        "locale": "en",
-        "toolbar_bg": isDark ? "#0f172a" : "#ffffff",
-        "enable_publishing": false,
-        "hide_side_toolbar": false,
-        "allow_symbol_change": true,
-        "save_image": false,
-        "container_id": "tradingview_eth"
-    });
+    // Disabled - charts removed from HTML for compact layout
+    console.log('TradingView charts disabled for performance');
 }
 
 // Initialize Charts
@@ -766,10 +731,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initDarkMode();
     initCharts();
 
-    // Initialize TradingView Charts after a short delay to ensure DOM is ready
-    setTimeout(() => {
-        initTradingViewCharts();
-    }, 500);
+    // TradingView charts disabled for compact layout
+    // setTimeout(() => { initTradingViewCharts(); }, 500);
 
     // Load initial data
     updateStats();
