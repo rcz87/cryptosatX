@@ -869,9 +869,11 @@ class FlatRPCDispatcher:
         elif operation == "smart_money.scan_accumulation":
             from app.services.smart_money_service import smart_money_service
             min_score = args.get("min_accumulation_score", 7)
+            limit = args.get("limit", 20)  # Default 20, user can override
             return await smart_money_service.scan_smart_money(
                 min_accumulation_score=min_score,
-                min_distribution_score=10  # High threshold to filter out distribution
+                min_distribution_score=10,  # High threshold to filter out distribution
+                limit=limit  # ✅ FIX: Pass limit parameter
             )
 
         elif operation == "smart_money.analyze":
