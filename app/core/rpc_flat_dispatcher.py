@@ -235,7 +235,83 @@ class FlatRPCDispatcher:
                         response_meta["telegram_sent"] = True
                         response_meta["telegram_report_type"] = "mss_discovery"
                         logger.info(f"📱 Sending MSS discovery report to Telegram")
-                    
+
+                    # ========== NEW: 8 Additional Operations ==========
+
+                    # 8. Send market summary report to Telegram
+                    elif operation == "market.summary":
+                        asyncio.create_task(
+                            telegram_report_sender.send_market_summary_report(result)
+                        )
+                        response_meta["telegram_sent"] = True
+                        response_meta["telegram_report_type"] = "market_summary"
+                        logger.info(f"📱 Sending market summary report to Telegram")
+
+                    # 9. Send technical indicators report to Telegram (12 indicators)
+                    elif operation.startswith("coinglass.indicators."):
+                        indicator_name = operation.split(".")[-1]  # Extract indicator name (rsi, ma, etc.)
+                        asyncio.create_task(
+                            telegram_report_sender.send_indicators_report(indicator_name, symbol, result)
+                        )
+                        response_meta["telegram_sent"] = True
+                        response_meta["telegram_report_type"] = "indicators"
+                        response_meta["indicator"] = indicator_name
+                        logger.info(f"📱 Sending {indicator_name.upper()} indicator report for {symbol} to Telegram")
+
+                    # 10. Send LunarCrush trending discovery report to Telegram
+                    elif operation in ["lunarcrush.topics_list", "lunarcrush.coins_discovery", "lunarcrush.coins_realtime"]:
+                        asyncio.create_task(
+                            telegram_report_sender.send_discovery_report(result)
+                        )
+                        response_meta["telegram_sent"] = True
+                        response_meta["telegram_report_type"] = "trending_discovery"
+                        logger.info(f"📱 Sending trending discovery report to Telegram")
+
+                    # 11. Send smart money accumulation report to Telegram
+                    elif operation == "smart_money.scan_accumulation":
+                        asyncio.create_task(
+                            telegram_report_sender.send_accumulation_report(result)
+                        )
+                        response_meta["telegram_sent"] = True
+                        response_meta["telegram_report_type"] = "accumulation"
+                        logger.info(f"📱 Sending whale accumulation report to Telegram")
+
+                    # 12. Send MSS single coin analysis report to Telegram
+                    elif operation == "mss.analyze":
+                        asyncio.create_task(
+                            telegram_report_sender.send_mss_analysis_report(symbol, result)
+                        )
+                        response_meta["telegram_sent"] = True
+                        response_meta["telegram_report_type"] = "mss_analysis"
+                        logger.info(f"📱 Sending MSS analysis for {symbol} to Telegram")
+
+                    # 13. Send monitoring system status report to Telegram
+                    elif operation in ["monitoring.status", "monitoring.check", "monitoring.health"]:
+                        asyncio.create_task(
+                            telegram_report_sender.send_monitoring_report(result)
+                        )
+                        response_meta["telegram_sent"] = True
+                        response_meta["telegram_report_type"] = "monitoring"
+                        logger.info(f"📱 Sending monitoring system report to Telegram")
+
+                    # 14. Send spike detection report to Telegram
+                    elif operation.startswith("spike."):
+                        asyncio.create_task(
+                            telegram_report_sender.send_spike_detection_report(result)
+                        )
+                        response_meta["telegram_sent"] = True
+                        response_meta["telegram_report_type"] = "spike_detection"
+                        logger.info(f"📱 Sending spike detection report to Telegram")
+
+                    # 15. Send analytics/performance report to Telegram
+                    elif operation.startswith("analytics."):
+                        asyncio.create_task(
+                            telegram_report_sender.send_analytics_report(result)
+                        )
+                        response_meta["telegram_sent"] = True
+                        response_meta["telegram_report_type"] = "analytics"
+                        logger.info(f"📱 Sending analytics report to Telegram")
+
                     else:
                         # Generic Telegram send for other operations (future support)
                         response_meta["telegram_sent"] = False

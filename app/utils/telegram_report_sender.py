@@ -882,13 +882,13 @@ Use exchanges with most positive rates (you get paid most!)
     def _format_mss_discovery_report(self, data: Dict) -> List[str]:
         """Format MSS (Multi-Modal Signal Score) discovery into Telegram messages"""
         messages = []
-        
+
         # Extract data
         discovered = data.get("discovered", [])
         phase = data.get("phase", "UNKNOWN")
         total_scanned = data.get("totalScanned", 0)
         filters = data.get("filters", {})
-        
+
         msg = f"""🚀 <b>MSS DISCOVERY REPORT</b>
 ━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -902,20 +902,20 @@ Use exchanges with most positive rates (you get paid most!)
 
 ━━━━━━━━━━━━━━━━━━━━━━━
 """
-        
+
         if not discovered:
             msg += "\n❌ No emerging coins discovered.\n"
             msg += "Market conditions may not be favorable for new discoveries."
         else:
             msg += f"\n<b>💎 TOP {min(len(discovered), 10)} EMERGING OPPORTUNITIES:</b>\n\n"
-            
+
             for i, coin in enumerate(discovered[:10], 1):
                 symbol = coin.get("symbol", "UNKNOWN")
                 mss_score = coin.get("mssScore", 0)
                 market_cap = coin.get("marketCap", 0)
                 social_score = coin.get("socialScore", 0)
                 momentum = coin.get("momentum", "UNKNOWN")
-                
+
                 # Score interpretation
                 if mss_score >= 80:
                     grade = "🔥 EXCELLENT"
@@ -925,7 +925,7 @@ Use exchanges with most positive rates (you get paid most!)
                     grade = "⚠️ MODERATE"
                 else:
                     grade = "❌ WEAK"
-                
+
                 msg += f"""{i}. <b>{symbol}</b> - {grade}
    • MSS Score: <b>{mss_score:.1f}/100</b>
    • Market Cap: ${market_cap:,.0f}
@@ -933,37 +933,752 @@ Use exchanges with most positive rates (you get paid most!)
    • Momentum: {momentum}
 
 """
-        
+
         msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
         msg += "🚀 Multi-Modal Signal Score Discovery"
-        
+
         messages.append(msg)
-        
+
         # Part 2: Detailed breakdown for top 3
         if len(discovered) >= 3:
             msg2 = "<b>📊 DETAILED METRICS - TOP 3:</b>\n"
             msg2 += "━━━━━━━━━━━━━━━━━━━━━━━\n\n"
-            
+
             for i, coin in enumerate(discovered[:3], 1):
                 symbol = coin.get("symbol", "UNKNOWN")
                 breakdown = coin.get("breakdown", {})
-                
+
                 msg2 += f"<b>{i}. {symbol}</b>\n"
                 msg2 += f"Phase 1 - Tokenomics: {breakdown.get('phase1Score', 0)}/100\n"
                 msg2 += f"Phase 2 - Community: {breakdown.get('phase2Score', 0)}/100\n"
                 msg2 += f"Phase 3 - Institutional: {breakdown.get('phase3Score', 0)}/100\n"
-                
+
                 risks = coin.get("risks", [])
                 if risks:
                     msg2 += f"⚠️ Risks: {', '.join(risks[:3])}\n"
-                
+
                 msg2 += "\n"
-            
+
             msg2 += "━━━━━━━━━━━━━━━━━━━━━━━"
             messages.append(msg2)
-        
+
         return messages
-    
+
+    # ========================================================================
+    # NEW OPERATIONS - 8 Additional Telegram Report Functions
+    # ========================================================================
+
+    async def send_market_summary_report(self, market_data: Dict) -> Dict:
+        """
+        Send market summary report to Telegram
+        Handles top coins market overview
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+
+        try:
+            messages = self._format_market_summary_report(market_data)
+            sent_messages = []
+
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+
+        except Exception as e:
+            logger.error(f"Error sending market summary report: {e}")
+            return {"success": False, "message": str(e)}
+
+    async def send_indicators_report(self, indicator_name: str, symbol: str, indicator_data: Dict) -> Dict:
+        """
+        Send technical indicators report to Telegram
+        Supports 12 Coinglass indicators (RSI, MA, EMA, MACD, Bollinger, etc.)
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+
+        try:
+            messages = self._format_indicators_report(indicator_name, symbol, indicator_data)
+            sent_messages = []
+
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+
+        except Exception as e:
+            logger.error(f"Error sending indicators report: {e}")
+            return {"success": False, "message": str(e)}
+
+    async def send_discovery_report(self, discovery_data: Dict) -> Dict:
+        """
+        Send LunarCrush trending topics/coins discovery report to Telegram
+        Handles viral trending analysis
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+
+        try:
+            messages = self._format_discovery_report(discovery_data)
+            sent_messages = []
+
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+
+        except Exception as e:
+            logger.error(f"Error sending discovery report: {e}")
+            return {"success": False, "message": str(e)}
+
+    async def send_accumulation_report(self, accumulation_data: Dict) -> Dict:
+        """
+        Send smart money accumulation report to Telegram
+        Handles whale buying activity analysis
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+
+        try:
+            messages = self._format_accumulation_report(accumulation_data)
+            sent_messages = []
+
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+
+        except Exception as e:
+            logger.error(f"Error sending accumulation report: {e}")
+            return {"success": False, "message": str(e)}
+
+    async def send_mss_analysis_report(self, symbol: str, mss_data: Dict) -> Dict:
+        """
+        Send MSS analysis report for single coin to Telegram
+        Detailed MSS breakdown for specific cryptocurrency
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+
+        try:
+            messages = self._format_mss_analysis_report(symbol, mss_data)
+            sent_messages = []
+
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+
+        except Exception as e:
+            logger.error(f"Error sending MSS analysis report: {e}")
+            return {"success": False, "message": str(e)}
+
+    async def send_monitoring_report(self, monitoring_data: Dict) -> Dict:
+        """
+        Send automated monitoring status report to Telegram
+        Handles monitoring system health and alerts
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+
+        try:
+            messages = self._format_monitoring_report(monitoring_data)
+            sent_messages = []
+
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+
+        except Exception as e:
+            logger.error(f"Error sending monitoring report: {e}")
+            return {"success": False, "message": str(e)}
+
+    async def send_spike_detection_report(self, spike_data: Dict) -> Dict:
+        """
+        Send spike detection report to Telegram
+        Handles real-time price/liquidation/social spikes
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+
+        try:
+            messages = self._format_spike_detection_report(spike_data)
+            sent_messages = []
+
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+
+        except Exception as e:
+            logger.error(f"Error sending spike detection report: {e}")
+            return {"success": False, "message": str(e)}
+
+    async def send_analytics_report(self, analytics_data: Dict) -> Dict:
+        """
+        Send performance analytics report to Telegram
+        Handles signal performance tracking and win rates
+        """
+        if not self.enabled:
+            return {"success": False, "message": "Telegram not configured"}
+
+        try:
+            messages = self._format_analytics_report(analytics_data)
+            sent_messages = []
+
+            for message in messages:
+                result = await self._send_message(message)
+                if result.get("success"):
+                    sent_messages.append(result.get("message_id"))
+
+            return {
+                "success": len(sent_messages) > 0,
+                "messages_sent": len(sent_messages),
+                "message_ids": sent_messages
+            }
+
+        except Exception as e:
+            logger.error(f"Error sending analytics report: {e}")
+            return {"success": False, "message": str(e)}
+
+    # ========================================================================
+    # FORMATTING FUNCTIONS - 8 New Report Formatters
+    # ========================================================================
+
+    def _format_market_summary_report(self, data: Dict) -> List[str]:
+        """Format market summary into Telegram messages"""
+        messages = []
+
+        coins = data.get("coins", [])
+        total_market_cap = data.get("totalMarketCap", 0)
+        btc_dominance = data.get("btcDominance", 0)
+
+        msg = f"""📊 <b>MARKET SUMMARY</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+<b>💰 Global Metrics:</b>
+• Total Market Cap: ${total_market_cap:,.0f}
+• BTC Dominance: {btc_dominance:.1f}%
+• Coins Tracked: {len(coins)}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+<b>🔥 TOP COINS:</b>
+
+"""
+
+        for i, coin in enumerate(coins[:10], 1):
+            symbol = coin.get("symbol", "UNKNOWN")
+            price = coin.get("price", 0)
+            change_24h = coin.get("change24h", 0)
+            volume = coin.get("volume24h", 0)
+
+            change_emoji = "🟢" if change_24h >= 0 else "🔴"
+
+            msg += f"""{i}. <b>{symbol}</b> {change_emoji}
+   • Price: ${price:,.4f}
+   • 24h Change: {change_24h:+.2f}%
+   • Volume: ${volume:,.0f}
+
+"""
+
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "📊 Market data powered by CryptoSatX"
+
+        messages.append(msg)
+        return messages
+
+    def _format_indicators_report(self, indicator_name: str, symbol: str, data: Dict) -> List[str]:
+        """Format technical indicators into Telegram messages"""
+        messages = []
+
+        # Map indicator names to emojis
+        indicator_emojis = {
+            "rsi": "📊",
+            "ma": "📈",
+            "ema": "📉",
+            "macd": "⚡",
+            "bollinger": "📏",
+            "basis": "🎯",
+            "whale_index": "🐋",
+            "cgdi": "💎",
+            "cdri": "🔥",
+            "golden_ratio": "🏆",
+            "fear_greed": "😱"
+        }
+
+        emoji = indicator_emojis.get(indicator_name.lower(), "📊")
+
+        msg = f"""{emoji} <b>{indicator_name.upper()} INDICATOR: {symbol}</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+"""
+
+        # Different formatting based on indicator type
+        if indicator_name.lower() == "rsi":
+            value = data.get("value", 0)
+            interpretation = "Oversold 🟢" if value < 30 else "Overbought 🔴" if value > 70 else "Neutral ⚪"
+
+            msg += f"""<b>RSI Value: {value:.2f}</b>
+• Signal: {interpretation}
+• Period: {data.get('period', 14)}
+
+<b>📊 Analysis:</b>
+"""
+            if value < 30:
+                msg += "• Strong oversold condition\n"
+                msg += "• Potential reversal upward\n"
+                msg += "• Consider LONG entry\n"
+            elif value > 70:
+                msg += "• Strong overbought condition\n"
+                msg += "• Potential reversal downward\n"
+                msg += "• Consider SHORT entry\n"
+            else:
+                msg += "• No extreme condition\n"
+                msg += "• Neutral market state\n"
+                msg += "• Wait for better setup\n"
+
+        elif indicator_name.lower() in ["ma", "ema"]:
+            values = data.get("values", [])
+            msg += "<b>Moving Averages:</b>\n"
+            for period, value in values:
+                msg += f"• {period}-period: ${value:,.2f}\n"
+            msg += f"\n<b>Current Price:</b> ${data.get('currentPrice', 0):,.2f}\n"
+
+        elif indicator_name.lower() == "fear_greed":
+            value = data.get("value", 50)
+            classification = data.get("classification", "Neutral")
+
+            msg += f"""<b>Index Value: {value}/100</b>
+• Classification: <b>{classification}</b>
+
+<b>📊 Market Emotion:</b>
+"""
+            if value < 25:
+                msg += "• 😱 Extreme Fear\n• 🟢 Opportunity to BUY\n• Market oversold\n"
+            elif value < 50:
+                msg += "• 😰 Fear\n• ⚪ Cautious approach\n• Accumulation zone\n"
+            elif value < 75:
+                msg += "• 😊 Greed\n• ⚠️ Take profits\n• Distribution zone\n"
+            else:
+                msg += "• 🤑 Extreme Greed\n• 🔴 Danger zone\n• Consider selling\n"
+
+        else:
+            # Generic formatting for other indicators
+            for key, value in data.items():
+                if isinstance(value, (int, float)):
+                    msg += f"• {key}: {value:.2f}\n"
+                else:
+                    msg += f"• {key}: {value}\n"
+
+        msg += "\n━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += f"📊 {indicator_name.upper()} powered by Coinglass"
+
+        messages.append(msg)
+        return messages
+
+    def _format_discovery_report(self, data: Dict) -> List[str]:
+        """Format LunarCrush trending discovery into Telegram messages"""
+        messages = []
+
+        topics = data.get("topics", [])
+        trending_coins = data.get("trendingCoins", [])
+
+        msg = f"""🔥 <b>VIRAL DISCOVERY REPORT</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+<b>📈 Trending Topics:</b>
+• Total Topics: {len(topics)}
+• Trending Coins: {len(trending_coins)}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+"""
+
+        if topics:
+            msg += "\n<b>🔥 HOT TOPICS:</b>\n\n"
+            for i, topic in enumerate(topics[:10], 1):
+                name = topic.get("name", "Unknown")
+                volume = topic.get("volume", 0)
+                change = topic.get("change", 0)
+
+                msg += f"{i}. <b>{name}</b>\n"
+                msg += f"   • Volume: {volume:,} mentions\n"
+                msg += f"   • 24h Change: {change:+.1f}%\n\n"
+
+        if trending_coins:
+            msg += "<b>💎 TRENDING COINS:</b>\n\n"
+            for i, coin in enumerate(trending_coins[:10], 1):
+                symbol = coin.get("symbol", "UNKNOWN")
+                social_volume = coin.get("socialVolume", 0)
+                sentiment = coin.get("sentiment", 0)
+
+                sentiment_emoji = "🟢" if sentiment > 3 else "🔴" if sentiment < 3 else "⚪"
+
+                msg += f"{i}. {sentiment_emoji} <b>{symbol}</b>\n"
+                msg += f"   • Social Volume: {social_volume:,}\n"
+                msg += f"   • Sentiment: {sentiment:.1f}/5\n\n"
+
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "🔥 Viral trends by LunarCrush"
+
+        messages.append(msg)
+        return messages
+
+    def _format_accumulation_report(self, data: Dict) -> List[str]:
+        """Format whale accumulation activity into Telegram messages"""
+        messages = []
+
+        accumulating_coins = data.get("accumulatingCoins", [])
+        total_scanned = data.get("totalScanned", 0)
+
+        msg = f"""🐋 <b>WHALE ACCUMULATION REPORT</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+<b>📊 Scan Summary:</b>
+• Coins Scanned: {total_scanned}
+• Accumulation Detected: <b>{len(accumulating_coins)}</b>
+
+━━━━━━━━━━━━━━━━━━━━━━━
+"""
+
+        if not accumulating_coins:
+            msg += "\n❌ No whale accumulation detected.\n"
+            msg += "Whales are not actively buying currently."
+        else:
+            msg += "\n<b>🟢 WHALES ARE BUYING:</b>\n\n"
+
+            for i, coin in enumerate(accumulating_coins[:10], 1):
+                symbol = coin.get("symbol", "UNKNOWN")
+                acc_score = coin.get("accumulationScore", 0)
+                whale_activity = coin.get("whaleActivity", 0)
+                buy_pressure = coin.get("buyPressure", 0)
+
+                # Strength indicator
+                if acc_score >= 8:
+                    strength = "🔥 VERY STRONG"
+                elif acc_score >= 6:
+                    strength = "✅ STRONG"
+                elif acc_score >= 4:
+                    strength = "⚠️ MODERATE"
+                else:
+                    strength = "⚪ WEAK"
+
+                msg += f"""{i}. <b>{symbol}</b> - {strength}
+   • Accumulation Score: <b>{acc_score}/10</b>
+   • Whale Activity: {whale_activity:.1f}
+   • Buy Pressure: {buy_pressure:.1f}%
+
+"""
+
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "🐋 Smart Money tracking by CryptoSatX"
+
+        messages.append(msg)
+        return messages
+
+    def _format_mss_analysis_report(self, symbol: str, data: Dict) -> List[str]:
+        """Format MSS analysis for single coin into Telegram messages"""
+        messages = []
+
+        mss_score = data.get("mssScore", 0)
+        tier = data.get("tier", "Unknown")
+        breakdown = data.get("breakdown", {})
+
+        # Score emoji
+        if mss_score >= 80:
+            grade_emoji = "🔥"
+            grade_text = "EXCELLENT"
+        elif mss_score >= 60:
+            grade_emoji = "✅"
+            grade_text = "GOOD"
+        elif mss_score >= 40:
+            grade_emoji = "⚠️"
+            grade_text = "MODERATE"
+        else:
+            grade_emoji = "❌"
+            grade_text = "WEAK"
+
+        msg = f"""💎 <b>MSS ANALYSIS: {symbol}</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+{grade_emoji} <b>MSS Score: {mss_score:.1f}/100</b>
+<b>Grade: {grade_text}</b>
+<b>Tier: {tier}</b>
+
+━━━━━━━━━━━━━━━━━━━━━━━
+<b>📊 Phase Breakdown:</b>
+
+<b>Phase 1 - Tokenomics:</b> {breakdown.get('phase1Score', 0)}/100
+• Market Cap: {breakdown.get('marketCap', 'N/A')}
+• Volume: {breakdown.get('volume', 'N/A')}
+• Liquidity: {breakdown.get('liquidity', 'N/A')}
+
+<b>Phase 2 - Community Momentum:</b> {breakdown.get('phase2Score', 0)}/100
+• Social Volume: {breakdown.get('socialVolume', 'N/A')}
+• Community Growth: {breakdown.get('communityGrowth', 'N/A')}
+• Engagement: {breakdown.get('engagement', 'N/A')}
+
+<b>Phase 3 - Institutional Validation:</b> {breakdown.get('phase3Score', 0)}/100
+• Exchange Listings: {breakdown.get('exchangeListings', 'N/A')}
+• Institutional Interest: {breakdown.get('institutionalInterest', 'N/A')}
+• Partnerships: {breakdown.get('partnerships', 'N/A')}
+
+"""
+
+        # Recommendation
+        if mss_score >= 70:
+            msg += """<b>✅ RECOMMENDATION:</b>
+• Strong opportunity
+• Consider position entry
+• Monitor for dips to accumulate
+
+"""
+        elif mss_score >= 50:
+            msg += """<b>⚠️ RECOMMENDATION:</b>
+• Moderate opportunity
+• Wait for confirmation
+• Small position acceptable
+
+"""
+        else:
+            msg += """<b>❌ RECOMMENDATION:</b>
+• Weak opportunity
+• Avoid for now
+• Look for better setups
+
+"""
+
+        # Risks
+        risks = data.get("risks", [])
+        if risks:
+            msg += "<b>⚠️ Risk Factors:</b>\n"
+            for risk in risks[:5]:
+                msg += f"• {risk}\n"
+            msg += "\n"
+
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "💎 MSS Analysis by CryptoSatX"
+
+        messages.append(msg)
+        return messages
+
+    def _format_monitoring_report(self, data: Dict) -> List[str]:
+        """Format monitoring system status into Telegram messages"""
+        messages = []
+
+        status = data.get("status", "unknown")
+        monitored_symbols = data.get("monitoredSymbols", [])
+        alerts = data.get("recentAlerts", [])
+        stats = data.get("stats", {})
+
+        status_emoji = "✅" if status == "running" else "⚠️" if status == "paused" else "❌"
+
+        msg = f"""🔍 <b>MONITORING SYSTEM REPORT</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+{status_emoji} <b>System Status: {status.upper()}</b>
+
+<b>📊 Monitoring Stats:</b>
+• Symbols Tracked: {len(monitored_symbols)}
+• Active Alerts: {len(alerts)}
+• Uptime: {stats.get('uptime', 'N/A')}
+• Last Scan: {stats.get('lastScan', 'N/A')}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+"""
+
+        if monitored_symbols:
+            msg += "\n<b>🎯 Monitored Symbols:</b>\n"
+            msg += ", ".join(monitored_symbols[:20])
+            if len(monitored_symbols) > 20:
+                msg += f" ...and {len(monitored_symbols) - 20} more"
+            msg += "\n\n"
+
+        if alerts:
+            msg += "<b>🚨 Recent Alerts:</b>\n\n"
+            for i, alert in enumerate(alerts[:5], 1):
+                symbol = alert.get("symbol", "UNKNOWN")
+                alert_type = alert.get("type", "UNKNOWN")
+                message = alert.get("message", "No details")
+                timestamp = alert.get("timestamp", "")
+
+                msg += f"{i}. <b>{symbol}</b> - {alert_type}\n"
+                msg += f"   {message}\n"
+                msg += f"   {timestamp[:19]}\n\n"
+
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "🔍 Auto-monitoring by CryptoSatX"
+
+        messages.append(msg)
+        return messages
+
+    def _format_spike_detection_report(self, data: Dict) -> List[str]:
+        """Format spike detection results into Telegram messages"""
+        messages = []
+
+        price_spikes = data.get("priceSpikes", [])
+        liquidation_spikes = data.get("liquidationSpikes", [])
+        social_spikes = data.get("socialSpikes", [])
+
+        total_spikes = len(price_spikes) + len(liquidation_spikes) + len(social_spikes)
+
+        msg = f"""⚡ <b>SPIKE DETECTION REPORT</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+<b>🔥 Total Spikes Detected: {total_spikes}</b>
+• Price Spikes: {len(price_spikes)}
+• Liquidation Spikes: {len(liquidation_spikes)}
+• Social Spikes: {len(social_spikes)}
+
+━━━━━━━━━━━━━━━━━━━━━━━
+"""
+
+        if price_spikes:
+            msg += "\n<b>📈 PRICE SPIKES:</b>\n\n"
+            for i, spike in enumerate(price_spikes[:5], 1):
+                symbol = spike.get("symbol", "UNKNOWN")
+                change = spike.get("change", 0)
+                timeframe = spike.get("timeframe", "Unknown")
+
+                direction = "🟢" if change > 0 else "🔴"
+
+                msg += f"{i}. {direction} <b>{symbol}</b>\n"
+                msg += f"   • Change: {change:+.2f}%\n"
+                msg += f"   • Timeframe: {timeframe}\n\n"
+
+        if liquidation_spikes:
+            msg += "<b>💥 LIQUIDATION SPIKES:</b>\n\n"
+            for i, spike in enumerate(liquidation_spikes[:5], 1):
+                symbol = spike.get("symbol", "UNKNOWN")
+                amount = spike.get("amount", 0)
+                side = spike.get("side", "Unknown")
+
+                msg += f"{i}. <b>{symbol}</b>\n"
+                msg += f"   • Amount: ${amount:,.0f}\n"
+                msg += f"   • Side: {side}\n\n"
+
+        if social_spikes:
+            msg += "<b>🔥 SOCIAL SPIKES:</b>\n\n"
+            for i, spike in enumerate(social_spikes[:5], 1):
+                symbol = spike.get("symbol", "UNKNOWN")
+                volume_change = spike.get("volumeChange", 0)
+
+                msg += f"{i}. <b>{symbol}</b>\n"
+                msg += f"   • Volume Change: {volume_change:+.1f}%\n\n"
+
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "⚡ Real-time spike detection by CryptoSatX"
+
+        messages.append(msg)
+        return messages
+
+    def _format_analytics_report(self, data: Dict) -> List[str]:
+        """Format performance analytics into Telegram messages"""
+        messages = []
+
+        overall = data.get("overall", {})
+        by_symbol = data.get("bySymbol", {})
+        recent_signals = data.get("recentSignals", [])
+
+        win_rate = overall.get("winRate", 0)
+        total_signals = overall.get("totalSignals", 0)
+        profitable = overall.get("profitable", 0)
+
+        msg = f"""📊 <b>PERFORMANCE ANALYTICS</b>
+━━━━━━━━━━━━━━━━━━━━━━━
+
+<b>🎯 Overall Performance:</b>
+• Win Rate: <b>{win_rate:.1f}%</b>
+• Total Signals: {total_signals}
+• Profitable: {profitable}
+• Unprofitable: {total_signals - profitable}
+
+<b>💰 Returns:</b>
+• Average Return: {overall.get('avgReturn', 0):+.2f}%
+• Best Trade: {overall.get('bestTrade', 0):+.2f}%
+• Worst Trade: {overall.get('worstTrade', 0):+.2f}%
+
+━━━━━━━━━━━━━━━━━━━━━━━
+"""
+
+        if by_symbol:
+            msg += "\n<b>📈 Top Performing Symbols:</b>\n\n"
+            sorted_symbols = sorted(by_symbol.items(), key=lambda x: x[1].get('winRate', 0), reverse=True)
+
+            for symbol, stats in sorted_symbols[:5]:
+                wr = stats.get('winRate', 0)
+                count = stats.get('count', 0)
+                avg_return = stats.get('avgReturn', 0)
+
+                emoji = "🔥" if wr >= 70 else "✅" if wr >= 60 else "⚠️"
+
+                msg += f"{emoji} <b>{symbol}</b>\n"
+                msg += f"   • Win Rate: {wr:.1f}%\n"
+                msg += f"   • Signals: {count}\n"
+                msg += f"   • Avg Return: {avg_return:+.2f}%\n\n"
+
+        if recent_signals:
+            msg += "<b>📋 Recent Signals:</b>\n\n"
+            for i, signal in enumerate(recent_signals[:5], 1):
+                symbol = signal.get("symbol", "UNKNOWN")
+                direction = signal.get("direction", "UNKNOWN")
+                result = signal.get("result", "PENDING")
+                pnl = signal.get("pnl", 0)
+
+                result_emoji = "✅" if result == "WIN" else "❌" if result == "LOSS" else "⏳"
+
+                msg += f"{i}. {result_emoji} <b>{symbol}</b> {direction}\n"
+                msg += f"   • Result: {result}\n"
+                msg += f"   • P/L: {pnl:+.2f}%\n\n"
+
+        msg += "━━━━━━━━━━━━━━━━━━━━━━━\n"
+        msg += "📊 Performance tracking by CryptoSatX"
+
+        messages.append(msg)
+        return messages
+
     async def _send_message(self, text: str) -> Dict:
         """Send single message to Telegram"""
         if not self.enabled:
