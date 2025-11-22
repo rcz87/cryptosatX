@@ -144,12 +144,12 @@
     </nav>
 
     <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <!-- Total Signals -->
-            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 card-hover">
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-4 card-hover">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Total Signals</p>
@@ -163,7 +163,7 @@
             </div>
 
             <!-- Win Rate -->
-            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 card-hover">
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-4 card-hover">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">AI Win Rate</p>
@@ -177,7 +177,7 @@
             </div>
 
             <!-- Active Positions -->
-            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 card-hover">
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-4 card-hover">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Active Signals</p>
@@ -191,7 +191,7 @@
             </div>
 
             <!-- Avg P&L -->
-            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 card-hover">
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-4 card-hover">
                 <div class="flex items-center justify-between">
                     <div>
                         <p class="text-sm text-gray-500 dark:text-gray-400 mb-1">Avg P&L (24h)</p>
@@ -206,9 +206,9 @@
         </div>
 
         <!-- Scan & Monitor Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
             <!-- Bulk Scanner -->
-            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-4">
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
                     <i class="fas fa-search mr-2 text-primary"></i>Bulk Scanner
                 </h2>
@@ -232,7 +232,7 @@
             </div>
 
             <!-- Monitor List -->
-            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-4">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white">
                         <i class="fas fa-eye mr-2 text-primary"></i>Monitor List
@@ -252,10 +252,10 @@
         </div>
 
         <!-- Main Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-4">
 
             <!-- Latest Signals -->
-            <div class="lg:col-span-2 bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+            <div class="lg:col-span-2 bg-white dark:bg-dark-100 rounded-xl shadow-lg p-4">
                 <div class="flex items-center justify-between mb-6">
                     <h2 class="text-xl font-bold text-gray-900 dark:text-white">
                         <i class="fas fa-signal mr-2 text-primary"></i>Latest Signals
@@ -278,7 +278,7 @@
             </div>
 
             <!-- Quick Signal Generator -->
-            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-4">
                 <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
                     <i class="fas fa-rocket mr-2 text-primary"></i>Quick Signal
                 </h2>
@@ -316,117 +316,41 @@
         </div>
 
         <!-- Charts Row -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
 
             <!-- AI Verdict Performance Chart -->
-            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-4">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-3">
                     <i class="fas fa-brain mr-2 text-primary"></i>AI Verdict Performance
                 </h2>
-                <canvas id="verdictChart" height="250"></canvas>
+                <canvas id="verdictChart" height="200"></canvas>
             </div>
 
             <!-- Signal Distribution Chart -->
-            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-4">
+                <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-3">
                     <i class="fas fa-pie-chart mr-2 text-primary"></i>Signal Distribution
                 </h2>
-                <canvas id="distributionChart" height="250"></canvas>
+                <canvas id="distributionChart" height="200"></canvas>
             </div>
         </div>
 
         <!-- Performance Timeline -->
-        <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
+        <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-4">
+            <h2 class="text-lg font-bold text-gray-900 dark:text-white mb-3">
                 <i class="fas fa-clock mr-2 text-primary"></i>Performance Timeline
             </h2>
-            <canvas id="timelineChart" height="100"></canvas>
+            <canvas id="timelineChart" height="80"></canvas>
         </div>
 
-        <!-- TradingView Market Overview -->
-        <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6 mt-6">
-            <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                <i class="fas fa-chart-area mr-2 text-primary"></i>Market Overview
-            </h2>
-            <div class="tradingview-widget-container">
-                <div class="tradingview-widget-container__widget"></div>
-                <script type="text/javascript" src="https://s3.tradingview.com/external-embedding/embed-widget-ticker-tape.js" async>
-                {
-                  "symbols": [
-                    {
-                      "proName": "BINANCE:BTCUSDT",
-                      "title": "BTC/USDT"
-                    },
-                    {
-                      "proName": "BINANCE:ETHUSDT",
-                      "title": "ETH/USDT"
-                    },
-                    {
-                      "proName": "BINANCE:SOLUSDT",
-                      "title": "SOL/USDT"
-                    },
-                    {
-                      "proName": "BINANCE:BNBUSDT",
-                      "title": "BNB/USDT"
-                    },
-                    {
-                      "proName": "BINANCE:AVAXUSDT",
-                      "title": "AVAX/USDT"
-                    },
-                    {
-                      "proName": "BINANCE:MATICUSDT",
-                      "title": "MATIC/USDT"
-                    },
-                    {
-                      "proName": "BINANCE:LINKUSDT",
-                      "title": "LINK/USDT"
-                    }
-                  ],
-                  "showSymbolLogo": true,
-                  "isTransparent": false,
-                  "displayMode": "adaptive",
-                  "colorTheme": "dark",
-                  "locale": "en"
-                }
-                </script>
-            </div>
-        </div>
-
-        <!-- TradingView Advanced Chart -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-6">
-            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                    <i class="fas fa-chart-line mr-2 text-primary"></i>BTC/USDT Chart
-                </h2>
-                <div class="tradingview-widget-container" style="height: 500px;">
-                    <div id="tradingview_btc" style="height: 100%;"></div>
-                </div>
-            </div>
-
-            <div class="bg-white dark:bg-dark-100 rounded-xl shadow-lg p-6">
-                <h2 class="text-xl font-bold text-gray-900 dark:text-white mb-6">
-                    <i class="fas fa-chart-line mr-2 text-primary"></i>ETH/USDT Chart
-                </h2>
-                <div class="tradingview-widget-container" style="height: 500px;">
-                    <div id="tradingview_eth" style="height: 100%;"></div>
-                </div>
-            </div>
-        </div>
     </div>
 
-    <!-- Footer -->
-    <footer class="bg-white dark:bg-dark-100 shadow-lg mt-12">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
-                    &copy; 2025 CryptoSatX. AI-Powered Crypto Trading Signals.
-                </p>
-                <div class="flex space-x-4 mt-4 md:mt-0">
-                    <a href="/docs" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary">API Docs</a>
-                    <a href="/redoc" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary">ReDoc</a>
-                    <a href="https://github.com/rcz87/cryptosatX" class="text-sm text-gray-500 dark:text-gray-400 hover:text-primary">GitHub</a>
-                </div>
-            </div>
+    <!-- Footer - Compact -->
+    <footer class="bg-white dark:bg-dark-100 mt-4">
+        <div class="max-w-7xl mx-auto px-4 py-3 text-center">
+            <p class="text-xs text-gray-500 dark:text-gray-400">
+                &copy; 2025 CryptoSatX | <a href="/docs" class="hover:text-primary">API</a> | <a href="https://github.com/rcz87/cryptosatX" class="hover:text-primary">GitHub</a>
+            </p>
         </div>
     </footer>
 

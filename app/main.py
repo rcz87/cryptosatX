@@ -57,6 +57,7 @@ from app.api import (
     routes_comprehensive_monitoring,  # ADDED FOR COMPREHENSIVE COIN MONITORING SYSTEM
     routes_smart_entry,  # ADDED FOR PRO SMART ENTRY ENGINE
     routes_gpt_minimal,  # ADDED FOR GPT ACTIONS MINIMAL SCHEMA (30 operation limit fix)
+    routes_prepump,  # ADDED FOR PRE-PUMP DETECTION ENGINE
 )
 
 from app.middleware import (
@@ -250,6 +251,7 @@ app.include_router(routes_enhanced_gpt.router, tags=["Enhanced GPT Integration"]
 app.include_router(routes_monitoring.router, tags=["Automated Monitoring"])
 app.include_router(routes_comprehensive_monitoring.router, tags=["Comprehensive Coin Monitoring"])  # ADDED FOR MULTI-COIN MULTI-TIMEFRAME MONITORING
 app.include_router(routes_smart_entry.router, tags=["PRO Smart Entry Engine"])  # ADDED FOR PROFESSIONAL ENTRY ANALYSIS
+app.include_router(routes_prepump.router, tags=["Pre-Pump Detection Engine"])  # ADDED FOR PRE-PUMP DETECTION ENGINE
 app.include_router(routes_openai.router, tags=["OpenAI GPT-4 Integration"])
 app.include_router(routes_openai_v2.router, tags=["OpenAI V2 (Development)"])  # PHASE 1 DEVELOPMENT
 app.include_router(
