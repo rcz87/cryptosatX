@@ -19,14 +19,17 @@ router = APIRouter()
 async def root():
     """Get API information and health status"""
     return {
-        "name": "Crypto Futures Signal API",
-        "version": "1.0.0",
+        "name": "CryptoSatX - AI Trading Signals",
+        "version": "3.0.0",
         "description": "Production-ready crypto futures signal API with multi-provider integration",
         "endpoints": {
+            "dashboard": "/dashboard",
             "health": "/health",
             "signals": "/signals/{symbol}",
             "market": "/market/{symbol}",
-            "gpt_schema": "/gpt/action-schema"
+            "gpt_schema": "/gpt/action-schema",
+            "docs": "/docs",
+            "redoc": "/redoc"
         }
     }
 
