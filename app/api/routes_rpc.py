@@ -15,6 +15,25 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+@router.get("/rpc/info", summary="API Health & Info")
+async def root():
+    """Get API information and health status"""
+    return {
+        "name": "CryptoSatX - AI Trading Signals",
+        "version": "3.0.0",
+        "description": "Production-ready crypto futures signal API with multi-provider integration",
+        "endpoints": {
+            "dashboard": "/dashboard",
+            "health": "/health",
+            "signals": "/signals/{symbol}",
+            "market": "/market/{symbol}",
+            "gpt_schema": "/gpt/action-schema",
+            "docs": "/docs",
+            "redoc": "/redoc"
+        }
+    }
+
+
 @router.get("/invoke/operations", summary="List all available operations")
 async def list_operations():
     """List all 187+ operations available"""

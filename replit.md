@@ -65,7 +65,29 @@ The API provides clean JSON responses and offers OpenAPI documentation (`/docs`,
 - **Binance Futures API**: Futures market data, coin discovery, 24hr statistics, funding rates, open interest, new listings.
 - **CoinGecko API**: Coin discovery, market cap filtering, volume analysis, category search.
 - **Neon (PostgreSQL)**: Managed PostgreSQL database.
-## Recent Updates (Nov 20, 2025)
+
+## Recent Updates (Nov 22, 2025)
+
+### CoinAPI Order Book Error Handling Enhanced
+- ✅ **Problem Solved:** GPT Actions couldn't understand why order book queries failed
+- ✅ **Solution:** Added detailed error messages with explanations and alternatives
+- ✅ **Error Fields:**
+  - `error`: Clear main error message (e.g., "CoinAPI order book not available for BTC on BINANCE")
+  - `details`: Explanation of root cause (symbol not found, empty feed, illiquid market)
+  - `alternative`: Suggested fallback (use Coinglass endpoints instead)
+- ✅ **File Modified:** `app/services/coinapi_comprehensive_service.py`
+- ✅ **Verified:** GPT now understands order book failures and suggests Coinglass alternatives
+- 📊 **Example Response:** 
+  ```json
+  {
+    "success": false,
+    "error": "CoinAPI order book not available for BTC on BINANCE",
+    "details": "Empty response from CoinAPI. Symbol may not have active trading on this exchange, or CoinAPI order book feed is unavailable for this pair.",
+    "alternative": "Use Coinglass order book endpoints instead (coinglass.orderbook.*)"
+  }
+  ```
+
+## Previous Updates (Nov 20, 2025)
 
 ### GPT Actions Discoverability Fix (CRITICAL)
 - ✅ **OpenAPI Schema Enum Fixed:** Added operations enum to `FlatInvokeRequest.operation` field via `json_schema_extra`

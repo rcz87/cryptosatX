@@ -259,8 +259,15 @@ class CoinAPIComprehensiveService:
             
             response = await client.get(url, headers=self.headers, params=params)
             
+            if response.status_code == 404:
+                return {
+                    "success": False,
+                    "error": f"Order book not available for {symbol} on {exchange} (symbol not found in CoinAPI)",
+                    "details": f"Symbol ID: {symbol_id} - Try using a different exchange or verify symbol is actively traded"
+                }
+            
             if response.status_code != 200:
-                return {"success": False, "error": f"HTTP {response.status_code}"}
+                return {"success": False, "error": f"CoinAPI error: HTTP {response.status_code}"}
             
             data = response.json()
             
@@ -270,7 +277,11 @@ class CoinAPIComprehensiveService:
                 bids = orderbook.get("bids", [])
                 
                 if not asks or not bids:
-                    return {"success": False, "error": "Empty order book"}
+                    return {
+                        "success": False,
+                        "error": "Order book data is empty",
+                        "details": f"{symbol} on {exchange}: No active bids or asks. Market may be illiquid or CoinAPI feed is down."
+                    }
                 
                 # Calculate metrics
                 best_bid = float(bids[0]["price"])
@@ -330,10 +341,19 @@ class CoinAPIComprehensiveService:
                     "source": "coinapi_orderbook"
                 }
             
-            return {"success": False, "error": "No order book data"}
+            return {
+                "success": False,
+                "error": f"CoinAPI order book not available for {symbol} on {exchange}",
+                "details": "Empty response from CoinAPI. Symbol may not have active trading on this exchange, or CoinAPI order book feed is unavailable for this pair.",
+                "alternative": "Use Coinglass order book endpoints instead (coinglass.orderbook.*)"
+            }
             
         except Exception as e:
-            return {"success": False, "error": str(e)}
+            return {
+                "success": False,
+                "error": f"Order book request failed: {str(e)}",
+                "details": f"Symbol: {symbol}, Exchange: {exchange}"
+            }
     
     # ==================== TRADES / VOLUME ANALYSIS ====================
     

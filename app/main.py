@@ -231,8 +231,11 @@ app.add_middleware(SlowAPIMiddleware)
 # Mount static files for dashboard
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# Include routers (PRIORITIZE API ROUTES FIRST)
-# Health router first
+# Include routers (DASHBOARD FIRST to serve root "/" with HTML)
+# Dashboard router first (handles root "/" and serves HTML UI)
+app.include_router(routes_dashboard.router, tags=["Dashboard"])
+
+# Health router
 app.include_router(routes_health.router, tags=["Health"])
 app.include_router(routes_signals.router, tags=["Signals"])
 app.include_router(routes_gpt.router, tags=["GPT Actions"])
@@ -307,10 +310,6 @@ app.include_router(
 app.include_router(
     routes_spike_gpt.router, tags=["GPT Actions"]
 )  # ADDED FOR PHASE 5 - SPIKE DETECTION GPT ACTIONS (user-friendly endpoints)
-
-# Dashboard router LAST as catch-all fallback (handles root "/" and SPA routes)
-# MUST be after all API routers to prevent route interception
-app.include_router(routes_dashboard.router, tags=["Dashboard"])
 
 
 # CRITICAL: Clear OpenAPI schema cache to force regeneration after code changes

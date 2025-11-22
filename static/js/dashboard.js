@@ -5,12 +5,13 @@
 
 // Configuration
 const API_BASE_URL = window.location.origin;
-const REFRESH_INTERVAL = 30000; // 30 seconds
+const REFRESH_INTERVAL = 120000; // 2 minutes (was 30s - caused freeze)
 let refreshTimer = null;
 let charts = {};
 let allSignals = []; // Store all signals for filtering
 let monitoredSymbols = new Set(); // Store symbols being monitored
 let monitorTimer = null;
+let cachedOutcomesHistory = null; // Cache to prevent double fetch
 
 // Dark Mode
 function initDarkMode() {
@@ -94,6 +95,9 @@ async function loadLatestSignals(filterAsset = 'all') {
 
     try {
         const history = await getOutcomesHistory();
+        
+        // Cache the outcomes history for charts to use
+        cachedOutcomesHistory = history;
 
         if (!history || !history.outcomes || history.outcomes.length === 0) {
             container.innerHTML = `
@@ -365,7 +369,7 @@ function destroyCharts() {
     charts = {};
 }
 
-// Update Charts with Real Data
+// Update Charts with Real Data (uses cached data to avoid double fetch)
 async function updateCharts() {
     try {
         // Update Verdict Performance Chart
@@ -381,8 +385,8 @@ async function updateCharts() {
             charts.verdict.update('none'); // Skip animation for better performance
         }
 
-        // Update Signal Distribution Chart
-        const history = await getOutcomesHistory();
+        // Update Signal Distribution Chart - use cached data instead of refetch
+        const history = cachedOutcomesHistory;
         if (history && history.outcomes) {
             const longCount = history.outcomes.filter(s => s.signal_type === 'LONG').length;
             const shortCount = history.outcomes.filter(s => s.signal_type === 'SHORT').length;
@@ -392,7 +396,7 @@ async function updateCharts() {
             charts.distribution.update('none'); // Skip animation for better performance
         }
 
-        // Update Performance Timeline
+        // Update Performance Timeline - use cached data
         if (history && history.outcomes && history.outcomes.length > 0) {
             // Sort by timestamp
             const sorted = [...history.outcomes].sort((a, b) =>
