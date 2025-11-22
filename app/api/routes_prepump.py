@@ -16,11 +16,12 @@ from app.services.pre_pump_engine import PrePumpEngine
 from app.services.accumulation_detector import AccumulationDetector
 from app.services.reversal_detector import ReversalDetector
 from app.services.whale_tracker import WhaleTracker
-from app.services.pre_pump_scanner import (
-    get_pre_pump_scanner,
-    start_pre_pump_scanner,
-    stop_pre_pump_scanner
-)
+# Scanner imports disabled - auto-scanning consumes too much API quota
+# from app.services.pre_pump_scanner import (
+#     get_pre_pump_scanner,
+#     start_pre_pump_scanner,
+#     stop_pre_pump_scanner
+# )
 from app.utils.logger import get_logger
 
 logger = get_logger(__name__)
@@ -385,197 +386,154 @@ async def get_dashboard_data(
 
 
 # ==================== SCANNER CONTROL ENDPOINTS ====================
+# AUTO-SCANNER DISABLED: Consumes too much API quota (similar to existing auto_scanner)
+#
+# Scanner endpoints have been disabled to prevent excessive API usage.
+# The auto-scanner would consume ~10 API calls per coin, and with automatic
+# scanning every 30 minutes, this quickly adds up to hundreds of calls per hour.
+#
+# Use manual endpoints instead:
+# - GET /api/prepump/analyze/{symbol} - Analyze single coin on-demand
+# - POST /api/prepump/scan - Scan specific coins manually
+# - GET /api/prepump/quick-scan - Quick scan 15 popular coins
+# - POST /api/prepump/gpt/analyze - GPT Actions compatible endpoint
+# - POST /api/prepump/gpt/scan - GPT Actions scan endpoint
+#
+# These manual endpoints provide the same functionality without the
+# continuous API consumption of an auto-scanner.
 
-@router.post("/scanner/start")
-async def start_scanner(
-    scan_interval_minutes: int = Query(30, description="Minutes between scans", ge=5, le=1440),
-    min_score: float = Query(70.0, description="Minimum score to alert", ge=0, le=100),
-    min_confidence: float = Query(60.0, description="Minimum confidence to alert", ge=0, le=100),
-    enable_alerts: bool = Query(True, description="Enable Telegram notifications")
-):
+# ==================== GPT ACTIONS COMPATIBLE ENDPOINTS ====================
+
+from pydantic import BaseModel, Field
+
+class GPTPrePumpRequest(BaseModel):
+    """Flat structure for GPT Actions compatibility"""
+    symbol: str = Field(..., description="Cryptocurrency symbol (BTC, ETH, SOL, etc.)")
+    timeframe: Optional[str] = Field("1HRS", description="Analysis timeframe (1MIN, 5MIN, 1HRS, 4HRS, 1DAY)")
+
+
+class GPTPrePumpScanRequest(BaseModel):
+    """Flat structure for multi-symbol scan"""
+    symbols: str = Field(..., description="Comma-separated symbols (e.g., 'BTC,ETH,SOL')")
+    min_score: Optional[float] = Field(60.0, ge=0, le=100, description="Minimum score threshold")
+    timeframe: Optional[str] = Field("1HRS", description="Analysis timeframe")
+
+
+@router.post("/gpt/analyze", summary="Pre-Pump Analysis (GPT Actions Compatible)")
+async def analyze_prepump_gpt(request: GPTPrePumpRequest):
     """
-    Start the automated pre-pump scanner
+    Get pre-pump analysis for a single symbol - GPT Actions compatible version
 
-    **Example:**
-    ```
-    POST /api/prepump/scanner/start?scan_interval_minutes=30&min_score=70&enable_alerts=true
-    ```
+    **Usage from GPT:**
+    Ask ChatGPT: "Analyze BTC for pre-pump signals"
 
     **Returns:**
-    Scanner status and configuration
+    - score: Pre-pump score (0-100)
+    - confidence: Signal confidence (0-100)
+    - verdict: VERY_STRONG_PRE_PUMP, STRONG_PRE_PUMP, MODERATE_PRE_PUMP, etc.
+    - recommendation: Trading action with entry/exit strategy
+    - components: Breakdown of accumulation, reversal, whale signals
     """
     try:
-        scanner = get_pre_pump_scanner()
+        engine = get_engine()
+        result = await engine.analyze_pre_pump(request.symbol, request.timeframe)
 
-        if scanner and scanner.is_running:
-            return {
-                "success": False,
-                "message": "Scanner already running",
-                "status": await scanner.get_status()
-            }
+        if not result.get("success"):
+            raise HTTPException(status_code=500, detail=result.get("error", "Analysis failed"))
 
-        logger.info("[API] Starting pre-pump scanner...")
+        return {
+            "ok": True,
+            "data": result,
+            "operation": "prepump.analyze"
+        }
 
-        scanner = await start_pre_pump_scanner(
-            scan_interval_minutes=scan_interval_minutes,
-            min_score=min_score,
-            min_confidence=min_confidence,
-            enable_alerts=enable_alerts
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[GPT] Error analyzing {request.symbol}: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.post("/gpt/scan", summary="Multi-Symbol Pre-Pump Scan (GPT Actions Compatible)")
+async def scan_prepump_gpt(request: GPTPrePumpScanRequest):
+    """
+    Scan multiple symbols for pre-pump opportunities - GPT Actions compatible
+
+    **Usage from GPT:**
+    Ask ChatGPT: "Scan BTC, ETH, SOL, AVAX for pre-pump signals"
+
+    **Returns:**
+    - totalScanned: Number of symbols analyzed
+    - totalFound: Number of opportunities above min_score
+    - summary: Breakdown by signal strength
+    - topOpportunities: Top ranked opportunities
+    """
+    try:
+        # Parse comma-separated symbols
+        symbol_list = [s.strip().upper() for s in request.symbols.split(",") if s.strip()]
+
+        if not symbol_list:
+            raise HTTPException(status_code=400, detail="No valid symbols provided")
+
+        if len(symbol_list) > 20:
+            raise HTTPException(status_code=400, detail="Maximum 20 symbols per scan (to save API quota)")
+
+        engine = get_engine()
+        result = await engine.scan_market(
+            symbols=symbol_list,
+            timeframe=request.timeframe,
+            min_score=request.min_score
         )
 
-        return {
-            "success": True,
-            "message": "Pre-pump scanner started successfully",
-            "status": await scanner.get_status()
-        }
-
-    except Exception as e:
-        logger.error(f"[API] Error starting scanner: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/scanner/stop")
-async def stop_scanner():
-    """
-    Stop the automated pre-pump scanner
-
-    **Example:**
-    ```
-    POST /api/prepump/scanner/stop
-    ```
-
-    **Returns:**
-    Success confirmation
-    """
-    try:
-        scanner = get_pre_pump_scanner()
-
-        if not scanner or not scanner.is_running:
-            return {
-                "success": False,
-                "message": "Scanner not running"
-            }
-
-        logger.info("[API] Stopping pre-pump scanner...")
-        await stop_pre_pump_scanner()
+        if not result.get("success"):
+            raise HTTPException(status_code=500, detail=result.get("error", "Scan failed"))
 
         return {
-            "success": True,
-            "message": "Pre-pump scanner stopped successfully"
-        }
-
-    except Exception as e:
-        logger.error(f"[API] Error stopping scanner: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/scanner/status")
-async def get_scanner_status():
-    """
-    Get scanner status and configuration
-
-    **Example:**
-    ```
-    GET /api/prepump/scanner/status
-    ```
-
-    **Returns:**
-    Scanner status, configuration, and statistics
-    """
-    try:
-        scanner = get_pre_pump_scanner()
-
-        if not scanner:
-            return {
-                "success": True,
-                "running": False,
-                "message": "Scanner not initialized"
-            }
-
-        status = await scanner.get_status()
-        return {
-            "success": True,
-            **status
-        }
-
-    except Exception as e:
-        logger.error(f"[API] Error getting scanner status: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/scanner/trigger")
-async def trigger_manual_scan():
-    """
-    Trigger a manual scan immediately (doesn't affect scheduled scans)
-
-    **Example:**
-    ```
-    POST /api/prepump/scanner/trigger
-    ```
-
-    **Returns:**
-    Scan completion status
-    """
-    try:
-        scanner = get_pre_pump_scanner()
-
-        if not scanner:
-            raise HTTPException(
-                status_code=400,
-                detail="Scanner not initialized. Start the scanner first."
-            )
-
-        logger.info("[API] Triggering manual pre-pump scan...")
-        result = await scanner.trigger_manual_scan()
-
-        return result
-
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"[API] Error triggering manual scan: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.post("/scanner/watchlist")
-async def update_watchlist(watchlist: List[str]):
-    """
-    Update the scanner's watchlist
-
-    **Example:**
-    ```
-    POST /api/prepump/scanner/watchlist
-    Body: ["BTC", "ETH", "SOL", "AVAX", "MATIC"]
-    ```
-
-    **Returns:**
-    Updated watchlist confirmation
-    """
-    try:
-        if not watchlist:
-            raise HTTPException(status_code=400, detail="Watchlist cannot be empty")
-
-        if len(watchlist) > 100:
-            raise HTTPException(status_code=400, detail="Maximum 100 symbols allowed")
-
-        scanner = get_pre_pump_scanner()
-
-        if not scanner:
-            raise HTTPException(
-                status_code=400,
-                detail="Scanner not initialized. Start the scanner first."
-            )
-
-        await scanner.update_watchlist(watchlist)
-
-        return {
-            "success": True,
-            "message": f"Watchlist updated with {len(watchlist)} symbols",
-            "watchlist": watchlist
+            "ok": True,
+            "data": result,
+            "operation": "prepump.scan"
         }
 
     except HTTPException:
         raise
     except Exception as e:
-        logger.error(f"[API] Error updating watchlist: {e}")
+        logger.error(f"[GPT] Error scanning symbols: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get("/gpt/quick-scan", summary="Quick Pre-Pump Scan (GPT Actions Compatible)")
+async def quick_scan_gpt():
+    """
+    Quick scan of top 15 popular coins for pre-pump signals - GPT Actions compatible
+
+    **Usage from GPT:**
+    Ask ChatGPT: "Show me today's pre-pump opportunities" or "Quick pre-pump scan"
+
+    **Returns:**
+    Top opportunities from 15 popular cryptocurrencies
+    """
+    try:
+        # Limit to 15 coins to save API quota
+        popular_coins = [
+            "BTC", "ETH", "BNB", "SOL", "ADA",
+            "XRP", "DOT", "AVAX", "MATIC", "LINK",
+            "UNI", "ATOM", "LTC", "NEAR", "FTM"
+        ]
+
+        engine = get_engine()
+        result = await engine.scan_market(popular_coins, "1HRS", min_score=60.0)
+
+        if not result.get("success"):
+            raise HTTPException(status_code=500, detail=result.get("error", "Quick scan failed"))
+
+        return {
+            "ok": True,
+            "data": result,
+            "operation": "prepump.quick_scan"
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"[GPT] Error in quick scan: {e}")
         raise HTTPException(status_code=500, detail=str(e))
