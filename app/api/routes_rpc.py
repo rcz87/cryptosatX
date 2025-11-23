@@ -36,7 +36,7 @@ async def root():
 
 @router.get("/invoke/operations", summary="List all available operations")
 async def list_operations():
-    """List all 187+ operations available"""
+    """List all 188+ operations available"""
     from app.utils.operation_catalog import get_all_operations
     
     operations = get_all_operations()

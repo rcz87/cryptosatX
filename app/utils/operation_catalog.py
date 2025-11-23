@@ -131,6 +131,7 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "smart_money.discover": OperationMetadata("smart_money.discover", "smart_money", "/discover", "GET", "Discover smart money opportunities"),
     "smart_money.futures_list": OperationMetadata("smart_money.futures_list", "smart_money", "/futures/list", "GET", "Get futures list"),
     "smart_money.scan_auto": OperationMetadata("smart_money.scan_auto", "smart_money", "/scan/auto", "GET", "Auto scan smart money"),
+    "smart_money.scan_tiered": OperationMetadata("smart_money.scan_tiered", "smart_money", "/scan/tiered", "GET", "Scan smart money with 3-tier filtering - efficiently scan 1000+ coins"),
     
     "mss.discover": OperationMetadata("mss.discover", "mss", "/discover", "GET", "Discover high-potential cryptocurrencies"),
     "mss.analyze": OperationMetadata("mss.analyze", "mss", "/analyze/{symbol}", "GET", "Analyze MSS for symbol", requires_symbol=True),

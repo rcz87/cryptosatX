@@ -27,15 +27,15 @@ async def minimal_gpt_schema():
             "info": {
                 "title": "CryptoSatX RPC API",
                 "version": "3.0.0",
-                "description": "Single RPC endpoint with 187+ crypto operations. Use operation parameter to call any function."
+                "description": "Single RPC endpoint with 188+ crypto operations. Use operation parameter to call any function."
             },
             "servers": [{"url": base_url}],
             "paths": {
                 "/invoke": {
                     "post": {
                         "operationId": "invoke",
-                        "summary": "Unified RPC endpoint - 187+ operations",
-                        "description": "Call any of 187+ crypto operations via single endpoint. Specify operation name + parameters.",
+                        "summary": "Unified RPC endpoint - 188+ operations",
+                        "description": "Call any of 188+ crypto operations via single endpoint. Specify operation name + parameters.",
                         "requestBody": {
                             "required": True,
                             "content": {

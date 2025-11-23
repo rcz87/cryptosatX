@@ -22,10 +22,10 @@ class FlatInvokeRequest(BaseModel):
 
     All parameters are at root level (not nested under 'args')
     """
-    # REQUIRED: Operation identifier (with enum of all 187+ operations for GPT Actions)
+    # REQUIRED: Operation identifier (with enum of all 188+ operations for GPT Actions)
     operation: str = Field(
         ...,
-        description="Operation to execute - see /invoke/operations for full list (187 operations across 18 namespaces)",
+        description="Operation to execute - see /invoke/operations for full list (188 operations across 18 namespaces)",
         json_schema_extra={"enum": _get_all_operations()}
     )
 
