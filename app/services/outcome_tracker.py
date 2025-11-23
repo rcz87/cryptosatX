@@ -7,7 +7,7 @@ Phase 2: AI Verdict Validation System
 import asyncio
 from datetime import datetime, timedelta
 from app.utils.logger import get_wib_datetime
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Tuple
 import httpx
 from app.storage.database import db
 from app.utils.logger import logger
@@ -54,6 +54,9 @@ class OutcomeTracker:
         """
         try:
             if db.use_postgres:
+                if not db.pool:
+                    logger.error("PostgreSQL pool not initialized")
+                    return None
                 async with db.pool.acquire() as conn:
                     outcome_id = await conn.fetchval(
                         """
@@ -68,6 +71,9 @@ class OutcomeTracker:
                     )
                     return outcome_id
             else:
+                if not db.sqlite_conn:
+                    logger.error("SQLite connection not initialized")
+                    return None
                 async with db.sqlite_conn.execute(
                     """
                     INSERT INTO signal_outcomes (
@@ -79,7 +85,8 @@ class OutcomeTracker:
                      entry_price, entry_timestamp.isoformat())
                 ) as cursor:
                     outcome_id = cursor.lastrowid
-                    await db.sqlite_conn.commit()
+                    if db.sqlite_conn:
+                        await db.sqlite_conn.commit()
                     return outcome_id
         except Exception as e:
             logger.error(f"Failed to record signal entry: {e}")
@@ -176,6 +183,9 @@ class OutcomeTracker:
         try:
             # Fetch outcome record
             if db.use_postgres:
+                if not db.pool:
+                    logger.error("PostgreSQL pool not initialized")
+                    return False
                 async with db.pool.acquire() as conn:
                     record = await conn.fetchrow(
                         """
@@ -186,6 +196,9 @@ class OutcomeTracker:
                         outcome_id
                     )
             else:
+                if not db.sqlite_conn:
+                    logger.error("SQLite connection not initialized")
+                    return False
                 async with db.sqlite_conn.execute(
                     """
                     SELECT symbol, signal_type, entry_price
@@ -225,6 +238,9 @@ class OutcomeTracker:
 
             # Update database
             if db.use_postgres:
+                if not db.pool:
+                    logger.error("PostgreSQL pool not initialized")
+                    return False
                 async with db.pool.acquire() as conn:
                     await conn.execute(
                         f"""
@@ -238,6 +254,9 @@ class OutcomeTracker:
                         current_price, outcome, pnl, now, outcome_id
                     )
             else:
+                if not db.sqlite_conn:
+                    logger.error("SQLite connection not initialized")
+                    return False
                 await db.sqlite_conn.execute(
                     f"""
                     UPDATE signal_outcomes
@@ -261,7 +280,7 @@ class OutcomeTracker:
     async def schedule_outcome_tracking(
         self,
         outcome_id: int,
-        intervals: list = None
+        intervals: Optional[List[Tuple[str, int]]] = None
     ):
         """
         Schedule outcome tracking at specified intervals
@@ -304,6 +323,9 @@ class OutcomeTracker:
                 return []
 
             if db.use_postgres:
+                if not db.pool:
+                    logger.error("PostgreSQL pool not initialized")
+                    return []
                 async with db.pool.acquire() as conn:
                     # Convert to naive datetime for PostgreSQL comparison
                     # (column is timestamp without time zone)
@@ -321,6 +343,9 @@ class OutcomeTracker:
                     )
                     return [r["id"] for r in records]
             else:
+                if not db.sqlite_conn:
+                    logger.error("SQLite connection not initialized")
+                    return []
                 async with db.sqlite_conn.execute(
                     f"""
                     SELECT id
