@@ -5,6 +5,7 @@ Detects whale accumulation and distribution patterns across multiple cryptocurre
 ✅ DYNAMIC DISCOVERY: Auto-scans top 30-50 coins by volume (configurable, default: 40)
 ✅ FALLBACK: Uses hardcoded SCAN_LIST if dynamic discovery fails
 ✅ RATE LIMIT SAFE: Optimized to avoid API throttling (HTTP 429)
+✅ CANONICAL SCORING: Uses CanonicalAccumulationCalculator for consistency (v1.0.0+)
 
 Key Metrics for Detection:
 - Accumulation: High buy pressure + low funding + low social + sideways price
@@ -17,6 +18,7 @@ from typing import Dict, List, Optional
 import httpx
 from datetime import datetime, timedelta
 from app.utils.logger import logger
+from app.services.canonical_accumulation_calculator import canonical_calculator
 
 
 class SmartMoneyService:
@@ -73,20 +75,96 @@ class SmartMoneyService:
     def __init__(self, base_url: str = "http://localhost:8000"):
         self.base_url = base_url
         self.client = httpx.AsyncClient(timeout=30.0)
-        
+
         # ✅ NEW: Dynamic coin discovery configuration
         # Reduced from 100 to 40 to avoid LunarCrush rate limits (HTTP 429)
         self.max_coins = int(os.getenv("MAX_SMART_MONEY_COINS", "40"))
         self.use_dynamic_discovery = os.getenv("SMART_MONEY_DYNAMIC_DISCOVERY", "true").lower() == "true"
-        
+
         # Cache for discovered coins (5 min TTL to reduce API calls)
         self._discovered_coins_cache = None
         self._cache_timestamp = None
         self._cache_ttl = 300  # 5 minutes
 
+        # ✅ NEW: Use canonical calculator by default (can be disabled for testing)
+        self.use_canonical = os.getenv("SMART_MONEY_USE_CANONICAL", "true").lower() == "true"
+
     async def close(self):
         """Close HTTP client"""
         await self.client.aclose()
+
+    async def _calculate_canonical_scores(
+        self,
+        symbol: str,
+        timeframe: str = "1HRS"
+    ) -> tuple[float, float, List[str]]:
+        """
+        ✅ NEW: Calculate accumulation/distribution using canonical calculator
+
+        This ensures consistency across all services.
+
+        Args:
+            symbol: Coin symbol
+            timeframe: Analysis timeframe
+
+        Returns:
+            (accumulation_score_10, distribution_score_10, reasons)
+        """
+        try:
+            # Use canonical calculator
+            result = await canonical_calculator.calculate(symbol, timeframe)
+
+            # Convert to 0-10 scale for SmartMoneyService compatibility
+            accum_score_10 = result.accumulation_score_10
+            dist_score_10 = result.distribution_score_10
+
+            # Generate reasons based on verdict
+            reasons = []
+            if result.verdict.endswith("ACCUMULATION"):
+                reasons.append(f"Canonical analysis: {result.verdict}")
+
+                # Extract specific pillar signals
+                pillars = result.details.get("pillars", {})
+
+                vp = pillars.get("volume_profile", {})
+                if vp.get("buy_pressure", 0) > 0.55:
+                    reasons.append(f"High buy pressure ({vp.get('buy_pressure', 0)*100:.1f}%)")
+
+                cons = pillars.get("consolidation", {})
+                if cons.get("is_consolidating"):
+                    reasons.append(f"Price consolidating (volatility: {cons.get('volatility', 0)*100:.2f}%)")
+
+                sp = pillars.get("sell_pressure", {})
+                if sp.get("sell_pressure_ratio", 0) < 0.45:
+                    reasons.append(f"Low sell pressure ({sp.get('sell_pressure_ratio', 0)*100:.1f}%)")
+
+                ob = pillars.get("order_book_depth", {})
+                if ob.get("bid_ask_ratio", 1.0) > 1.2:
+                    reasons.append(f"Strong bids (ratio: {ob.get('bid_ask_ratio', 1.0):.2f})")
+
+            elif result.verdict.endswith("DISTRIBUTION"):
+                reasons.append(f"Canonical analysis: {result.verdict}")
+
+                pillars = result.details.get("pillars", {})
+
+                vp = pillars.get("volume_profile", {})
+                if vp.get("sell_pressure", 0) > 0.55:
+                    reasons.append(f"High sell pressure ({vp.get('sell_pressure', 0)*100:.1f}%)")
+
+                cons = pillars.get("consolidation", {})
+                if not cons.get("is_consolidating"):
+                    reasons.append(f"Price volatile (volatility: {cons.get('volatility', 0)*100:.2f}%)")
+
+                ob = pillars.get("order_book_depth", {})
+                if ob.get("bid_ask_ratio", 1.0) < 0.8:
+                    reasons.append(f"Weak bids (ratio: {ob.get('bid_ask_ratio', 1.0):.2f})")
+
+            return accum_score_10, dist_score_10, reasons
+
+        except Exception as e:
+            logger.error(f"[SmartMoney] Canonical calculation error for {symbol}: {e}")
+            # Fallback to neutral
+            return 5.0, 5.0, []
 
     async def _discover_top_coins(self) -> List[str]:
         """
@@ -436,9 +514,20 @@ class SmartMoneyService:
                 failed_coins.append(symbol)
                 continue
 
-            # Calculate scores
-            accum_score, accum_reasons = self._calculate_accumulation_score(data)
-            dist_score, dist_reasons = self._calculate_distribution_score(data)
+            # ✅ NEW: Use canonical calculator if enabled
+            if self.use_canonical:
+                try:
+                    accum_score, dist_score, reasons = await self._calculate_canonical_scores(symbol)
+                    accum_reasons = reasons if accum_score > dist_score else []
+                    dist_reasons = reasons if dist_score > accum_score else []
+                except Exception as e:
+                    logger.warning(f"Canonical calculation failed for {symbol}, falling back to legacy: {e}")
+                    accum_score, accum_reasons = self._calculate_accumulation_score(data)
+                    dist_score, dist_reasons = self._calculate_distribution_score(data)
+            else:
+                # Legacy calculation method
+                accum_score, accum_reasons = self._calculate_accumulation_score(data)
+                dist_score, dist_reasons = self._calculate_distribution_score(data)
 
             # Get basic info
             price = data.get("price", 0)
@@ -455,6 +544,7 @@ class SmartMoneyService:
                 "dominantPattern": (
                     "accumulation" if accum_score > dist_score else "distribution"
                 ),
+                "scoringMethod": "canonical" if self.use_canonical else "legacy"  # Track which method used
             }
 
             # Categorize based on scores
