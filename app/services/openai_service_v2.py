@@ -20,7 +20,7 @@ from app.utils.logger import default_logger
 class OpenAIConfigV2:
     """OpenAI service configuration V2"""
     api_key: str
-    model: str = "gpt-4o"
+    model: str = "gpt-5.1"
     max_tokens: int = 1500
     temperature: float = 0.1
     timeout: int = 30
@@ -28,7 +28,7 @@ class OpenAIConfigV2:
 
 class OpenAIServiceV2:
     """
-    OpenAI GPT-4o V2 - Enhanced Signal Judge
+    OpenAI GPT-5.1 V2 - Enhanced Signal Judge
     
     Phase 1 Features:
     - Signal validation with verdict system
@@ -67,7 +67,7 @@ class OpenAIServiceV2:
         comprehensive_metrics: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
-        Phase 1: Enhanced signal validation with verdict system (GPT-4o Intelligence)
+        Phase 1: Enhanced signal validation with verdict system (GPT-5.1 Intelligence)
         
         Returns structured JSON with:
         - verdict: CONFIRM/DOWNSIZE/SKIP/WAIT
@@ -444,7 +444,7 @@ async def get_openai_service_v2() -> OpenAIServiceV2:
         
         config = OpenAIConfigV2(
             api_key=api_key,
-            model=os.getenv("OPENAI_MODEL", "gpt-4o"),
+            model=os.getenv("OPENAI_MODEL", "gpt-5.1"),
             max_tokens=int(os.getenv("OPENAI_MAX_TOKENS_V2", "1500")),
             temperature=float(os.getenv("OPENAI_TEMPERATURE", "0.1")),
             timeout=int(os.getenv("OPENAI_TIMEOUT", "30")),

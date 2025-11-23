@@ -1,7 +1,7 @@
 # Crypto Futures Signal API
 
 ## Overview
-This project provides a FastAPI-based backend for generating real-time cryptocurrency futures trading signals (LONG/SHORT/NEUTRAL). It utilizes a multi-factor weighted scoring system, a Multi-Modal Signal Score (MSS) for emerging cryptocurrencies, a Binance New Listings Monitor, and a Hybrid AI Signal Judge (GPT-4 + rule-based fallback) for signal validation. The API aims to be a robust tool for informed and automated crypto trading decisions, with a focus on GPT Actions integration and significant market potential within the crypto trading landscape.
+This project provides a FastAPI-based backend for generating real-time cryptocurrency futures trading signals (LONG/SHORT/NEUTRAL). It utilizes a multi-factor weighted scoring system, a Multi-Modal Signal Score (MSS) for emerging cryptocurrencies, a Binance New Listings Monitor, and a Hybrid AI Signal Judge (GPT-5.1 + rule-based fallback) for signal validation. The API aims to be a robust tool for informed and automated crypto trading decisions, with a focus on GPT Actions integration and significant market potential within the crypto trading landscape.
 
 ## User Preferences
 - Clean, modular code structure
@@ -16,7 +16,7 @@ This project provides a FastAPI-based backend for generating real-time cryptocur
 - Documentation: Simplified, practical, and action-oriented
 
 ## Recent Changes (November 23, 2025)
-- ✅ **Fixed GPT-4o Integration**: Updated from deprecated gpt-4-turbo to gpt-4o model in OpenAI V2 service
+- ✅ **Fixed GPT-5.1 Integration**: Updated from deprecated gpt-4-turbo to gpt-5.1 model in OpenAI V2 service
 - ✅ **Fixed signals.debug Operation**: Added missing handler in rpc_flat_dispatcher for signals.debug endpoint (was registered in catalog but had no implementation)
 - ✅ **Fixed smart_money.scan_tiered**: Added missing handler to support 3-tier filtering system for efficient 1000+ coin scanning (8-10s execution time)
 - ✅ **Updated Operation Count**: Standardized documentation from outdated 187/202 references to correct 188 total operations
