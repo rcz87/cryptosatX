@@ -851,7 +851,7 @@ class SignalEngine:
                         "conflicts": validation_result.get("key_conflicts", []),
                     },
                     "source": "openai_v2",
-                    "model": validation_result.get("model_used", "gpt-4-turbo"),
+                    "model": validation_result.get("model_used", "gpt-4o"),
                 }
                 
                 # Calculate volatility metrics (ATR-based position sizing and stop loss)

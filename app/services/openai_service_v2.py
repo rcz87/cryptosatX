@@ -20,7 +20,7 @@ from app.utils.logger import default_logger
 class OpenAIConfigV2:
     """OpenAI service configuration V2"""
     api_key: str
-    model: str = "gpt-4-turbo"
+    model: str = "gpt-4o"
     max_tokens: int = 1500
     temperature: float = 0.1
     timeout: int = 30
@@ -28,7 +28,7 @@ class OpenAIConfigV2:
 
 class OpenAIServiceV2:
     """
-    OpenAI GPT-4 V2 - Enhanced Signal Judge
+    OpenAI GPT-4o V2 - Enhanced Signal Judge
     
     Phase 1 Features:
     - Signal validation with verdict system
@@ -67,7 +67,7 @@ class OpenAIServiceV2:
         comprehensive_metrics: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         """
-        Phase 1: Enhanced signal validation with verdict system (GPT-5.1 Self-Evaluation)
+        Phase 1: Enhanced signal validation with verdict system (GPT-4o Intelligence)
         
         Returns structured JSON with:
         - verdict: CONFIRM/DOWNSIZE/SKIP/WAIT
@@ -76,7 +76,7 @@ class OpenAIServiceV2:
         - adjusted_risk_suggestion: position sizing recommendation
         - telegram_summary: ready-to-send alert text
         
-        ✅ NEW: Includes historical performance context for GPT-5.1 self-evaluation
+        ✅ NEW: Includes historical performance context for GPT-4o analysis
         """
         try:
             client = await self._get_client()
@@ -101,9 +101,9 @@ class OpenAIServiceV2:
                     ],
                     "max_completion_tokens": self.config.max_tokens,
                     "temperature": self.config.temperature,
-                    # 🧠 GPT-5.1 Enhanced Reasoning via Prompt Engineering
-                    # Note: Native reasoning parameter only available via Responses API
-                    # We use explicit multi-layer prompt structure instead
+                    # 🧠 GPT-4o Intelligence via Prompt Engineering
+                    # Note: Optimized for speed and cost-efficiency
+                    # Multi-layer prompt structure for enhanced analysis
                 },
             )
             
@@ -125,7 +125,7 @@ class OpenAIServiceV2:
             
             # Log token usage for cost monitoring
             self.logger.info(
-                f"GPT-5.1 Token Usage - {symbol}: "
+                f"GPT-4o Token Usage - {symbol}: "
                 f"Input: {usage_data.get('prompt_tokens', 0)}, "
                 f"Output: {usage_data.get('completion_tokens', 0)}, "
                 f"Total: {usage_data.get('total_tokens', 0)}"
@@ -444,7 +444,7 @@ async def get_openai_service_v2() -> OpenAIServiceV2:
         
         config = OpenAIConfigV2(
             api_key=api_key,
-            model=os.getenv("OPENAI_MODEL", "gpt-4-turbo"),
+            model=os.getenv("OPENAI_MODEL", "gpt-4o"),
             max_tokens=int(os.getenv("OPENAI_MAX_TOKENS_V2", "1500")),
             temperature=float(os.getenv("OPENAI_TEMPERATURE", "0.1")),
             timeout=int(os.getenv("OPENAI_TIMEOUT", "30")),
