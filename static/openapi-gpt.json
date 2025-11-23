@@ -3,7 +3,7 @@
   "info": {
     "title": "CryptoSatX RPC API",
     "version": "3.0.0",
-    "description": "\ud83d\ude80 Single RPC endpoint with 188 crypto operations. Use 'operation' parameter to call any function.\n\n**Examples:**\n- signals.get - Get trading signal\n- coinglass.liquidations.symbol - Get liquidation data\n- smart_money.scan - Scan smart money activity\n- smart_money.scan_tiered - Scan 1000+ coins with 3-tier filtering\n- mss.discover - Discover high-potential coins\n\n**Total Operations:** 188"
+    "description": "\ud83d\ude80 Single RPC endpoint with 191 crypto operations. Use 'operation' parameter to call any function.\n\n**Examples:**\n- signals.get - Get trading signal\n- coinglass.liquidations.symbol - Get liquidation data\n- smart_money.scan - Scan smart money activity\n- smart_money.scan_tiered - Scan 1000+ coins with 3-tier filtering\n- scalping.analyze - Complete scalping analysis\n- scalping.quick - Quick scalping check\n- mss.discover - Discover high-potential coins\n\n**Total Operations:** 191"
   },
   "servers": [
     {
@@ -14,8 +14,8 @@
     "/invoke": {
       "post": {
         "operationId": "invoke",
-        "summary": "Unified RPC endpoint - 188 operations",
-        "description": "Call any of 188 crypto operations via single endpoint. Specify operation name + parameters.",
+        "summary": "Unified RPC endpoint - 191 operations",
+        "description": "Call any of 191 crypto operations via single endpoint. Specify operation name + parameters.",
         "requestBody": {
           "required": true,
           "content": {
@@ -216,9 +216,12 @@
                       "openai.sentiment_market",
                       "openai.validate",
                       "openai.config",
-                      "openai.health"
+                      "openai.health",
+                      "scalping.analyze",
+                      "scalping.quick",
+                      "scalping.info"
                     ],
-                    "description": "Operation name - 188 operations available"
+                    "description": "Operation name - 191 operations available"
                   },
                   "symbol": {
                     "type": "string",
@@ -249,6 +252,169 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Enable debug output"
+                  },
+                  "total_coins": {
+                    "type": "integer",
+                    "description": "Total coins to scan (for smart_money.scan_tiered)",
+                    "example": 1000,
+                    "default": 100
+                  },
+                  "final_limit": {
+                    "type": "integer",
+                    "description": "Final number of results to return (for smart_money.scan_tiered)",
+                    "example": 10,
+                    "default": 10
+                  },
+                  "tier1_enabled": {
+                    "type": "boolean",
+                    "description": "Enable tier 1 filtering (for smart_money.scan_tiered)",
+                    "default": true
+                  },
+                  "tier2_enabled": {
+                    "type": "boolean",
+                    "description": "Enable tier 2 filtering (for smart_money.scan_tiered)",
+                    "default": true
+                  },
+                  "tier3_enabled": {
+                    "type": "boolean",
+                    "description": "Enable tier 3 filtering (for smart_money.scan_tiered)",
+                    "default": true
+                  },
+                  "min_accumulation_score": {
+                    "type": "integer",
+                    "description": "Minimum accumulation score 0-10 (for smart_money operations)",
+                    "example": 7,
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "min_distribution_score": {
+                    "type": "integer",
+                    "description": "Minimum distribution score 0-10 (for smart_money operations)",
+                    "example": 7,
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "min_mss_score": {
+                    "type": "number",
+                    "description": "Minimum MSS (Multi-Modal Signal Score) 0-100 (for mss operations)",
+                    "example": 75,
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "max_results": {
+                    "type": "integer",
+                    "description": "Maximum number of results to return (for mss and other operations)",
+                    "example": 10,
+                    "minimum": 1,
+                    "maximum": 100
+                  },
+                  "max_fdv_usd": {
+                    "type": "integer",
+                    "description": "Maximum Fully Diluted Valuation in USD (for mss.scan)",
+                    "example": 50000000,
+                    "default": 50000000
+                  },
+                  "max_age_hours": {
+                    "type": "integer",
+                    "description": "Maximum coin age in hours (for mss.scan)",
+                    "example": 72,
+                    "default": 72
+                  },
+                  "time_type": {
+                    "type": "string",
+                    "description": "Time type for data (h1, h4, h12, h24, all) - for coinglass operations",
+                    "example": "h24",
+                    "enum": ["h1", "h4", "h12", "h24", "all"]
+                  },
+                  "timeframe": {
+                    "type": "string",
+                    "description": "Timeframe (1MIN, 5MIN, 15MIN, 1HRS, 4HRS, 1DAY) - alternative to interval",
+                    "example": "1HRS"
+                  },
+                  "coins": {
+                    "type": "string",
+                    "description": "Comma-separated list of coin symbols (BTC,ETH,SOL)",
+                    "example": "BTC,ETH,SOL"
+                  },
+                  "days": {
+                    "type": "integer",
+                    "description": "Number of days for historical data",
+                    "example": 30,
+                    "default": 30,
+                    "minimum": 1,
+                    "maximum": 365
+                  },
+                  "asset": {
+                    "type": "string",
+                    "description": "Asset name (BTC, ETH) - alternative to symbol",
+                    "example": "BTC"
+                  },
+                  "topic": {
+                    "type": "string",
+                    "description": "Topic name for LunarCrush operations",
+                    "example": "DeFi"
+                  },
+                  "min_score": {
+                    "type": "integer",
+                    "description": "Minimum score for filtering (generic, 0-10)",
+                    "example": 6,
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "min_galaxy_score": {
+                    "type": "number",
+                    "description": "Minimum galaxy score for filtering (0-100)",
+                    "example": 50,
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "min_volume_24h": {
+                    "type": "number",
+                    "description": "Minimum 24h volume in USD",
+                    "example": 100000,
+                    "default": 100000
+                  },
+                  "mode": {
+                    "type": "string",
+                    "description": "Operation mode (aggressive, conservative, balanced)",
+                    "example": "aggressive",
+                    "enum": ["aggressive", "conservative", "balanced"]
+                  },
+                  "signal_filter": {
+                    "type": "string",
+                    "description": "Filter signals by type (LONG, SHORT, NEUTRAL)",
+                    "example": "LONG",
+                    "enum": ["LONG", "SHORT", "NEUTRAL"]
+                  },
+                  "include_smart_money": {
+                    "type": "boolean",
+                    "description": "Include smart money analysis in scalping (takes ~25s)",
+                    "default": true
+                  },
+                  "include_whale_positions": {
+                    "type": "boolean",
+                    "description": "Include Hyperliquid whale positions (DEX institutional bias)",
+                    "default": true
+                  },
+                  "include_fear_greed": {
+                    "type": "boolean",
+                    "description": "Include fear & greed index in scalping analysis",
+                    "default": true
+                  },
+                  "include_coinapi": {
+                    "type": "boolean",
+                    "description": "Include extended CoinAPI data (OHLCV, trades)",
+                    "default": true
+                  },
+                  "include_sentiment": {
+                    "type": "boolean",
+                    "description": "Include LunarCrush sentiment and social momentum",
+                    "default": true
+                  },
+                  "gpt_mode": {
+                    "type": "boolean",
+                    "description": "GPT Actions optimization mode - reduces response size to < 50KB",
+                    "default": true
                   }
                 }
               }

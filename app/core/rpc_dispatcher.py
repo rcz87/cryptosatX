@@ -35,6 +35,7 @@ class RPCDispatcher:
         "smart_money.scan": 45,
         "smart_money.scan_tiered": 60,  # Tiered scanning for 1000+ coins
         "backtest.run": 120,  # Backtesting can take longer
+        "scalping.analyze": 45,  # Full scalping analysis with smart money
     }
     
     def __init__(self):
@@ -97,6 +98,11 @@ class RPCDispatcher:
         self.handlers["analytics.history.latest"] = self._analytics_history_latest
         self.handlers["analytics.performance.symbol"] = self._analytics_performance_symbol
         self.handlers["analytics.performance.summary"] = self._analytics_performance_summary
+
+        # Scalping Analysis
+        self.handlers["scalping.analyze"] = self._scalping_analyze
+        self.handlers["scalping.quick"] = self._scalping_quick
+        self.handlers["scalping.info"] = self._scalping_info
     
     async def dispatch(self, operation: str, args: Dict[str, Any]) -> RPCResponse:
         """
@@ -319,10 +325,12 @@ class RPCDispatcher:
         min_dist = args.get("min_distribution_score", 5)
         coins_str = args.get("coins")
         coin_list = coins_str.split(",") if coins_str else None
+        limit = args.get("limit", 50)  # ✅ Default 50 instead of 20
         return await smart_money_service.scan_markets(
             min_accumulation_score=min_acc,
             min_distribution_score=min_dist,
-            coins=coin_list
+            coins=coin_list,
+            limit=limit  # ✅ Pass limit parameter
         )
     
     async def _smart_money_scan_accumulation(self, args: Dict) -> Dict:
@@ -687,6 +695,54 @@ class RPCDispatcher:
             "success": True,
             **result
         }
+
+    # ========================================================================
+    # SCALPING HANDLERS - Real-time Scalping Analysis
+    # ========================================================================
+
+    async def _scalping_analyze(self, args: Dict) -> Dict:
+        """
+        Complete scalping analysis with all data layers
+
+        Includes: orderbook, liquidations, funding, volume delta,
+        smart money, whale positions, sentiment, and more.
+        """
+        from app.api.routes_scalping import ScalpingAnalysisRequest, analyze_for_scalping
+
+        # Map RPC args to request model
+        symbol = args.get("symbol", "BTC").upper()
+        mode = args.get("mode", "aggressive")
+
+        request = ScalpingAnalysisRequest(
+            symbol=symbol,
+            mode=mode,
+            include_smart_money=args.get("include_smart_money", True),
+            include_whale_positions=args.get("include_whale_positions", True),
+            include_fear_greed=args.get("include_fear_greed", True),
+            include_coinapi=args.get("include_coinapi", True),
+            include_sentiment=args.get("include_sentiment", True),
+            gpt_mode=args.get("gpt_mode", True)  # Default True for GPT Actions
+        )
+
+        return await analyze_for_scalping(request)
+
+    async def _scalping_quick(self, args: Dict) -> Dict:
+        """
+        Quick scalping check - critical layers only, no smart money
+        Fast response (~8s) for rapid queries
+        """
+        from app.api.routes_scalping import quick_scalping_check
+
+        symbol = args.get("symbol", "BTC").upper()
+        return await quick_scalping_check(symbol)
+
+    async def _scalping_info(self, args: Dict) -> Dict:
+        """
+        Get scalping engine information and capabilities
+        """
+        from app.api.routes_scalping import scalping_info
+
+        return await scalping_info()
 
 
 # Global dispatcher instance
