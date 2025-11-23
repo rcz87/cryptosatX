@@ -322,6 +322,66 @@
                     "description": "Time type for data (h1, h4, h12, h24, all) - for coinglass operations",
                     "example": "h24",
                     "enum": ["h1", "h4", "h12", "h24", "all"]
+                  },
+                  "timeframe": {
+                    "type": "string",
+                    "description": "Timeframe (1MIN, 5MIN, 15MIN, 1HRS, 4HRS, 1DAY) - alternative to interval",
+                    "example": "1HRS"
+                  },
+                  "coins": {
+                    "type": "string",
+                    "description": "Comma-separated list of coin symbols (BTC,ETH,SOL)",
+                    "example": "BTC,ETH,SOL"
+                  },
+                  "days": {
+                    "type": "integer",
+                    "description": "Number of days for historical data",
+                    "example": 30,
+                    "default": 30,
+                    "minimum": 1,
+                    "maximum": 365
+                  },
+                  "asset": {
+                    "type": "string",
+                    "description": "Asset name (BTC, ETH) - alternative to symbol",
+                    "example": "BTC"
+                  },
+                  "topic": {
+                    "type": "string",
+                    "description": "Topic name for LunarCrush operations",
+                    "example": "DeFi"
+                  },
+                  "min_score": {
+                    "type": "integer",
+                    "description": "Minimum score for filtering (generic, 0-10)",
+                    "example": 6,
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "min_galaxy_score": {
+                    "type": "number",
+                    "description": "Minimum galaxy score for filtering (0-100)",
+                    "example": 50,
+                    "minimum": 0,
+                    "maximum": 100
+                  },
+                  "min_volume_24h": {
+                    "type": "number",
+                    "description": "Minimum 24h volume in USD",
+                    "example": 100000,
+                    "default": 100000
+                  },
+                  "mode": {
+                    "type": "string",
+                    "description": "Operation mode (aggressive, conservative, balanced)",
+                    "example": "aggressive",
+                    "enum": ["aggressive", "conservative", "balanced"]
+                  },
+                  "signal_filter": {
+                    "type": "string",
+                    "description": "Filter signals by type (LONG, SHORT, NEUTRAL)",
+                    "example": "LONG",
+                    "enum": ["LONG", "SHORT", "NEUTRAL"]
                   }
                 }
               }
