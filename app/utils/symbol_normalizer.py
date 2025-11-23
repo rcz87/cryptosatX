@@ -103,6 +103,11 @@ SYMBOL_TO_COINGECKO_ID: Dict[str, str] = {
     "TUSD": "true-usd",
     "BUSD": "binance-usd",
     "USDD": "usdd",
+    
+    # Recent & Trending
+    "HYPE": "hyperliquid",
+    "TRUMP": "trump",
+    "FARTCOIN": "fartcoin",
 }
 
 
