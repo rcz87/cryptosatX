@@ -10,17 +10,18 @@ This project provides a FastAPI-based backend for generating real-time cryptocur
 - Full async/await for performance
 - Extensive comments for maintainability
 - API Quota Optimization: Background tasks & auto Telegram alerts disabled to save 99% API quota while maintaining full GPT Actions functionality
-- All 188 endpoints available for on-demand manual calls via GPT Actions
+- All 191 endpoints available for on-demand manual calls via GPT Actions
 - No auto-alerts to Telegram (manual alert endpoint available if needed)
 - Communication: Bahasa Indonesia with natural, conversational language (not overly technical)
 - Documentation: Simplified, practical, and action-oriented
 
 ## Recent Changes (November 23, 2025)
+- ✅ **Merged PR #30 - Fix Coin Analysis Inconsistency**: Added 3 new operations with 23 parameters (6 commits, 4 files changed, +287/-7 lines) bringing total from 188 to 191 operations
+- ✅ **Fixed aiohttp Security Update**: Added type guards to database.py and outcome_tracker.py for proper Optional type handling after aiohttp dependency update
 - ✅ **Fixed GPT-5.1 Integration**: Updated from deprecated gpt-4-turbo to gpt-5.1 model in OpenAI V2 service
 - ✅ **Fixed signals.debug Operation**: Added missing handler in rpc_flat_dispatcher for signals.debug endpoint (was registered in catalog but had no implementation)
 - ✅ **Fixed smart_money.scan_tiered**: Added missing handler to support 3-tier filtering system for efficient 1000+ coin scanning (8-10s execution time)
-- ✅ **Updated Operation Count**: Standardized documentation from outdated 187/202 references to correct 188 total operations
-- ✅ **Verified All 188 Operations**: Comprehensive testing confirms all endpoints returning valid data (coinglass, lunarcrush, smart_money, spike, mss, analytics, signals all working)
+- ✅ **Verified All 191 Operations**: Comprehensive testing confirms all endpoints returning valid data (coinglass, lunarcrush, smart_money, spike, mss, analytics, signals all working)
 - ✅ **Built CoinAPI Dynamic Symbol Mapping**: Created comprehensive mapping file (637 BINANCE SPOT symbols) with alias support (e.g., HYPE→HYPER) for accurate symbol resolution
 - ✅ **Enhanced Optional Service Handling**: Improved graceful degradation - LunarCrush and other OPTIONAL services no longer block signal generation when unavailable
 - ✅ **Fixed Timezone Configuration**: Converted ALL timestamps from UTC to WIB (Asia/Jakarta, UTC+7) across entire application - signal_engine, API routes, storage, analytics, performance tracking - ensuring consistent Indonesia timezone
