@@ -68,7 +68,10 @@ class FlatRPCDispatcher:
         # New listings (API-heavy)
         "new_listings.multi_exchange": 60,
         "new_listings.analyze": 60,
-        
+
+        # Scalping analysis (full analysis with smart money)
+        "scalping.analyze": 45,
+
         # Backtesting (if implemented)
         "backtest.run": 180,
     }
@@ -877,6 +880,25 @@ class FlatRPCDispatcher:
             symbol = args["symbol"]
             return await smart_money_service.analyze_any_coin(symbol)
 
+        elif operation == "smart_money.scan_tiered":
+            from app.services.tiered_scanner import tiered_scanner
+            total_coins = args.get("total_coins", 100)
+            tier1_enabled = args.get("tier1_enabled", True)
+            tier2_enabled = args.get("tier2_enabled", True)
+            tier3_enabled = args.get("tier3_enabled", True)
+            final_limit = args.get("final_limit", 10)
+            min_acc = args.get("min_accumulation_score", 5)
+            min_dist = args.get("min_distribution_score", 5)
+            return await tiered_scanner.scan_tiered(
+                total_coins=total_coins,
+                tier1_enabled=tier1_enabled,
+                tier2_enabled=tier2_enabled,
+                tier3_enabled=tier3_enabled,
+                final_limit=final_limit,
+                min_accumulation_score=min_acc,
+                min_distribution_score=min_dist
+            )
+
         # ===================================================================
         # SMART ENTRY ENGINE
         # ===================================================================
@@ -1598,6 +1620,36 @@ class FlatRPCDispatcher:
             monitor = get_comprehensive_monitor()
             result = await monitor.get_status()
             return {"success": True, **result}
+
+        # ===================================================================
+        # SCALPING ANALYSIS - Real-time scalping opportunities
+        # ===================================================================
+        elif operation == "scalping.analyze":
+            from app.api.routes_scalping import ScalpingAnalysisRequest, analyze_for_scalping
+            symbol = args.get("symbol", "BTC").upper()
+            mode = args.get("mode", "aggressive")
+
+            request = ScalpingAnalysisRequest(
+                symbol=symbol,
+                mode=mode,
+                include_smart_money=args.get("include_smart_money", True),
+                include_whale_positions=args.get("include_whale_positions", True),
+                include_fear_greed=args.get("include_fear_greed", True),
+                include_coinapi=args.get("include_coinapi", True),
+                include_sentiment=args.get("include_sentiment", True),
+                gpt_mode=args.get("gpt_mode", True)  # Default True for GPT Actions
+            )
+
+            return await analyze_for_scalping(request)
+
+        elif operation == "scalping.quick":
+            from app.api.routes_scalping import quick_scalping_check
+            symbol = args.get("symbol", "BTC").upper()
+            return await quick_scalping_check(symbol)
+
+        elif operation == "scalping.info":
+            from app.api.routes_scalping import scalping_info
+            return await scalping_info()
 
         # ===================================================================
         # FALLBACK - Operation not implemented yet

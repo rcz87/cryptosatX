@@ -126,6 +126,7 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "smart_money.scan": OperationMetadata("smart_money.scan", "smart_money", "/scan", "GET", "Scan smart money activity"),
     "smart_money.scan_accumulation": OperationMetadata("smart_money.scan_accumulation", "smart_money", "/scan/accumulation", "GET", "Scan accumulation patterns"),
     "smart_money.scan_distribution": OperationMetadata("smart_money.scan_distribution", "smart_money", "/scan/distribution", "GET", "Scan distribution patterns"),
+    "smart_money.scan_tiered": OperationMetadata("smart_money.scan_tiered", "smart_money", "/scan/tiered", "POST", "Scan 1000+ coins with 3-tier progressive filtering (1000→50→12→10 results)"),
     "smart_money.info": OperationMetadata("smart_money.info", "smart_money", "/info", "GET", "Get smart money scanner info"),
     "smart_money.analyze": OperationMetadata("smart_money.analyze", "smart_money", "/analyze/{symbol}", "GET", "Analyze smart money for symbol", requires_symbol=True),
     "smart_money.discover": OperationMetadata("smart_money.discover", "smart_money", "/discover", "GET", "Discover smart money opportunities"),
@@ -227,6 +228,11 @@ OPERATION_CATALOG: Dict[str, OperationMetadata] = {
     "openai.validate": OperationMetadata("openai.validate", "openai", "/validate/{symbol}", "POST", "Validate signal via OpenAI", requires_symbol=True),
     "openai.config": OperationMetadata("openai.config", "openai", "/config", "GET", "Get OpenAI config"),
     "openai.health": OperationMetadata("openai.health", "openai", "/health", "GET", "Get OpenAI health"),
+
+    # Scalping Analysis - Real-time scalping opportunities
+    "scalping.analyze": OperationMetadata("scalping.analyze", "scalping", "/scalping/analyze", "POST", "Complete scalping analysis with all data layers (orderbook, liquidations, funding, smart money, whale positions)", requires_symbol=True),
+    "scalping.quick": OperationMetadata("scalping.quick", "scalping", "/scalping/quick/{symbol}", "GET", "Quick scalping check - critical layers only (~8s response)", requires_symbol=True),
+    "scalping.info": OperationMetadata("scalping.info", "scalping", "/scalping/info", "GET", "Get scalping engine information and capabilities"),
 }
 
 
