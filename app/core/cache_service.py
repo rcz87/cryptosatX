@@ -85,36 +85,72 @@ class CacheService:
             logger.debug(f"✅ Cache hit: {key}")
             return entry["value"]
     
-    async def set(self, key: str, value: Any, ttl_seconds: int) -> None:
+    async def set(self, key: str, value: Any, ttl_seconds: int, custom_timestamp: Optional[datetime] = None) -> None:
         """
         Store value in cache with time-to-live expiration.
-        
+
         Args:
             key: Cache key identifier
             value: Any Python object to cache (stored directly, no serialization)
             ttl_seconds: Time-to-live in seconds before expiration
-            
+            custom_timestamp: Optional custom timestamp (for cache coherency groups)
+
         Cache Entry Structure:
             - value: Stored data (as-is)
             - expires_at: Calculated expiration timestamp
-            - created_at: Entry creation timestamp
-            
+            - created_at: Entry creation timestamp (for coherency tracking)
+            - fetched_at: When data was actually fetched (for staleness detection)
+
         Side Effects:
             - Increments sets counter
             - Overwrites existing key if present
-            
+
         Thread Safety:
             Uses async lock for safe concurrent writes
         """
+        now = datetime.now()
+        fetched_timestamp = custom_timestamp if custom_timestamp else now
+
         async with self._lock:
             self._cache[key] = {
                 "value": value,
-                "expires_at": datetime.now() + timedelta(seconds=ttl_seconds),
-                "created_at": datetime.now(),
+                "expires_at": now + timedelta(seconds=ttl_seconds),
+                "created_at": now,
+                "fetched_at": fetched_timestamp,  # ✅ NEW: Track when data was fetched
             }
             self.stats["sets"] += 1
             logger.debug(f"💾 Cache set: {key} (TTL: {ttl_seconds}s)")
     
+    async def get_metadata(self, key: str) -> Optional[Dict[str, Any]]:
+        """
+        Get cache entry metadata without retrieving value.
+
+        Useful for staleness detection and coherency checks.
+
+        Returns:
+            Dict with fetched_at, created_at, expires_at, age_seconds
+        """
+        async with self._lock:
+            if key not in self._cache:
+                return None
+
+            entry = self._cache[key]
+            now = datetime.now()
+
+            # Check if expired
+            if now > entry["expires_at"]:
+                return None
+
+            age_seconds = (now - entry["fetched_at"]).total_seconds()
+
+            return {
+                "fetched_at": entry["fetched_at"].isoformat(),
+                "created_at": entry["created_at"].isoformat(),
+                "expires_at": entry["expires_at"].isoformat(),
+                "age_seconds": round(age_seconds, 2),
+                "ttl_remaining_seconds": round((entry["expires_at"] - now).total_seconds(), 2)
+            }
+
     async def delete(self, key: str) -> None:
         """Delete key from cache"""
         async with self._lock:
@@ -231,10 +267,45 @@ async def start_cache_cleanup_task():
             logger.error(f"🔴 Error in cache cleanup task: {type(e).__name__}")
 
 
-TTL_PRICE_DATA = 5
-TTL_SOCIAL_SENTIMENT = 900  # FIX #5: Increased from 60s to 900s (15min) to prevent LunarCrush HTTP 429
-TTL_FEAR_GREED = 300
-TTL_SIGNAL_DATA = 30
-TTL_ORDERBOOK = 10
-TTL_FUNDING_RATE = 15
-TTL_LIQUIDATIONS = 10
+# ============================================================================
+# CACHE TTL CONFIGURATION (v2.0 - Coherency Aligned)
+# ============================================================================
+#
+# ⚠️  IMPORTANT: TTLs are now aligned to cache coherency groups
+#    to prevent GPT analysis with mismatched timestamp data.
+#
+# Cache Coherency Groups:
+# 1. SIGNAL_ANALYSIS (60s): price, funding, OI, social_basic, liquidations, long_short
+# 2. MARKET_SENTIMENT (300s): fear_greed, social_comprehensive, lunarcrush
+# 3. ORDERBOOK (10s): orderbook, trades, ticker
+# 4. ACCUMULATION (60s): ohlcv, volume_profile, orderbook, price
+#
+# See: app/core/cache_coherency.py for details
+# ============================================================================
+
+# Signal Analysis Group (60s aligned)
+TTL_PRICE_DATA = 60  # ⬆ Increased from 5s to align with signal analysis group
+TTL_FUNDING_RATE = 60  # ⬆ Increased from 15s to align
+TTL_LIQUIDATIONS = 60  # ⬆ Increased from 10s to align
+TTL_SIGNAL_DATA = 60  # ⬆ Increased from 30s to align
+TTL_SOCIAL_SENTIMENT = 60  # ⬇ Decreased from 900s for coherency
+
+# Market Sentiment Group (300s aligned)
+TTL_FEAR_GREED = 300  # ✅ Already aligned
+TTL_LUNARCRUSH_COMPREHENSIVE = 300  # Aligned with sentiment group
+
+# Orderbook Group (10s aligned for real-time data)
+TTL_ORDERBOOK = 10  # ✅ Already aligned
+TTL_TRADES = 10  # Aligned with orderbook
+TTL_TICKER = 10  # Aligned with orderbook
+
+# Accumulation Group (60s aligned)
+TTL_OHLCV = 60  # Aligned with accumulation analysis
+TTL_VOLUME_PROFILE = 60  # Aligned with accumulation analysis
+
+# Legacy fallback (deprecated - use coherency groups instead)
+TTL_DEFAULT = 60  # Default TTL if not specified
+
+# ⚠️  NOTE: Social sentiment reduced from 900s to 60s
+#    This may increase LunarCrush API calls. Monitor for HTTP 429 errors.
+#    If 429 errors occur, consider using cache warming strategy instead.

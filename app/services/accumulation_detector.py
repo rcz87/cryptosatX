@@ -2,6 +2,9 @@
 Accumulation Detector Service
 Detects accumulation phases before pump events
 
+⚠️  DEPRECATED: This service now wraps CanonicalAccumulationCalculator
+    Use canonical_calculator directly for new code.
+
 Features:
 - Volume Profile Analysis (buy vs sell pressure)
 - Price Consolidation Detection (low volatility)
@@ -14,54 +17,56 @@ import asyncio
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
 from app.services.coinapi_comprehensive_service import CoinAPIComprehensiveService
+from app.services.canonical_accumulation_calculator import canonical_calculator
 from app.utils.logger import logger
 
 
 class AccumulationDetector:
-    """Detects accumulation patterns that indicate potential pumps"""
+    """
+    Detects accumulation patterns that indicate potential pumps
+
+    ⚠️  DEPRECATED: This now wraps CanonicalAccumulationCalculator.
+        Use canonical_calculator directly for consistency.
+    """
 
     def __init__(self, coinapi_service: Optional[CoinAPIComprehensiveService] = None):
         self.coinapi = coinapi_service or CoinAPIComprehensiveService()
+        logger.warning(
+            "AccumulationDetector is deprecated. "
+            "Use canonical_calculator from canonical_accumulation_calculator.py instead."
+        )
 
     async def detect_accumulation(self, symbol: str, timeframe: str = "1HRS") -> Dict:
         """
         Main accumulation detection method
+
+        ⚠️  NOW USES CANONICAL CALCULATOR for consistency
 
         Args:
             symbol: Crypto symbol (e.g., 'BTC', 'ETH', 'SOL')
             timeframe: Time period for analysis (1MIN, 5MIN, 1HRS, 1DAY)
 
         Returns:
-            Dict with accumulation score, signals, and verdict
+            Dict with accumulation score, signals, and verdict (backward compatible format)
         """
         try:
-            logger.info(f"[AccumulationDetector] Analyzing {symbol} on {timeframe} timeframe")
+            logger.info(f"[AccumulationDetector] Analyzing {symbol} on {timeframe} timeframe (via canonical)")
 
-            # Run all detection methods in parallel
-            signals = await asyncio.gather(
-                self.analyze_volume_profile(symbol, timeframe),
-                self.detect_consolidation(symbol, timeframe),
-                self.analyze_sell_pressure(symbol, timeframe),
-                self.analyze_order_book(symbol),
-                return_exceptions=True
-            )
+            # Use canonical calculator
+            result = await canonical_calculator.calculate(symbol, timeframe)
 
-            # Unpack results
-            volume_profile = signals[0] if not isinstance(signals[0], Exception) else {"score": 50, "signal": "ERROR"}
-            consolidation = signals[1] if not isinstance(signals[1], Exception) else {"score": 50, "signal": "ERROR"}
-            sell_pressure = signals[2] if not isinstance(signals[2], Exception) else {"score": 50, "signal": "ERROR"}
-            order_book = signals[3] if not isinstance(signals[3], Exception) else {"score": 50, "signal": "ERROR"}
-
-            # Calculate final accumulation score
-            result = self.calculate_accumulation_score({
-                "volumeProfile": volume_profile,
-                "consolidation": consolidation,
-                "sellPressure": sell_pressure,
-                "orderBookDepth": order_book
-            })
-
-            logger.info(f"[AccumulationDetector] {symbol} accumulation score: {result['score']}/100")
-            return result
+            # Convert to backward-compatible format
+            return {
+                "score": result.accumulation_score,
+                "verdict": result.verdict,
+                "details": result.details,
+                "timestamp": result.timestamp,
+                # Additional fields for compatibility
+                "accumulationScore": result.accumulation_score,
+                "distributionScore": result.distribution_score,
+                "dominantPattern": result.dominant_pattern,
+                "version": "canonical_v" + canonical_calculator.VERSION
+            }
 
         except Exception as e:
             logger.error(f"[AccumulationDetector] Error analyzing {symbol}: {e}")
