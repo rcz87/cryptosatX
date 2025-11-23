@@ -570,13 +570,28 @@ class SignalEngine:
         logger.info(f"📊 Data Quality: {quality_report.quality_score}% ({quality_report.quality_level}) - "
               f"{quality_report.services_successful}/{quality_report.services_total} services successful")
         
-        # Log failed services if any
+        # Log failed services by tier (CRITICAL/IMPORTANT = ERROR, OPTIONAL = DEBUG)
         if quality_report.services_failed:
-            logger.error(f"⚠️  Failed services ({len(quality_report.services_failed)}):")
-            for failed in quality_report.services_failed[:5]:  # Show first 5 failures
-                logger.error(f"   - {failed['name']} ({failed['tier']}): {failed['error']}")
-            if len(quality_report.services_failed) > 5:
-                logger.error(f"   ... and {len(quality_report.services_failed) - 5} more")
+            # Separate by tier
+            critical_failed = [s for s in quality_report.services_failed if s['tier'] == 'critical']
+            important_failed = [s for s in quality_report.services_failed if s['tier'] == 'important']
+            optional_failed = [s for s in quality_report.services_failed if s['tier'] == 'optional']
+            
+            # Critical failures = ERROR (should never happen)
+            if critical_failed:
+                logger.error(f"❌ CRITICAL services failed ({len(critical_failed)}):")
+                for failed in critical_failed:
+                    logger.error(f"   - {failed['name']}: {failed['error']}")
+            
+            # Important failures = WARNING
+            if important_failed:
+                logger.warning(f"⚠️  Important services failed ({len(important_failed)}):")
+                for failed in important_failed:
+                    logger.warning(f"   - {failed['name']}: {failed['error']}")
+            
+            # Optional failures = DEBUG (expected for some coins)
+            if optional_failed:
+                logger.debug(f"ℹ️  Optional services unavailable ({len(optional_failed)}): {', '.join([s['name'] for s in optional_failed])}")
         
         # Enforce quality threshold if enabled
         if enforce_quality_threshold and quality_report.quality_score < min_quality_score:
@@ -1367,17 +1382,17 @@ class SignalEngine:
             or ca_ohlcv.get("success", False)
         )
 
-        # Log comprehensive data availability
+        # Log comprehensive data availability (all OPTIONAL - use WARNING not ERROR)
         if not comprehensive_available:
             error_msg = comp_markets.get("error", "unknown error")
-            logger.error(f"⚠️  Comprehensive markets data unavailable for {symbol}: {error_msg}. Falling back to basic Coinglass data.")
+            logger.warning(f"⚠️  Comprehensive markets data unavailable for {symbol}: {error_msg}. Using fallback data (OPTIONAL service).")
 
         if not lunarcrush_comp_available:
             error_msg = lc_comp.get("error", "unknown error")
-            logger.error(f"⚠️  Comprehensive LunarCrush data unavailable for {symbol}: {error_msg}. Falling back to basic social score.")
+            logger.warning(f"⚠️  LunarCrush data unavailable for {symbol}: {error_msg}. Using basic social score fallback (OPTIONAL service).")
 
         if not coinapi_comp_available:
-            logger.warning(f"⚠️  CoinAPI comprehensive data unavailable for {symbol}. Order book/trades analysis will use defaults.")
+            logger.warning(f"⚠️  CoinAPI comprehensive data unavailable for {symbol}. Using default values (OPTIONAL service).")
 
         # CRITICAL: Validate price data - hard-fail if missing
         price_value = (

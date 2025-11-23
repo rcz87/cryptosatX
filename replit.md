@@ -21,6 +21,10 @@ This project provides a FastAPI-based backend for generating real-time cryptocur
 - ✅ **Fixed smart_money.scan_tiered**: Added missing handler to support 3-tier filtering system for efficient 1000+ coin scanning (8-10s execution time)
 - ✅ **Updated Operation Count**: Standardized documentation from outdated 187/202 references to correct 188 total operations
 - ✅ **Verified All 188 Operations**: Comprehensive testing confirms all endpoints returning valid data (coinglass, lunarcrush, smart_money, spike, mss, analytics, signals all working)
+- ✅ **Built CoinAPI Dynamic Symbol Mapping**: Created comprehensive mapping file (637 BINANCE SPOT symbols) with alias support (e.g., HYPE→HYPER) for accurate symbol resolution
+- ✅ **Enhanced Optional Service Handling**: Improved graceful degradation - LunarCrush and other OPTIONAL services no longer block signal generation when unavailable
+- ✅ **Fixed Timezone Configuration**: Set TZ=Asia/Jakarta to eliminate timezone warnings, all timestamps now in WIB
+- ✅ **Improved Error Logging**: Separated log levels by service tier (CRITICAL=ERROR, IMPORTANT=WARNING, OPTIONAL=DEBUG) for clearer production monitoring
 
 ## System Architecture
 The application uses a modular FastAPI architecture, separating API routes, business logic, and external service integrations. It provides clean JSON responses, offers a debug mode, and includes OpenAPI documentation with a GPT Actions-compatible schema.
