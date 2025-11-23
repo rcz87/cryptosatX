@@ -305,6 +305,9 @@ class OutcomeTracker:
 
             if db.use_postgres:
                 async with db.pool.acquire() as conn:
+                    # Convert to naive datetime for PostgreSQL comparison
+                    # (column is timestamp without time zone)
+                    threshold_naive = threshold.replace(tzinfo=None)
                     records = await conn.fetch(
                         f"""
                         SELECT id
@@ -314,7 +317,7 @@ class OutcomeTracker:
                         ORDER BY entry_timestamp ASC
                         LIMIT 100
                         """,
-                        threshold
+                        threshold_naive
                     )
                     return [r["id"] for r in records]
             else:
