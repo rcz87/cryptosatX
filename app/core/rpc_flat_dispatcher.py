@@ -870,6 +870,22 @@ class FlatRPCDispatcher:
                 limit=limit
             )
 
+        elif operation == "smart_money.scan_tiered":
+            from app.services.tiered_scanner import TieredScanner
+            scanner = TieredScanner()
+            total_coins = args.get("total_coins", 100)
+            tier1_enabled = args.get("tier1_enabled", True)
+            tier2_enabled = args.get("tier2_enabled", True)
+            tier3_enabled = args.get("tier3_enabled", True)
+            final_limit = args.get("final_limit", 10)
+            return await scanner.scan_tiered(
+                total_coins=total_coins,
+                tier1_enabled=tier1_enabled,
+                tier2_enabled=tier2_enabled,
+                tier3_enabled=tier3_enabled,
+                final_limit=final_limit
+            )
+
         elif operation == "smart_money.scan_accumulation":
             from app.services.smart_money_service import smart_money_service
             min_score = args.get("min_accumulation_score", 7)

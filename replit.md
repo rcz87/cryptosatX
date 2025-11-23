@@ -18,6 +18,7 @@ This project provides a FastAPI-based backend for generating real-time cryptocur
 ## Recent Changes (November 23, 2025)
 - ✅ **Fixed GPT-4o Integration**: Updated from deprecated gpt-4-turbo to gpt-4o model in OpenAI V2 service
 - ✅ **Fixed signals.debug Operation**: Added missing handler in rpc_flat_dispatcher for signals.debug endpoint (was registered in catalog but had no implementation)
+- ✅ **Fixed smart_money.scan_tiered**: Added missing handler to support 3-tier filtering system for efficient 1000+ coin scanning (8-10s execution time)
 - ✅ **Updated Operation Count**: Standardized documentation from outdated 187/202 references to correct 188 total operations
 - ✅ **Verified All 188 Operations**: Comprehensive testing confirms all endpoints returning valid data (coinglass, lunarcrush, smart_money, spike, mss, analytics, signals all working)
 
