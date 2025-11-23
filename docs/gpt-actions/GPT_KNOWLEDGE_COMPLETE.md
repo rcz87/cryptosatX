@@ -38,7 +38,7 @@ All API requests use flat parameter structure (NO nesting):
 **Primary Endpoint:** POST /invoke
 **Content-Type:** application/json
 
-## COMPLETE OPERATIONS LIST (202+ Total)
+## COMPLETE OPERATIONS LIST (188 Total)
 
 ### CORE SIGNAL OPERATIONS
 

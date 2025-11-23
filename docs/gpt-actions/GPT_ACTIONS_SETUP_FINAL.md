@@ -4,7 +4,7 @@
 
 ### Masalah 1: GPT Actions Limit 30 Operations
 - **Limit GPT:** 30 operations maximum
-- **Aplikasi kamu:** 187 operations
+- **Aplikasi kamu:** 188 operations
 - **Result:** ❌ GPT akan reject atau hanya pakai 30 pertama
 
 ### Masalah 2: Dynamic Endpoint Blocked
@@ -18,12 +18,12 @@
 
 ### Konsep RPC Pattern
 
-**Traditional (TIDAK WORK - 187 endpoints):**
+**Traditional (TIDAK WORK - 188 endpoints):**
 ```
 /signals/BTC          → operation 1
 /coinglass/markets    → operation 2
 /smart-money/scan     → operation 3
-... 184 more ...      → operations 4-187
+... 185 more ...      → operations 4-188
 ❌ GPT reject: Lebih dari 30 operations!
 ```
 
@@ -36,7 +36,7 @@ POST /invoke
 }
 
 GPT melihat: ✅ 1 operation (invoke)
-Tapi akses: ✅ 187 functions via parameter!
+Tapi akses: ✅ 188 functions via parameter!
 ```
 
 ---
@@ -49,7 +49,7 @@ Tapi akses: ✅ 187 functions via parameter!
 - ✅ Size: 6.89 KB (limit: 45 KB)
 - ✅ Endpoints: 1 (`/invoke`)
 - ✅ Operations: 1 (`invoke`)
-- ✅ Functions: 187 (via operation enum)
+- ✅ Functions: 188 (via operation enum)
 - ✅ Format: OpenAPI 3.1.0
 
 **URL Akses:**
@@ -117,7 +117,7 @@ https://guardiansofthetoken.org/static/openapi-gpt.json
 1. Klik **"Update"** atau **"Create"**
 2. Give your GPT a name, e.g., "Crypto Signal Analyzer"
 3. Klik **"Save"** or **"Publish"**
-4. ✅ Done! GPT sekarang bisa akses 187 operations!
+4. ✅ Done! GPT sekarang bisa akses 188 operations!
 
 ---
 
@@ -167,7 +167,7 @@ User → ChatGPT → GPT Actions → POST /invoke → FastAPI App
 - ✅ LOLOS limit 30 operations!
 
 **User dapat:**
-- 187 functions via `operation` parameter
+- 188 functions via `operation` parameter
 - Access to all namespaces:
   - `coinglass.*` (65 ops)
   - `lunarcrush.*` (19 ops)
@@ -267,7 +267,7 @@ POST https://guardiansofthetoken.org/invoke
 
 ---
 
-## 📋 AVAILABLE OPERATIONS (187 Total)
+## 📋 AVAILABLE OPERATIONS (188 Total)
 
 ### Core Trading (2 ops)
 - `signals.get` - Get trading signal for symbol
@@ -401,13 +401,13 @@ Before going live, verify:
 ## 🎉 SUCCESS!
 
 Sekarang kamu punya:
-- ✅ GPT Actions dengan 187 operations
+- ✅ GPT Actions dengan 188 operations
 - ✅ Bypass limit 30 operations
 - ✅ Bypass Envoy blocking
 - ✅ Schema size optimal (6.89 KB)
 - ✅ Ready untuk production!
 
-**Enjoy your 187 crypto operations! 🚀**
+**Enjoy your 188 crypto operations! 🚀**
 
 ---
 

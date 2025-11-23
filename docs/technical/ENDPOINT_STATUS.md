@@ -5,7 +5,7 @@
 ### 🎯 Status Sistem Sekarang:
 
 **✅ AKTIF untuk Manual Call (GPT bisa panggil kapan saja):**
-- Semua 202+ operations fully functional
+- Semua 188+ operations fully functional
 - Tidak ada endpoint yang disabled untuk manual call
 - GPT Actions 100% operational
 
@@ -15,7 +15,7 @@
 
 ---
 
-## 📊 ENDPOINT YANG TERSEDIA (202+ Operations)
+## 📊 ENDPOINT YANG TERSEDIA (188+ Operations)
 
 ### 1. TRADING SIGNALS ✅
 ```json

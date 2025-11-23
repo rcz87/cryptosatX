@@ -1,5 +1,5 @@
 # 🎯 CRYPTOSATX - COMPLETE USER GUIDE & TEMPLATES v2.0
-Master guide untuk menggunakan 202+ API operations via GPT Actions
+Master guide untuk menggunakan 188+ API operations via GPT Actions
 Updated: November 2025 | Includes AI Verdict Layer, Spike Detection, Analytics
 
 ═══════════════════════════════════════════════════════════════════════
@@ -1368,7 +1368,7 @@ END OF COMPREHENSIVE GUIDE
 
 Version: 2.0 (November 2025)
 System: CryptoSatX AI-Powered Trading Signals
-Operations: 202+ available
+Operations: 188+ available
 Endpoint: https://guardiansofthetoken.org/invoke
 
 **New in v2.0:**
