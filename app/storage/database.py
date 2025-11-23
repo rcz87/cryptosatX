@@ -76,6 +76,8 @@ class Database:
                 logger.info("✅ PostgreSQL connection pool created")
         else:
             if self.sqlite_conn is None:
+                if not self.database_url:
+                    raise ValueError("Database URL not configured")
                 db_path = self.database_url.replace("sqlite:///", "")
                 self.sqlite_conn = await aiosqlite.connect(db_path)
                 # Enable foreign keys and WAL mode for better performance
@@ -120,6 +122,8 @@ class Database:
         if self.use_postgres:
             # PostgreSQL schema is managed by Alembic migrations
             # Check if alembic_version table exists to verify migrations are run
+            if not self.pool:
+                raise RuntimeError("PostgreSQL pool not initialized")
             async with self.pool.acquire() as conn:
                 result = await conn.fetchval(
                     """
@@ -139,6 +143,8 @@ class Database:
         # SQLite schema creation below (for Replit compatibility)
         else:
             # SQLite schema
+            if not self.sqlite_conn:
+                raise RuntimeError("SQLite connection not initialized")
             await self.sqlite_conn.execute(
                 """
                 CREATE TABLE IF NOT EXISTS signals (
@@ -228,13 +234,19 @@ class Database:
         if self.use_postgres:
             if not self.pool:
                 await self.connect()
-
+            
+            if not self.pool:
+                raise RuntimeError("Failed to initialize PostgreSQL pool")
+            
             async with self.pool.acquire() as connection:
                 yield connection
         else:
             if not self.sqlite_conn:
                 await self.connect()
-
+            
+            if not self.sqlite_conn:
+                raise RuntimeError("Failed to initialize SQLite connection")
+            
             yield self.sqlite_conn
 
 
