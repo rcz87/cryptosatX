@@ -25,6 +25,7 @@ This project provides a FastAPI-based backend for generating real-time cryptocur
 - ✅ **Enhanced Optional Service Handling**: Improved graceful degradation - LunarCrush and other OPTIONAL services no longer block signal generation when unavailable
 - ✅ **Fixed Timezone Configuration**: Converted ALL timestamps from UTC to WIB (Asia/Jakarta, UTC+7) across entire application - signal_engine, API routes, storage, analytics, performance tracking - ensuring consistent Indonesia timezone
 - ✅ **Improved Error Logging**: Separated log levels by service tier (CRITICAL=ERROR, IMPORTANT=WARNING, OPTIONAL=DEBUG) for clearer production monitoring
+- ✅ **Fixed Server Stability**: Resolved auto-termination issue by reconfiguring workflow to use single port (removed conflicting port 3000 mapping) and fixed timezone-aware/naive datetime comparison errors in outcome_tracker PostgreSQL queries
 
 ## System Architecture
 The application uses a modular FastAPI architecture, separating API routes, business logic, and external service integrations. It provides clean JSON responses, offers a debug mode, and includes OpenAPI documentation with a GPT Actions-compatible schema.
