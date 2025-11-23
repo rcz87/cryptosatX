@@ -43,8 +43,8 @@ class FlatRPCDispatcher:
         "mss.analyze": 45,
         
         # Smart Money operations (dynamic discovery + multi-timeframe analysis)
-        "smart_money.scan": 180,  # Increased: 40 coins × 4s/coin = ~160s needed
-        "smart_money.scan_auto": 180,
+        "smart_money.scan": 300,  # Increased: 50 coins with batching = ~250s max
+        "smart_money.scan_auto": 300,
         "smart_money.discover": 120,
         
         # Smart Entry operations (confluence analysis)
@@ -862,8 +862,8 @@ class FlatRPCDispatcher:
             from app.services.smart_money_service import smart_money_service
             min_acc = args.get("min_accumulation_score", 5)
             min_dist = args.get("min_distribution_score", 5)
-            # FIX #3: Reduce default limit from 50 to 20 for faster response
-            limit = args.get("limit", 20)  # Default 20 coins (was 50)
+            # OPTIMIZED: 30 coins with batch size 10 = 3 batches (~90-120s)
+            limit = args.get("limit", 30)  # Default 30 coins (optimized batch processing)
             coins_str = args.get("coins")
             coin_list = coins_str.split(",") if coins_str else None
             return await smart_money_service.scan_smart_money(
