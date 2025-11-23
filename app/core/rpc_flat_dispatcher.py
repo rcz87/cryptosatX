@@ -1674,6 +1674,38 @@ class FlatRPCDispatcher:
             return await scalping_info()
 
         # ===================================================================
+        # ADMIN OPERATIONS
+        # ===================================================================
+        elif operation == "admin.dashboard":
+            from app.services.dynamic_weight_service import dynamic_weight_service
+            from app.services.metrics_service import metrics_service
+            from datetime import datetime
+            
+            weight_summary = dynamic_weight_service.get_weight_config_summary()
+            system_metrics = await metrics_service.get_metrics_summary()
+            
+            dashboard_data = {
+                "total_operations": len(OPERATION_CATALOG),
+                "operations_by_namespace": {},
+                "weight_configuration": weight_summary,
+                "system_metrics": system_metrics,
+                "performance_summary": {
+                    "total_factors": len(weight_summary["current_weights"]),
+                    "factors_with_performance_data": len(weight_summary["performance_metrics"]),
+                    "auto_optimization_enabled": weight_summary["auto_optimization"]["enabled"],
+                    "active_ab_tests": weight_summary["active_ab_tests"],
+                    "recent_weight_changes": weight_summary["recent_changes"]
+                }
+            }
+            
+            for op_name in OPERATION_CATALOG:
+                namespace = op_name.split('.')[0]
+                dashboard_data["operations_by_namespace"][namespace] = \
+                    dashboard_data["operations_by_namespace"].get(namespace, 0) + 1
+            
+            return dashboard_data
+
+        # ===================================================================
         # FALLBACK - Operation not implemented yet
         # ===================================================================
         else:

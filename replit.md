@@ -16,6 +16,8 @@ This project provides a FastAPI-based backend for generating real-time cryptocur
 - Documentation: Simplified, practical, and action-oriented
 
 ## Recent Changes (November 23, 2025)
+- ✅ **Merged PR #31 - Additional Coin Analysis Fixes**: Added comprehensive test suite (test_all_fixes.sh) with 6 test cases for verifying all scalping and smart_money operations work correctly across development and production environments
+- ✅ **Fixed admin.dashboard Handler**: Added missing RPC handler for admin.dashboard operation in flat_dispatcher - now returns complete dashboard data with 191 operations count, namespace breakdown, weight configuration, and system metrics
 - ✅ **Merged PR #30 - Fix Coin Analysis Inconsistency**: Added 3 new operations with 23 parameters (6 commits, 4 files changed, +287/-7 lines) bringing total from 188 to 191 operations
 - ✅ **Fixed aiohttp Security Update**: Added type guards to database.py and outcome_tracker.py for proper Optional type handling after aiohttp dependency update
 - ✅ **Fixed GPT-5.1 Integration**: Updated from deprecated gpt-4-turbo to gpt-5.1 model in OpenAI V2 service
