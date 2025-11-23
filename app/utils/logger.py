@@ -12,10 +12,17 @@ from pathlib import Path
 
 
 def get_wib_time() -> str:
-    """Get current time in WIB (UTC+7) timezone"""
+    """Get current time in WIB (UTC+7) timezone as formatted string"""
     utc_now = datetime.now(timezone.utc)
     wib_time = utc_now + timedelta(hours=7)
     return wib_time.strftime("%Y-%m-%d %H:%M:%S WIB")
+
+
+def get_wib_datetime() -> datetime:
+    """Get current datetime in WIB (UTC+7) timezone"""
+    utc_now = datetime.now(timezone.utc)
+    wib_time = utc_now + timedelta(hours=7)
+    return wib_time.replace(tzinfo=timezone(timedelta(hours=7)))
 
 
 class JSONFormatter(logging.Formatter):

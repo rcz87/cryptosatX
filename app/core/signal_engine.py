@@ -25,7 +25,7 @@ from app.services.telegram_notifier import telegram_notifier
 from app.services.openai_service_v2 import get_openai_service_v2
 from app.services.position_sizer import position_sizer
 from app.utils import risk_rules
-from app.utils.logger import get_logger
+from app.utils.logger import get_logger, get_wib_datetime
 from app.utils.retry_helper import CircuitBreaker
 from app.utils.technical_indicators import TechnicalIndicators
 
@@ -616,7 +616,7 @@ class SignalEngine:
             return {
                 "success": False,
                 "symbol": symbol,
-                "timestamp": datetime.utcnow().isoformat(),
+                "timestamp": get_wib_datetime().isoformat(),
                 "error": error_msg,
                 "data_quality": {
                     "quality_score": quality_report.quality_score,
@@ -647,7 +647,7 @@ class SignalEngine:
         # Build response
         response = {
             "symbol": symbol,
-            "timestamp": datetime.utcnow().isoformat(),
+            "timestamp": get_wib_datetime().isoformat(),
             "signal": signal,
             "score": round(score, 1),  # 0-100
             "confidence": self._calculate_confidence(breakdown),
