@@ -3,7 +3,7 @@
   "info": {
     "title": "CryptoSatX RPC API",
     "version": "3.0.0",
-    "description": "\ud83d\ude80 Single RPC endpoint with 188 crypto operations. Use 'operation' parameter to call any function.\n\n**Examples:**\n- signals.get - Get trading signal\n- coinglass.liquidations.symbol - Get liquidation data\n- smart_money.scan - Scan smart money activity\n- smart_money.scan_tiered - Scan 1000+ coins with 3-tier filtering\n- mss.discover - Discover high-potential coins\n\n**Total Operations:** 188"
+    "description": "\ud83d\ude80 Single RPC endpoint with 191 crypto operations. Use 'operation' parameter to call any function.\n\n**Examples:**\n- signals.get - Get trading signal\n- coinglass.liquidations.symbol - Get liquidation data\n- smart_money.scan - Scan smart money activity\n- smart_money.scan_tiered - Scan 1000+ coins with 3-tier filtering\n- scalping.analyze - Complete scalping analysis\n- scalping.quick - Quick scalping check\n- mss.discover - Discover high-potential coins\n\n**Total Operations:** 191"
   },
   "servers": [
     {
@@ -14,8 +14,8 @@
     "/invoke": {
       "post": {
         "operationId": "invoke",
-        "summary": "Unified RPC endpoint - 188 operations",
-        "description": "Call any of 188 crypto operations via single endpoint. Specify operation name + parameters.",
+        "summary": "Unified RPC endpoint - 191 operations",
+        "description": "Call any of 191 crypto operations via single endpoint. Specify operation name + parameters.",
         "requestBody": {
           "required": true,
           "content": {
@@ -216,9 +216,12 @@
                       "openai.sentiment_market",
                       "openai.validate",
                       "openai.config",
-                      "openai.health"
+                      "openai.health",
+                      "scalping.analyze",
+                      "scalping.quick",
+                      "scalping.info"
                     ],
-                    "description": "Operation name - 188 operations available"
+                    "description": "Operation name - 191 operations available"
                   },
                   "symbol": {
                     "type": "string",
@@ -382,6 +385,36 @@
                     "description": "Filter signals by type (LONG, SHORT, NEUTRAL)",
                     "example": "LONG",
                     "enum": ["LONG", "SHORT", "NEUTRAL"]
+                  },
+                  "include_smart_money": {
+                    "type": "boolean",
+                    "description": "Include smart money analysis in scalping (takes ~25s)",
+                    "default": true
+                  },
+                  "include_whale_positions": {
+                    "type": "boolean",
+                    "description": "Include Hyperliquid whale positions (DEX institutional bias)",
+                    "default": true
+                  },
+                  "include_fear_greed": {
+                    "type": "boolean",
+                    "description": "Include fear & greed index in scalping analysis",
+                    "default": true
+                  },
+                  "include_coinapi": {
+                    "type": "boolean",
+                    "description": "Include extended CoinAPI data (OHLCV, trades)",
+                    "default": true
+                  },
+                  "include_sentiment": {
+                    "type": "boolean",
+                    "description": "Include LunarCrush sentiment and social momentum",
+                    "default": true
+                  },
+                  "gpt_mode": {
+                    "type": "boolean",
+                    "description": "GPT Actions optimization mode - reduces response size to < 50KB",
+                    "default": true
                   }
                 }
               }
