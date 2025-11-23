@@ -9,7 +9,7 @@ import os
 from datetime import datetime
 from typing import Dict, List, Optional
 from pathlib import Path
-from app.utils.logger import logger
+from app.utils.logger import logger, get_wib_datetime
 
 
 class SignalHistory:
@@ -49,7 +49,7 @@ class SignalHistory:
             try:
                 signal_entry = {
                     "id": self._generate_id(),
-                    "saved_at": datetime.utcnow().isoformat(),
+                    "saved_at": get_wib_datetime().isoformat(),
                     "data": signal_data
                 }
                 
@@ -83,7 +83,7 @@ class SignalHistory:
             try:
                 signal_entry = {
                     "id": self._generate_id(),
-                    "saved_at": datetime.utcnow().isoformat(),
+                    "saved_at": get_wib_datetime().isoformat(),
                     "data": signal_data
                 }
                 
@@ -300,7 +300,7 @@ class SignalHistory:
     
     def _generate_id(self) -> str:
         """Generate unique ID for signal"""
-        timestamp = datetime.utcnow().strftime("%Y%m%d%H%M%S%f")
+        timestamp = get_wib_datetime().strftime("%Y%m%d%H%M%S%f")
         return f"sig_{timestamp}"
 
 

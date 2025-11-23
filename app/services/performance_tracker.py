@@ -20,6 +20,7 @@ Win/Loss Criteria:
 import asyncio
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
+from app.utils.logger import get_wib_datetime
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.date import DateTrigger
 
@@ -108,7 +109,7 @@ class PerformanceTracker:
             if isinstance(entry_time, str):
                 entry_time = datetime.fromisoformat(entry_time.replace("Z", "+00:00"))
             elif entry_time is None:
-                entry_time = datetime.utcnow()
+                entry_time = get_wib_datetime()
 
             self.logger.info(
                 f"📊 Tracking signal {signal_id} ({symbol} {signal_type} @ ${entry_price})"
@@ -131,7 +132,7 @@ class PerformanceTracker:
             run_time = entry_time + timedelta(seconds=seconds)
 
             # Only schedule if in the future
-            if run_time > datetime.utcnow():
+            if run_time > get_wib_datetime():
                 self.scheduler.add_job(
                     self._check_outcome,
                     trigger=DateTrigger(run_date=run_time),
@@ -190,7 +191,7 @@ class PerformanceTracker:
                 "unified_score": signal.get("unified_score"),
                 "tier": signal.get("tier"),
                 "scanner_type": signal.get("scanner_type"),
-                "checked_at": datetime.utcnow().isoformat() + "Z"
+                "checked_at": get_wib_datetime().isoformat()
             })
 
             # Update stats

@@ -5,6 +5,7 @@ Provides async CRUD operations for signal history using PostgreSQL
 import json
 from typing import Dict, List, Optional
 from datetime import datetime, timedelta
+from app.utils.logger import get_wib_datetime
 import asyncpg
 
 from app.storage.database import db
@@ -160,7 +161,7 @@ class SignalDatabaseService:
             Analytics dictionary with counts, averages, etc.
         """
         async with db.acquire() as conn:
-            cutoff_date = datetime.utcnow() - timedelta(days=days)
+            cutoff_date = get_wib_datetime() - timedelta(days=days)
             
             if symbol:
                 stats = await conn.fetchrow("""

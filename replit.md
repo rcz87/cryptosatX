@@ -23,7 +23,7 @@ This project provides a FastAPI-based backend for generating real-time cryptocur
 - ✅ **Verified All 188 Operations**: Comprehensive testing confirms all endpoints returning valid data (coinglass, lunarcrush, smart_money, spike, mss, analytics, signals all working)
 - ✅ **Built CoinAPI Dynamic Symbol Mapping**: Created comprehensive mapping file (637 BINANCE SPOT symbols) with alias support (e.g., HYPE→HYPER) for accurate symbol resolution
 - ✅ **Enhanced Optional Service Handling**: Improved graceful degradation - LunarCrush and other OPTIONAL services no longer block signal generation when unavailable
-- ✅ **Fixed Timezone Configuration**: Set TZ=Asia/Jakarta to eliminate timezone warnings, all timestamps now in WIB
+- ✅ **Fixed Timezone Configuration**: Converted ALL timestamps from UTC to WIB (Asia/Jakarta, UTC+7) across entire application - signal_engine, API routes, storage, analytics, performance tracking - ensuring consistent Indonesia timezone
 - ✅ **Improved Error Logging**: Separated log levels by service tier (CRITICAL=ERROR, IMPORTANT=WARNING, OPTIONAL=DEBUG) for clearer production monitoring
 
 ## System Architecture

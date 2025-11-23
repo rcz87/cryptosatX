@@ -19,7 +19,7 @@ from app.services.openai_service import get_openai_service
 # ADDED FOR PHASE 2 - Outcome tracking
 from app.services.outcome_tracker import outcome_tracker
 from datetime import datetime
-from app.utils.logger import logger, get_wib_time
+from app.utils.logger import logger, get_wib_time, get_wib_datetime
 
 router = APIRouter()
 
@@ -69,8 +69,8 @@ async def persist_signal_with_tracking(signal: dict):
             logger.error(f"Invalid entry price ({entry_price}) for {signal.get('symbol')} - cannot track outcome")
             return
         
-        # Use datetime.utcnow() for database tracking (PostgreSQL best practice)
-        entry_timestamp = datetime.utcnow()
+        # Use WIB timezone for database tracking (Indonesia timezone)
+        entry_timestamp = get_wib_datetime()
         
         outcome_id = await outcome_tracker.record_signal_entry(
             signal_id=signal_id,

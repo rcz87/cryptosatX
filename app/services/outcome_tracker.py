@@ -6,6 +6,7 @@ Phase 2: AI Verdict Validation System
 
 import asyncio
 from datetime import datetime, timedelta
+from app.utils.logger import get_wib_datetime
 from typing import Optional, Dict, Any
 import httpx
 from app.storage.database import db
@@ -220,7 +221,7 @@ class OutcomeTracker:
                 record["signal_type"]
             )
             outcome = self.classify_outcome(pnl)
-            now = datetime.utcnow()
+            now = get_wib_datetime()
 
             # Update database
             if db.use_postgres:
@@ -292,7 +293,7 @@ class OutcomeTracker:
         """
         try:
             # Calculate time threshold
-            now = datetime.utcnow()
+            now = get_wib_datetime()
             if interval == "1h":
                 threshold = now - timedelta(hours=1)
             elif interval == "4h":

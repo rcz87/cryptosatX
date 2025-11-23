@@ -19,7 +19,7 @@ from datetime import datetime, timedelta
 import asyncpg
 from decimal import Decimal
 
-from app.utils.logger import default_logger
+from app.utils.logger import default_logger, get_wib_datetime
 
 
 class AnalyticsService:
@@ -73,7 +73,7 @@ class AnalyticsService:
         """
         try:
             pool = await self._get_pool()
-            cutoff_date = datetime.utcnow() - timedelta(days=days_back)
+            cutoff_date = get_wib_datetime() - timedelta(days=days_back)
             
             async with pool.acquire() as conn:
                 # Get total signals and outcomes
@@ -253,7 +253,7 @@ class AnalyticsService:
         """
         try:
             pool = await self._get_pool()
-            cutoff_date = datetime.utcnow() - timedelta(days=days_back)
+            cutoff_date = get_wib_datetime() - timedelta(days=days_back)
             
             async with pool.acquire() as conn:
                 # Overall stats
