@@ -319,10 +319,12 @@ class RPCDispatcher:
         min_dist = args.get("min_distribution_score", 5)
         coins_str = args.get("coins")
         coin_list = coins_str.split(",") if coins_str else None
+        limit = args.get("limit", 50)  # ✅ Default 50 instead of 20
         return await smart_money_service.scan_markets(
             min_accumulation_score=min_acc,
             min_distribution_score=min_dist,
-            coins=coin_list
+            coins=coin_list,
+            limit=limit  # ✅ Pass limit parameter
         )
     
     async def _smart_money_scan_accumulation(self, args: Dict) -> Dict:
