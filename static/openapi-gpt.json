@@ -249,6 +249,47 @@
                     "type": "boolean",
                     "default": false,
                     "description": "Enable debug output"
+                  },
+                  "total_coins": {
+                    "type": "integer",
+                    "description": "Total coins to scan (for smart_money.scan_tiered)",
+                    "example": 1000,
+                    "default": 100
+                  },
+                  "final_limit": {
+                    "type": "integer",
+                    "description": "Final number of results to return (for smart_money.scan_tiered)",
+                    "example": 10,
+                    "default": 10
+                  },
+                  "tier1_enabled": {
+                    "type": "boolean",
+                    "description": "Enable tier 1 filtering (for smart_money.scan_tiered)",
+                    "default": true
+                  },
+                  "tier2_enabled": {
+                    "type": "boolean",
+                    "description": "Enable tier 2 filtering (for smart_money.scan_tiered)",
+                    "default": true
+                  },
+                  "tier3_enabled": {
+                    "type": "boolean",
+                    "description": "Enable tier 3 filtering (for smart_money.scan_tiered)",
+                    "default": true
+                  },
+                  "min_accumulation_score": {
+                    "type": "integer",
+                    "description": "Minimum accumulation score 0-10 (for smart_money operations)",
+                    "example": 7,
+                    "minimum": 0,
+                    "maximum": 10
+                  },
+                  "min_distribution_score": {
+                    "type": "integer",
+                    "description": "Minimum distribution score 0-10 (for smart_money operations)",
+                    "example": 7,
+                    "minimum": 0,
+                    "maximum": 10
                   }
                 }
               }
