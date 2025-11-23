@@ -33,6 +33,7 @@ class RPCDispatcher:
         "mss.discover": 60,  # MSS discovery scans many coins
         "mss.scan": 60,
         "smart_money.scan": 45,
+        "smart_money.scan_tiered": 60,  # Tiered scanning for 1000+ coins
         "backtest.run": 120,  # Backtesting can take longer
     }
     
@@ -62,6 +63,7 @@ class RPCDispatcher:
         self.handlers["smart_money.scan_accumulation"] = self._smart_money_scan_accumulation
         self.handlers["smart_money.scan_distribution"] = self._smart_money_scan_distribution
         self.handlers["smart_money.analyze"] = self._smart_money_analyze
+        self.handlers["smart_money.scan_tiered"] = self._smart_money_scan_tiered
         
         # MSS
         self.handlers["mss.discover"] = self._mss_discover
@@ -350,7 +352,27 @@ class RPCDispatcher:
         from app.services.smart_money_service import smart_money_service
         symbol = args["symbol"]
         return await smart_money_service.analyze_any_coin(symbol)
-    
+
+    async def _smart_money_scan_tiered(self, args: Dict) -> Dict:
+        """Tiered scan - scan 1000+ coins with 3-tier filtering"""
+        from app.services.tiered_scanner import tiered_scanner
+
+        total_coins = args.get("total_coins", 100)
+        tier1_enabled = args.get("tier1_enabled", True)
+        tier2_enabled = args.get("tier2_enabled", True)
+        tier3_enabled = args.get("tier3_enabled", True)
+        final_limit = args.get("final_limit", 10)
+
+        result = await tiered_scanner.scan_tiered(
+            total_coins=total_coins,
+            tier1_enabled=tier1_enabled,
+            tier2_enabled=tier2_enabled,
+            tier3_enabled=tier3_enabled,
+            final_limit=final_limit
+        )
+
+        return result
+
     async def _mss_discover(self, args: Dict) -> Dict:
         """MSS discover - FIXED method name and parameters"""
         from app.services.mss_service import MSSService
