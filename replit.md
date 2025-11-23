@@ -10,10 +10,16 @@ This project provides a FastAPI-based backend for generating real-time cryptocur
 - Full async/await for performance
 - Extensive comments for maintainability
 - API Quota Optimization: Background tasks & auto Telegram alerts disabled to save 99% API quota while maintaining full GPT Actions functionality
-- All 188+ endpoints available for on-demand manual calls via GPT Actions
+- All 188 endpoints available for on-demand manual calls via GPT Actions
 - No auto-alerts to Telegram (manual alert endpoint available if needed)
 - Communication: Bahasa Indonesia with natural, conversational language (not overly technical)
 - Documentation: Simplified, practical, and action-oriented
+
+## Recent Changes (November 23, 2025)
+- ✅ **Fixed GPT-4o Integration**: Updated from deprecated gpt-4-turbo to gpt-4o model in OpenAI V2 service
+- ✅ **Fixed signals.debug Operation**: Added missing handler in rpc_flat_dispatcher for signals.debug endpoint (was registered in catalog but had no implementation)
+- ✅ **Updated Operation Count**: Standardized documentation from outdated 187/202 references to correct 188 total operations
+- ✅ **Verified All 188 Operations**: Comprehensive testing confirms all endpoints returning valid data (coinglass, lunarcrush, smart_money, spike, mss, analytics, signals all working)
 
 ## System Architecture
 The application uses a modular FastAPI architecture, separating API routes, business logic, and external service integrations. It provides clean JSON responses, offers a debug mode, and includes OpenAPI documentation with a GPT Actions-compatible schema.
