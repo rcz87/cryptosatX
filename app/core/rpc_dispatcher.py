@@ -32,7 +32,7 @@ class RPCDispatcher:
         "signals.get": 45,  # Signal generation needs more time
         "mss.discover": 60,  # MSS discovery scans many coins
         "mss.scan": 60,
-        "smart_money.scan": 45,
+        "smart_money.scan": 300,  # Increased: 50 coins with batching = ~250s max
         "smart_money.scan_tiered": 60,  # Tiered scanning for 1000+ coins
         "backtest.run": 120,  # Backtesting can take longer
         "scalping.analyze": 45,  # Full scalping analysis with smart money
