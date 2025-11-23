@@ -1,0 +1,90 @@
+#!/bin/bash
+
+BASE_URL="https://guardiansofthetoken.org"
+PASS=0
+FAIL=0
+
+echo "🧪 Testing All Fixes..."
+
+# Test 1: Scalping Analyze
+echo "Test 1: scalping.analyze..."
+RESPONSE=$(curl -s -X POST "$BASE_URL/invoke" -H "Content-Type: application/json" -d '{"operation":"scalping.analyze","symbol":"BTC","gpt_mode":true}')
+if echo "$RESPONSE" | jq -e '.ok == true' > /dev/null; then
+  echo "✅ PASS: scalping.analyze"
+  ((PASS++))
+else
+  echo "❌ FAIL: scalping.analyze"
+  echo "$RESPONSE" | jq '.error'
+  ((FAIL++))
+fi
+
+# Test 2: Scalping Quick
+echo "Test 2: scalping.quick..."
+RESPONSE=$(curl -s -X POST "$BASE_URL/invoke" -H "Content-Type: application/json" -d '{"operation":"scalping.quick","symbol":"SOL"}')
+if echo "$RESPONSE" | jq -e '.ok == true' > /dev/null; then
+  echo "✅ PASS: scalping.quick"
+  ((PASS++))
+else
+  echo "❌ FAIL: scalping.quick"
+  echo "$RESPONSE" | jq '.error'
+  ((FAIL++))
+fi
+
+# Test 3: Scalping Info
+echo "Test 3: scalping.info..."
+RESPONSE=$(curl -s -X POST "$BASE_URL/invoke" -H "Content-Type: application/json" -d '{"operation":"scalping.info"}')
+if echo "$RESPONSE" | jq -e '.ok == true' > /dev/null; then
+  echo "✅ PASS: scalping.info"
+  ((PASS++))
+else
+  echo "❌ FAIL: scalping.info"
+  echo "$RESPONSE" | jq '.error'
+  ((FAIL++))
+fi
+
+# Test 4: Scan Tiered
+echo "Test 4: smart_money.scan_tiered..."
+RESPONSE=$(curl -s -X POST "$BASE_URL/invoke" -H "Content-Type: application/json" -d '{"operation":"smart_money.scan_tiered","total_coins":100,"final_limit":10}')
+if echo "$RESPONSE" | jq -e '.ok == true' > /dev/null; then
+  echo "✅ PASS: scan_tiered"
+  ((PASS++))
+else
+  echo "❌ FAIL: scan_tiered"
+  echo "$RESPONSE" | jq '.error'
+  ((FAIL++))
+fi
+
+# Test 5: Smart Money Scan with Limit
+echo "Test 5: smart_money.scan with limit..."
+RESPONSE=$(curl -s -X POST "$BASE_URL/invoke" -H "Content-Type: application/json" -d '{"operation":"smart_money.scan","limit":50}')
+if echo "$RESPONSE" | jq -e '.ok == true' > /dev/null; then
+  echo "✅ PASS: smart_money.scan limit"
+  ((PASS++))
+else
+  echo "❌ FAIL: smart_money.scan limit"
+  echo "$RESPONSE" | jq '.error'
+  ((FAIL++))
+fi
+
+# Test 6: MSS with Parameters
+echo "Test 6: mss.scan with parameters..."
+RESPONSE=$(curl -s -X POST "$BASE_URL/invoke" -H "Content-Type: application/json" -d '{"operation":"mss.scan","min_mss_score":70,"max_results":10}')
+if echo "$RESPONSE" | jq -e '.ok == true' > /dev/null; then
+  echo "✅ PASS: mss.scan parameters"
+  ((PASS++))
+else
+  echo "❌ FAIL: mss.scan parameters"
+  echo "$RESPONSE" | jq '.error'
+  ((FAIL++))
+fi
+
+echo ""
+echo "📊 Results: $PASS PASS, $FAIL FAIL"
+
+if [ $FAIL -eq 0 ]; then
+  echo "🎉 All tests passed!"
+  exit 0
+else
+  echo "⚠️ Some tests failed"
+  exit 1
+fi
