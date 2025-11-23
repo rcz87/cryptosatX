@@ -203,8 +203,12 @@ class SymbolNormalizer:
         Normalize for CoinAPI
         Format: BINANCE_SPOT_BTC_USDT (exchange_spot_symbol_quote)
         
+        Uses dynamic mapping from CoinAPI for accurate symbol resolution.
+        Falls back to pattern-based format for unmapped symbols.
+        
         Examples:
             BTC -> BINANCE_SPOT_BTC_USDT
+            HYPE -> BINANCE_SPOT_HYPER_USDT (via mapping)
             BTC, exchange=OKX -> OKX_SPOT_BTC_USDT
             BTCUSDT -> BINANCE_SPOT_BTC_USDT
         """
@@ -215,12 +219,27 @@ class SymbolNormalizer:
         if "_SPOT_" in symbol:
             return symbol
         
-        # Strip USDT/USD if present (we'll add it back)
+        # Strip USDT/USD if present
         if symbol.endswith("USDT"):
             symbol = symbol[:-4]
         elif symbol.endswith("USD"):
             symbol = symbol[:-3]
         
+        # Try to use dynamic mapping from CoinAPI (if available)
+        if exchange == "BINANCE":
+            try:
+                import json
+                import os
+                mapping_file = os.path.join(os.path.dirname(__file__), '../data/coinapi_binance_mapping.json')
+                if os.path.exists(mapping_file):
+                    with open(mapping_file, 'r') as f:
+                        mapping_data = json.load(f)
+                        if symbol in mapping_data.get('mapping', {}):
+                            return mapping_data['mapping'][symbol]
+            except Exception:
+                pass  # Fall through to pattern-based
+        
+        # Fallback to pattern-based format
         return f"{exchange}_SPOT_{symbol}_USDT"
     
     def _normalize_binance(self, symbol: str) -> str:
