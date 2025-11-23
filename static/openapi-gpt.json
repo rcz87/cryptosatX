@@ -218,7 +218,7 @@
                       "openai.config",
                       "openai.health"
                     ],
-                    "description": "Operation name - 187 operations available"
+                    "description": "Operation name - 188 operations available"
                   },
                   "symbol": {
                     "type": "string",
